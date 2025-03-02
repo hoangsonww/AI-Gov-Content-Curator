@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/scheduled/fetchAndSummarize.ts": {
+      "runtime": "nodejs18.x",
+      "schedule": "0 6,18 * * *"
+    }
+  }
+}
