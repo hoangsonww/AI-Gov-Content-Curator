@@ -1,122 +1,207 @@
-/* theme.css */
-
-/* Default color variables (light) */
+/* ---------- Color Variables ---------- */
+/* Default (light) theme */
 :root {
-    --bg-color: #ffffff;
-    --text-color: #121212;
-    --card-bg: #f7f7f7;
-    --card-border: #e0e0e0;
-    --navbar-bg: #fefefe;
-    --navbar-text: #333333;
-    --footer-bg: #f5f5f5;
-    --footer-text: #555555;
-    --accent-color: #0066cc;
+  --bg-color: #ffffff;
+  --text-color: #121212;
+  --card-bg: #f7f7f7;
+  --card-border: #e0e0e0;
+  --navbar-bg: #fefefe;
+  --navbar-text: #333333;
+  --footer-bg: #f5f5f5;
+  --footer-text: #555555;
+  --accent-color: #0066cc;
 }
 
 /* Dark theme overrides */
-[data-theme='dark'] {
-    --bg-color: #121212;
-    --text-color: #eeeeee;
-    --card-bg: #1d1d1d;
-    --card-border: #333333;
-    --navbar-bg: #1a1a1a;
-    --navbar-text: #ffffff;
-    --footer-bg: #222222;
-    --footer-text: #aaaaaa;
-    --accent-color: #45a1ff;
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --text-color: #eeeeee;
+  --card-bg: #1d1d1d;
+  --card-border: #333333;
+  --navbar-bg: #1a1a1a;
+  --navbar-text: #ffffff;
+  --footer-bg: #222222;
+  --footer-text: #aaaaaa;
+  --accent-color: #45a1ff;
 }
 
-/* System preference (if chosen) tries to use media query. We handle it in JS by toggling between 'light' or 'dark' automatically. */
-
-/* Basic color usage */
+/* ---------- Global Styles ---------- */
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
 }
 
-/* Navbar */
-.navbar {
-    background-color: var(--navbar-bg);
-    color: var(--navbar-text);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 2rem;
-}
-.navbar-left {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-.navbar-title {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    cursor: default;
+/* ---------- Navbar Styles ---------- */
+.navbar-container {
+  background-color: var(--navbar-bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
 }
 
-.theme-toggle {
-    border: 1px solid var(--navbar-text);
-    background: transparent;
-    color: var(--navbar-text);
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: 0.3s;
-    border-radius: 4px;
-}
-.theme-toggle:hover {
-    background-color: var(--card-bg);
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
 }
 
-/* Footer */
+.brand-link {
+  text-decoration: none;
+  color: var(--navbar-text);
+  display: flex;
+  align-items: center;
+}
+
+.brand-link:hover {
+  color: var(--accent-color);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.brand-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* ---------- Article Grid ---------- */
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* ---------- Article Read More ---------- */
+.article-readmore {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  color: var(--accent-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.article-readmore:hover {
+  color: var(--navbar-text);
+}
+
+/* ---------- Theme Toggle Styles ---------- */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--navbar-text);
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+  border-radius: 4px;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--card-bg);
+  transform: scale(1.05);
+}
+
+.theme-dropdown {
+  position: absolute;
+  right: 0;
+  top: 2.5rem;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 999;
+}
+
+.theme-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+  border-radius: 4px;
+}
+
+.theme-option-btn:hover {
+  background: var(--navbar-bg);
+}
+
+/* ---------- Footer Styles ---------- */
 .footer {
-    background-color: var(--footer-bg);
-    color: var(--footer-text);
-    text-align: center;
-    padding: 1rem;
-    font-size: 0.9rem;
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
 }
 
-/* Article Card */
+/* ---------- Article Card Styles ---------- */
 .article-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-.article-title {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-.article-source {
-    font-size: 0.85rem;
-    opacity: 0.8;
-}
-.article-summary {
-    margin: 0.5rem 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
-/* Article Detail */
+.article-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.article-source {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.article-summary {
+  margin: 0.5rem 0;
+}
+
+/* ---------- Article Detail Styles ---------- */
 .article-detail {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 6px;
-    padding: 1rem;
-    margin-top: 1rem;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
 }
+
 .detail-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
 }
+
 .detail-meta {
-    font-size: 0.85rem;
-    opacity: 0.8;
-    margin-bottom: 1rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
 }
+
 .detail-content {
-    line-height: 1.6;
-    white-space: pre-wrap; /* preserve formatting */
+  line-height: 1.6;
+  white-space: pre-wrap;
 }

@@ -10,15 +10,18 @@
 }
 
 /* Use a Google Font for everything */
-html, body {
-  font-family: 'Inter', sans-serif;
+html,
+body {
+  font-family: "Inter", sans-serif;
   min-height: 100%;
   scroll-behavior: smooth;
 }
 
 /* Body transitions for background, color, etc. */
 body {
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
 }
 
 main {
@@ -52,9 +55,11 @@ main {
 
 /* Hover animation helper (scale, shadow) */
 .hover-animate {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 .hover-animate:hover {
   transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

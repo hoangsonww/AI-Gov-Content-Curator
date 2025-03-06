@@ -27,7 +27,7 @@ Below is a text-based diagram illustrating the system architecture:
                             v
                   +--------------------+
                   |                    |
-                  |   Data Processing  | 
+                  |   Data Processing  |
                   | (Summarization via |
                   |  Gemini AI /       |
                   | GoogleGenerativeAI)|
@@ -62,6 +62,7 @@ Below is a text-based diagram illustrating the system architecture:
 ## Detailed Description
 
 ### Data Ingestion Layer
+
 - **Custom Crawlers:**  
   The crawler service is implemented using Axios and Cheerio for static HTML pages. In case of HTTP 403 errors or other issues (like ECONNRESET), the service falls back to Puppeteer (dynamic fetch) to simulate a real browser. Additionally, a helper function (`crawlArticlesFromHomepage`) extracts article links from given homepage URLs.
 
@@ -69,20 +70,24 @@ Below is a text-based diagram illustrating the system architecture:
   The API fetcher service retrieves articles from public APIs like NewsAPI, ensuring additional content sources.
 
 ### Processing Layer
+
 - **Content Summarization:**  
   The summarization service leverages Google’s Generative AI (Gemini) via the `@google/generative-ai` package. It is configured with safety settings and includes a retry mechanism for handling rate limits (HTTP 429 responses).
 
 ### Database and Storage
+
 - **MongoDB (via Mongoose):**  
   All articles (including their URLs, titles, full content, summaries, sources, and fetch timestamps) are stored in a MongoDB database. Mongoose is used for schema definition and data modeling.
 
 ### API Layer
+
 - **Express.js Endpoints:**  
   The backend exposes RESTful API endpoints for the frontend:
-    - `GET /api/articles` – Lists articles with support for pagination and filtering.
-    - `GET /api/articles/:id` – Retrieves detailed information about a specific article.
+  - `GET /api/articles` – Lists articles with support for pagination and filtering.
+  - `GET /api/articles/:id` – Retrieves detailed information about a specific article.
 
 ### Scheduling and Deployment
+
 - **Vercel Scheduled Functions:**  
   The fetch-and-summarize script is deployed as a Vercel serverless function under `/api/scheduled/fetchAndSummarize.ts`. Vercel’s cron functionality (configured via `vercel.json`) automatically triggers the function at 6:00 AM and 6:00 PM every day.
 
@@ -92,6 +97,7 @@ Below is a text-based diagram illustrating the system architecture:
 ## Getting Started
 
 ### Prerequisites
+
 - **Node.js** (v18 or later recommended)
 - **MongoDB** (a running instance, local or cloud)
 - **Vercel CLI** (for deployment)
@@ -99,12 +105,14 @@ Below is a text-based diagram illustrating the system architecture:
 ### Installation
 
 1. **Clone the Repository:**
+
    ```bash
    git clone https://github.com/yourusername/ai-content-curator-backend.git
    cd ai-content-curator-backend
    ```
 
 2. **Install Dependencies:**
+
    ```bash
    npm install
    ```
@@ -112,6 +120,7 @@ Below is a text-based diagram illustrating the system architecture:
 3. **Setup Environment Variables:**
 
    Create a `.env` file in the root directory with the following contents (replace placeholders with your actual credentials):
+
    ```dotenv
    MONGODB_URI=your_production_mongodb_connection_string
    GOOGLE_AI_API_KEY=your_google_ai_api_key
@@ -140,6 +149,7 @@ Below is a text-based diagram illustrating the system architecture:
 ## Deployment on Vercel
 
 1. **Create a `vercel.json` file in the project root with the following content:**
+
    ```json
    {
      "functions": {
@@ -150,6 +160,7 @@ Below is a text-based diagram illustrating the system architecture:
      }
    }
    ```
+
    This configuration schedules the fetch-and-summarize function to run at 6:00 AM and 6:00 PM (server time) daily.
 
 2. **Deploy to Vercel:**
@@ -161,31 +172,32 @@ Below is a text-based diagram illustrating the system architecture:
 ## API Endpoints
 
 - **GET /api/articles**
-    - **Description:** Retrieves a paginated list of articles.
-    - **Query Parameters:**
-        - `page`: Page number (default: 1)
-        - `limit`: Number of articles per page (default: 10)
-        - `source`: (Optional) Filter articles by source.
-    - **Example:**
-      ```bash
-      curl -X GET "https://your-deployment.vercel.app/api/articles?page=1&limit=10" -H "Accept: application/json"
-      ```
+
+  - **Description:** Retrieves a paginated list of articles.
+  - **Query Parameters:**
+    - `page`: Page number (default: 1)
+    - `limit`: Number of articles per page (default: 10)
+    - `source`: (Optional) Filter articles by source.
+  - **Example:**
+    ```bash
+    curl -X GET "https://your-deployment.vercel.app/api/articles?page=1&limit=10" -H "Accept: application/json"
+    ```
 
 - **GET /api/articles/:id**
-    - **Description:** Retrieves detailed information about a specific article.
-    - **Example:**
-      ```bash
-      curl -X GET "https://your-deployment.vercel.app/api/articles/<ARTICLE_ID>" -H "Accept: application/json"
-      ```
+
+  - **Description:** Retrieves detailed information about a specific article.
+  - **Example:**
+    ```bash
+    curl -X GET "https://your-deployment.vercel.app/api/articles/<ARTICLE_ID>" -H "Accept: application/json"
+    ```
 
 - **GET /api/scheduled/fetchAndSummarize**
-    - **Description:** Manually triggers the scheduled fetch and summarization process.  
-      (This endpoint is mainly for testing; it is automatically triggered by Vercel Cron.)
-    - **Example:**
-      ```bash
-      curl -X GET "https://your-deployment.vercel.app/api/scheduled/fetchAndSummarize" -H "Accept: application/json"
-      ```
-
+  - **Description:** Manually triggers the scheduled fetch and summarization process.  
+    (This endpoint is mainly for testing; it is automatically triggered by Vercel Cron.)
+  - **Example:**
+    ```bash
+    curl -X GET "https://your-deployment.vercel.app/api/scheduled/fetchAndSummarize" -H "Accept: application/json"
+    ```
 
 ## Logging and Error Handling
 
@@ -193,9 +205,9 @@ Below is a text-based diagram illustrating the system architecture:
   The backend uses console logging for monitoring. In production, consider integrating a logging service (e.g., Winston, Pino, or Sentry) for more robust error tracking.
 
 - **Error Handling:**
-    - The crawler service implements retry logic for connection resets and falls back to dynamic fetching when static fetching fails (e.g., due to a 403 error).
-    - The summarization service retries on rate limiting (HTTP 429) and logs errors if summarization fails.
-    - Duplicate articles are skipped when a MongoDB duplicate key error (code 11000) occurs.
+  - The crawler service implements retry logic for connection resets and falls back to dynamic fetching when static fetching fails (e.g., due to a 403 error).
+  - The summarization service retries on rate limiting (HTTP 429) and logs errors if summarization fails.
+  - Duplicate articles are skipped when a MongoDB duplicate key error (code 11000) occurs.
 
 ## Future Enhancements
 

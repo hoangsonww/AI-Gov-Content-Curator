@@ -1,24 +1,27 @@
-import { MdArticle } from 'react-icons/md'
-import ThemeToggle from './ThemeToggle'
-import React from 'react'
+import React from "react";
+import Link from "next/link";
+import { MdArticle } from "react-icons/md";
+import ThemeToggle from "./ThemeToggle";
 
-const ArticleIcon = MdArticle as React.FC<{ size?: number }>
+const ArticleIcon = MdArticle as React.FC<{ size?: number }>;
 
 interface NavbarProps {
-    theme: 'light' | 'dark' | 'system'
-    onThemeChange: (t: 'light' | 'dark' | 'system') => void
+  theme: "light" | "dark" | "system";
+  onThemeChange: (t: "light" | "dark" | "system") => void;
 }
 
 export default function Navbar({ theme, onThemeChange }: NavbarProps) {
-    return (
-        <nav className="navbar hover-animate">
-            <div className="navbar-left">
-                <div className="navbar-title">
-                    <ArticleIcon size={24} />
-                    <span>Article Curator</span>
-                </div>
-            </div>
-            <ThemeToggle theme={theme} onThemeChange={onThemeChange} />
-        </nav>
-    )
+  return (
+    <header className="navbar-container">
+      <nav className="navbar-content">
+        <Link href="/" className="brand-link">
+          <div className="navbar-brand">
+            <ArticleIcon size={26} />
+            <span className="brand-text">Article Curator</span>
+          </div>
+        </Link>
+        <ThemeToggle theme={theme} onThemeChange={onThemeChange} />
+      </nav>
+    </header>
+  );
 }
