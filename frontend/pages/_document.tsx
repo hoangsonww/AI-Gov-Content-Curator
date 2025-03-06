@@ -46,11 +46,14 @@ class MyDocument extends Document {
             property="og:description"
             content="Discover and manage government-related articles with ease, powered by AI."
           />
-          <meta property="og:url" content="https://your-domain.com" />
+          <meta
+            property="og:url"
+            content="https://ai-gov-content-curator.vercel.app/"
+          />
           <meta property="og:type" content="website" />
           <meta
             property="og:image"
-            content="https://your-domain.com/og-image.jpg"
+            content="https://ai-gov-content-curator.vercel.app/android-chrome-192x192.png"
           />
 
           {/* Twitter Card */}
@@ -62,11 +65,13 @@ class MyDocument extends Document {
           />
           <meta
             name="twitter:image"
-            content="https://your-domain.com/twitter-image.jpg"
+            content="https://ai-gov-content-curator.vercel.app/android-chrome-192x192.png"
           />
 
-          {/* Canonical link (if you have a primary domain) */}
-          <link rel="canonical" href="https://your-domain.com" />
+          <link
+            rel="canonical"
+            href="https://ai-gov-content-curator.vercel.app/"
+          />
         </Head>
         <body>
           <Main />

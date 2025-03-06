@@ -7,6 +7,7 @@ The **AI-Powered Article Content Curator** is a comprehensive, AI-powered system
 - **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
 
 Each component is maintained in its own directory:
+
 - **Backend:** `backend/`
   - Live: [https://ai-content-curator-backend.vercel.app/](https://ai-content-curator-backend.vercel.app/)
 - **Crawler:** `crawler/`
@@ -105,20 +106,16 @@ The **AI-Powered Article Content Curator** system is designed to provide governm
 
 - **Data Ingestion:**  
   The system aggregates article URLs from multiple sources (government homepages and public APIs like NewsAPI) using a decoupled crawler service.
-  
 - **Content Processing:**  
   The backend processes the fetched articles by generating concise summaries via Google Generative AI. This step includes handling rate limits and transient errors with robust retry mechanisms.
-  
 - **Data Storage & API Serving:**  
   Articles—comprising URLs, titles, full content, AI-generated summaries, source details, and fetch timestamps—are stored in MongoDB (managed through Mongoose). An Express.js API, integrated within a Next.js project, exposes REST endpoints for fetching article lists and individual article details.
-  
 - **Frontend Experience:**  
   A responsive Next.js/React interface allows users to easily browse paginated article lists, filter by source, and view detailed article pages.
-  
 - **Scheduled Updates:**  
   Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content.
 
-- **Architecture:** 
+- **Architecture:**
   Monorepo structure with separate directories for the backend, crawler, and frontend. Each component is designed to be scalable, maintainable, and deployable on Vercel.
 
 ---
@@ -213,23 +210,22 @@ The **Backend** is responsible for storing articles and serving them via RESTful
 
 - **Data Ingestion:**  
   Receives article URLs and data from the crawler and external API sources.
-  
 - **Content Summarization:**  
   Uses Google Generative AI (Gemini) to generate concise summaries.
-  
 - **Storage:**  
   Persists articles in MongoDB using Mongoose with fields for URL, title, full content, summary, source information, and fetch timestamp.
-  
 - **API Endpoints:**
   - `GET /api/articles` – Retrieves a paginated list of articles (supports filtering via query parameters such as `page`, `limit`, and `source`).
   - `GET /api/articles/:id` – Retrieves detailed information for a specific article.
-  
 - **Scheduled Updates:**  
   A serverless function (triggered twice daily at 6:00 AM and 6:00 PM UTC) fetches and processes new articles, so that the system remains up-to-date!
 
 ### Prerequisites & Installation (Backend)
 
+> Note: Instead of installing the node modules separately, you can run `npm install` in the root directory to install dependencies for all components.
+
 1. **Prerequisites:**
+
    - Node.js (v18 or later)
    - MongoDB (local or cloud)
    - Vercel CLI (for deployment)
@@ -269,6 +265,7 @@ npm run dev
 ```
 
 Access endpoints:
+
 - `GET http://localhost:3000/api/articles`
 - `GET http://localhost:3000/api/articles/:id`
 
@@ -324,9 +321,10 @@ The **Crawler** automatically retrieves article links and metadata from governme
 ### Prerequisites & Installation (Crawler)
 
 1. **Prerequisites:**
-  - Node.js (v18 or later)
-  - NPM (or Yarn)
-  - Vercel CLI (for deployment)
+
+- Node.js (v18 or later)
+- NPM (or Yarn)
+- Vercel CLI (for deployment)
 
 2. **Clone the Repository:**
 
@@ -423,8 +421,9 @@ The **Frontend** is built with Next.js and React, providing a modern, mobile-res
 ### Prerequisites & Installation (Frontend)
 
 1. **Prerequisites:**
-  - Node.js (v18 or later)
-  - NPM or Yarn
+
+- Node.js (v18 or later)
+- NPM or Yarn
 
 2. **Clone the Repository:**
 
@@ -438,7 +437,9 @@ The **Frontend** is built with Next.js and React, providing a modern, mobile-res
    ```bash
    npm install
    ```
+
    or
+
    ```bash
    yarn
    ```
@@ -476,10 +477,12 @@ Access the application at [http://localhost:3000](http://localhost:3000).
 ## Logging, Error Handling & Future Enhancements
 
 - **Logging:**
+
   - Development: Uses basic console logging.
   - Production: Consider integrating advanced logging libraries (e.g., Winston, Sentry) for improved error monitoring.
 
 - **Error Handling:**
+
   - The backend implements retry mechanisms for AI summarization.
   - The crawler gracefully handles network errors and switches between Axios/Cheerio and Puppeteer as needed.
 
