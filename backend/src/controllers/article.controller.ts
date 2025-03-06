@@ -1,6 +1,30 @@
 import { Request, Response } from "express";
 import Article from "../models/article.model";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Article:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *         url:
+ *           type: string
+ *         title:
+ *           type: string
+ *         content:
+ *           type: string
+ *         summary:
+ *           type: string
+ *         source:
+ *           type: string
+ *         fetchedAt:
+ *           type: string
+ *           format: date-time
+ */
+
 export const getArticles = async (req: Request, res: Response) => {
   try {
     const { page = 1, limit = 10, source } = req.query;
