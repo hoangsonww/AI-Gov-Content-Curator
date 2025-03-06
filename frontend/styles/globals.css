@@ -1,0 +1,60 @@
+/* globals.css */
+
+/* Minimal CSS reset */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Use a Google Font for everything */
+html, body {
+  font-family: 'Inter', sans-serif;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+/* Body transitions for background, color, etc. */
+body {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+main {
+  min-height: calc(100vh - 120px); /* account for navbar + footer */
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Utility classes */
+.page-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1.5rem 0;
+}
+
+.error-message {
+  color: red;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+/* Responsive container if needed */
+.responsive-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Hover animation helper (scale, shadow) */
+.hover-animate {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-animate:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
