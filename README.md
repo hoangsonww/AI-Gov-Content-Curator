@@ -1,19 +1,124 @@
-# AI-Powered Article Summarization & Curation System
+# AI-Powered Article Content Curator
 
-[![Node.js](https://img.shields.io/badge/Node.js-v18.x-green?logo=node.js)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-4.x-lightgrey?logo=express)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-6.x-brightgreen?logo=mongodb)](https://mongodb.com/)
-[![Cheerio](https://img.shields.io/badge/Cheerio-1.x-yellow?logo=npm)](https://cheerio.js.org/)
-[![Puppeteer](https://img.shields.io/badge/Puppeteer-19.x-blue?logo=googlechrome)](https://pptr.dev/)
-[![GoogleGenerativeAI](https://img.shields.io/badge/Google%20Gemini%20AI-GenerativeAI-red?logo=google)](https://developers.generativeai.google/)
-[![Next.js](https://img.shields.io/badge/Next.js-13.x-black?logo=next.js)](https://nextjs.org/)
-[![Vercel](https://img.shields.io/badge/Vercel-Deploy-black?logo=vercel)](https://vercel.com/)
+The **AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles. The project is organized into three main components:
 
-This **backend** automatically crawls, summarizes, and stores articles from various sources (e.g., government homepages or NewsAPI). It exposes **REST endpoints** consumed by a **Next.js** frontend. **Daily** or **scheduled** tasks ensure fresh content, and an optional **AI** (Gemini) summarizes articles for easier reading.
+- **Backend:** Provides a robust RESTful API to store and serve curated articles.
+- **Crawler:** Automatically crawls and extracts article URLs and metadata from government homepages and public API sources.
+- **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
+
+Each component is maintained in its own directory:
+- **Backend:** `backend/`
+  - Live: [https://ai-content-curator-backend.vercel.app/](https://ai-content-curator-backend.vercel.app/)
+- **Crawler:** `crawler/`
+  - Live: [https://ai-content-curator-crawler.vercel.app/](https://ai-content-curator-crawler.vercel.app/)
+- **Frontend:** `frontend/`
+  - Live: [https://ai-gov-content-curator.vercel.app/](https://ai-gov-content-curator.vercel.app/)
+
+<p align="center">
+  <a href="https://nodejs.org" target="_blank">
+    <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white" alt="Node.js"/>
+  </a>
+  <a href="https://expressjs.com" target="_blank">
+    <img src="https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white" alt="Express.js"/>
+  </a>
+  <a href="https://nextjs.org" target="_blank">
+    <img src="https://img.shields.io/badge/Next.js-000?style=flat&logo=next.js&logoColor=white" alt="Next.js"/>
+  </a>
+  <a href="https://www.mongodb.com" target="_blank">
+    <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white" alt="MongoDB"/>
+  </a>
+  <a href="https://mongoosejs.com" target="_blank">
+    <img src="https://img.shields.io/badge/Mongoose-8D99AE?style=flat&logo=mongoose&logoColor=white" alt="Mongoose"/>
+  </a>
+  <a href="https://axios-http.com" target="_blank">
+    <img src="https://img.shields.io/badge/Axios-%23007ACC.svg?style=flat&logo=axios&logoColor=white" alt="Axios"/>
+  </a>
+  <a href="https://cheerio.js.org" target="_blank">
+    <img src="https://img.shields.io/badge/Cheerio-%23E34F26.svg?style=flat&logo=cheerio&logoColor=white" alt="Cheerio"/>
+  </a>
+  <a href="https://pptr.dev" target="_blank">
+    <img src="https://img.shields.io/badge/Puppeteer-%23FF5722.svg?style=flat&logo=puppeteer&logoColor=white" alt="Puppeteer"/>
+  </a>
+  <a href="https://developers.generativeai.google" target="_blank">
+    <img src="https://img.shields.io/badge/Google%20Generative%20AI-4285F4?style=flat&logo=google&logoColor=white" alt="Google Generative AI"/>
+  </a>
+  <a href="https://vercel.com" target="_blank">
+    <img src="https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white" alt="Vercel"/>
+  </a>
+  <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">
+    <img src="https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=cron&logoColor=white" alt="Cron"/>
+  </a>
+  <a href="https://react.dev" target="_blank">
+    <img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white" alt="React"/>
+  </a>
+  <a href="https://www.typescriptlang.org" target="_blank">
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript"/>
+  </a>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank">
+    <img src="https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white" alt="CSS"/>
+  </a>
+  <a href="https://tailwindcss.com" target="_blank">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="Tailwind CSS"/>
+  </a>
+</p>
+
+> Note: This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
 
 ---
 
-## Architecture Diagram (Text-Based)
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Backend](#backend)
+  - [Features](#features)
+  - [Prerequisites & Installation](#prerequisites--installation-backend)
+  - [Configuration](#configuration-backend)
+  - [Running Locally](#running-locally-backend)
+  - [Deployment on Vercel](#deployment-on-vercel-backend)
+- [Crawler](#crawler)
+  - [Features](#features-1)
+  - [Prerequisites & Installation](#prerequisites--installation-crawler)
+  - [Configuration](#configuration-crawler)
+  - [Running Locally](#running-locally-crawler)
+  - [Deployment on Vercel](#deployment-on-vercel-crawler)
+- [Frontend](#frontend)
+  - [Features](#features-2)
+  - [Prerequisites & Installation](#prerequisites--installation-frontend)
+  - [Configuration](#configuration-frontend)
+  - [Running Locally](#running-locally-frontend)
+  - [Deployment on Vercel](#deployment-on-vercel-frontend)
+- [Logging, Error Handling & Future Enhancements](#logging-error-handling--future-enhancements)
+- [Contributing](#contributing)
+- [License](#license)
+- [Conclusion](#conclusion)
+
+---
+
+## Overview
+
+The **AI-Powered Article Content Curator** system is designed to provide government staff with up-to-date, summarized content from trusted government sources and reputable news outlets. By leveraging AI (Google Generative AI / Gemini) for summarization and using modern web technologies, this solution ensures that users receive concise, accurate, and timely information.
+
+- **Data Ingestion:**  
+  The system aggregates article URLs from multiple sources (government homepages and public APIs like NewsAPI) using a decoupled crawler service.
+  
+- **Content Processing:**  
+  The backend processes the fetched articles by generating concise summaries via Google Generative AI. This step includes handling rate limits and transient errors with robust retry mechanisms.
+  
+- **Data Storage & API Serving:**  
+  Articles—comprising URLs, titles, full content, AI-generated summaries, source details, and fetch timestamps—are stored in MongoDB (managed through Mongoose). An Express.js API, integrated within a Next.js project, exposes REST endpoints for fetching article lists and individual article details.
+  
+- **Frontend Experience:**  
+  A responsive Next.js/React interface allows users to easily browse paginated article lists, filter by source, and view detailed article pages.
+  
+- **Scheduled Updates:**  
+  Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content.
+
+---
+
+## Architecture
+
+Below is a high-level diagram outlining the system architecture:
 
 ```
       +----------------+       +--------------------------+
@@ -70,230 +175,320 @@ This **backend** automatically crawls, summarizes, and stores articles from vari
 
 ---
 
-## Backend Components
+## Backend
 
-### Crawlers
+The **Backend** is responsible for storing articles and serving them via RESTful endpoints. It integrates AI summarization, MongoDB for storage, and runs within a Next.js environment using Express.js for API routes.
 
-- **Axios + Cheerio** for static pages.
-- **Puppeteer** if a site blocks or requires JS rendering.
-- Configurable homepage URLs (`HOMEPAGE_URLS` / `CRAWL_URLS`).
+### Features
 
-### Public API Fetcher
+- **Data Ingestion:**  
+  Receives article URLs and data from the crawler and external API sources.
+  
+- **Content Summarization:**  
+  Uses Google Generative AI (Gemini) to generate concise summaries.
+  
+- **Storage:**  
+  Persists articles in MongoDB using Mongoose with fields for URL, title, full content, summary, source information, and fetch timestamp.
+  
+- **API Endpoints:**
+  - `GET /api/articles` – Retrieves a paginated list of articles (supports filtering via query parameters such as `page`, `limit`, and `source`).
+  - `GET /api/articles/:id` – Retrieves detailed information for a specific article.
+  
+- **Scheduled Updates:**  
+  A serverless function (triggered twice daily at 6:00 AM and 6:00 PM UTC) fetches and processes new articles.
 
-- Optional fetching of articles from **NewsAPI** or any public source.
-- Merges with crawler output for broader coverage.
+### Prerequisites & Installation (Backend)
 
-### Summarization (Processing)
+1. **Prerequisites:**
+   - Node.js (v18 or later)
+   - MongoDB (local or cloud)
+   - Vercel CLI (for deployment)
 
-- **Google Gemini AI** via `@google/generative-ai`.
-- Retries on HTTP 429 rate-limit errors.
-- Uses environment variable `AI_INSTRUCTIONS` for system prompt.
+2. **Clone the Repository:**
 
-### MongoDB + Mongoose
-
-- Stores articles with fields: `url`, `title`, `content`, `summary`, `source`, `fetchedAt`.
-- Provides easy queries and filters by `source` or date.
-
-### Express.js API
-
-- `GET /api/articles` with pagination & filter (`source`).
-- `GET /api/articles/:id` for detailed info.
-- `GET /api/scheduled/fetchAndSummarize` for manual trigger (if deployed).
-
-### Vercel Cron & Deployment
-
-- `vercel.json` can schedule `fetchAndSummarize.ts` at desired times (e.g., `0 6,18 * * *`).
-- Express server runs as a Vercel serverless function or custom Node deployment.
-
----
-
-## File Structure Overview
-
-```
-AI-Gov-Content-Curator/
-├─ backend/
-│  ├─ controllers/
-│  │  └─ article.controller.ts
-│  ├─ models/
-│  │  └─ article.model.ts
-│  ├─ routes/
-│  │  └─ article.routes.ts
-│  ├─ services/
-│  │  ├─ crawler.service.ts
-│  │  ├─ apiFetcher.service.ts
-│  │  └─ summarization.service.ts
-│  ├─ schedule/
-│  │  └─ fetchAndSummarize.ts
-│  ├─ app.ts
-│  ├─ index.ts
-│  ├─ vercel.json
-│  ├─ swagger/
-│  │  └─ swagger.ts
-│  └─ package.json
-└─ frontend/
-   ├─ components/
-   │  ├─ ArticleCard.tsx
-   │  ├─ ArticleDetail.tsx
-   │  ├─ ArticleList.tsx
-   │  ├─ AllArticles.tsx
-   │  ├─ LatestArticles.tsx
-   │  ├─ HeroSlider.tsx
-   │  ├─ Navbar.tsx
-   │  ├─ Footer.tsx
-   │  └─ ...
-   ├─ pages/
-   │  ├─ articles/
-   │  │  └─ [id].tsx
-   │  ├─ _app.tsx
-   │  ├─ _document.tsx
-   │  └─ index.tsx
-   ├─ styles/
-   │  ├─ globals.css
-   │  └─ theme.css
-   ├─ package.json
-   └─ tsconfig.json
-```
-
----
-
-## Technologies (Extended List)
-
-- **Node.js** + **Express**
-- **MongoDB** + **Mongoose**
-- **Cheerio** + **Axios**
-- **Puppeteer**
-- **Google Generative AI (Gemini)**
-- **Next.js** for the frontend
-- **Vercel** for deployment + cron scheduling
-- **Typescript**
-- **dotenv** for environment variables
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js ≥ 18
-- MongoDB instance (local or cloud)
-- Vercel CLI for serverless deployment (optional)
-
-### Installation (Backend)
-
-1. **Clone** the repo, then:
    ```bash
+   git clone https://github.com/hoangsonww/AI-Gov-Content-Curator.git
    cd AI-Gov-Content-Curator/backend
+   ```
+
+3. **Install Dependencies:**
+
+   ```bash
    npm install
    ```
-2. **Environment**: Create `.env` in `backend/`:
-   ```dotenv
-   MONGODB_URI=your_mongo_uri
-   GOOGLE_AI_API_KEY=your_google_api_key
-   AI_INSTRUCTIONS="Your summarization prompt"
-   NEWS_API_KEY=your_newsapi_key
-   HOMEPAGE_URLS="https://www.whitehouse.gov/,https://www.congress.gov/"
-   PORT=3000
-   ```
-3. **Run** locally:
-   ```bash
-   npm run dev
-   ```
-   API on [http://localhost:3000](http://localhost:3000).
 
-4. **Test** summarization job:
-   ```bash
-   npx ts-node src/schedule/fetchAndSummarize.ts
-   ```
+### Configuration (Backend)
 
-### Deployment
+Create a `.env` file in the `backend` directory with the following:
 
-#### Vercel
+```dotenv
+MONGODB_URI=your_production_mongodb_connection_string
+GOOGLE_AI_API_KEY=your_google_ai_api_key
+AI_INSTRUCTIONS=Your system instructions for Gemini AI
+NEWS_API_KEY=your_newsapi_key
+PORT=3000
+CRAWL_URLS=https://www.whitehouse.gov/briefing-room/,https://www.congress.gov/,https://www.state.gov/press-releases/,https://www.bbc.com/news,https://www.nytimes.com/
+```
 
-1. **`vercel.json`**:
+### Running Locally (Backend)
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Access endpoints:
+- `GET http://localhost:3000/api/articles`
+- `GET http://localhost:3000/api/articles/:id`
+
+### Deployment on Vercel (Backend)
+
+1. **Configure Environment Variables** in your Vercel project settings.
+2. Create or update the `vercel.json` in the root of the backend directory:
+
    ```json
    {
-     "functions": {
-       "api/scheduled/fetchAndSummarize.ts": {
-         "runtime": "nodejs18.x",
+     "version": 2,
+     "builds": [
+       {
+         "src": "package.json",
+         "use": "@vercel/next"
+       }
+     ],
+     "crons": [
+       {
+         "path": "/api/scheduled/fetchAndSummarize",
          "schedule": "0 6,18 * * *"
        }
-     }
+     ]
    }
    ```
-2. **Deploy**:
+
+3. **Deploy** with:
+
    ```bash
    vercel --prod
    ```
-   Your Express + scheduled function is now live.
-
-#### Custom
-
-Run `npm run build` and `npm start` on your own Node server.
 
 ---
 
-## API Endpoints
+## Crawler
 
-| **Endpoint**                          | **Method** | **Query Params**                                    | **Description**                                                                                          |
-|--------------------------------------:|-----------:|-----------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| `/api/articles`                       | **GET**    | **page** (number, default=1) <br> **limit** (default=10) <br> **source** (string, optional) | Returns JSON: `{ data: [Article], total: count }`. Sorted by fetched date (descending).                  |
-| `/api/articles/:id`                   | **GET**    | *(none)*                                            | Retrieves a single article by `_id`, returning full JSON.                                                |
-| `/api/scheduled/fetchAndSummarize`    | **GET**    | *(none)*                                            | Manually triggers crawling + summarization. Typically invoked by Vercel cron or for testing.              |
+The **Crawler** automatically retrieves article links and metadata from government homepages and public API sources. It uses Axios and Cheerio for static HTML parsing and falls back to Puppeteer when necessary.
 
----
+### Features
 
-## Logging & Error Handling
+- **Article Extraction:**  
+  Crawls specified URLs to extract article links and metadata.
 
-- **Logging**: Basic console logs by default.
-- **Crawler**:
-  - Retries **ECONNRESET**, or uses **Puppeteer** if static fetch fails.
-  - Skips duplicates if Mongoose code `11000`.
-- **Summarization**:
-  - Retries if AI returns 429.
-- **Global**:
-  - Returns 500 for unhandled issues, 404 for unknown routes.
+- **Error Handling & Resilience:**  
+  Implements a retry mechanism and fallback to Puppeteer for dynamic content fetching when encountering issues (e.g., HTTP 403, ECONNRESET).
 
----
+- **Scheduling:**  
+  Deployed as a serverless function on Vercel, scheduled via cron (runs daily at 6:00 AM UTC).
 
-## Future Enhancements
+- **Next.js UI:**  
+  Provides a basic landing page with information about the crawler and links to the backend and frontend.
 
-- **Containerization** (Docker + Compose or Kubernetes).
-- **Advanced BFS** crawling for multi-level subpages.
-- **Redis** caching to speed up certain repeated article fetches.
-- **Search** or indexing for quick article lookups.
-- **Auth** or roles if editorial control is needed.
+### Prerequisites & Installation (Crawler)
 
----
+1. **Prerequisites:**
+  - Node.js (v18 or later)
+  - NPM (or Yarn)
+  - Vercel CLI (for deployment)
 
-## Frontend Overview
+2. **Clone the Repository:**
 
-The **frontend** is a Next.js 13 app (in `frontend/`), featuring:
+   ```bash
+   git clone https://github.com/hoangsonww/AI-Gov-Content-Curator.git
+   cd AI-Gov-Content-Curator/crawler
+   ```
 
-- **Dark/Light/System** theme.
-- An **Article List** with SSR for the latest articles.
-- A **Load More** approach (client-side) for “All Articles.”
-- **Optional** top slider for “featured” articles.
-- **Responsive** design with minimal styling.
+3. **Install Dependencies:**
 
-**Local** usage:
+   ```bash
+   npm install
+   ```
+
+### Configuration (Crawler)
+
+Create a `.env` file in the `crawler` directory with the following variables:
+
+```dotenv
+MONGODB_URI=your_mongodb_connection_string
+GOOGLE_AI_API_KEY=your_google_ai_api_key
+AI_INSTRUCTIONS=Your system instructions for Gemini AI
+NEWS_API_KEY=your_newsapi_key
+PORT=3000
+CRAWL_URLS=https://www.whitehouse.gov/briefing-room/,https://www.congress.gov/,https://www.state.gov/press-releases/,https://www.bbc.com/news,https://www.nytimes.com/
+```
+
+### Running Locally (Crawler)
+
+Start the Next.js development server to test both the UI and crawler function:
 
 ```bash
-cd ../frontend
-npm install
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) and ensure your **backend** is up.
+
+- UI: [http://localhost:3000/](http://localhost:3000/)
+- Crawler Function: [http://localhost:3000/api/scheduled/fetchAndSummarize](http://localhost:3000/api/scheduled/fetchAndSummarize)
+
+Alternatively, run the crawler directly:
+
+```bash
+npx ts-node schedule/fetchAndSummarize.ts
+```
+
+### Deployment on Vercel (Crawler)
+
+1. **Set Environment Variables** in the Vercel dashboard.
+2. Create or update the `vercel.json` in the `crawler` directory:
+
+   ```json
+   {
+     "version": 2,
+     "builds": [
+       {
+         "src": "package.json",
+         "use": "@vercel/next"
+       }
+     ],
+     "crons": [
+       {
+         "path": "/api/scheduled/fetchAndSummarize",
+         "schedule": "0 6 * * *"
+       }
+     ]
+   }
+   ```
+
+3. **Deploy** with:
+
+   ```bash
+   vercel --prod
+   ```
+
+---
+
+## Frontend
+
+The **Frontend** is built with Next.js and React, providing a modern, mobile-responsive UI for browsing and viewing curated articles.
+
+### Features
+
+- **Article Listing:**  
+  Fetches and displays a paginated list of articles from the backend API. Supports filtering by source.
+
+- **Article Detail View:**  
+  Dedicated pages display full article content, AI-generated summaries, source information, and fetched timestamps.
+
+- **Responsive Design:**  
+  The UI is optimized for both desktop and mobile devices.
+
+- **Additional UI Components:**  
+  Includes components like HeroSlider, LatestArticles, ThemeToggle, and more for an enhanced user experience.
+
+### Prerequisites & Installation (Frontend)
+
+1. **Prerequisites:**
+  - Node.js (v18 or later)
+  - NPM or Yarn
+
+2. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/hoangsonww/AI-Gov-Content-Curator.git
+   cd AI-Gov-Content-Curator/frontend
+   ```
+
+3. **Install Dependencies:**
+
+   ```bash
+   npm install
+   ```
+   or
+   ```bash
+   yarn
+   ```
+
+### Configuration (Frontend)
+
+(Optional) Create a `.env.local` file in the `frontend` directory to configure the API URL:
+
+```dotenv
+NEXT_PUBLIC_API_URL=https://your-backend.example.com
+```
+
+### Running Locally (Frontend)
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Access the application at [http://localhost:3000](http://localhost:3000).
+
+### Deployment on Vercel (Frontend)
+
+1. **Configure Environment Variables** in the Vercel dashboard (e.g., `NEXT_PUBLIC_API_URL`).
+2. Vercel automatically detects the Next.js project; if needed, customize with a `vercel.json`.
+3. **Deploy** with:
+
+   ```bash
+   vercel --prod
+   ```
+
+---
+
+## Logging, Error Handling & Future Enhancements
+
+- **Logging:**
+  - Development: Uses basic console logging.
+  - Production: Consider integrating advanced logging libraries (e.g., Winston, Sentry) for improved error monitoring.
+
+- **Error Handling:**
+  - The backend implements retry mechanisms for AI summarization.
+  - The crawler gracefully handles network errors and switches between Axios/Cheerio and Puppeteer as needed.
+
+- **Future Enhancements:**
+  - Expand the Next.js UI into a richer dashboard featuring analytics, logs, and user authentication.
+  - Refine scheduling options for more granular updates.
+  - Integrate additional public API sources and extend filtering capabilities.
+
+---
+
+## Contributing
+
+1. **Fork** the repository and clone it locally.
+2. **Create a Feature Branch:**
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+3. **Commit Your Changes:**
+
+   ```bash
+   git commit -m "Description of your feature"
+   ```
+
+4. **Push the Branch and Open a Pull Request.**
+
+Contributions are welcome! Please ensure that your code adheres to the project’s linting and formatting guidelines.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for more details.
 
 ---
 
 ## Conclusion
 
-This **Government Content Curator** system leverages modern tooling and AI to deliver fresh, concise articles for government staff:
+The **AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.
 
-- **Multiple** ingestion paths (crawlers + public APIs).
-- **Gemini AI** summarization.
-- **MongoDB** for storage.
-- **Express** endpoints and daily or on-demand crawling.
-- **Next.js** UI for a polished, theme-friendly reading experience.
-
-It’s **scalable, flexible,** and easy to deploy on **Vercel** or your preferred Node environment. Enjoy exploring the code and customizing it for your government content needs.
+Happy Building and Crawling! 🚀

@@ -1,5 +1,4 @@
 import { GetServerSideProps } from "next";
-import { useState, useEffect } from "react";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 
@@ -14,8 +13,8 @@ export interface Article {
 }
 
 interface HomePageProps {
-  topArticles: Article[]; // for the slider
-  latestArticles: Article[]; // for "Latest Articles"
+  topArticles: Article[];
+  latestArticles: Article[];
 }
 
 export default function HomePage({
@@ -23,23 +22,59 @@ export default function HomePage({
   latestArticles,
 }: HomePageProps) {
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      {/*<HeroSlider articles={topArticles} />*/}
+    <>
+      <div style={{ marginBottom: "2rem" }}>
+        <h1 className="page-title">Latest Articles</h1>
+        {/* Optionally, if you want to have a hero slider for top articles:
+            <div className="hero-slider-container">
+              <HeroSlider articles={topArticles} />
+            </div>
+        */}
+        <div className="latest-articles-container">
+          <LatestArticles articles={latestArticles} />
+        </div>
+        <hr style={{ margin: "2rem 0" }} />
+        <div className="all-articles-container">
+          <AllArticles />
+        </div>
+      </div>
 
-      <h1 className="page-title">Latest Articles</h1>
-      <LatestArticles articles={latestArticles} />
-
-      <hr style={{ margin: "2rem 0" }} />
-
-      <AllArticles />
-    </div>
+      <style jsx>{`
+        .page-title {
+          font-weight: 700;
+          margin-bottom: 1rem;
+          animation: fadeDown 1s ease-out;
+        }
+        .latest-articles-container,
+        .all-articles-container {
+          animation: fadeIn 1s ease;
+        }
+        @keyframes fadeDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
+    </>
   );
 }
 
-// Using Server-Side Rendering (SSR) to fetch top articles for the slider and the latest 10 for the 'Latest Articles'
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    // 1) Fetch top 5 articles (or however your API defines 'top' articles)
+    // 1) Fetch top 5 articles
     const topRes = await fetch(
       "https://ai-content-curator-backend.vercel.app/api/articles?page=1&limit=5",
     );

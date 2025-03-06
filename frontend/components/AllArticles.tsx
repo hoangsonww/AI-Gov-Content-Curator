@@ -43,7 +43,9 @@ export default function AllArticles() {
 
   return (
     <div style={{ marginTop: "2rem" }}>
-      <h2 style={{ marginBottom: "1rem", textAlign: "center" }}>
+      <h2
+        style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}
+      >
         All Articles
       </h2>
       <ArticleList articles={articles} />
