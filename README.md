@@ -15,56 +15,23 @@ Each component is maintained in its own directory:
 - **Frontend:** `frontend/`
   - Live: [https://ai-gov-content-curator.vercel.app/](https://ai-gov-content-curator.vercel.app/)
 
-<p align="center">
-  <a href="https://nodejs.org" target="_blank">
-    <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white" alt="Node.js"/>
-  </a>
-  <a href="https://expressjs.com" target="_blank">
-    <img src="https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white" alt="Express.js"/>
-  </a>
-  <a href="https://nextjs.org" target="_blank">
-    <img src="https://img.shields.io/badge/Next.js-000?style=flat&logo=next.js&logoColor=white" alt="Next.js"/>
-  </a>
-  <a href="https://www.mongodb.com" target="_blank">
-    <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white" alt="MongoDB"/>
-  </a>
-  <a href="https://mongoosejs.com" target="_blank">
-    <img src="https://img.shields.io/badge/Mongoose-8D99AE?style=flat&logo=mongoose&logoColor=white" alt="Mongoose"/>
-  </a>
-  <a href="https://axios-http.com" target="_blank">
-    <img src="https://img.shields.io/badge/Axios-%23007ACC.svg?style=flat&logo=axios&logoColor=white" alt="Axios"/>
-  </a>
-  <a href="https://cheerio.js.org" target="_blank">
-    <img src="https://img.shields.io/badge/Cheerio-%23E34F26.svg?style=flat&logo=cheerio&logoColor=white" alt="Cheerio"/>
-  </a>
-  <a href="https://pptr.dev" target="_blank">
-    <img src="https://img.shields.io/badge/Puppeteer-%23FF5722.svg?style=flat&logo=puppeteer&logoColor=white" alt="Puppeteer"/>
-  </a>
-  <a href="https://developers.generativeai.google" target="_blank">
-    <img src="https://img.shields.io/badge/Google%20Generative%20AI-4285F4?style=flat&logo=google&logoColor=white" alt="Google Generative AI"/>
-  </a>
-  <a href="https://vercel.com" target="_blank">
-    <img src="https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white" alt="Vercel"/>
-  </a>
-  <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">
-    <img src="https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=timescale&logoColor=white" alt="Cron"/>
-  </a>
-  <a href="https://react.dev" target="_blank">
-    <img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white" alt="React"/>
-  </a>
-  <a href="https://www.typescriptlang.org" target="_blank">
-    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript"/>
-  </a>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank">
-    <img src="https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white" alt="CSS"/>
-  </a>
-  <a href="https://tailwindcss.com" target="_blank">
-    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="Tailwind CSS"/>
-  </a>
-  <a href="https://www.docker.com" target="_blank">
-    <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker"/>
-  </a>
-</p>
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000?style=flat&logo=next.js&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)
+![Mongoose](https://img.shields.io/badge/Mongoose-8D99AE?style=flat&logo=mongoose&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-%23007ACC.svg?style=flat&logo=axios&logoColor=white)
+![Cheerio](https://img.shields.io/badge/Cheerio-%23E34F26.svg?style=flat&logo=cheerio&logoColor=white)
+![Puppeteer](https://img.shields.io/badge/Puppeteer-%23FF5722.svg?style=flat&logo=puppeteer&logoColor=white)
+![Google Generative AI](https://img.shields.io/badge/Google%20Generative%20AI-4285F4?style=flat&logo=google&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white)
+![Cron](https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=timescale&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 
 > Note: This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
 
@@ -471,6 +438,8 @@ Access the application at [http://localhost:3000](http://localhost:3000).
    ```bash
    vercel --prod
    ```
+   
+  Alternatively, you can deploy directly from the Vercel dashboard.
 
 ---
 
@@ -524,4 +493,8 @@ This project is licensed under the MIT License. See the [LICENSE](./LICENSE) fil
 
 The **AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.
 
+---
+
 Happy Building and Crawling! 🚀
+
+**[🔝 Back to Top](#ai-powered-article-content-curator)**
