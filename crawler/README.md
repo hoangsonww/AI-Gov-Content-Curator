@@ -154,16 +154,17 @@ Below is a text-based diagram illustrating the crawler’s position in the overa
    ```
 
    This will start your Next.js development server.
-  - The UI is accessible at `http://localhost:3000/`.
-  - Your crawler function is accessible at `http://localhost:3000/api/scheduled/fetchAndSummarize`.
 
-  Alternatively, you can run the crawler function directly via:
+- The UI is accessible at `http://localhost:3000/`.
+- Your crawler function is accessible at `http://localhost:3000/api/scheduled/fetchAndSummarize`.
 
-  ```bash
-  npx ts-node schedule/fetchAndSummarize.ts
-  ```
+Alternatively, you can run the crawler function directly via:
 
-   This will trigger the crawler function without starting the Next.js server.
+```bash
+npx ts-node schedule/fetchAndSummarize.ts
+```
+
+This will trigger the crawler function without starting the Next.js server.
 
 ---
 

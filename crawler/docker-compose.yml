@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # Map container port 3000 to host port 3001 (adjust as needed)
+      - "3001:3000"
+    environment:
+      # Environment variables for the crawler service
+      PORT: "3000"
+      MONGODB_URI: "your_mongodb_connection_string"
+      GOOGLE_AI_API_KEY: "your_google_ai_api_key"
+      AI_INSTRUCTIONS: "your_ai_instructions"
+      NEWS_API_KEY: "your_news_api_key"
+      # Comma-separated URLs to crawl; adjust as needed
+      CRAWL_URLS: "https://www.whitehouse.gov/briefing-room/,https://www.congress.gov/,https://www.state.gov/press-releases/,https://www.bbc.com/news,https://www.nytimes.com/"
+    restart: unless-stopped

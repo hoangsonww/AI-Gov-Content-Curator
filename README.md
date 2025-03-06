@@ -46,7 +46,7 @@ Each component is maintained in its own directory:
     <img src="https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white" alt="Vercel"/>
   </a>
   <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">
-    <img src="https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=cron&logoColor=white" alt="Cron"/>
+    <img src="https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=timescale&logoColor=white" alt="Cron"/>
   </a>
   <a href="https://react.dev" target="_blank">
     <img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white" alt="React"/>
@@ -60,6 +60,9 @@ Each component is maintained in its own directory:
   <a href="https://tailwindcss.com" target="_blank">
     <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="Tailwind CSS"/>
   </a>
+  <a href="https://www.docker.com" target="_blank">
+    <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker"/>
+  </a>
 </p>
 
 > Note: This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
@@ -69,6 +72,7 @@ Each component is maintained in its own directory:
 ## Table of Contents
 
 - [Overview](#overview)
+- [User Interface](#user-interface)
 - [Architecture](#architecture)
 - [Backend](#backend)
   - [Features](#features)
@@ -114,6 +118,31 @@ The **AI-Powered Article Content Curator** system is designed to provide governm
 - **Scheduled Updates:**  
   Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content.
 
+- **Architecture:** 
+  Monorepo structure with separate directories for the backend, crawler, and frontend. Each component is designed to be scalable, maintainable, and deployable on Vercel.
+
+---
+
+## User Interface
+
+### 1. Home Page
+
+<p align="center">
+  <img src="frontend/img/home.png" alt="Home Page" width="100%">
+</p>
+
+### 2. Home Page (Dark Mode)
+
+<p align="center">
+  <img src="frontend/img/home-dark.png" alt="Home Page (Dark Mode)" width="100%">
+</p>
+
+### 3. Article Details Page
+
+<p align="center">
+  <img src="frontend/img/article-details.png" alt="Article Detail Page" width="100%">
+</p>
+
 ---
 
 ## Architecture
@@ -134,6 +163,7 @@ Below is a high-level diagram outlining the system architecture:
       | Custom Crawlers|       | API Fetcher Service      |
       | (Homepage      |       |                          |
       |  Crawling)     |       +-------------+------------+
+      |                |                     |
       +--------+-------+                     |
                |                             |
                +------------+----------------+
@@ -195,7 +225,7 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   - `GET /api/articles/:id` – Retrieves detailed information for a specific article.
   
 - **Scheduled Updates:**  
-  A serverless function (triggered twice daily at 6:00 AM and 6:00 PM UTC) fetches and processes new articles.
+  A serverless function (triggered twice daily at 6:00 AM and 6:00 PM UTC) fetches and processes new articles, so that the system remains up-to-date!
 
 ### Prerequisites & Installation (Backend)
 
