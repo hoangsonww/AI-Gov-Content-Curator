@@ -1,0 +1,173 @@
+/* RESET / GLOBAL STYLES */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  display: flex;
+  flex-direction: column;
+  /* Animated Gradient Background */
+  background: linear-gradient(135deg, #000 0%, #2f2f2f 100%);
+  background-size: 300% 300%;
+  animation: gradientShift 8s ease infinite;
+  color: #eeeeee;
+  margin: 0; /* important for Next.js */
+}
+
+a {
+  text-decoration: none;
+  color: #4af7bf;
+  transition: color 0.3s ease;
+}
+a:hover {
+  color: #ffffff;
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  text-align: center;
+  padding: 1.5rem 1rem 0.5rem;
+}
+.logo-icon {
+  font-size: 3rem;
+  color: #4af7bf;
+  animation: bounceIn 0.8s ease-out;
+}
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  animation: fadeDown 1s ease;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  gap: 1.5rem;
+}
+.description {
+  font-size: 1.1rem;
+  max-width: 600px;
+  line-height: 1.6;
+  animation: fadeIn 1s ease;
+}
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.btn {
+  background-color: #4af7bf;
+  border: none;
+  border-radius: 5px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #121212;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition:
+    background-color 0.3s,
+    transform 0.3s;
+}
+.btn i {
+  transition: transform 0.3s;
+}
+.btn:hover {
+  background-color: #3ce3ae;
+  transform: translateY(-3px);
+}
+.btn:hover i {
+  transform: translateX(4px);
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+footer p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* KEYFRAMES */
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.5) translateY(-50px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2) translateY(15px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes fadeDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* MEDIA QUERIES (for smaller screens) */
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  .btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+}

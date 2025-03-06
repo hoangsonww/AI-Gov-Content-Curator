@@ -95,15 +95,28 @@ body {
   color: var(--navbar-text);
 }
 
-/* ---------- Theme Toggle Styles ---------- */
+.article-readmore svg {
+  transition: transform 0.2s ease;
+}
+
+.article-readmore:hover svg {
+  transform: translateX(4px);
+}
+
 .theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Make the button a square so the icon sits dead center */
+  width: 2.5rem;
+  height: 2.5rem;
   background: none;
   border: none;
   color: var(--navbar-text);
-  padding: 0.4rem 0.8rem;
   cursor: pointer;
   font-family: inherit;
-  font-size: 1rem;
+  /* Remove default padding so the icon is centered exactly */
+  padding: 0;
   transition:
     background 0.2s ease,
     transform 0.2s ease;
@@ -118,7 +131,7 @@ body {
 .theme-dropdown {
   position: absolute;
   right: 0;
-  top: 2.5rem;
+  top: 2.8rem;
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 6px;
@@ -132,10 +145,11 @@ body {
 .theme-option-btn {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.5rem;
   background: none;
   border: none;
-  padding: 0.3rem 0.5rem;
+  padding: 0.4rem 0.6rem;
   cursor: pointer;
   width: 100%;
   text-align: left;
@@ -175,6 +189,10 @@ body {
 .article-source {
   font-size: 0.85rem;
   opacity: 0.8;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .article-summary {
@@ -199,6 +217,10 @@ body {
   font-size: 0.85rem;
   opacity: 0.8;
   margin-bottom: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .detail-content {
@@ -222,10 +244,12 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition:
     background-color 0.3s ease,
+    box-shadow 0.3s ease,
     transform 0.2s ease;
 }
 
 .load-more-btn:hover {
-  background-color: var(--navbar-text);
+  background-color: #1a1a1a;
   transform: scale(1.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }

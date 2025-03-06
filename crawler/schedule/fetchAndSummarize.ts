@@ -18,10 +18,11 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const fetchAndSummarize = async () => {
   try {
+    // 1) Connect to MongoDB
     await mongoose.connect(MONGODB_URI, {});
     logger.info("Connected to MongoDB");
 
-    // Use the environment variable that you actually have (CRAWL_URLS or HOMEPAGE_URLS)
+    // 2) Gather homepage URLs from environment
     const homepageUrls = process.env.CRAWL_URLS
       ? process.env.CRAWL_URLS.split(",")
           .map((url) => url.trim())
@@ -30,31 +31,37 @@ export const fetchAndSummarize = async () => {
 
     let articleUrls: string[] = [];
 
-    // Crawl each homepage for article links.
-    // The BFS now collects more levels (default: 2).
-    // Increase or decrease as you see fit in crawler.service.
+    // 3) Crawl each homepage
     for (const homepageUrl of homepageUrls) {
       logger.info(`Crawling: ${homepageUrl}`);
-      // This function now does BFS, so it can gather sub-page links
       const links = await crawlArticlesFromHomepage(homepageUrl, 40, 2);
-      // e.g., up to 40 links total, 2 levels deep
       logger.info(`Crawled ${links.length} article links from ${homepageUrl}`);
       articleUrls = articleUrls.concat(links);
       await delay(DELAY_BETWEEN_REQUESTS_MS);
     }
 
-    // Deduplicate
-    articleUrls = Array.from(new Set(articleUrls));
-
-    // Also add articles from the public API
+    // 4) Add articles from News API
     const apiArticles = await fetchArticlesFromNewsAPI();
     const apiArticleUrls = apiArticles.map((a) => a.url);
-    articleUrls = Array.from(new Set([...articleUrls, ...apiArticleUrls]));
+    articleUrls = articleUrls.concat(apiArticleUrls);
 
-    logger.info(`Total unique article URLs to process: ${articleUrls.length}`);
+    // 5) Deduplicate
+    articleUrls = Array.from(new Set(articleUrls));
 
-    // Process each article
-    for (const url of articleUrls) {
+    // 6) Filter out articles that already exist in the database
+    const existingDocs = await Article.find(
+      { url: { $in: articleUrls } },
+      { url: 1 }, // only return the url field
+    );
+    const existingUrls = new Set(existingDocs.map((doc) => doc.url));
+    const newUrls = articleUrls.filter((u) => !existingUrls.has(u));
+
+    logger.info(
+      `Total unique article URLs: ${articleUrls.length}. New: ${newUrls.length}`,
+    );
+
+    // 7) Process only new URLs
+    for (const url of newUrls) {
       try {
         logger.info(`Fetching article from ${url}`);
         const articleData = await fetchStaticArticle(url);
@@ -76,7 +83,7 @@ export const fetchAndSummarize = async () => {
           url: articleData.url,
           title: articleData.title,
           content: articleData.content,
-          summary: summary,
+          summary,
           source: articleData.source,
           fetchedAt: new Date(),
         });
@@ -103,8 +110,6 @@ export const fetchAndSummarize = async () => {
 
 // ******* CALL IT HERE *******
 if (require.main === module) {
-  // If this file is executed directly via "ts-node",
-  // call fetchAndSummarize() so it actually does work.
   fetchAndSummarize()
     .then((res) => {
       console.log("Done crawling and summarizing:", res);

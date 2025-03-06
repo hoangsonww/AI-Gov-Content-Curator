@@ -20,19 +20,19 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * which is optimized for environments like Vercel.
  */
 export const fetchDynamicArticle = async (
-  url: string
+  url: string,
 ): Promise<ArticleData> => {
   const executablePath = await chromium.executablePath();
 
   const browser = await puppeteer.launch({
-    executablePath,               // Use the lightweight Chromium binary path
-    headless: chromium.headless,  // Use recommended headless settings
-    args: chromium.args,          // Use necessary arguments for a Lambda/Vercel environment
+    executablePath, // Use the lightweight Chromium binary path
+    headless: chromium.headless, // Use recommended headless settings
+    args: chromium.args, // Use necessary arguments for a Lambda/Vercel environment
   });
 
   const page = await browser.newPage();
   await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
   );
   await page.goto(url, { waitUntil: "networkidle2" });
   const html = await page.content();
@@ -56,7 +56,7 @@ export const fetchDynamicArticle = async (
  */
 export const fetchStaticArticle = async (
   url: string,
-  retries = 3
+  retries = 3,
 ): Promise<ArticleData> => {
   try {
     const { data } = await axios.get(url, {
@@ -79,7 +79,7 @@ export const fetchStaticArticle = async (
   } catch (error: any) {
     if (retries > 0 && error.code === "ECONNRESET") {
       console.warn(
-        `ECONNRESET for ${url}. Retrying in ${RETRY_DELAY_MS}ms... (${retries} retries left)`
+        `ECONNRESET for ${url}. Retrying in ${RETRY_DELAY_MS}ms... (${retries} retries left)`,
       );
       await delay(RETRY_DELAY_MS);
       return fetchStaticArticle(url, retries - 1);
@@ -91,7 +91,7 @@ export const fetchStaticArticle = async (
       error.response.status === 403
     ) {
       console.warn(
-        `Static fetch for ${url} returned 403. Falling back to dynamic fetch...`
+        `Static fetch for ${url} returned 403. Falling back to dynamic fetch...`,
       );
       return await fetchDynamicArticle(url);
     }
@@ -106,7 +106,7 @@ export const fetchStaticArticle = async (
 export const crawlArticlesFromHomepage = async (
   homepageUrl: string,
   maxLinks: number = 20,
-  maxDepth: number = 1
+  maxDepth: number = 1,
 ): Promise<string[]> => {
   const queue: Array<{ url: string; depth: number }> = [
     { url: homepageUrl, depth: 0 },

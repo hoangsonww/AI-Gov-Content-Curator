@@ -1,4 +1,3 @@
-// AllArticles.tsx
 import React, { useEffect, useState } from "react";
 import { Article } from "../pages";
 import ArticleList from "./ArticleList";

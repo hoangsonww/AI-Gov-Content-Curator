@@ -1,9 +1,11 @@
 import React from "react";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="footer hover-animate">
-      <p>© 2025 Article Curator. All rights reserved.</p>
+      <p>© {currentYear} Article Curator. All rights reserved.</p>
     </footer>
   );
 }

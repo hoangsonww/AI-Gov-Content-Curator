@@ -1,6 +1,5 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect } from "react";
-import HeroSlider from "../components/HeroSlider";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 

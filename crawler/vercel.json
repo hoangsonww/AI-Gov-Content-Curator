@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/scheduled/fetchAndSummarize",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

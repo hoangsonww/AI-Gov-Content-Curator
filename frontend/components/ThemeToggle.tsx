@@ -19,7 +19,6 @@ export default function ThemeToggle({
 }: ThemeToggleProps) {
   const [open, setOpen] = useState(false);
 
-  // If user chooses system, detect OS preference once
   useEffect(() => {
     if (theme === "system") {
       const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -28,12 +27,10 @@ export default function ThemeToggle({
   }, [theme, onThemeChange]);
 
   const handleSelect = (newTheme: "light" | "dark" | "system") => {
-    // If user explicitly picks system, we'll re-check below
     onThemeChange(newTheme);
     setOpen(false);
   };
 
-  // For UI display: if user picks system, we interpret the UI icon based on actual OS preference
   let displayedTheme = theme;
   if (theme === "system") {
     const isDark =
@@ -50,26 +47,27 @@ export default function ThemeToggle({
         onClick={() => setOpen(!open)}
         aria-label="Toggle theme"
       >
-        {displayedTheme === "light" && <LightModeIcon size={18} />}
-        {displayedTheme === "dark" && <DarkModeIcon size={18} />}
+        {displayedTheme === "light" && <LightModeIcon size={24} />}
+        {displayedTheme === "dark" && <DarkModeIcon size={24} />}
       </button>
+
       {open && (
         <div className="theme-dropdown">
           <Option
             label="Light"
-            icon={<LightModeIcon size={16} />}
+            icon={<LightModeIcon size={20} />}
             isSelected={theme === "light"}
             onClick={() => handleSelect("light")}
           />
           <Option
             label="Dark"
-            icon={<DarkModeIcon size={16} />}
+            icon={<DarkModeIcon size={20} />}
             isSelected={theme === "dark"}
             onClick={() => handleSelect("dark")}
           />
           <Option
             label="System"
-            icon={<SettingsBrightnessIcon size={16} />}
+            icon={<SettingsBrightnessIcon size={20} />}
             isSelected={theme === "system"}
             onClick={() => handleSelect("system")}
           />
