@@ -205,3 +205,27 @@ body {
   line-height: 1.6;
   white-space: pre-wrap;
 }
+
+/* Load More Button Styling */
+.load-more-btn {
+  font-family: "Inter", sans-serif;
+  display: block;
+  margin: 1rem auto;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: var(--accent-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+
+.load-more-btn:hover {
+  background-color: var(--navbar-text);
+  transform: scale(1.03);
+}

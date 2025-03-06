@@ -23,7 +23,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   try {
     // Replace with your actual backend URL
-    const res = await fetch(`http://localhost:3000/api/articles/${id}`);
+    const res = await fetch(
+      `https://ai-content-curator-backend.vercel.app/api/articles/${id}`,
+    );
     if (!res.ok) throw new Error(`Failed to fetch article with id ${id}`);
 
     // Expect the API to return the article object directly.

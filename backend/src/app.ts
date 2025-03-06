@@ -8,7 +8,7 @@ import articleRoutes from "./routes/article.routes";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 // Serve favicon from your public folder
@@ -83,7 +83,9 @@ app.use((req: Request, res: Response) => {
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Global error handler:", err.stack);
-  res.status(500).json({ error: "An internal server error occurred", details: err.message });
+  res
+    .status(500)
+    .json({ error: "An internal server error occurred", details: err.message });
 });
 
 export default app;

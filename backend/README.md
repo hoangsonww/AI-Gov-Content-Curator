@@ -107,8 +107,8 @@ Below is a text-based diagram illustrating the system architecture:
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/ai-content-curator-backend.git
-   cd ai-content-curator-backend
+   git clone https://github.com/hoangsonww/AI-Gov-Content-Curator.git
+   cd AI-Gov-Content-Curator/backend
    ```
 
 2. **Install Dependencies:**

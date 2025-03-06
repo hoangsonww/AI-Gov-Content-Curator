@@ -42,14 +42,14 @@ export const getServerSideProps: GetServerSideProps = async () => {
   try {
     // 1) Fetch top 5 articles (or however your API defines 'top' articles)
     const topRes = await fetch(
-      "http://localhost:3000/api/articles?page=1&limit=5",
+      "https://ai-content-curator-backend.vercel.app/api/articles?page=1&limit=5",
     );
     if (!topRes.ok) throw new Error("Failed to fetch top articles");
     const { data: topData } = await topRes.json();
 
     // 2) Fetch the next 10 as 'latest'
     const latestRes = await fetch(
-      "http://localhost:3000/api/articles?page=2&limit=10",
+      "https://ai-content-curator-backend.vercel.app/api/articles?page=2&limit=10",
     );
     if (!latestRes.ok) throw new Error("Failed to fetch latest articles");
     const { data: latestData } = await latestRes.json();

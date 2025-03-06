@@ -1,6 +1,7 @@
+import puppeteer from "puppeteer-core";
+import chromium = require("@sparticuz/chromium");
 import axios from "axios";
 import * as cheerio from "cheerio";
-import puppeteer from "puppeteer";
 import { URL } from "url";
 
 export interface ArticleData {
@@ -14,20 +15,29 @@ const RETRY_DELAY_MS = 2000;
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Use Puppeteer to fetch an article if static fetch is blocked or returns incomplete content.
+ * Use Puppeteer to fetch an article dynamically.
+ * This version uses puppeteer-core with @sparticuz/chromium,
+ * which is optimized for environments like Vercel.
  */
 export const fetchDynamicArticle = async (
-  url: string,
+  url: string
 ): Promise<ArticleData> => {
-  const browser = await puppeteer.launch({ headless: "new" });
+  const executablePath = await chromium.executablePath();
+
+  const browser = await puppeteer.launch({
+    executablePath,               // Use the lightweight Chromium binary path
+    headless: chromium.headless,  // Use recommended headless settings
+    args: chromium.args,          // Use necessary arguments for a Lambda/Vercel environment
+  });
+
   const page = await browser.newPage();
   await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
   );
   await page.goto(url, { waitUntil: "networkidle2" });
   const html = await page.content();
 
-  // Remove script/style/JSON-LD to reduce noise
+  // Remove unnecessary elements to reduce noise
   const $ = cheerio.load(html);
   $("script").remove();
   $("style").remove();
@@ -41,11 +51,12 @@ export const fetchDynamicArticle = async (
 };
 
 /**
- * Attempt a static (Axios + Cheerio) fetch. If blocked or partial (403, etc.), fall back to Puppeteer.
+ * Attempt a static fetch with Axios and Cheerio.
+ * If it fails (e.g., 403) or returns incomplete data, fall back to the dynamic fetch.
  */
 export const fetchStaticArticle = async (
   url: string,
-  retries = 3,
+  retries = 3
 ): Promise<ArticleData> => {
   try {
     const { data } = await axios.get(url, {
@@ -57,7 +68,6 @@ export const fetchStaticArticle = async (
       },
     });
 
-    // Remove script/style/JSON-LD to reduce noise
     const $ = cheerio.load(data);
     $("script").remove();
     $("style").remove();
@@ -67,23 +77,21 @@ export const fetchStaticArticle = async (
     const content = $("body").text().trim() || "";
     return { url, title, content, source: url };
   } catch (error: any) {
-    // Retry on ECONNRESET errors
     if (retries > 0 && error.code === "ECONNRESET") {
       console.warn(
-        `ECONNRESET for ${url}. Retrying in ${RETRY_DELAY_MS}ms... (${retries} retries left)`,
+        `ECONNRESET for ${url}. Retrying in ${RETRY_DELAY_MS}ms... (${retries} retries left)`
       );
       await delay(RETRY_DELAY_MS);
       return fetchStaticArticle(url, retries - 1);
     }
 
-    // If 403, fall back to Puppeteer (dynamic fetch)
     if (
       axios.isAxiosError(error) &&
       error.response &&
       error.response.status === 403
     ) {
       console.warn(
-        `Static fetch for ${url} returned 403. Falling back to dynamic fetch...`,
+        `Static fetch for ${url} returned 403. Falling back to dynamic fetch...`
       );
       return await fetchDynamicArticle(url);
     }
@@ -93,33 +101,27 @@ export const fetchStaticArticle = async (
 };
 
 /**
- * Multi-level BFS crawl:
- *  - maxLinks: total # of links to collect across all pages (including sub-levels).
- *  - maxDepth: how many levels deep to crawl.
- *    e.g. 2 means: homepage -> sub-links (but not sub-sub-links).
+ * Multi-level BFS crawl to collect article links.
  */
 export const crawlArticlesFromHomepage = async (
   homepageUrl: string,
   maxLinks: number = 20,
-  maxDepth: number = 1,
+  maxDepth: number = 1
 ): Promise<string[]> => {
-  // BFS queue: each entry has url + current depth
   const queue: Array<{ url: string; depth: number }> = [
     { url: homepageUrl, depth: 0 },
   ];
-  const visited = new Set<string>(); // to avoid re-crawling same URL
-  const collectedLinks = new Set<string>(); // final list of found article links
+  const visited = new Set<string>();
+  const collectedLinks = new Set<string>();
 
   const homepageHostname = new URL(homepageUrl).hostname;
 
   while (queue.length > 0 && collectedLinks.size < maxLinks) {
     const { url, depth } = queue.shift()!;
 
-    // If visited, skip
     if (visited.has(url)) continue;
     visited.add(url);
 
-    // Fetch page
     let html: string;
     try {
       const { data } = await axios.get(url, {
@@ -132,37 +134,30 @@ export const crawlArticlesFromHomepage = async (
       });
       html = data;
     } catch (err) {
-      // console.error(`Failed to fetch ${url}:`, err);
       continue;
     }
 
-    // Parse page
     const $ = cheerio.load(html);
-
-    // Collect <a> links on this page
     const foundThisPage: string[] = [];
     $("a").each((_, el) => {
       let link = $(el).attr("href");
       if (!link) return;
       try {
-        link = new URL(link, url).href; // absolute URL
+        link = new URL(link, url).href;
         const hostname = new URL(link).hostname;
         if (hostname === homepageHostname && link !== homepageUrl) {
           foundThisPage.push(link);
         }
       } catch {
-        // invalid URL, skip
+        // Skip invalid URLs
       }
     });
 
-    // Add to the final set, respecting maxLinks
     for (const lnk of foundThisPage) {
       if (collectedLinks.size >= maxLinks) break;
       collectedLinks.add(lnk);
     }
 
-    // If we can go deeper, enqueue those same-page links to parse
-    // so long as we haven't exceeded maxDepth
     if (depth + 1 < maxDepth) {
       for (const lnk of foundThisPage) {
         if (!visited.has(lnk) && collectedLinks.size < maxLinks) {

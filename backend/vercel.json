@@ -1,9 +1,15 @@
 {
-  "functions": {
-    "api/scheduled/fetchAndSummarize.ts": {
-      "runtime": "nodejs18.x",
-      "includeFiles": "src/schedule/**",
-      "schedule": "0 6,18 * * *"
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/server.ts",
+      "use": "@vercel/node"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/server.ts"
+    }
+  ]
 }

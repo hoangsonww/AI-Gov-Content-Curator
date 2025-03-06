@@ -33,6 +33,7 @@ export const getArticles = async (req: Request, res: Response) => {
       filter.source = source;
     }
     const articles = await Article.find(filter)
+      .select("-content")
       .sort({ fetchedAt: -1 })
       .skip((Number(page) - 1) * Number(limit))
       .limit(Number(limit));

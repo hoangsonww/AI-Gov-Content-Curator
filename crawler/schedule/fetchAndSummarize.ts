@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import Article from "../models/article.model";
 import {
   crawlArticlesFromHomepage,

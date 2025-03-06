@@ -7,6 +7,10 @@ const swaggerDefinition = {
   },
   servers: [
     {
+      url: "https://ai-content-curator-backend.vercel.app",
+      description: "Production server",
+    },
+    {
       url: "http://localhost:3000",
       description: "Local server",
     },
