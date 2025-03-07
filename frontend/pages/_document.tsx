@@ -16,7 +16,7 @@ class MyDocument extends Document {
     return (
       <Html lang="en">
         <Head>
-          {/* DEFAULT TITLE (site-wide). You can override in pages if needed. */}
+          {/* DEFAULT TITLE (site-wide). */}
           <title>Article Curator</title>
 
           {/* Preconnect for Google Fonts */}
@@ -38,6 +38,21 @@ class MyDocument extends Document {
             name="description"
             content="An AI-powered article curator for government staff."
           />
+
+          {/* Theme color */}
+          <meta name="theme-color" content="#ffffff" />
+
+          {/* Apple Touch Icon */}
+          <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/apple-touch-icon.png"
+          />
+
+          {/* Manifest */}
+          <link rel="manifest" href="/manifest.json" />
+
+          {/* Icons */}
           <link rel="icon" href="/favicon.ico" />
 
           {/* Open Graph (Facebook, LinkedIn) */}
@@ -67,6 +82,8 @@ class MyDocument extends Document {
             name="twitter:image"
             content="https://ai-gov-content-curator.vercel.app/android-chrome-192x192.png"
           />
+
+          <meta property="og:site_name" content="AI-Powered Article Curator" />
 
           <link
             rel="canonical"
