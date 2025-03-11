@@ -20,7 +20,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     setIsLoggedIn(true);
     const loadFavorites = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/users/favorites", {
+        const res = await fetch("https://ai-content-curator-backend.vercel.app/api/users/favorites", {
           headers: { Authorization: token },
         });
         if (res.ok) {
@@ -40,7 +40,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const res = await fetch("http://localhost:3000/api/users/favorite", {
+      const res = await fetch("https://ai-content-curator-backend.vercel.app/api/users/favorite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

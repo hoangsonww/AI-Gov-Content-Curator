@@ -21,7 +21,7 @@ export default function ResetPassword() {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch("http://localhost:3000/api/auth/reset-password", {
+      const res = await fetch("https://ai-content-curator-backend.vercel.app/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -50,7 +50,7 @@ export default function ResetPassword() {
     }
     try {
       const res = await fetch(
-        "http://localhost:3000/api/auth/confirm-reset-password",
+        "https://ai-content-curator-backend.vercel.app/api/auth/confirm-reset-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

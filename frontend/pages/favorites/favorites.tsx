@@ -21,7 +21,7 @@ export default function FavoritesPage() {
     const fetchFavorites = async () => {
       try {
         const res = await fetch(
-          "http://localhost:3000/api/users/favorites/articles",
+          "https://ai-content-curator-backend.vercel.app/api/users/favorites/articles",
           {
             method: "GET",
             headers: {

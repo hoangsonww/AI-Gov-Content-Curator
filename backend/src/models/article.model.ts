@@ -3,10 +3,15 @@ import { Schema, model, Document } from "mongoose";
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *     ApiKeyAuth:
+ *       type: apiKey
+ *       in: header
+ *       name: Authorization
+ *       description: "Enter your token directly (without 'Bearer ')"
  *   schemas:
  *     Article:
  *       type: object
- *       description: Represents an article fetched from an external source.
  *       properties:
  *         _id:
  *           type: string
@@ -29,7 +34,18 @@ import { Schema, model, Document } from "mongoose";
  *         fetchedAt:
  *           type: string
  *           format: date-time
- *           description: Timestamp indicating when the article was fetched.
+ *           description: Timestamp when the article was fetched.
+ *     FavoriteResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: Status message of the request.
+ *         favorites:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of favorite article IDs.
  */
 
 export interface IArticle extends Document {
