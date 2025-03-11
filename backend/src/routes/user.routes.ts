@@ -43,7 +43,30 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Article'
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: Unique identifier of the article.
+ *                   url:
+ *                     type: string
+ *                     description: The original URL of the article.
+ *                   title:
+ *                     type: string
+ *                     description: The title of the article.
+ *                   content:
+ *                     type: string
+ *                     description: The full content of the article.
+ *                   summary:
+ *                     type: string
+ *                     description: A short summary of the article.
+ *                   source:
+ *                     type: string
+ *                     description: The source or publisher of the article.
+ *                   fetchedAt:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Timestamp when the article was fetched.
  *       401:
  *         description: No token provided or invalid token
  *       404:

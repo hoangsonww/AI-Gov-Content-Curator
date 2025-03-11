@@ -28,9 +28,12 @@ export default function ArticleCard({ article }: ArticleCardProps) {
 
     const loadFavorites = async () => {
       try {
-        const res = await fetch("https://ai-content-curator-backend.vercel.app/api/users/favorites", {
-          headers: { Authorization: token },
-        });
+        const res = await fetch(
+          "https://ai-content-curator-backend.vercel.app/api/users/favorites",
+          {
+            headers: { Authorization: token },
+          },
+        );
         if (res.ok) {
           const data = await res.json();
           if (data.favorites && Array.isArray(data.favorites)) {
@@ -48,14 +51,17 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const res = await fetch("https://ai-content-curator-backend.vercel.app/api/users/favorite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
+      const res = await fetch(
+        "https://ai-content-curator-backend.vercel.app/api/users/favorite",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify({ articleId: article._id }),
         },
-        body: JSON.stringify({ articleId: article._id }),
-      });
+      );
       if (res.ok) {
         setIsFavorited((prev) => !prev);
       }

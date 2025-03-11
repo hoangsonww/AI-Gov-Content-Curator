@@ -23,13 +23,11 @@ const router = Router();
  *         schema:
  *           type: integer
  *         description: Page number for pagination.
- *
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *         description: Number of articles per page.
- *
  *       - in: query
  *         name: source
  *         schema:
@@ -46,9 +44,33 @@ const router = Router();
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Article'
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         description: Unique identifier of the article.
+ *                       url:
+ *                         type: string
+ *                         description: The original URL of the article.
+ *                       title:
+ *                         type: string
+ *                         description: The title of the article.
+ *                       content:
+ *                         type: string
+ *                         description: The full content of the article.
+ *                       summary:
+ *                         type: string
+ *                         description: A short summary of the article.
+ *                       source:
+ *                         type: string
+ *                         description: The source or publisher of the article.
+ *                       fetchedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Timestamp when the article was fetched.
  *                 total:
  *                   type: integer
+ *                   description: Total number of articles available.
  *       500:
  *         description: Failed to fetch articles.
  */
@@ -74,7 +96,30 @@ router.get("/", getArticles);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Article'
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: Unique identifier of the article.
+ *                 url:
+ *                   type: string
+ *                   description: The original URL of the article.
+ *                 title:
+ *                   type: string
+ *                   description: The title of the article.
+ *                 content:
+ *                   type: string
+ *                   description: The full content of the article.
+ *                 summary:
+ *                   type: string
+ *                   description: A short summary of the article.
+ *                 source:
+ *                   type: string
+ *                   description: The source or publisher of the article.
+ *                 fetchedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Timestamp when the article was fetched.
  *       404:
  *         description: Article not found.
  *       500:

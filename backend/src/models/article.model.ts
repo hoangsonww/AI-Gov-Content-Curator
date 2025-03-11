@@ -3,12 +3,6 @@ import { Schema, model, Document } from "mongoose";
 /**
  * @swagger
  * components:
- *   securitySchemes:
- *     ApiKeyAuth:
- *       type: apiKey
- *       in: header
- *       name: Authorization
- *       description: "Enter your token directly (without 'Bearer ')"
  *   schemas:
  *     Article:
  *       type: object
