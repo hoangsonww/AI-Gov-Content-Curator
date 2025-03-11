@@ -6,7 +6,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 /**
  * Middleware to authenticate requests via JWT token.
  */
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const token = req.headers.authorization;
   if (!token) return res.status(401).json({ error: "No token provided" });
 

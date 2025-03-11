@@ -6,7 +6,10 @@ import {
   MdFavorite,
   MdFavoriteBorder,
 } from "react-icons/md";
-import { fetchFavoriteArticleIds, toggleFavoriteArticle } from "../services/api";
+import {
+  fetchFavoriteArticleIds,
+  toggleFavoriteArticle,
+} from "../services/api";
 
 const ArrowIcon = MdOutlineArrowForwardIos as React.FC<{ size?: number }>;
 

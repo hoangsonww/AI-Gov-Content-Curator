@@ -85,7 +85,11 @@ export const loginUser = async (email: string, password: string) => {
  * @param password - User's password
  * @returns Registration success message or an error
  */
-export const registerUser = async (name: string, email: string, password: string) => {
+export const registerUser = async (
+  name: string,
+  email: string,
+  password: string,
+) => {
   try {
     const res = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
@@ -120,7 +124,9 @@ export const requestPasswordReset = async (email: string) => {
 
     return data;
   } catch (error: any) {
-    throw new Error(error.message || "An error occurred while requesting reset token.");
+    throw new Error(
+      error.message || "An error occurred while requesting reset token.",
+    );
   }
 };
 
@@ -131,7 +137,11 @@ export const requestPasswordReset = async (email: string) => {
  * @param newPassword - New password
  * @returns Success message if successful
  */
-export const confirmPasswordReset = async (email: string, token: string, newPassword: string) => {
+export const confirmPasswordReset = async (
+  email: string,
+  token: string,
+  newPassword: string,
+) => {
   try {
     const res = await fetch(`${BASE_URL}/auth/confirm-reset-password`, {
       method: "POST",
@@ -144,7 +154,9 @@ export const confirmPasswordReset = async (email: string, token: string, newPass
 
     return data;
   } catch (error: any) {
-    throw new Error(error.message || "An error occurred while resetting password.");
+    throw new Error(
+      error.message || "An error occurred while resetting password.",
+    );
   }
 };
 
@@ -200,7 +212,10 @@ export const fetchFavoriteArticleIds = async (token: string) => {
  * @param token - User's authentication token.
  * @param articleId - The article ID to be favorited/unfavorited.
  */
-export const toggleFavoriteArticle = async (token: string, articleId: string) => {
+export const toggleFavoriteArticle = async (
+  token: string,
+  articleId: string,
+) => {
   try {
     const res = await fetch(`${BASE_URL}/users/favorite`, {
       method: "POST",

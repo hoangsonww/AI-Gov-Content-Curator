@@ -30,7 +30,9 @@ export default function Register() {
       setMessage("Registration successful, redirecting to login...");
       setTimeout(() => router.push("/auth/login"), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred",
+      );
     }
   };
 

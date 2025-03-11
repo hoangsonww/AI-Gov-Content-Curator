@@ -24,7 +24,9 @@ export default function FavoritesPage() {
         const data = await fetchFavoriteArticles(token);
         setFavoriteArticles(data);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : "An error occurred.");
+        console.error(
+          error instanceof Error ? error.message : "An error occurred.",
+        );
       } finally {
         setLoading(false);
       }

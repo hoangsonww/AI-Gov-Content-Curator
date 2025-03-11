@@ -7,7 +7,7 @@ import { requestPasswordReset, confirmPasswordReset } from "../../services/api";
 export default function ResetPassword() {
   const [step, setStep] = useState<number>(1);
   const [email, setEmail] = useState<string>("");
-  const [resetToken, setResetToken] = useState<string>(""); // token stored but not editable
+  const [resetToken, setResetToken] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -28,7 +28,9 @@ export default function ResetPassword() {
       setMessage("Reset token sent. Your email is now locked for reset.");
       setStep(2);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred.");
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred.",
+      );
     }
   };
 
@@ -47,7 +49,9 @@ export default function ResetPassword() {
       setMessage("Password reset successfully. Redirecting to login...");
       setTimeout(() => router.push("/auth/login"), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred.");
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred.",
+      );
     }
   };
 

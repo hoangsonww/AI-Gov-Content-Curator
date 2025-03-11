@@ -1,7 +1,10 @@
 import { Article } from "../pages";
 import React, { useState, useEffect } from "react";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
-import { fetchFavoriteArticleIds, toggleFavoriteArticle } from "../services/api";
+import {
+  fetchFavoriteArticleIds,
+  toggleFavoriteArticle,
+} from "../services/api";
 
 interface ArticleDetailProps {
   article: Article;

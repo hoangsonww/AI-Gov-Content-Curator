@@ -19,7 +19,8 @@ export const register = async (req: Request, res: Response) => {
   const { email, password, name } = req.body;
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: "User already exists" });
+    if (existingUser)
+      return res.status(400).json({ error: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(20).toString("hex");
@@ -37,7 +38,17 @@ export const register = async (req: Request, res: Response) => {
     const token = generateToken(user);
 
     res.setHeader("Authorization", token);
-    return res.status(201).json({ user: { id: user._id, email, name: user.name, isVerified: user.isVerified }, token });
+    return res
+      .status(201)
+      .json({
+        user: {
+          id: user._id,
+          email,
+          name: user.name,
+          isVerified: user.isVerified,
+        },
+        token,
+      });
   } catch (error) {
     console.error("Error in registration:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -57,7 +68,15 @@ export const login = async (req: Request, res: Response) => {
     const token = generateToken(user);
     res.setHeader("Authorization", token);
 
-    return res.json({ user: { id: user._id, email, name: user.name, isVerified: user.isVerified }, token });
+    return res.json({
+      user: {
+        id: user._id,
+        email,
+        name: user.name,
+        isVerified: user.isVerified,
+      },
+      token,
+    });
   } catch (error) {
     console.error("Error in login:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -67,11 +86,13 @@ export const login = async (req: Request, res: Response) => {
 // Verify email
 export const verifyEmail = async (req: Request, res: Response) => {
   const { email, token } = req.query;
-  if (!email || !token) return res.status(400).json({ error: "Missing email or token" });
+  if (!email || !token)
+    return res.status(400).json({ error: "Missing email or token" });
 
   try {
     const user = await User.findOne({ email, verificationToken: token });
-    if (!user) return res.status(400).json({ error: "Invalid verification token" });
+    if (!user)
+      return res.status(400).json({ error: "Invalid verification token" });
 
     user.isVerified = true;
     user.verificationToken = undefined;
@@ -106,7 +127,8 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
 // Confirm password reset
 export const confirmResetPassword = async (req: Request, res: Response) => {
   const { email, token, newPassword } = req.body;
-  if (!email || !token || !newPassword) return res.status(400).json({ error: "Missing required fields" });
+  if (!email || !token || !newPassword)
+    return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const user = await User.findOne({ email, resetPasswordToken: token });

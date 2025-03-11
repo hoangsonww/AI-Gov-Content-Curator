@@ -40,7 +40,8 @@ export const getFavoriteArticleIds = async (req: Request, res: Response) => {
  */
 export const toggleFavoriteArticle = async (req: Request, res: Response) => {
   const { articleId } = req.body;
-  if (!articleId) return res.status(400).json({ error: "Article ID is required" });
+  if (!articleId)
+    return res.status(400).json({ error: "Article ID is required" });
 
   try {
     const userId = (req as any).user.id;
