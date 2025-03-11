@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Article } from "../pages";
 import ArticleList from "./ArticleList";
-import { getArticles } from "../services/api";
+import { getArticles, getTotalArticles } from "../services/api";
 
 export default function AllArticles() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [page, setPage] = useState(3);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [totalArticles, setTotalArticles] = useState<number | null>(null);
 
   useEffect(() => {
     fetchArticles(page);
+    fetchTotalArticles(); // Now calling from api.ts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -29,6 +31,12 @@ export default function AllArticles() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchTotalArticles = async () => {
+    const total = await getTotalArticles(); // Calling helper from api.ts
+    console.log(total);
+    setTotalArticles(total);
   };
 
   const handleLoadMore = async () => {
@@ -54,6 +62,17 @@ export default function AllArticles() {
       {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
       {!hasMore && (
         <p style={{ textAlign: "center" }}>No more articles to load.</p>
+      )}
+
+      {/* Displaying article range */}
+      {totalArticles !== null && articles.length > 0 && (
+        <p
+          style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}
+        >
+          Displaying Articles{" "}
+          {articles.length > 0 ? `1-${articles.length}` : "0"} of{" "}
+          {totalArticles}
+        </p>
       )}
     </div>
   );

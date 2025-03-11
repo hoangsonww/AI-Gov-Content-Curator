@@ -3,6 +3,7 @@ import {
   getFavoriteArticles,
   getFavoriteArticleIds,
   toggleFavoriteArticle,
+  validateTokenController,
 } from "../controllers/user.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -139,5 +140,29 @@ router.get("/favorites", authenticate, getFavoriteArticleIds);
  *         description: Internal server error
  */
 router.post("/favorite", authenticate, toggleFavoriteArticle);
+
+/**
+ * @swagger
+ * /api/users/validate-token:
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Validate the current authentication token
+ *     security:
+ *       - ApiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                   description: Whether the token is valid or not.
+ *       401:
+ *         description: Token is missing or invalid
+ */
+router.get("/validate-token", authenticate, validateTokenController);
 
 export default router;

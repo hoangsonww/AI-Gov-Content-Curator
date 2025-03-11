@@ -26,6 +26,7 @@ Each component is maintained in its own directory:
 ![Google Generative AI](https://img.shields.io/badge/Google%20Generative%20AI-4285F4?style=flat&logo=google&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white)
 ![Cron](https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=timescale&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-%23000000.svg?style=flat&logo=JSON%20web%20tokens&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
@@ -80,32 +81,15 @@ The **AI-Powered Article Content Curator** system is designed to provide governm
 - **Frontend Experience:**  
   A responsive Next.js/React interface allows users to easily browse paginated article lists, filter by source, and view detailed article pages.
 - **Scheduled Updates:**  
-  Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content.
-
+  Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content. This ensures that the system (articles) remains fresh and up-to-date.
 - **Architecture:**
   Monorepo structure with separate directories for the backend, crawler, and frontend. Each component is designed to be scalable, maintainable, and deployable on Vercel.
-
----
-
-## User Interface
-
-### 1. Home Page
-
-<p align="center">
-  <img src="frontend/img/home.png" alt="Home Page" width="100%">
-</p>
-
-### 2. Home Page (Dark Mode)
-
-<p align="center">
-  <img src="frontend/img/home-dark.png" alt="Home Page (Dark Mode)" width="100%">
-</p>
-
-### 3. Article Details Page
-
-<p align="center">
-  <img src="frontend/img/article-details.png" alt="Article Detail Page" width="100%">
-</p>
+- **User Authentication:**  
+  Users can create an account, log in, and receive a JWT token for secure access to the system.
+- **Favorite Articles:**  
+  Authenticated users can mark articles as favorites for quick access and reference.
+- **Dark Mode:**  
+  The frontend offers a dark mode option for improved readability and user experience.
 
 ---
 
@@ -166,6 +150,76 @@ Below is a high-level diagram outlining the system architecture:
                   |                    |
                   +--------------------+
 ```
+
+---
+
+## User Interface
+
+### 1. Home Page
+
+<p align="center">
+  <img src="frontend/img/home.png" alt="Home Page" width="100%">
+</p>
+
+### 2. Home Page (Dark Mode)
+
+<p align="center">
+  <img src="frontend/img/home-dark.png" alt="Home Page (Dark Mode)" width="100%">
+</p>
+
+### 3. Home Page (Guest User)
+
+<p align="center">
+  <img src="frontend/img/home-unauth.png" alt="Home Page (Guest User)" width="100%">
+</p>
+
+### 4. Article Details Page
+
+<p align="center">
+  <img src="frontend/img/article-details.png" alt="Article Detail Page" width="100%">
+</p>
+
+### 5. Article Details Page (Guest User)
+
+<p align="center">
+  <img src="frontend/img/article-details-unauth.png" alt="Article Detail Page (Guest User)" width="100%">
+</p>
+
+### 6. Favorite Articles Page
+
+<p align="center">
+  <img src="frontend/img/favorites.png" alt="Favorite Articles Page" width="100%">
+</p>
+
+### 7. User Authentication
+
+<p align="center">
+  <img src="frontend/img/login.png" alt="User Authentication" width="100%">
+</p>
+
+### 8. User Registration
+
+<p align="center">
+  <img src="frontend/img/register.png" alt="User Registration" width="100%">
+</p>
+
+### 9. Reset Password
+
+<p align="center">
+  <img src="frontend/img/reset-password.png" alt="Reset Password" width="100%">
+</p>
+
+### 10. 404 Not Found Page
+
+<p align="center">
+  <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
+</p>
+
+### 11. Backend Swagger API Documentation
+
+<p align="center">
+  <img src="frontend/img/swagger.png" alt="Backend Swagger API Documentation" width="100%">
+</p>
 
 ---
 

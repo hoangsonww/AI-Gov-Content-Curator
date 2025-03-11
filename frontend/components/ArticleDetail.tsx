@@ -53,10 +53,28 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       style={{ position: "relative" }}
     >
       <h1 className="detail-title">{article.title}</h1>
-      <p className="detail-meta">Source: {article.source}</p>
+
+      {/* ✅ Clickable Source Link */}
+      <p className="detail-meta">
+        Source:{" "}
+        {article.url ? (
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="article-source-link"
+          >
+            {article.source}
+          </a>
+        ) : (
+          article.source
+        )}
+      </p>
+
       <p className="detail-meta">
         Fetched at: {new Date(article.fetchedAt).toLocaleString()}
       </p>
+
       <div className="detail-content">{article.content}</div>
 
       {isLoggedIn && (

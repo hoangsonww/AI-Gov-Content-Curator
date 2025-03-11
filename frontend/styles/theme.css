@@ -99,6 +99,7 @@ body {
 
 .article-readmore:hover {
   color: var(--navbar-text);
+  text-decoration: underline;
 }
 
 .article-readmore svg {
@@ -191,6 +192,16 @@ body {
   font-size: 0.9rem;
 }
 
+.footer a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: var(--navbar-text);
+}
+
 /* ---------- Article Card Styles ---------- */
 .article-card {
   background-color: var(--card-bg);
@@ -212,6 +223,16 @@ body {
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: normal;
+}
+
+.article-source a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.article-source a:hover {
+  color: var(--navbar-text);
 }
 
 .article-summary {
@@ -240,6 +261,16 @@ body {
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: normal;
+}
+
+.detail-meta a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.detail-meta a:hover {
+  color: var(--navbar-text);
 }
 
 .detail-content {
@@ -316,8 +347,11 @@ body {
 }
 
 .auth-option {
-  display: block;
-  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.75rem 1rem;
   text-decoration: none;
   color: var(--text-color);
   transition: background-color 0.2s ease;
@@ -326,6 +360,19 @@ body {
   font: inherit;
   cursor: pointer;
   width: 100%;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.auth-option svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  font-size: 0.9rem;
 }
 
 .auth-option:hover {

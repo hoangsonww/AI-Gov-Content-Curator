@@ -52,6 +52,16 @@ export const getArticleById = async (req: Request, res: Response) => {
     }
     res.json(article);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to fetch article" });
+  }
+};
+
+export const getArticleCount = async (req: Request, res: Response) => {
+  try {
+    const count = await Article.countDocuments();
+    res.json({ total: count });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch article count" });
   }
 };

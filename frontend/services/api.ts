@@ -8,49 +8,116 @@ const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
  * Fetches the top 5 articles from the API.
  */
 export async function getTopArticles(): Promise<Article[]> {
-  const res = await fetch(`${BASE_URL}/articles?page=1&limit=5`);
-  if (!res.ok) throw new Error("Failed to fetch top articles");
-  const { data } = await res.json();
-  return data || [];
+  try {
+    const res = await fetch(`${BASE_URL}/articles?page=1&limit=5`);
+
+    if (!res.ok) {
+      console.error(`Error fetching top articles: ${res.statusText}`);
+      return [];
+    }
+
+    const { data } = await res.json();
+    return data || [];
+  } catch (error) {
+    console.error("Network error while fetching top articles:", error);
+    return [];
+  }
 }
+
+/**
+ * Fetches the total number of articles.
+ * @returns Total article count or null if an error occurs.
+ */
+export const getTotalArticles = async (): Promise<number | null> => {
+  try {
+    const res = await fetch(`${BASE_URL}/articles/count`);
+
+    if (!res.ok) {
+      console.error(`Error fetching total articles: ${res.statusText}`);
+      return null;
+    }
+
+    const result = await res.json();
+    return result.total;
+  } catch (error) {
+    console.error("Network error while fetching total articles:", error);
+    return null;
+  }
+};
 
 /**
  * Fetches the latest 10 articles from the API.
  */
 export async function getLatestArticles(): Promise<Article[]> {
-  const res = await fetch(`${BASE_URL}/articles?page=2&limit=10`);
-  if (!res.ok) throw new Error("Failed to fetch latest articles");
-  const { data } = await res.json();
-  return data || [];
+  try {
+    const res = await fetch(`${BASE_URL}/articles?page=2&limit=10`);
+
+    if (!res.ok) {
+      console.error(`Error fetching latest articles: ${res.statusText}`);
+      return [];
+    }
+
+    const { data } = await res.json();
+    return data || [];
+  } catch (error) {
+    console.error("Network error while fetching latest articles:", error);
+    return [];
+  }
 }
 
 /**
- * Fetches all articles from the API.
+ * Fetches a single article by its ID.
+ * Returns `null` if the article is not found or an error occurs.
+ *
+ * @param id The article ID to fetch.
  */
 export async function getArticleById(id: string): Promise<Article | null> {
-  const res = await fetch(`${BASE_URL}/articles/${id}`);
-  if (!res.ok) throw new Error(`Failed to fetch article with id ${id}`);
+  try {
+    const res = await fetch(`${BASE_URL}/articles/${id}`);
 
-  // Expect the API to return the article object directly.
-  const article = await res.json();
-  return article ? JSON.parse(JSON.stringify(article)) : null;
+    if (!res.ok) {
+      console.error(`Error fetching article (${id}): ${res.statusText}`);
+      return null;
+    }
+
+    const article = await res.json();
+    return article ? JSON.parse(JSON.stringify(article)) : null;
+  } catch (error) {
+    console.error(`Network error while fetching article (${id}):`, error);
+    return null;
+  }
 }
 
 /**
- * Fetches articles from the API, for a given page and limit.
+ * Fetches a paginated list of articles from the API.
+ * Returns an empty array if the request fails.
  *
- * @param page The page number to fetch
- * @param limit The number of articles to fetch per page
+ * @param page The page number to fetch.
+ * @param limit The number of articles per page (default: 10).
  */
 export async function getArticles(
   page: number,
   limit = 10,
 ): Promise<Article[]> {
-  const res = await fetch(`${BASE_URL}/articles?page=${page}&limit=${limit}`);
-  if (!res.ok) throw new Error(`Failed to fetch articles for page ${page}`);
+  try {
+    const res = await fetch(`${BASE_URL}/articles?page=${page}&limit=${limit}`);
 
-  const { data } = await res.json();
-  return data || [];
+    if (!res.ok) {
+      console.error(
+        `Error fetching articles (Page ${page}): ${res.statusText}`,
+      );
+      return [];
+    }
+
+    const { data } = await res.json();
+    return data || [];
+  } catch (error) {
+    console.error(
+      `Network error while fetching articles (Page ${page}):`,
+      error,
+    );
+    return [];
+  }
 }
 
 /**
@@ -154,7 +221,7 @@ export const confirmPasswordReset = async (
 
     return data;
   } catch (error: any) {
-    throw new Error(
+    console.error(
       error.message || "An error occurred while resetting password.",
     );
   }
@@ -176,12 +243,14 @@ export const fetchFavoriteArticles = async (token: string) => {
     });
 
     if (!res.ok) {
-      throw new Error(await res.text());
+      console.error(await res.text());
+      return [];
     }
 
     return await res.json();
   } catch (error: any) {
-    throw new Error(error.message || "Failed to fetch favorite articles.");
+    console.error(error.message || "Failed to fetch favorite articles.");
+    return [];
   }
 };
 
@@ -197,13 +266,15 @@ export const fetchFavoriteArticleIds = async (token: string) => {
     });
 
     if (!res.ok) {
-      throw new Error(await res.text());
+      console.error(await res.text());
+      return [];
     }
 
     const data = await res.json();
     return data.favorites || [];
   } catch (error: any) {
-    throw new Error(error.message || "Failed to fetch favorite articles.");
+    console.error(error.message || "Failed to fetch favorite articles.");
+    return [];
   }
 };
 
@@ -227,9 +298,69 @@ export const toggleFavoriteArticle = async (
     });
 
     if (!res.ok) {
-      throw new Error(await res.text());
+      console.error(await res.text());
+      return [];
     }
   } catch (error: any) {
-    throw new Error(error.message || "Failed to toggle favorite status.");
+    console.error(error.message || "Failed to toggle favorite status.");
+    return [];
   }
+};
+
+/**
+ * Validates the user's authentication token with retries.
+ * Calls the backend `/api/users/validate-token` to check if the token is still valid.
+ *
+ * @param token - User's authentication token.
+ * @param retries - Number of retry attempts (default: 3).
+ * @returns `true` if the token is valid, `false` otherwise.
+ */
+export const validateToken = async (
+  token: string,
+  retries: number = 3,
+): Promise<boolean> => {
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/users/validate-token`, {
+        headers: { Authorization: token },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return data.valid === true; // Ensure response contains `{ valid: true }`
+      }
+
+      console.error(
+        `Token validation failed (Attempt ${attempt}/${retries}):`,
+        await res.text(),
+      );
+
+      // If last attempt, remove token
+      if (attempt === retries) {
+        localStorage.removeItem("token");
+        return false;
+      }
+
+      // Wait before retrying (exponential backoff: 200ms, 400ms, 600ms)
+      await delay(200 * attempt);
+    } catch (error: any) {
+      console.error(
+        `Error validating token (Attempt ${attempt}/${retries}):`,
+        error.message || "Unknown error.",
+      );
+
+      // If last attempt, remove token
+      if (attempt === retries) {
+        localStorage.removeItem("token");
+        return false;
+      }
+
+      await delay(500 * attempt);
+    }
+  }
+
+  return false; // Should never reach here
 };

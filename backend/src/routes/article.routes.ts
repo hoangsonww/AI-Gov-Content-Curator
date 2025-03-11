@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { getArticles, getArticleById } from "../controllers/article.controller";
+import {
+  getArticles,
+  getArticleById,
+  getArticleCount,
+} from "../controllers/article.controller";
 
 const router = Router();
 
@@ -74,8 +78,29 @@ const router = Router();
  *       500:
  *         description: Failed to fetch articles.
  */
-
 router.get("/", getArticles);
+
+/**
+ * @swagger
+ * /api/articles/count:
+ *   get:
+ *     tags: [Articles]
+ *     summary: Retrieve the total number of articles
+ *     responses:
+ *       200:
+ *         description: Total number of articles.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of articles in the database.
+ *       500:
+ *         description: Failed to fetch article count.
+ */
+router.get("/count", getArticleCount);
 
 /**
  * @swagger
@@ -125,7 +150,6 @@ router.get("/", getArticles);
  *       500:
  *         description: Failed to fetch article.
  */
-
 router.get("/:id", getArticleById);
 
 export default router;

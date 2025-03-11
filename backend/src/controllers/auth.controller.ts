@@ -38,17 +38,15 @@ export const register = async (req: Request, res: Response) => {
     const token = generateToken(user);
 
     res.setHeader("Authorization", token);
-    return res
-      .status(201)
-      .json({
-        user: {
-          id: user._id,
-          email,
-          name: user.name,
-          isVerified: user.isVerified,
-        },
-        token,
-      });
+    return res.status(201).json({
+      user: {
+        id: user._id,
+        email,
+        name: user.name,
+        isVerified: user.isVerified,
+      },
+      token,
+    });
   } catch (error) {
     console.error("Error in registration:", error);
     res.status(500).json({ error: "Internal server error" });

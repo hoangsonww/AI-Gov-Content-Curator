@@ -5,7 +5,16 @@ export default function Footer() {
 
   return (
     <footer className="footer hover-animate">
-      <p>© {currentYear} Article Curator. All rights reserved.</p>
+      <p>
+        © {currentYear}{" "}
+        <a
+          target="_blank"
+          href="https://github.com/hoangsonww/AI-Gov-Content-Curator"
+        >
+          Article Curator
+        </a>
+        . All rights reserved.
+      </p>
     </footer>
   );
 }

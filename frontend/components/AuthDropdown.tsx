@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { MdPerson } from "react-icons/md";
+import { validateToken } from "../services/api";
 
 interface AuthDropdownProps {
   theme: "light" | "dark" | "system";
@@ -20,12 +21,18 @@ export default function AuthDropdown({
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Poll localStorage every 1 second to detect token changes.
+  // Poll localStorage every 0.5 second to detect token changes and invalidity
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
-    }, 1000);
+      if (!token || !(await validateToken(token))) {
+        localStorage.removeItem("token");
+        setIsLoggedIn(false);
+      } else {
+        setIsLoggedIn(true);
+      }
+    }, 500);
+
     return () => clearInterval(interval);
   }, []);
 

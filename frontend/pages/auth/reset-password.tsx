@@ -25,7 +25,9 @@ export default function ResetPassword() {
     try {
       const data = await requestPasswordReset(email);
       setResetToken(data.resetToken || "");
-      setMessage("Reset token sent. Your email is now locked for reset.");
+      setMessage(
+        "Reset token sent and email verified successfully. Please reset your password.",
+      );
       setStep(2);
     } catch (err) {
       setError(

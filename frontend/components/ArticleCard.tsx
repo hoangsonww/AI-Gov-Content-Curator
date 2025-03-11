@@ -61,7 +61,23 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     >
       <h2 className="article-title">{article.title}</h2>
       {article.summary && <p className="article-summary">{article.summary}</p>}
-      <p className="article-source">Source: {article.source}</p>
+
+      {/* ✅ Clickable Source Link */}
+      <p className="article-source">
+        Source:{" "}
+        {article.url ? (
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="article-source-link"
+          >
+            {article.source}
+          </a>
+        ) : (
+          article.source
+        )}
+      </p>
 
       <Link href={`/articles/${article._id}`}>
         <span className="article-readmore">

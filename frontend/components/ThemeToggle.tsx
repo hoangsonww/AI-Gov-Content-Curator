@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import React from "react";
 import { MdDarkMode, MdLightMode, MdSettingsBrightness } from "react-icons/md";
 
@@ -25,15 +25,8 @@ export default function ThemeToggle({
 }: ThemeToggleProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Existing effect for system theme.
-  useEffect(() => {
-    if (theme === "system") {
-      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      onThemeChange(isDark ? "dark" : "light");
-    }
-  }, [theme, onThemeChange]);
-
   const handleSelect = (newTheme: "light" | "dark" | "system") => {
+    localStorage.setItem("theme", newTheme);
     onThemeChange(newTheme);
     toggle();
   };
@@ -52,7 +45,6 @@ export default function ThemeToggle({
     toggle();
   };
 
-  // Close the dropdown if click happens outside the container.
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

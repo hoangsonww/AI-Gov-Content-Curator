@@ -69,3 +69,12 @@ export const toggleFavoriteArticle = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+/**
+ * Validate user token
+ * @param req The request object
+ * @param res The response object
+ */
+export const validateTokenController = async (req: Request, res: Response) => {
+  return res.status(200).json({ valid: true });
+};
