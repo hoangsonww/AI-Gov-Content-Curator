@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { fetchAndSummarize } from "../../../schedule/fetchAndSummarize";
+import { fetchAndSummarize } from "../../schedule/fetchAndSummarize";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
