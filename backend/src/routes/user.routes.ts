@@ -163,11 +163,12 @@ router.get("/favorites", authenticate, async (req: Request, res: Response) => {
  *               properties:
  *                 message:
  *                   type: string
- *                 description: Favorite status toggled
- *               favorites:
- *                 type: array
- *                 items:
- *                   type: string
+ *                   description: Favorite status toggled
+ *                 favorites:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     description: List of favorite article IDs
  *       400:
  *         description: Article ID is required
  *       401:
