@@ -1,6 +1,9 @@
 import { GetServerSideProps } from "next";
+import Link from "next/link";
+import { MdHome } from "react-icons/md";
 import { Article } from "../index";
 import ArticleDetail from "../../components/ArticleDetail";
+import { getArticleById } from "../../services/api";
 
 interface ArticlePageProps {
   article: Article | null;
@@ -14,6 +17,14 @@ export default function ArticlePage({ article }: ArticlePageProps) {
   return (
     <div>
       <ArticleDetail article={article} />
+      <div className="back-home-container">
+        <Link href="/" legacyBehavior>
+          <a className="back-home-link">
+            <MdHome className="home-icon" size={20} />
+            Back to Home
+          </a>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -22,27 +33,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params || {};
 
   try {
-    // Replace with your actual backend URL
-    const res = await fetch(
-      `https://ai-content-curator-backend.vercel.app/api/articles/${id}`,
-    );
-    if (!res.ok) throw new Error(`Failed to fetch article with id ${id}`);
-
-    // Expect the API to return the article object directly.
-    const article = await res.json();
-    // Sanitize the article.
-    const sanitizedArticle = article
-      ? JSON.parse(JSON.stringify(article))
-      : null;
+    const article = await getArticleById(id as string);
 
     // Overwrite the 'content' field with the 'summary' field so that ArticleDetail displays the summary.
-    if (sanitizedArticle && sanitizedArticle.summary) {
-      sanitizedArticle.content = sanitizedArticle.summary;
+    if (article && article.summary) {
+      article.content = article.summary;
     }
 
     return {
       props: {
-        article: sanitizedArticle,
+        article,
       },
     };
   } catch (error) {

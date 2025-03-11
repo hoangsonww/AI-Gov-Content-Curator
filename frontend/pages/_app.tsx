@@ -4,7 +4,7 @@ import "../styles/globals.css";
 import "../styles/theme.css";
 import Layout from "../components/Layout";
 
-function MyApp({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps }: AppProps) {
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
 
   useEffect(() => {
@@ -37,4 +37,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp;
+export default App;

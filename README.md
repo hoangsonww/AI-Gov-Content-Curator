@@ -438,8 +438,8 @@ Access the application at [http://localhost:3000](http://localhost:3000).
    ```bash
    vercel --prod
    ```
-   
-  Alternatively, you can deploy directly from the Vercel dashboard.
+
+Alternatively, you can deploy directly from the Vercel dashboard.
 
 ---
 

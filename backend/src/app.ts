@@ -3,27 +3,40 @@ import cors from "cors";
 import path from "path";
 import favicon from "serve-favicon";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import articleRoutes from "./routes/article.routes";
+import authRoutes from "./routes/auth.routes";
+import userRoutes from "./routes/user.routes";
+
+import swaggerDocs from "./swagger/swagger";
+import swaggerUi from "swagger-ui-express";
 
 dotenv.config();
 
 const app = express();
+
+// Connect to MongoDB using URI from .env
+const MONGO_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/mydb";
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
+
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-// Serve favicon from your public folder
+// Serve favicon from public folder
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
 
 // ----------------- Swagger Setup -----------------
-import swaggerDocs from "./swagger/swagger";
-import swaggerUi from "swagger-ui-express";
-
-// Serve the Swagger JSON
 app.get("/swagger.json", (req: Request, res: Response) => {
   res.json(swaggerDocs);
 });
 
-// Serve Swagger UI from a CDN (fully customized)
 app.get("/api-docs", (req: Request, res: Response) => {
   res.send(`
     <!DOCTYPE html>
@@ -74,6 +87,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ----------------- API Routes -----------------
 app.use("/api/articles", articleRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 // 404 for unsupported routes
 app.use((req: Request, res: Response) => {

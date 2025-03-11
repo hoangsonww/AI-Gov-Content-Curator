@@ -12,9 +12,11 @@
     "@google/generative-ai": "^0.21.0",
     "@vercel/node": "^5.1.10",
     "axios": "^1.2.0",
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^6.8.0",
     "prettier": "^3.5.3",
     "serve-favicon": "^2.5.0",
@@ -23,8 +25,10 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^18.0.0",
     "@types/serve-favicon": "^2.5.7",
     "@types/swagger-jsdoc": "^6.0.4",

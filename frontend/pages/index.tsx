@@ -1,6 +1,7 @@
 import { GetServerSideProps } from "next";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
+import { getTopArticles, getLatestArticles } from "../services/api";
 
 export interface Article {
   _id: string;
@@ -74,24 +75,16 @@ export default function HomePage({
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    // 1) Fetch top 5 articles
-    const topRes = await fetch(
-      "https://ai-content-curator-backend.vercel.app/api/articles?page=1&limit=5",
-    );
-    if (!topRes.ok) throw new Error("Failed to fetch top articles");
-    const { data: topData } = await topRes.json();
-
-    // 2) Fetch the next 10 as 'latest'
-    const latestRes = await fetch(
-      "https://ai-content-curator-backend.vercel.app/api/articles?page=2&limit=10",
-    );
-    if (!latestRes.ok) throw new Error("Failed to fetch latest articles");
-    const { data: latestData } = await latestRes.json();
+    // Fetch top 5 and then next 10 articles from the API service
+    const [topData, latestData] = await Promise.all([
+      getTopArticles(),
+      getLatestArticles(),
+    ]);
 
     return {
       props: {
-        topArticles: topData || [],
-        latestArticles: latestData || [],
+        topArticles: topData,
+        latestArticles: latestData,
       },
     };
   } catch (error) {

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Article } from "../pages";
 import ArticleList from "./ArticleList";
+import { getArticles } from "../services/api";
 
 export default function AllArticles() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [page, setPage] = useState(3); // start from page=3 since pages 1 & 2 are used in SSR
+  const [page, setPage] = useState(3);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
@@ -16,12 +17,7 @@ export default function AllArticles() {
   const fetchArticles = async (pageToLoad: number) => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `https://ai-content-curator-backend.vercel.app/api/articles?page=${pageToLoad}&limit=10`,
-      );
-      if (!res.ok) throw new Error("Failed to fetch all articles");
-
-      const { data } = await res.json();
+      const data = await getArticles(pageToLoad, 10);
       if (!data || data.length === 0) {
         setHasMore(false);
       } else {

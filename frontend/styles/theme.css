@@ -41,6 +41,12 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
 }
 
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .navbar-content {
   display: flex;
   align-items: center;
@@ -103,11 +109,11 @@ body {
   transform: translateX(4px);
 }
 
+/* ----------- Theme Toggle Styles ---------- */
 .theme-toggle-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* Make the button a square so the icon sits dead center */
   width: 2.5rem;
   height: 2.5rem;
   background: none;
@@ -115,7 +121,6 @@ body {
   color: var(--navbar-text);
   cursor: pointer;
   font-family: inherit;
-  /* Remove default padding so the icon is centered exactly */
   padding: 0;
   transition:
     background 0.2s ease,
@@ -126,6 +131,17 @@ body {
 .theme-toggle-btn:hover {
   background-color: var(--card-bg);
   transform: scale(1.05);
+}
+
+@keyframes dropdownFadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .theme-dropdown {
@@ -140,6 +156,9 @@ body {
   flex-direction: column;
   gap: 0.25rem;
   z-index: 999;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: dropdownFadeSlide 0.3s ease-out forwards;
 }
 
 .theme-option-btn {
@@ -228,7 +247,6 @@ body {
   white-space: pre-wrap;
 }
 
-/* Load More Button Styling */
 .load-more-btn {
   font-family: "Inter", sans-serif;
   display: block;
@@ -252,4 +270,598 @@ body {
   background-color: #1a1a1a;
   transform: scale(1.03);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- AuthDropdown Styles ---------- */
+.auth-dropdown-container {
+  position: relative;
+}
+
+.auth-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+  color: var(--navbar-text);
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-toggle-btn:hover {
+  background-color: var(--card-bg);
+  transform: scale(1.1);
+}
+
+.auth-dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+  min-width: 150px;
+}
+
+.auth-section {
+  padding: 0.5rem 1rem;
+}
+
+.auth-option {
+  display: block;
+  padding: 0.5rem 0;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: background-color 0.2s ease;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+
+.auth-option:hover {
+  background-color: var(--navbar-bg);
+}
+
+.logout-option {
+  color: #e74c3c;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Login Page Styles ---------- */
+.login-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.4s ease;
+}
+
+.login-title {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  color: var(--text-color);
+}
+
+.error-msg {
+  color: red;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.success-msg {
+  color: green;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.form-input {
+  padding: 0.6rem;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  transition: border-color 0.2s ease;
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
+.form-input:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+.btn {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Register Page Styles ---------- */
+.register-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.4s ease;
+}
+
+.register-title {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  color: var(--text-color);
+}
+
+.error-msg {
+  color: red;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.success-msg {
+  color: green;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.form-input {
+  padding: 0.6rem;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  transition: border-color 0.2s ease;
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
+.form-input:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+.toggle-visibility-btn {
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.toggle-visibility-btn:hover {
+  color: var(--navbar-text);
+}
+
+.btn {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+
+.btn:hover {
+  transform: scale(1.02);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-links {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.form-links p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.form-links a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.form-links a:hover {
+  color: var(--navbar-text);
+}
+
+/* ---------- Reset Password Page Styles ---------- */
+.reset-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.4s ease;
+}
+
+.reset-title {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  color: var(--text-color);
+}
+
+.error-msg {
+  color: red;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.success-msg {
+  color: green;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.reset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.form-input {
+  padding: 0.6rem;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  transition: border-color 0.2s ease;
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
+.form-input:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+.toggle-visibility-btn {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.toggle-visibility-btn:hover {
+  color: var(--navbar-text);
+}
+
+.btn {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+
+.submit-btn {
+  background-color: var(--accent-color);
+  color: #ffffff;
+}
+
+.submit-btn:hover {
+  background-color: #333333 !important;
+  transform: scale(1.02);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Back to Home Link ---------- */
+.back-home-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.back-home-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-home-link:hover {
+  color: var(--navbar-text);
+}
+
+.home-icon {
+  margin-right: 0.5rem;
+}
+
+/* ---------- Auth Page Styles ---------- */
+.logout-option {
+  color: #e74c3c;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.auth-option {
+  display: block;
+  padding: 0.5rem 0;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: background-color 0.2s ease;
+  width: 100%;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.auth-option:hover {
+  background-color: var(--navbar-bg);
+}
+
+/* ---------- Favorites Button Styles ---------- */
+.favorite-btn {
+  background: none;
+  border: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+}
+
+[data-theme="dark"] .favorite-btn svg {
+  color: #ffffff;
+}
+
+/* ---------- Password Toggle Styles ---------- */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container .form-input {
+  flex: 1;
+}
+
+.password-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  color: var(--navbar-text);
+  transition: color 0.2s ease;
+}
+
+[data-theme="dark"] .password-toggle-btn {
+  color: #ffffff;
+}
+
+.password-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ---------- Favorites Page Styles ---------- */
+.favorites-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.favorites-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  animation: slideDown 0.6s ease-out;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.no-favorites {
+  text-align: center;
+  color: var(--text-color);
+}
+
+.back-home-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.back-home-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-home-link:hover {
+  color: var(--navbar-text);
+}
+
+.favorites-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--navbar-text);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+  text-decoration: none;
+}
+
+.favorites-link:hover {
+  transform: scale(1.1);
+  background-color: var(--card-bg);
+}
+
+/* ---------- Not Logged In Link Styles ---------- */
+.not-logged-in {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-color);
+  background-color: var(--card-bg);
+  padding: 1rem;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  margin: 2rem auto;
+  max-width: 400px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.not-logged-in a {
+  color: var(--accent-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.not-logged-in a:hover {
+  color: var(--navbar-text);
+  text-decoration: underline;
 }

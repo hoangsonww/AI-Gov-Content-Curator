@@ -5,20 +5,31 @@ const router = Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Articles
+ *   description: API endpoints for managing articles
+ */
+
+/**
+ * @swagger
  * /api/articles:
  *   get:
- *     summary: Retrieve a list of articles.
+ *     tags: [Articles]
+ *     summary: Retrieve a list of articles
+ *     description: Retrieve articles with optional pagination.
  *     parameters:
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *         description: Page number for pagination.
+ *
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *         description: Number of articles per page.
+ *
  *       - in: query
  *         name: source
  *         schema:
@@ -41,12 +52,14 @@ const router = Router();
  *       500:
  *         description: Failed to fetch articles.
  */
+
 router.get("/", getArticles);
 
 /**
  * @swagger
  * /api/articles/{id}:
  *   get:
+ *     tags: [Articles]
  *     summary: Retrieve a single article by ID.
  *     parameters:
  *       - in: path
@@ -67,6 +80,7 @@ router.get("/", getArticles);
  *       500:
  *         description: Failed to fetch article.
  */
+
 router.get("/:id", getArticleById);
 
 export default router;

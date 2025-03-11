@@ -1,5 +1,37 @@
 import { Schema, model, Document } from "mongoose";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Article:
+ *       type: object
+ *       description: Represents an article fetched from an external source.
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Unique identifier of the article.
+ *         url:
+ *           type: string
+ *           description: The original URL from which the article was fetched.
+ *         title:
+ *           type: string
+ *           description: The title of the article.
+ *         content:
+ *           type: string
+ *           description: The full content of the article.
+ *         summary:
+ *           type: string
+ *           description: A short summary of the article content.
+ *         source:
+ *           type: string
+ *           description: The source or publisher of the article.
+ *         fetchedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp indicating when the article was fetched.
+ */
+
 export interface IArticle extends Document {
   url: string;
   title: string;
@@ -10,10 +42,10 @@ export interface IArticle extends Document {
 }
 
 const articleSchema = new Schema<IArticle>({
-  url: { type: String, required: true, unique: true },
+  url: { type: String, required: true },
   title: { type: String, required: true },
-  summary: { type: String },
   content: { type: String, required: true },
+  summary: { type: String },
   source: { type: String, required: true },
   fetchedAt: { type: Date, default: Date.now },
 });
@@ -25,12 +57,13 @@ articleSchema.set("toJSON", {
       _id: ret._id,
       url: ret.url,
       title: ret.title,
-      summary: ret.summary,
       content: ret.content,
+      summary: ret.summary,
       source: ret.source,
       fetchedAt: ret.fetchedAt,
     };
   },
 });
 
-export default model<IArticle>("Article", articleSchema);
+const Article = model<IArticle>("Article", articleSchema);
+export default Article;
