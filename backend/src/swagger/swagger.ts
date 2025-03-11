@@ -35,6 +35,8 @@ const options = {
   apis: [
     path.resolve(__dirname, "../routes/*.ts"),
     path.resolve(__dirname, "../models/*.ts"),
+    path.resolve(__dirname, "../routes/*.js"),
+    path.resolve(__dirname, "../models/*.js"),
   ],
 };
 
