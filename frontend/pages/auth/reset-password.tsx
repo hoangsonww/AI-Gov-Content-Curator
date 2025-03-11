@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { requestPasswordReset, confirmPasswordReset } from "../../services/api";
 
 export default function ResetPassword() {
   const [step, setStep] = useState<number>(1);
@@ -20,26 +21,14 @@ export default function ResetPassword() {
   const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+
     try {
-      const res = await fetch(
-        "https://ai-content-curator-backend.vercel.app/api/auth/reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Failed to request reset token");
-      } else {
-        // Assume the response contains a resetToken when the email is verified
-        setResetToken(data.resetToken || "");
-        setMessage("Reset token sent. Your email is now locked for reset.");
-        setStep(2);
-      }
+      const data = await requestPasswordReset(email);
+      setResetToken(data.resetToken || "");
+      setMessage("Reset token sent. Your email is now locked for reset.");
+      setStep(2);
     } catch (err) {
-      setError("An error occurred while requesting reset token.");
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     }
   };
 
@@ -47,28 +36,18 @@ export default function ResetPassword() {
   const handleResetSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+
     try {
-      const res = await fetch(
-        "https://ai-content-curator-backend.vercel.app/api/auth/confirm-reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, token: resetToken, newPassword }),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Password reset failed");
-      } else {
-        setMessage("Password reset successfully. Redirecting to login...");
-        setTimeout(() => router.push("/auth/login"), 2000);
-      }
+      await confirmPasswordReset(email, resetToken, newPassword);
+      setMessage("Password reset successfully. Redirecting to login...");
+      setTimeout(() => router.push("/auth/login"), 2000);
     } catch (err) {
-      setError("An error occurred while resetting password.");
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     }
   };
 

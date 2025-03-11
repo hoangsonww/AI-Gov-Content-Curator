@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { registerUser } from "../../services/api";
 
 export default function Register() {
   const [name, setName] = useState<string>("");
@@ -18,28 +19,18 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+
     try {
-      const res = await fetch(
-        "https://ai-content-curator-backend.vercel.app/api/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
-      } else {
-        setMessage("Registration successful, redirecting to login...");
-        setTimeout(() => router.push("/auth/login"), 2000);
-      }
+      await registerUser(name, email, password);
+      setMessage("Registration successful, redirecting to login...");
+      setTimeout(() => router.push("/auth/login"), 2000);
     } catch (err) {
-      setError("An error occurred during registration.");
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
     }
   };
 

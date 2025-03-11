@@ -1,6 +1,7 @@
 import { Article } from "../pages";
 import React, { useState, useEffect } from "react";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import { fetchFavoriteArticleIds, toggleFavoriteArticle } from "../services/api";
 
 interface ArticleDetailProps {
   article: Article;
@@ -18,24 +19,16 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       return;
     }
     setIsLoggedIn(true);
+
     const loadFavorites = async () => {
       try {
-        const res = await fetch(
-          "https://ai-content-curator-backend.vercel.app/api/users/favorites",
-          {
-            headers: { Authorization: token },
-          },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (data.favorites && Array.isArray(data.favorites)) {
-            setIsFavorited(data.favorites.includes(article._id));
-          }
-        }
+        const favorites = await fetchFavoriteArticleIds(token);
+        setIsFavorited(favorites.includes(article._id));
       } catch (error) {
         console.error("Error loading favorites", error);
       }
     };
+
     loadFavorites();
   }, [article._id]);
 
@@ -43,20 +36,9 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const res = await fetch(
-        "https://ai-content-curator-backend.vercel.app/api/users/favorite",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-          body: JSON.stringify({ articleId: article._id }),
-        },
-      );
-      if (res.ok) {
-        setIsFavorited((prev) => !prev);
-      }
+
+      await toggleFavoriteArticle(token, article._id);
+      setIsFavorited((prev) => !prev);
     } catch (error) {
       console.error("Error toggling favorite", error);
     }

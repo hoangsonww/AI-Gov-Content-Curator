@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { loginUser } from "../../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -15,25 +16,11 @@ export default function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch(
-        "https://ai-content-curator-backend.vercel.app/api/auth/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-      } else {
-        // Save the token to localStorage
-        localStorage.setItem("token", data.token);
-        setMessage("Login successful, redirecting to home...");
-        router.push("/");
-      }
-    } catch (err) {
-      setError("An error occurred during login.");
+      const data = await loginUser(email, password);
+      setMessage("Login successful, redirecting to home...");
+      router.push("/");
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 

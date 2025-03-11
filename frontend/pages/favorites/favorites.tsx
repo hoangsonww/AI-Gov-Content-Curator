@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Article } from "../index";
 import ArticleCard from "../../components/ArticleCard";
+import { fetchFavoriteArticles } from "../../services/api";
 
 export default function FavoritesPage() {
   const [favoriteArticles, setFavoriteArticles] = useState<Article[]>([]);
@@ -20,25 +21,10 @@ export default function FavoritesPage() {
 
     const fetchFavorites = async () => {
       try {
-        const res = await fetch(
-          "https://ai-content-curator-backend.vercel.app/api/users/favorites/articles",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `${token}`,
-            },
-          },
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          setFavoriteArticles(data);
-        } else {
-          console.error("Failed to fetch favorites:", await res.text());
-        }
+        const data = await fetchFavoriteArticles(token);
+        setFavoriteArticles(data);
       } catch (error) {
-        console.error("Error fetching favorite articles:", error);
+        console.error(error instanceof Error ? error.message : "An error occurred.");
       } finally {
         setLoading(false);
       }

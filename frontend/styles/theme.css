@@ -785,6 +785,10 @@ body {
   animation-fill-mode: forwards;
 }
 
+.loading-msg {
+  text-align: center;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
