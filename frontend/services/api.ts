@@ -56,21 +56,25 @@ export const getTotalArticles = async (retries = 3, delay = 1000): Promise<numbe
 /**
  * Fetches the latest 10 articles from the API.
  */
-export async function getLatestArticles(): Promise<Article[]> {
-  try {
-    const res = await fetch(`${BASE_URL}/articles?page=2&limit=10`);
+export async function getLatestArticles(retries = 3, delay = 1000): Promise<Article[]> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/articles?page=2&limit=10`);
 
-    if (!res.ok) {
-      console.error(`Error fetching latest articles: ${res.statusText}`);
-      return [];
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: Error fetching latest articles: ${res.statusText}`);
+        if (attempt === retries) return [];
+      } else {
+        const { data } = await res.json();
+        return data || [];
+      }
+    } catch (error) {
+      console.error(`Attempt ${attempt}: Network error while fetching latest articles:`, error);
+      if (attempt === retries) return [];
     }
-
-    const { data } = await res.json();
-    return data || [];
-  } catch (error) {
-    console.error("Network error while fetching latest articles:", error);
-    return [];
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  return [];
 }
 
 /**
