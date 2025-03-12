@@ -12,7 +12,7 @@ export default function AllArticles() {
 
   useEffect(() => {
     fetchArticles(page);
-    fetchTotalArticles(); // Now calling from api.ts
+    fetchTotalArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -61,7 +61,9 @@ export default function AllArticles() {
       )}
       {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
       {!hasMore && (
-        <p style={{ textAlign: "center" }}>No more articles to load.</p>
+        <p style={{ textAlign: "center" }}>
+          No more articles to load. More articles coming soon! 🚀
+        </p>
       )}
 
       {/* Displaying article range */}
@@ -70,8 +72,10 @@ export default function AllArticles() {
           style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}
         >
           Displaying Articles{" "}
-          {articles.length > 0 ? `1-${articles.length}` : "0"} of{" "}
-          {totalArticles}
+          <strong>
+            {articles.length > 0 ? `1 - ${articles.length}` : "0"}
+          </strong>{" "}
+          of <strong>{totalArticles}</strong>
         </p>
       )}
     </div>

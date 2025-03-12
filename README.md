@@ -13,7 +13,7 @@ Each component is maintained in its own directory:
 - **Crawler:** `crawler/`
   - Live: [https://ai-content-curator-crawler.vercel.app/](https://ai-content-curator-crawler.vercel.app/)
 - **Frontend:** `frontend/`
-  - Live: [https://ai-gov-content-curator.vercel.app/](https://ai-gov-content-curator.vercel.app/)
+  - Live: [https://ai-article-curator.vercel.app/](https://ai-article-curator.vercel.app/)
 
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white)
