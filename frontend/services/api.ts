@@ -7,42 +7,50 @@ const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
 /**
  * Fetches the top 5 articles from the API.
  */
-export async function getTopArticles(): Promise<Article[]> {
-  try {
-    const res = await fetch(`${BASE_URL}/articles?page=1&limit=5`);
+export async function getTopArticles(retries = 3, delay = 1000): Promise<Article[]> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/articles?page=1&limit=5`);
 
-    if (!res.ok) {
-      console.error(`Error fetching top articles: ${res.statusText}`);
-      return [];
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: Error fetching top articles: ${res.statusText}`);
+        if (attempt === retries) return [];
+      } else {
+        const { data } = await res.json();
+        return data || [];
+      }
+    } catch (error) {
+      console.error(`Attempt ${attempt}: Network error while fetching top articles:`, error);
+      if (attempt === retries) return [];
     }
-
-    const { data } = await res.json();
-    return data || [];
-  } catch (error) {
-    console.error("Network error while fetching top articles:", error);
-    return [];
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  return [];
 }
 
 /**
  * Fetches the total number of articles.
  * @returns Total article count or null if an error occurs.
  */
-export const getTotalArticles = async (): Promise<number | null> => {
-  try {
-    const res = await fetch(`${BASE_URL}/articles/count`);
+export const getTotalArticles = async (retries = 3, delay = 1000): Promise<number | null> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/articles/count`);
 
-    if (!res.ok) {
-      console.error(`Error fetching total articles: ${res.statusText}`);
-      return null;
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: Error fetching total articles: ${res.statusText}`);
+        if (attempt === retries) return null;
+      } else {
+        const result = await res.json();
+        return result.total;
+      }
+    } catch (error) {
+      console.error(`Attempt ${attempt}: Network error while fetching total articles:`, error);
+      if (attempt === retries) return null;
     }
-
-    const result = await res.json();
-    return result.total;
-  } catch (error) {
-    console.error("Network error while fetching total articles:", error);
-    return null;
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  return null;
 };
 
 /**
