@@ -11,23 +11,31 @@ const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
  * @param delay Delay between retries in milliseconds.
  * @returns List of top articles or an empty array if an error occurs.
  */
-export async function getTopArticles(retries = 3, delay = 1000): Promise<Article[]> {
+export async function getTopArticles(
+  retries = 3,
+  delay = 1000,
+): Promise<Article[]> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/articles?page=1&limit=5`);
 
       if (!res.ok) {
-        console.error(`Attempt ${attempt}: Error fetching top articles: ${res.statusText}`);
+        console.error(
+          `Attempt ${attempt}: Error fetching top articles: ${res.statusText}`,
+        );
         if (attempt === retries) return [];
       } else {
         const { data } = await res.json();
         return data || [];
       }
     } catch (error) {
-      console.error(`Attempt ${attempt}: Network error while fetching top articles:`, error);
+      console.error(
+        `Attempt ${attempt}: Network error while fetching top articles:`,
+        error,
+      );
       if (attempt === retries) return [];
     }
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return [];
 }
@@ -39,23 +47,31 @@ export async function getTopArticles(retries = 3, delay = 1000): Promise<Article
  * @param delay Delay between retries in milliseconds.
  * @returns Total article count or null if an error occurs.
  */
-export const getTotalArticles = async (retries = 3, delay = 1000): Promise<number | null> => {
+export const getTotalArticles = async (
+  retries = 3,
+  delay = 1000,
+): Promise<number | null> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/articles/count`);
 
       if (!res.ok) {
-        console.error(`Attempt ${attempt}: Error fetching total articles: ${res.statusText}`);
+        console.error(
+          `Attempt ${attempt}: Error fetching total articles: ${res.statusText}`,
+        );
         if (attempt === retries) return null;
       } else {
         const result = await res.json();
         return result.total;
       }
     } catch (error) {
-      console.error(`Attempt ${attempt}: Network error while fetching total articles:`, error);
+      console.error(
+        `Attempt ${attempt}: Network error while fetching total articles:`,
+        error,
+      );
       if (attempt === retries) return null;
     }
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return null;
 };
@@ -67,23 +83,31 @@ export const getTotalArticles = async (retries = 3, delay = 1000): Promise<numbe
  * @param delay Delay between retries in milliseconds.
  * @returns List of latest articles or an empty array if an error occurs.
  */
-export async function getLatestArticles(retries = 3, delay = 1000): Promise<Article[]> {
+export async function getLatestArticles(
+  retries = 3,
+  delay = 1000,
+): Promise<Article[]> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/articles?page=2&limit=10`);
 
       if (!res.ok) {
-        console.error(`Attempt ${attempt}: Error fetching latest articles: ${res.statusText}`);
+        console.error(
+          `Attempt ${attempt}: Error fetching latest articles: ${res.statusText}`,
+        );
         if (attempt === retries) return [];
       } else {
         const { data } = await res.json();
         return data || [];
       }
     } catch (error) {
-      console.error(`Attempt ${attempt}: Network error while fetching latest articles:`, error);
+      console.error(
+        `Attempt ${attempt}: Network error while fetching latest articles:`,
+        error,
+      );
       if (attempt === retries) return [];
     }
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return [];
 }
@@ -96,23 +120,32 @@ export async function getLatestArticles(retries = 3, delay = 1000): Promise<Arti
  * @param retries Number of retry attempts.
  * @param delay Delay between retries in milliseconds.
  */
-export async function getArticleById(id: string, retries = 3, delay = 1000): Promise<Article | null> {
+export async function getArticleById(
+  id: string,
+  retries = 3,
+  delay = 1000,
+): Promise<Article | null> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/articles/${id}`);
 
       if (!res.ok) {
-        console.error(`Attempt ${attempt}: Error fetching article (${id}): ${res.statusText}`);
+        console.error(
+          `Attempt ${attempt}: Error fetching article (${id}): ${res.statusText}`,
+        );
         if (attempt === retries) return null;
       } else {
         const article = await res.json();
         return article ? JSON.parse(JSON.stringify(article)) : null;
       }
     } catch (error) {
-      console.error(`Attempt ${attempt}: Network error while fetching article (${id}):`, error);
+      console.error(
+        `Attempt ${attempt}: Network error while fetching article (${id}):`,
+        error,
+      );
       if (attempt === retries) return null;
     }
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return null;
 }
@@ -127,23 +160,35 @@ export async function getArticleById(id: string, retries = 3, delay = 1000): Pro
  * @param delay Delay between retries in milliseconds.
  * @returns List of articles or an empty array if an error occurs.
  */
-export async function getArticles(page: number, limit = 10, retries = 3, delay = 1000): Promise<Article[]> {
+export async function getArticles(
+  page: number,
+  limit = 10,
+  retries = 3,
+  delay = 1000,
+): Promise<Article[]> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(`${BASE_URL}/articles?page=${page}&limit=${limit}`);
+      const res = await fetch(
+        `${BASE_URL}/articles?page=${page}&limit=${limit}`,
+      );
 
       if (!res.ok) {
-        console.error(`Attempt ${attempt}: Error fetching articles (Page ${page}): ${res.statusText}`);
+        console.error(
+          `Attempt ${attempt}: Error fetching articles (Page ${page}): ${res.statusText}`,
+        );
         if (attempt === retries) return [];
       } else {
         const { data } = await res.json();
         return data || [];
       }
     } catch (error) {
-      console.error(`Attempt ${attempt}: Network error while fetching articles (Page ${page}):`, error);
+      console.error(
+        `Attempt ${attempt}: Network error while fetching articles (Page ${page}):`,
+        error,
+      );
       if (attempt === retries) return [];
     }
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return [];
 }
@@ -169,7 +214,9 @@ export const loginUser = async (email: string, password: string) => {
     localStorage.setItem("token", data.token);
     return data;
   } catch (error: any) {
-    throw new Error(error.message || "An error occurred during login. Please retry.");
+    throw new Error(
+      error.message || "An error occurred during login. Please retry.",
+    );
   }
 };
 
@@ -193,11 +240,14 @@ export const registerUser = async (
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Registration failed. Please retry.");
+    if (!res.ok)
+      throw new Error(data.error || "Registration failed. Please retry.");
 
     return data;
   } catch (error: any) {
-    throw new Error(error.message || "An error occurred during registration. Please retry.");
+    throw new Error(
+      error.message || "An error occurred during registration. Please retry.",
+    );
   }
 };
 
@@ -215,12 +265,16 @@ export const requestPasswordReset = async (email: string) => {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to request reset token. Please retry.");
+    if (!res.ok)
+      throw new Error(
+        data.error || "Failed to request reset token. Please retry.",
+      );
 
     return data;
   } catch (error: any) {
     throw new Error(
-      error.message || "An error occurred while requesting reset token. Please retry.",
+      error.message ||
+        "An error occurred while requesting reset token. Please retry.",
     );
   }
 };
@@ -245,12 +299,14 @@ export const confirmPasswordReset = async (
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Password reset failed. Please retry.");
+    if (!res.ok)
+      throw new Error(data.error || "Password reset failed. Please retry.");
 
     return data;
   } catch (error: any) {
     console.error(
-      error.message || "An error occurred while resetting password. Please retry.",
+      error.message ||
+        "An error occurred while resetting password. Please retry.",
     );
   }
 };
@@ -263,7 +319,11 @@ export const confirmPasswordReset = async (
  * @param delay - Delay between retries in milliseconds (default: 1000).
  * @returns List of favorite articles.
  */
-export const fetchFavoriteArticles = async (token: string, retries = 3, delay = 1000) => {
+export const fetchFavoriteArticles = async (
+  token: string,
+  retries = 3,
+  delay = 1000,
+) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/users/favorites/articles`, {
@@ -281,10 +341,12 @@ export const fetchFavoriteArticles = async (token: string, retries = 3, delay = 
         return await res.json();
       }
     } catch (error: any) {
-      console.error(`Attempt ${attempt}: ${error.message || "Failed to fetch favorite articles."}`);
+      console.error(
+        `Attempt ${attempt}: ${error.message || "Failed to fetch favorite articles."}`,
+      );
       if (attempt === retries) return [];
     }
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return [];
 };
@@ -297,7 +359,11 @@ export const fetchFavoriteArticles = async (token: string, retries = 3, delay = 
  * @param delay - Delay between retries in milliseconds (default: 1000).
  * @returns Array of favorite article IDs.
  */
-export const fetchFavoriteArticleIds = async (token: string, retries = 3, delay = 1000) => {
+export const fetchFavoriteArticleIds = async (
+  token: string,
+  retries = 3,
+  delay = 1000,
+) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/users/favorites`, {
@@ -312,10 +378,12 @@ export const fetchFavoriteArticleIds = async (token: string, retries = 3, delay 
         return data.favorites || [];
       }
     } catch (error: any) {
-      console.error(`Attempt ${attempt}: ${error.message || "Failed to fetch favorite articles."}`);
+      console.error(
+        `Attempt ${attempt}: ${error.message || "Failed to fetch favorite articles."}`,
+      );
       if (attempt === retries) return [];
     }
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return [];
 };
@@ -344,7 +412,9 @@ export const toggleFavoriteArticle = async (
       return [];
     }
   } catch (error: any) {
-    console.error(error.message || "Failed to toggle favorite status. Please retry.");
+    console.error(
+      error.message || "Failed to toggle favorite status. Please retry.",
+    );
     return [];
   }
 };
