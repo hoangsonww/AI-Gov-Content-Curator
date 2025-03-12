@@ -163,13 +163,13 @@ export const loginUser = async (email: string, password: string) => {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login failed");
+    if (!res.ok) throw new Error(data.error || "Login failed. Please retry.");
 
     // Save token to localStorage
     localStorage.setItem("token", data.token);
     return data;
   } catch (error: any) {
-    throw new Error(error.message || "An error occurred during login.");
+    throw new Error(error.message || "An error occurred during login. Please retry.");
   }
 };
 
@@ -193,11 +193,11 @@ export const registerUser = async (
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Registration failed");
+    if (!res.ok) throw new Error(data.error || "Registration failed. Please retry.");
 
     return data;
   } catch (error: any) {
-    throw new Error(error.message || "An error occurred during registration.");
+    throw new Error(error.message || "An error occurred during registration. Please retry.");
   }
 };
 
@@ -215,12 +215,12 @@ export const requestPasswordReset = async (email: string) => {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to request reset token");
+    if (!res.ok) throw new Error(data.error || "Failed to request reset token. Please retry.");
 
     return data;
   } catch (error: any) {
     throw new Error(
-      error.message || "An error occurred while requesting reset token.",
+      error.message || "An error occurred while requesting reset token. Please retry.",
     );
   }
 };
@@ -245,65 +245,79 @@ export const confirmPasswordReset = async (
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Password reset failed");
+    if (!res.ok) throw new Error(data.error || "Password reset failed. Please retry.");
 
     return data;
   } catch (error: any) {
     console.error(
-      error.message || "An error occurred while resetting password.",
+      error.message || "An error occurred while resetting password. Please retry.",
     );
   }
 };
 
 /**
  * Fetches favorite articles for the logged-in user.
+ *
  * @param token - User's authentication token.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
  * @returns List of favorite articles.
  */
-export const fetchFavoriteArticles = async (token: string) => {
-  try {
-    const res = await fetch(`${BASE_URL}/users/favorites/articles`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token, // No 'Bearer ' prefix
-      },
-    });
+export const fetchFavoriteArticles = async (token: string, retries = 3, delay = 1000) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/users/favorites/articles`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token, // No 'Bearer ' prefix
+        },
+      });
 
-    if (!res.ok) {
-      console.error(await res.text());
-      return [];
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: ${await res.text()}`);
+        if (attempt === retries) return [];
+      } else {
+        return await res.json();
+      }
+    } catch (error: any) {
+      console.error(`Attempt ${attempt}: ${error.message || "Failed to fetch favorite articles."}`);
+      if (attempt === retries) return [];
     }
-
-    return await res.json();
-  } catch (error: any) {
-    console.error(error.message || "Failed to fetch favorite articles.");
-    return [];
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  return [];
 };
 
 /**
  * Fetches favorite articles for the logged-in user.
+ *
  * @param token - User's authentication token.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
  * @returns Array of favorite article IDs.
  */
-export const fetchFavoriteArticleIds = async (token: string) => {
-  try {
-    const res = await fetch(`${BASE_URL}/users/favorites`, {
-      headers: { Authorization: token },
-    });
+export const fetchFavoriteArticleIds = async (token: string, retries = 3, delay = 1000) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/users/favorites`, {
+        headers: { Authorization: token },
+      });
 
-    if (!res.ok) {
-      console.error(await res.text());
-      return [];
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: ${await res.text()}`);
+        if (attempt === retries) return [];
+      } else {
+        const data = await res.json();
+        return data.favorites || [];
+      }
+    } catch (error: any) {
+      console.error(`Attempt ${attempt}: ${error.message || "Failed to fetch favorite articles."}`);
+      if (attempt === retries) return [];
     }
-
-    const data = await res.json();
-    return data.favorites || [];
-  } catch (error: any) {
-    console.error(error.message || "Failed to fetch favorite articles.");
-    return [];
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  return [];
 };
 
 /**
@@ -330,7 +344,7 @@ export const toggleFavoriteArticle = async (
       return [];
     }
   } catch (error: any) {
-    console.error(error.message || "Failed to toggle favorite status.");
+    console.error(error.message || "Failed to toggle favorite status. Please retry.");
     return [];
   }
 };
