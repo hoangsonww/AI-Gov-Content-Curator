@@ -6,6 +6,10 @@ const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
 
 /**
  * Fetches the top 5 articles from the API.
+ *
+ * @param retries Number of retry attempts.
+ * @param delay Delay between retries in milliseconds.
+ * @returns List of top articles or an empty array if an error occurs.
  */
 export async function getTopArticles(retries = 3, delay = 1000): Promise<Article[]> {
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -30,6 +34,9 @@ export async function getTopArticles(retries = 3, delay = 1000): Promise<Article
 
 /**
  * Fetches the total number of articles.
+ *
+ * @param retries Number of retry attempts.
+ * @param delay Delay between retries in milliseconds.
  * @returns Total article count or null if an error occurs.
  */
 export const getTotalArticles = async (retries = 3, delay = 1000): Promise<number | null> => {
@@ -55,6 +62,10 @@ export const getTotalArticles = async (retries = 3, delay = 1000): Promise<numbe
 
 /**
  * Fetches the latest 10 articles from the API.
+ *
+ * @param retries Number of retry attempts.
+ * @param delay Delay between retries in milliseconds.
+ * @returns List of latest articles or an empty array if an error occurs.
  */
 export async function getLatestArticles(retries = 3, delay = 1000): Promise<Article[]> {
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -82,6 +93,8 @@ export async function getLatestArticles(retries = 3, delay = 1000): Promise<Arti
  * Returns `null` if the article is not found or an error occurs.
  *
  * @param id The article ID to fetch.
+ * @param retries Number of retry attempts.
+ * @param delay Delay between retries in milliseconds.
  */
 export async function getArticleById(id: string, retries = 3, delay = 1000): Promise<Article | null> {
   for (let attempt = 1; attempt <= retries; attempt++) {
