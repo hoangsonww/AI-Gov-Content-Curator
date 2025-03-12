@@ -123,30 +123,29 @@ export async function getArticleById(id: string, retries = 3, delay = 1000): Pro
  *
  * @param page The page number to fetch.
  * @param limit The number of articles per page (default: 10).
+ * @param retries Number of retry attempts.
+ * @param delay Delay between retries in milliseconds.
+ * @returns List of articles or an empty array if an error occurs.
  */
-export async function getArticles(
-  page: number,
-  limit = 10,
-): Promise<Article[]> {
-  try {
-    const res = await fetch(`${BASE_URL}/articles?page=${page}&limit=${limit}`);
+export async function getArticles(page: number, limit = 10, retries = 3, delay = 1000): Promise<Article[]> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/articles?page=${page}&limit=${limit}`);
 
-    if (!res.ok) {
-      console.error(
-        `Error fetching articles (Page ${page}): ${res.statusText}`,
-      );
-      return [];
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: Error fetching articles (Page ${page}): ${res.statusText}`);
+        if (attempt === retries) return [];
+      } else {
+        const { data } = await res.json();
+        return data || [];
+      }
+    } catch (error) {
+      console.error(`Attempt ${attempt}: Network error while fetching articles (Page ${page}):`, error);
+      if (attempt === retries) return [];
     }
-
-    const { data } = await res.json();
-    return data || [];
-  } catch (error) {
-    console.error(
-      `Network error while fetching articles (Page ${page}):`,
-      error,
-    );
-    return [];
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  return [];
 }
 
 /**
