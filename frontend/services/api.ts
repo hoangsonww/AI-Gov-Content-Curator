@@ -83,21 +83,25 @@ export async function getLatestArticles(retries = 3, delay = 1000): Promise<Arti
  *
  * @param id The article ID to fetch.
  */
-export async function getArticleById(id: string): Promise<Article | null> {
-  try {
-    const res = await fetch(`${BASE_URL}/articles/${id}`);
+export async function getArticleById(id: string, retries = 3, delay = 1000): Promise<Article | null> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/articles/${id}`);
 
-    if (!res.ok) {
-      console.error(`Error fetching article (${id}): ${res.statusText}`);
-      return null;
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: Error fetching article (${id}): ${res.statusText}`);
+        if (attempt === retries) return null;
+      } else {
+        const article = await res.json();
+        return article ? JSON.parse(JSON.stringify(article)) : null;
+      }
+    } catch (error) {
+      console.error(`Attempt ${attempt}: Network error while fetching article (${id}):`, error);
+      if (attempt === retries) return null;
     }
-
-    const article = await res.json();
-    return article ? JSON.parse(JSON.stringify(article)) : null;
-  } catch (error) {
-    console.error(`Network error while fetching article (${id}):`, error);
-    return null;
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  return null;
 }
 
 /**
