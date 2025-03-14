@@ -40,9 +40,14 @@ export default function ThemeToggle({
     displayedTheme = isDark ? "dark" : "light";
   }
 
+  // Modified handleToggle: if already open, just toggle (close it); otherwise, close other dropdowns then toggle.
   const handleToggle = () => {
-    closeOther();
-    toggle();
+    if (open) {
+      toggle();
+    } else {
+      closeOther();
+      toggle();
+    }
   };
 
   useEffect(() => {

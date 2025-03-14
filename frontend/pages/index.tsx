@@ -1,4 +1,4 @@
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 import { getTopArticles, getLatestArticles } from "../services/api";
@@ -26,10 +26,11 @@ export default function HomePage({
     <>
       <div style={{ marginBottom: "2rem" }}>
         <h1 className="page-title">Latest Articles</h1>
-        {/* Optionally, if you want to have a hero slider for top articles:
+        {/* Optionally, if we later want to have a hero slider for top articles:
             <div className="hero-slider-container">
               <HeroSlider articles={topArticles} />
             </div>
+            For now, we are just displaying the latest articles. Will need to fix the HeroSlider btw
         */}
         <div className="latest-articles-container">
           <LatestArticles articles={latestArticles} />
@@ -73,7 +74,7 @@ export default function HomePage({
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   try {
     // Fetch top 5 and then next 10 articles from the API service
     const [topData, latestData] = await Promise.all([
@@ -86,6 +87,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
         topArticles: topData,
         latestArticles: latestData,
       },
+      revalidate: 43200, // Revalidate every 12 hours
     };
   } catch (error) {
     console.error("Error fetching articles:", error);
@@ -94,6 +96,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
         topArticles: [],
         latestArticles: [],
       },
+      revalidate: 43200,
     };
   }
 };

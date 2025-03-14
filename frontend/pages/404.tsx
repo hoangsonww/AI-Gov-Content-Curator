@@ -1,6 +1,9 @@
 import Head from "next/head";
 import Link from "next/link";
 
+/**
+ * A very simple 404 page for when a user navigates to a non-existent route.
+ */
 export default function Custom404() {
   return (
     <>

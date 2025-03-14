@@ -126,7 +126,7 @@ body {
   transition:
     background 0.2s ease,
     transform 0.2s ease;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .theme-toggle-btn:hover {
@@ -322,6 +322,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 8px;
 }
 
 .auth-toggle-btn:hover {
@@ -338,7 +339,7 @@ body {
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: dropdownFadeSlide 0.3s ease-out forwards;
   min-width: 150px;
 }
 
@@ -773,6 +774,7 @@ body {
   right: 8px;
   cursor: pointer;
   transition: transform 0.2s ease;
+  border-radius: 8px;
 }
 
 .favorite-btn:hover {
@@ -882,6 +884,7 @@ body {
     transform 0.2s ease,
     background-color 0.2s ease;
   text-decoration: none;
+  border-radius: 8px;
 }
 
 .favorites-link:hover {

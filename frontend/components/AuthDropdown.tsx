@@ -52,9 +52,14 @@ export default function AuthDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open, toggle]);
 
+  // Modified handleClick to close the dropdown if it's already open.
   const handleClick = () => {
-    closeOther();
-    toggle();
+    if (open) {
+      toggle();
+    } else {
+      closeOther();
+      toggle();
+    }
   };
 
   const handleLogout = () => {

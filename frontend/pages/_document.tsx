@@ -17,7 +17,7 @@ class MyDocument extends Document {
       <Html lang="en">
         <Head>
           {/* DEFAULT TITLE (site-wide). */}
-          <title>Article Curator</title>
+          <title>Article Curator - AI-Powered Article Curator</title>
 
           {/* Preconnect for Google Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -38,6 +38,15 @@ class MyDocument extends Document {
             name="description"
             content="An AI-powered article curator for government staff."
           />
+
+          {/* Additional SEO meta tags */}
+          <meta
+            name="keywords"
+            content="article curator, AI articles, government articles, content curation, news aggregator, AI-powered"
+          />
+          <meta name="robots" content="index, follow" />
+          <meta name="author" content="Son Nguyen" />
+          <meta name="language" content="English" />
 
           {/* Theme color */}
           <meta name="theme-color" content="#ffffff" />
@@ -70,6 +79,8 @@ class MyDocument extends Document {
             property="og:image"
             content="https://ai-gov-content-curator.vercel.app/android-chrome-192x192.png"
           />
+          <meta property="og:site_name" content="AI-Powered Article Curator" />
+          <meta property="og:locale" content="en_US" />
 
           {/* Twitter Card */}
           <meta name="twitter:card" content="summary_large_image" />
@@ -83,11 +94,29 @@ class MyDocument extends Document {
             content="https://ai-gov-content-curator.vercel.app/android-chrome-192x192.png"
           />
 
-          <meta property="og:site_name" content="AI-Powered Article Curator" />
-
+          {/* Canonical URL */}
           <link
             rel="canonical"
             href="https://ai-gov-content-curator.vercel.app/"
+          />
+
+          {/* Structured Data - JSON-LD */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "Article Curator",
+                url: "https://ai-gov-content-curator.vercel.app/",
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target:
+                    "https://ai-gov-content-curator.vercel.app/search?q={search_term_string}",
+                  "query-input": "required name=search_term_string",
+                },
+              }),
+            }}
           />
         </Head>
         <body>
