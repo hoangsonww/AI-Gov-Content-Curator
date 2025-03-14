@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import Link from "next/link";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { requestPasswordReset, confirmPasswordReset } from "../../services/api";
@@ -58,100 +59,110 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="reset-container">
-      <h1 className="reset-title">Reset Password</h1>
-      {error && <p className="error-msg">{error}</p>}
-      {message && <p className="success-msg">{message}</p>}
-      {step === 1 && (
-        <form className="reset-form" onSubmit={handleEmailSubmit}>
-          <div className="form-group">
-            <label className="form-label">Email:</label>
-            <input
-              type="email"
-              className="form-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" className="btn submit-btn">
-            Send Reset Token
-          </button>
-        </form>
-      )}
-      {step === 2 && (
-        <form className="reset-form" onSubmit={handleResetSubmit}>
-          <div className="form-group">
-            <label className="form-label">Email:</label>
-            <input type="email" className="form-input" value={email} readOnly />
-          </div>
-          <div className="form-group">
-            <label className="form-label">New Password:</label>
-            <div className="password-input-container">
+    <>
+      <Head>
+        <title>Article Curator - Reset Password</title>
+      </Head>
+      <div className="reset-container">
+        <h1 className="reset-title">Reset Password</h1>
+        {error && <p className="error-msg">{error}</p>}
+        {message && <p className="success-msg">{message}</p>}
+        {step === 1 && (
+          <form className="reset-form" onSubmit={handleEmailSubmit}>
+            <div className="form-group">
+              <label className="form-label">Email:</label>
               <input
-                type={passwordVisible ? "text" : "password"}
+                type="email"
                 className="form-input"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <button
-                type="button"
-                className="password-toggle-btn"
-                onClick={toggleVisibility}
-                aria-label="Toggle password visibility"
-              >
-                {passwordVisible ? (
-                  <MdVisibilityOff size={20} />
-                ) : (
-                  <MdVisibility size={20} />
-                )}
-              </button>
             </div>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Confirm New Password:</label>
-            <div className="password-input-container">
+            <button type="submit" className="btn submit-btn">
+              Send Reset Token
+            </button>
+          </form>
+        )}
+        {step === 2 && (
+          <form className="reset-form" onSubmit={handleResetSubmit}>
+            <div className="form-group">
+              <label className="form-label">Email:</label>
               <input
-                type={passwordVisible ? "text" : "password"}
+                type="email"
                 className="form-input"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                value={email}
+                readOnly
               />
-              <button
-                type="button"
-                className="password-toggle-btn"
-                onClick={toggleVisibility}
-                aria-label="Toggle password visibility"
-              >
-                {passwordVisible ? (
-                  <MdVisibilityOff size={20} />
-                ) : (
-                  <MdVisibility size={20} />
-                )}
-              </button>
             </div>
-          </div>
-          <button type="submit" className="btn submit-btn">
-            Reset Password
-          </button>
-        </form>
-      )}
-      <div className="form-links">
-        <p>
-          Already have an account?{" "}
-          <Link href="/auth/login" legacyBehavior>
-            <a>Login</a>
-          </Link>
-        </p>
-        <p>
-          Don't have an account?{" "}
-          <Link href="/auth/register" legacyBehavior>
-            <a>Register</a>
-          </Link>
-        </p>
+            <div className="form-group">
+              <label className="form-label">New Password:</label>
+              <div className="password-input-container">
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  className="form-input"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={toggleVisibility}
+                  aria-label="Toggle password visibility"
+                >
+                  {passwordVisible ? (
+                    <MdVisibilityOff size={20} />
+                  ) : (
+                    <MdVisibility size={20} />
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Confirm New Password:</label>
+              <div className="password-input-container">
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  className="form-input"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={toggleVisibility}
+                  aria-label="Toggle password visibility"
+                >
+                  {passwordVisible ? (
+                    <MdVisibilityOff size={20} />
+                  ) : (
+                    <MdVisibility size={20} />
+                  )}
+                </button>
+              </div>
+            </div>
+            <button type="submit" className="btn submit-btn">
+              Reset Password
+            </button>
+          </form>
+        )}
+        <div className="form-links">
+          <p>
+            Already have an account?{" "}
+            <Link href="/auth/login" legacyBehavior>
+              <a>Login</a>
+            </Link>
+          </p>
+          <p>
+            Don't have an account?{" "}
+            <Link href="/auth/register" legacyBehavior>
+              <a>Register</a>
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -17,7 +17,9 @@ class MyDocument extends Document {
       <Html lang="en">
         <Head>
           {/* DEFAULT TITLE (site-wide). */}
-          <title>Article Curator - AI-Powered Article Curator</title>
+          <title>
+            Article Curator - AI-Powered News Article Content Curator
+          </title>
 
           {/* Preconnect for Google Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />

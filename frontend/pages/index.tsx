@@ -1,4 +1,5 @@
 import { GetStaticProps } from "next";
+import Head from "next/head";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 import { getTopArticles, getLatestArticles } from "../services/api";
@@ -24,13 +25,16 @@ export default function HomePage({
 }: HomePageProps) {
   return (
     <>
+      <Head>
+        <title>Article Curator - AI-Powered News Article Content Curator</title>
+      </Head>
       <div style={{ marginBottom: "2rem" }}>
         <h1 className="page-title">Latest Articles</h1>
         {/* Optionally, if we later want to have a hero slider for top articles:
             <div className="hero-slider-container">
               <HeroSlider articles={topArticles} />
             </div>
-            For now, we are just displaying the latest articles. Will need to fix the HeroSlider btw
+            For now, we are just displaying the latest articles.
         */}
         <div className="latest-articles-container">
           <LatestArticles articles={latestArticles} />
