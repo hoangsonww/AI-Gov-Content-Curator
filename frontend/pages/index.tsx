@@ -1,4 +1,4 @@
-import { GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
@@ -30,12 +30,6 @@ export default function HomePage({
       </Head>
       <div style={{ marginBottom: "2rem" }}>
         <h1 className="page-title">Latest Articles</h1>
-        {/* Optionally, if we later want to have a hero slider for top articles:
-            <div className="hero-slider-container">
-              <HeroSlider articles={topArticles} />
-            </div>
-            For now, we are just displaying the latest articles.
-        */}
         <div className="latest-articles-container">
           <LatestArticles articles={latestArticles} />
         </div>
@@ -44,7 +38,6 @@ export default function HomePage({
           <AllArticles />
         </div>
       </div>
-
       <style jsx>{`
         .page-title {
           font-weight: 700;
@@ -78,9 +71,17 @@ export default function HomePage({
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getServerSideProps: GetServerSideProps<HomePageProps> = async ({
+  res,
+}) => {
+  // Set caching headers to help with fast responses
+  res.setHeader(
+    "Cache-Control",
+    "public, s-maxage=60, stale-while-revalidate=59",
+  );
+
   try {
-    // Fetch top 5 and then next 10 articles from the API service
+    // Fetch top articles and latest articles from the API service
     const [topData, latestData] = await Promise.all([
       getTopArticles(),
       getLatestArticles(),
@@ -91,7 +92,6 @@ export const getStaticProps: GetStaticProps = async () => {
         topArticles: topData,
         latestArticles: latestData,
       },
-      revalidate: 43200, // Revalidate every 12 hours
     };
   } catch (error) {
     console.error("Error fetching articles:", error);
@@ -100,7 +100,6 @@ export const getStaticProps: GetStaticProps = async () => {
         topArticles: [],
         latestArticles: [],
       },
-      revalidate: 43200,
     };
   }
 };
