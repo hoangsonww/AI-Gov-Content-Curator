@@ -121,6 +121,22 @@ class MyDocument extends Document {
               }),
             }}
           />
+
+          {/* Google Tag (gtag.js) */}
+          <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-8K8KF8XSPD"
+          />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-8K8KF8XSPD', { page_path: window.location.pathname });
+              `,
+            }}
+          />
         </Head>
         <body>
           <Main />
