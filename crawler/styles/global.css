@@ -14,12 +14,11 @@ body {
   font-family: "Roboto", sans-serif;
   display: flex;
   flex-direction: column;
-  /* Animated Gradient Background */
   background: linear-gradient(135deg, #000 0%, #2f2f2f 100%);
   background-size: 300% 300%;
   animation: gradientShift 8s ease infinite;
   color: #eeeeee;
-  margin: 0; /* important for Next.js */
+  margin: 0;
 }
 
 a {
@@ -42,10 +41,12 @@ header {
   text-align: center;
   padding: 1.5rem 1rem 0.5rem;
 }
+
+/* Updated logo-icon with periodic bounce */
 .logo-icon {
   font-size: 3rem;
   color: #4af7bf;
-  animation: bounceIn 0.8s ease-out;
+  animation: bouncePeriodic 5s ease-in-out infinite;
 }
 .title {
   font-size: 2rem;
@@ -118,19 +119,25 @@ footer p {
 }
 
 /* KEYFRAMES */
-@keyframes bounceIn {
+@keyframes bouncePeriodic {
   0% {
     transform: scale(0.5) translateY(-50px);
     opacity: 0;
   }
-  60% {
+  20% {
     transform: scale(1.2) translateY(15px);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1) translateY(0);
     opacity: 1;
   }
   100% {
     transform: scale(1) translateY(0);
+    opacity: 1;
   }
 }
+
 @keyframes fadeDown {
   0% {
     opacity: 0;

@@ -78,3 +78,39 @@ export const toggleFavoriteArticle = async (req: Request, res: Response) => {
 export const validateTokenController = async (req: Request, res: Response) => {
   return res.status(200).json({ valid: true });
 };
+
+/**
+ * Search favorite articles for the logged-in user by title or summary.
+ * Supports pagination through 'page' and 'limit' query parameters.
+ */
+export const searchFavoriteArticles = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const { q, page = 1, limit = 10 } = req.query;
+    const queryFilter: any = {
+      _id: { $in: user.favorites },
+    };
+
+    if (q) {
+      queryFilter.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { summary: { $regex: q, $options: "i" } },
+      ];
+    }
+
+    const articles = await Article.find(queryFilter)
+      .select("-content")
+      .sort({ fetchedAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit));
+
+    const count = await Article.countDocuments(queryFilter);
+    res.json({ data: articles, total: count });
+  } catch (error) {
+    console.error("Error searching favorite articles:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

@@ -48,10 +48,17 @@ export default function AllArticles() {
   return (
     <div style={{ marginTop: "2rem" }}>
       <h2
-        style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}
+        style={{
+          fontSize: "2rem",
+          marginBottom: "0.25rem",
+          textAlign: "center",
+        }}
       >
-        All Articles
+        All Articles 📚
       </h2>
+      <p style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        Browse everything we've collected, summarized, and saved for you.
+      </p>
       <ArticleList articles={articles} />
 
       {hasMore && !loading && (
@@ -61,7 +68,7 @@ export default function AllArticles() {
       )}
       {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
       {!hasMore && (
-        <p style={{ textAlign: "center" }}>
+        <p className="fade-down" style={{ textAlign: "center" }}>
           No more articles to load. More articles coming soon! 🚀
         </p>
       )}

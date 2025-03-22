@@ -7,6 +7,7 @@ import {
 } from "../services/crawler.service";
 import { fetchArticlesFromNewsAPI } from "../services/apiFetcher.service";
 import { summarizeContent } from "../services/summarization.service";
+import { extractTopics } from "../services/topicExtractor.service";
 import logger from "../utils/logger";
 
 dotenv.config();
@@ -16,6 +17,10 @@ const MONGODB_URI = process.env.MONGODB_URI || "";
 const DELAY_BETWEEN_REQUESTS_MS = 1000;
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * CRON job to fetch articles from specified homepages, summarize them, and store them in MongoDB.
+ * Runs every day at 6:00 AM.
+ */
 export const fetchAndSummarize = async () => {
   try {
     // 1) Connect to MongoDB
@@ -45,7 +50,7 @@ export const fetchAndSummarize = async () => {
     const apiArticleUrls = apiArticles.map((a) => a.url);
     articleUrls = articleUrls.concat(apiArticleUrls);
 
-    // 5) Deduplicate
+    // 5) Deduplicate URLs
     articleUrls = Array.from(new Set(articleUrls));
 
     // 6) Filter out articles that already exist in the database
@@ -71,6 +76,7 @@ export const fetchAndSummarize = async () => {
           continue;
         }
 
+        // Summarize the article content
         let summary: string;
         try {
           summary = await summarizeContent(articleData.content);
@@ -79,11 +85,26 @@ export const fetchAndSummarize = async () => {
           continue;
         }
 
+        // Extract topics from the article content
+        let topics: string[] = [];
+        try {
+          topics = await extractTopics(articleData.content);
+        } catch (topicError) {
+          logger.error(
+            `Topic extraction failed for article at ${url}:`,
+            topicError,
+          );
+          // Optionally, you can skip articles that fail topic extraction:
+          // continue;
+        }
+
+        // Create and save the article with topics included
         const article = new Article({
           url: articleData.url,
           title: articleData.title,
           content: articleData.content,
           summary,
+          topics, // newly added field
           source: articleData.source,
           fetchedAt: new Date(),
         });

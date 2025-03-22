@@ -1,0 +1,15 @@
+/* ---------- Clear Button Styles ---------- */
+.clear-btn {
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  background-color: #f44336;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clear-btn:hover {
+  background-color: #d32f2f;
+}

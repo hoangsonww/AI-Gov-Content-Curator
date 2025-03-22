@@ -1,0 +1,108 @@
+/* ---------- Article Grid ---------- */
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* ---------- Article Read More ---------- */
+.article-readmore {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  color: var(--accent-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.article-readmore:hover {
+  color: var(--navbar-text);
+  text-decoration: underline;
+}
+
+.article-readmore svg {
+  transition: transform 0.2s ease;
+}
+
+.article-readmore:hover svg {
+  transform: translateX(4px);
+}
+
+/* ---------- Article Card Styles ---------- */
+.article-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.article-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.article-source {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.article-source a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.article-source a:hover {
+  color: var(--navbar-text);
+}
+
+.article-summary {
+  margin: 0.5rem 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ---------- Latest Articles Styles ---------- */
+.page-title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  animation: fadeDown 1s ease-out;
+}
+
+.latest-articles-container,
+.all-articles-container {
+  animation: fadeIn 1s ease;
+}
+
+.fade-down {
+  animation: fadeDown 1s ease-out;
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

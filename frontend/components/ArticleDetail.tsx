@@ -1,10 +1,11 @@
-import { Article } from "../pages";
 import React, { useState, useEffect } from "react";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import { useRouter } from "next/router";
 import {
   fetchFavoriteArticleIds,
   toggleFavoriteArticle,
 } from "../services/api";
+import { Article } from "../pages";
 
 interface ArticleDetailProps {
   article: Article;
@@ -13,6 +14,7 @@ interface ArticleDetailProps {
 export default function ArticleDetail({ article }: ArticleDetailProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   // Check for token and load favorite status on mount
   useEffect(() => {
@@ -22,7 +24,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       return;
     }
     setIsLoggedIn(true);
-
     const loadFavorites = async () => {
       try {
         const favorites = await fetchFavoriteArticleIds(token);
@@ -31,7 +32,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         console.error("Error loading favorites", error);
       }
     };
-
     loadFavorites();
   }, [article._id]);
 
@@ -39,7 +39,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-
       await toggleFavoriteArticle(token, article._id);
       setIsFavorited((prev) => !prev);
     } catch (error) {
@@ -47,14 +46,15 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     }
   };
 
+  const handleTopicClick = (topic: string) => {
+    // Navigate back to the home page with the selected topic in query.
+    router.push(`/?topic=${encodeURIComponent(topic)}`);
+  };
+
   return (
-    <div
-      className="article-detail hover-animate"
-      style={{ position: "relative" }}
-    >
+    <div className="article-detail hover-animate">
       <h1 className="detail-title">{article.title}</h1>
 
-      {/* ✅ Clickable Source Link */}
       <p className="detail-meta">
         Source:{" "}
         {article.url ? (
@@ -77,19 +77,28 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
 
       <div className="detail-content">{article.content}</div>
 
+      {article.topics && article.topics.length > 0 && (
+        <div className="topics-container">
+          <h3>Topics:</h3>
+          <div className="topics-list">
+            {article.topics.map((topic) => (
+              <span
+                key={topic}
+                className="topic-link"
+                onClick={() => handleTopicClick(topic)}
+              >
+                {topic}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isLoggedIn && (
         <button
           className="favorite-btn"
           onClick={handleFavorite}
           aria-label="Favorite Article"
-          style={{
-            background: "none",
-            border: "none",
-            position: "absolute",
-            top: "8px",
-            right: "8px",
-            cursor: "pointer",
-          }}
         >
           {isFavorited ? (
             <MdFavorite size={20} color="#e74c3c" />

@@ -2,22 +2,38 @@ import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import "../styles/globals.css";
 import "../styles/theme.css";
+import "../styles/auth-dropdown.css";
+import "../styles/login.css";
+import "../styles/register.css";
+import "../styles/reset-password.css";
+import "../styles/topic-dropdown.css";
+import "../styles/articles.css";
+import "../styles/favorites.css";
+import "../styles/article-search.css";
+import "../styles/article-details.css";
+import "../styles/auth-page.css";
+import "../styles/navbar.css";
+import "../styles/theme-toggle.css";
+import "../styles/load-more-btn.css";
+import "../styles/back-to-top-btn.css";
+import "../styles/password-toggle.css";
+import "../styles/clear-btn.css";
+import "../styles/footer.css";
 import Layout from "../components/Layout";
+import { MdArrowUpward } from "react-icons/md";
 
 function App({ Component, pageProps }: AppProps) {
   const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
-    // Apply theme **before** rendering to prevent flicker
     if (typeof window !== "undefined") {
-      const storedTheme = localStorage.getItem("theme") as
+      const stored = localStorage.getItem("theme") as
         | "light"
         | "dark"
         | "system"
         | null;
-      if (storedTheme) {
-        document.documentElement.setAttribute("data-theme", storedTheme);
-        return storedTheme;
+      if (stored) {
+        document.documentElement.setAttribute("data-theme", stored);
+        return stored;
       }
-      // If no stored preference, default to system preference
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)",
       ).matches;
@@ -28,50 +44,49 @@ function App({ Component, pageProps }: AppProps) {
     return "system";
   });
 
+  const [showScroll, setShowScroll] = useState(false);
+
   useEffect(() => {
-    const applyTheme = (selectedTheme: "light" | "dark" | "system") => {
-      if (selectedTheme === "system") {
+    const applyTheme = (selected: "light" | "dark" | "system") => {
+      if (selected === "system") {
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)",
         ).matches;
-        setTheme(prefersDark ? "dark" : "light");
-        document.documentElement.setAttribute(
-          "data-theme",
-          prefersDark ? "dark" : "light",
-        );
+        const themeToApply = prefersDark ? "dark" : "light";
+        setTheme(themeToApply);
+        document.documentElement.setAttribute("data-theme", themeToApply);
       } else {
-        setTheme(selectedTheme);
-        document.documentElement.setAttribute("data-theme", selectedTheme);
+        setTheme(selected);
+        document.documentElement.setAttribute("data-theme", selected);
       }
     };
 
-    const storedTheme = localStorage.getItem("theme") as
+    const stored = localStorage.getItem("theme") as
       | "light"
       | "dark"
       | "system"
       | null;
-    if (storedTheme) {
-      applyTheme(storedTheme);
-    }
+    if (stored) applyTheme(stored);
 
-    // Listen for system changes if "system" is selected
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemChange = (e: MediaQueryListEvent) => {
-      if (localStorage.getItem("theme") === "system") {
-        applyTheme("system");
-      }
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (localStorage.getItem("theme") === "system") applyTheme("system");
     };
-
-    mediaQuery.addEventListener("change", handleSystemChange);
-    return () => mediaQuery.removeEventListener("change", handleSystemChange);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
   }, []);
 
-  const toggleTheme = (selectedTheme: "light" | "dark" | "system") => {
-    localStorage.setItem("theme", selectedTheme);
-    setTheme(selectedTheme);
-    document.documentElement.setAttribute("data-theme", selectedTheme);
+  useEffect(() => {
+    const handleScroll = () => setShowScroll(window.scrollY > 300);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    if (selectedTheme === "system") {
+  const toggleTheme = (selected: "light" | "dark" | "system") => {
+    localStorage.setItem("theme", selected);
+    setTheme(selected);
+    document.documentElement.setAttribute("data-theme", selected);
+    if (selected === "system") {
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)",
       ).matches;
@@ -82,9 +97,20 @@ function App({ Component, pageProps }: AppProps) {
     }
   };
 
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
   return (
     <Layout theme={theme} toggleTheme={toggleTheme}>
       <Component {...pageProps} />
+      {showScroll && (
+        <button
+          onClick={scrollToTop}
+          className="back-to-top-btn"
+          aria-label="Back to top"
+        >
+          <MdArrowUpward size={24} />
+        </button>
+      )}
     </Layout>
   );
 }

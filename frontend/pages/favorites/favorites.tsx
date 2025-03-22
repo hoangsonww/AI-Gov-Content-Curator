@@ -42,7 +42,14 @@ export default function FavoritesPage() {
         <title>Article Curator - My Favorite Articles</title>
       </Head>
       <div className="favorites-container">
-        <h1 className="favorites-title">My Favorite Articles</h1>
+        <h1 className="favorites-title">My Favorite Articles ⭐️</h1>
+
+        <p
+          className="subtitle fade-down"
+          style={{ textAlign: "center", marginBottom: "1.5rem" }}
+        >
+          Here are all the articles you've favorited.
+        </p>
 
         {loading ? (
           <p className="loading-msg">Loading favorites...</p>

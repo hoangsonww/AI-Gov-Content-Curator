@@ -59,7 +59,7 @@ export const getTotalArticles = async (
         console.error(
           `Attempt ${attempt}: Error fetching total articles: ${res.statusText}`,
         );
-        if (attempt === retries) return null;
+        if (attempt === retries) return 0;
       } else {
         const result = await res.json();
         return result.total;
@@ -69,11 +69,11 @@ export const getTotalArticles = async (
         `Attempt ${attempt}: Network error while fetching total articles:`,
         error,
       );
-      if (attempt === retries) return null;
+      if (attempt === retries) return 0;
     }
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
-  return null;
+  return 0;
 };
 
 /**
@@ -184,6 +184,57 @@ export async function getArticles(
     } catch (error) {
       console.error(
         `Attempt ${attempt}: Network error while fetching articles (Page ${page}):`,
+        error,
+      );
+      if (attempt === retries) return [];
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return [];
+}
+
+/**
+ * Searches for articles by query and/or topic.
+ * Returns an empty array if the request fails.
+ *
+ * @param q The search query (by title or summary).
+ * @param topic The topic filter.
+ * @param page The page number (default: 1).
+ * @param limit The number of articles per page (default: 10).
+ * @param retries Number of retry attempts.
+ * @param delay Delay between retries in milliseconds.
+ * @returns List of matching articles or an empty array if an error occurs.
+ */
+export async function searchArticles(
+  q: string,
+  topic: string,
+  page = 1,
+  limit = 10,
+  retries = 3,
+  delay = 1000,
+): Promise<Article[]> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const url = new URL(`${BASE_URL}/articles/search`);
+      url.searchParams.set("page", page.toString());
+      url.searchParams.set("limit", limit.toString());
+      if (q) url.searchParams.set("q", q);
+      if (topic) url.searchParams.set("topic", topic);
+
+      const res = await fetch(url.toString());
+
+      if (!res.ok) {
+        console.error(
+          `Attempt ${attempt}: Error searching articles: ${res.statusText}`,
+        );
+        if (attempt === retries) return [];
+      } else {
+        const { data } = await res.json();
+        return data || [];
+      }
+    } catch (error) {
+      console.error(
+        `Attempt ${attempt}: Network error while searching articles:`,
         error,
       );
       if (attempt === retries) return [];
@@ -323,7 +374,7 @@ export const fetchFavoriteArticles = async (
   token: string,
   retries = 3,
   delay = 1000,
-) => {
+): Promise<Article[]> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/users/favorites/articles`, {
@@ -363,7 +414,7 @@ export const fetchFavoriteArticleIds = async (
   token: string,
   retries = 3,
   delay = 1000,
-) => {
+): Promise<string[]> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${BASE_URL}/users/favorites`, {
@@ -476,3 +527,97 @@ export const validateToken = async (
 
   return false; // Should never reach here
 };
+
+/**
+ * Fetches topics from the API.
+ * Supports searching the topics list using the 'q' query parameter.
+ * Also supports pagination with 'page' and 'limit' query parameters.
+ *
+ * @param q The search query to filter topics (optional).
+ * @param page The page number (default: 1).
+ * @param limit The number of topics per page (default: 10).
+ * @param retries Number of retry attempts (default: 3).
+ * @param delay Delay between retries in milliseconds (default: 1000).
+ * @returns An object containing 'data' (an array of topics) and 'total' (the total count of topics).
+ */
+export async function getTopics(
+  q: string = "",
+  page: number = 1,
+  limit: number = 10,
+  retries: number = 3,
+  delay: number = 1000,
+): Promise<{ data: string[]; total: number }> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const url = new URL(`${BASE_URL}/articles/topics`);
+      if (q) url.searchParams.set("q", q);
+      url.searchParams.set("page", page.toString());
+      url.searchParams.set("limit", limit.toString());
+      const res = await fetch(url.toString());
+      if (!res.ok) {
+        console.error(
+          `Attempt ${attempt}: Error fetching topics: ${res.statusText}`,
+        );
+        if (attempt === retries) return { data: [], total: 0 };
+      } else {
+        const result = await res.json();
+        return { data: result.data || [], total: result.total || 0 };
+      }
+    } catch (error) {
+      console.error(
+        `Attempt ${attempt}: Network error while fetching topics:`,
+        error,
+      );
+      if (attempt === retries) return { data: [], total: 0 };
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return { data: [], total: 0 };
+}
+
+/**
+ * Fetches articles filtered by a specific topic using the API endpoint.
+ *
+ * @param topic The topic to filter articles by.
+ * @param page The page number (default: 1).
+ * @param limit The number of articles per page (default: 10).
+ * @param retries Number of retry attempts (default: 3).
+ * @param delay Delay between retries in milliseconds (default: 1000).
+ * @returns A list of articles filtered by the given topic or an empty array if an error occurs.
+ */
+export async function getArticlesByTopic(
+  topic: string,
+  page: number = 1,
+  limit: number = 10,
+  retries: number = 3,
+  delay: number = 1000,
+): Promise<Article[]> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const url = new URL(
+        `${BASE_URL}/articles/topic/${encodeURIComponent(topic)}`,
+      );
+      url.searchParams.set("page", page.toString());
+      url.searchParams.set("limit", limit.toString());
+
+      const res = await fetch(url.toString());
+      if (!res.ok) {
+        console.error(
+          `Attempt ${attempt}: Error fetching articles by topic: ${res.statusText}`,
+        );
+        if (attempt === retries) return [];
+      } else {
+        const result = await res.json();
+        return result.data || [];
+      }
+    } catch (error) {
+      console.error(
+        `Attempt ${attempt}: Network error while fetching articles by topic:`,
+        error,
+      );
+      if (attempt === retries) return [];
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return [];
+}

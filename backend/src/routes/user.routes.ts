@@ -4,6 +4,7 @@ import {
   getFavoriteArticleIds,
   toggleFavoriteArticle,
   validateTokenController,
+  searchFavoriteArticles,
 } from "../controllers/user.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -46,6 +47,11 @@ const router = Router();
  *                   content:
  *                     type: string
  *                     description: The full content of the article.
+ *                   topics:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                     description: List of topics associated with the article.
  *                   summary:
  *                     type: string
  *                     description: A short summary of the article.
@@ -85,6 +91,7 @@ router.get("/favorites/articles", authenticate, getFavoriteArticles);
  *                   type: array
  *                   items:
  *                     type: string
+ *                   description: List of favorite article IDs.
  *       401:
  *         description: No token provided or invalid token
  *       404:
@@ -111,7 +118,7 @@ router.get("/favorites", authenticate, getFavoriteArticleIds);
  *             properties:
  *               articleId:
  *                 type: string
- *                 description: The ID of the article to favorite/unfavorite
+ *                 description: The ID of the article to favorite/unfavorite.
  *             required:
  *               - articleId
  *     responses:
@@ -124,12 +131,12 @@ router.get("/favorites", authenticate, getFavoriteArticleIds);
  *               properties:
  *                 message:
  *                   type: string
- *                   description: Favorite status toggled
+ *                   description: Favorite status toggled.
  *                 favorites:
  *                   type: array
  *                   items:
  *                     type: string
- *                     description: List of favorite article IDs
+ *                   description: Updated list of favorite article IDs.
  *       400:
  *         description: Article ID is required
  *       401:
@@ -140,6 +147,83 @@ router.get("/favorites", authenticate, getFavoriteArticleIds);
  *         description: Internal server error
  */
 router.post("/favorite", authenticate, toggleFavoriteArticle);
+
+/**
+ * @swagger
+ * /api/users/favorites/search:
+ *   get:
+ *     tags: [Favorites]
+ *     summary: Search favorite articles by title or summary
+ *     description: Retrieve favorite articles for the logged-in user that match the search query in either the title or summary fields.
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: The search query to filter articles by title or summary.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of articles per page.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved search results of favorite articles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         description: Unique identifier of the article.
+ *                       url:
+ *                         type: string
+ *                         description: The original URL of the article.
+ *                       title:
+ *                         type: string
+ *                         description: The title of the article.
+ *                       content:
+ *                         type: string
+ *                         description: The full content of the article.
+ *                       topics:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         description: List of topics associated with the article.
+ *                       summary:
+ *                         type: string
+ *                         description: A short summary of the article.
+ *                       source:
+ *                         type: string
+ *                         description: The source or publisher of the article.
+ *                       fetchedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Timestamp when the article was fetched.
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of matching favorite articles.
+ *       401:
+ *         description: No token provided or invalid token
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/favorites/search", authenticate, searchFavoriteArticles);
 
 /**
  * @swagger

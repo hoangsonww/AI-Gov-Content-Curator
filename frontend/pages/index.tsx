@@ -1,7 +1,11 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
+import ArticleSearch from "../components/ArticleSearch";
+import TopicDropdown from "../components/TopicDropdown";
 import { getTopArticles, getLatestArticles } from "../services/api";
 
 export interface Article {
@@ -10,6 +14,7 @@ export interface Article {
   title: string;
   content: string;
   summary: string;
+  topics: string[];
   source: string;
   fetchedAt: string;
 }
@@ -23,50 +28,108 @@ export default function HomePage({
   topArticles,
   latestArticles,
 }: HomePageProps) {
+  const router = useRouter();
+
+  // Use router query to pre-select topic and query if provided.
+  const initialTopic =
+    typeof router.query.topic === "string" ? router.query.topic : "";
+  const initialSearch =
+    typeof router.query.q === "string" ? router.query.q : "";
+
+  // Live state for search query and topic selection.
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [selectedTopic, setSelectedTopic] = useState(initialTopic);
+
+  // Whenever the query parameters change, update state.
+  useEffect(() => {
+    if (typeof router.query.topic === "string") {
+      setSelectedTopic(router.query.topic);
+    }
+    if (typeof router.query.q === "string") {
+      setSearchQuery(router.query.q);
+    }
+  }, [router.query]);
+
+  // When on the root path "/", clear search state.
+  useEffect(() => {
+    if (router.asPath === "/") {
+      setSearchQuery("");
+      setSelectedTopic("");
+    }
+  }, [router.asPath]);
+
+  // Toggle search mode if either search query or topic is provided.
+  const isSearchActive =
+    searchQuery.trim() !== "" || selectedTopic.trim() !== "";
+
+  // Handler to clear search and topic.
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setSelectedTopic("");
+    router.push("/", undefined, { shallow: true });
+  };
+
   return (
     <>
       <Head>
         <title>Article Curator - AI-Powered News Article Content Curator</title>
       </Head>
       <div style={{ marginBottom: "2rem" }}>
-        <h1 className="page-title">Latest Articles</h1>
-        <div className="latest-articles-container">
-          <LatestArticles articles={latestArticles} />
+        {/* SEARCH BAR & TOPIC DROPDOWN */}
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search articles..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              router.push(
+                `/?q=${encodeURIComponent(e.target.value)}&topic=${encodeURIComponent(selectedTopic)}`,
+                undefined,
+                { shallow: true },
+              );
+            }}
+            className="search-input"
+          />
+          <TopicDropdown
+            selectedTopic={selectedTopic}
+            onChange={(topic) => {
+              setSelectedTopic(topic);
+              router.push(
+                `/?q=${encodeURIComponent(searchQuery)}&topic=${encodeURIComponent(topic)}`,
+                undefined,
+                { shallow: true },
+              );
+            }}
+          />
         </div>
-        <hr style={{ margin: "2rem 0" }} />
-        <div className="all-articles-container">
-          <AllArticles />
-        </div>
+
+        {isSearchActive ? (
+          // Display search results when either search query or topic is provided.
+          <ArticleSearch
+            query={searchQuery}
+            topic={selectedTopic}
+            onClear={handleClearSearch}
+          />
+        ) : (
+          <>
+            <h1 className="page-title">Latest Articles ✨</h1>
+            <p
+              className="subtitle fade-down"
+              style={{ textAlign: "center", marginBottom: "1.5rem" }}
+            >
+              Freshly gathered, thoughtfully summarized.
+            </p>
+            <div className="latest-articles-container">
+              <LatestArticles articles={latestArticles} />
+            </div>
+            <hr style={{ margin: "2rem 0" }} />
+            <div className="all-articles-container">
+              <AllArticles />
+            </div>
+          </>
+        )}
       </div>
-      <style jsx>{`
-        .page-title {
-          font-weight: 700;
-          margin-bottom: 1rem;
-          animation: fadeDown 1s ease-out;
-        }
-        .latest-articles-container,
-        .all-articles-container {
-          animation: fadeIn 1s ease;
-        }
-        @keyframes fadeDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-      `}</style>
     </>
   );
 }
@@ -74,19 +137,15 @@ export default function HomePage({
 export const getServerSideProps: GetServerSideProps<HomePageProps> = async ({
   res,
 }) => {
-  // Set caching headers to help with fast responses
   res.setHeader(
     "Cache-Control",
     "public, s-maxage=60, stale-while-revalidate=59",
   );
-
   try {
-    // Fetch top articles and latest articles from the API service
     const [topData, latestData] = await Promise.all([
       getTopArticles(),
       getLatestArticles(),
     ]);
-
     return {
       props: {
         topArticles: topData,
@@ -95,11 +154,6 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async ({
     };
   } catch (error) {
     console.error("Error fetching articles:", error);
-    return {
-      props: {
-        topArticles: [],
-        latestArticles: [],
-      },
-    };
+    return { props: { topArticles: [], latestArticles: [] } };
   }
 };

@@ -1,0 +1,26 @@
+/* ---------- Auth Page Styles ---------- */
+.logout-option {
+  color: #e74c3c;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.auth-option {
+  display: block;
+  padding: 0.5rem 0;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: background-color 0.2s ease;
+  width: 100%;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.auth-option:hover {
+  background-color: var(--navbar-bg);
+}

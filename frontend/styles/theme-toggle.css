@@ -1,0 +1,71 @@
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: none;
+  border: none;
+  color: var(--navbar-text);
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+  border-radius: 8px;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--card-bg);
+  transform: scale(1.05);
+}
+
+@keyframes dropdownFadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-dropdown {
+  position: absolute;
+  right: 0;
+  top: 2.8rem;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: dropdownFadeSlide 0.3s ease-out forwards;
+}
+
+.theme-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+  border-radius: 4px;
+}
+
+.theme-option-btn:hover {
+  background: var(--navbar-bg);
+}

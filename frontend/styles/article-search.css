@@ -1,0 +1,210 @@
+/* ---------- Shared Input Styles ---------- */
+.input-control,
+.search-input,
+.dropdown-search {
+  padding: 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease;
+  font-family: inherit;
+}
+
+.input-control:focus,
+.search-input:focus,
+.dropdown-search:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  transform: scale(1.02);
+}
+
+/* ---------- Article Search Container ---------- */
+.search-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+}
+
+/* ---------- Article Search Results ---------- */
+.article-search-results {
+  animation: fadeIn 0.5s ease-in-out;
+  margin-top: 1rem;
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--card-border);
+}
+
+.search-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.search-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: var(--text-color);
+}
+
+.search-subtitle {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--text-color);
+  animation: fadeDown 1s ease-out;
+}
+
+.clear-btn {
+  padding: 0.5rem 1rem;
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.2s ease;
+  font: inherit;
+}
+
+.clear-btn:hover {
+  background-color: var(--navbar-text);
+}
+
+.loading-message {
+  text-align: center;
+  font-style: italic;
+  color: var(--loading-text);
+  margin: 2rem 0;
+}
+
+.no-results {
+  text-align: center;
+  color: var(--no-result-text);
+  margin: 2rem 0;
+}
+
+/* ---------- Article List Animation ---------- */
+.article-list {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* ---------- Dropdown Styles (Topic Dropdown) ---------- */
+.topic-dropdown-container {
+  position: relative;
+  width: 200px;
+  user-select: none;
+}
+
+.dropdown-header {
+  padding: 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  background-color: var(--card-bg);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease;
+  color: var(--text-color);
+}
+
+.dropdown-header:hover,
+.dropdown-header:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  transform: scale(1.02);
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border: none;
+  border-bottom: 1px solid var(--card-border);
+  outline: none;
+  background: var(--card-bg);
+  color: var(--text-color);
+}
+
+.dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dropdown-list li {
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: var(--text-color);
+}
+
+.dropdown-list li:hover {
+  background-color: var(--hover-bg);
+}
+
+/* ---------- Animations ---------- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

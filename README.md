@@ -191,31 +191,37 @@ Below is a high-level diagram outlining the system architecture:
   <img src="frontend/img/favorites.png" alt="Favorite Articles Page" width="100%">
 </p>
 
-### 7. User Authentication
+### 7. Favorite Articles Page (Unauthenticated User)
+
+<p align="center">
+  <img src="frontend/img/favorites-unauth.png" alt="Favorite Articles Page (Unauthenticated User)" width="100%">
+</p>
+
+### 8. User Authentication
 
 <p align="center">
   <img src="frontend/img/login.png" alt="User Authentication" width="100%">
 </p>
 
-### 8. User Registration
+### 9. User Registration
 
 <p align="center">
   <img src="frontend/img/register.png" alt="User Registration" width="100%">
 </p>
 
-### 9. Reset Password
+### 10. Reset Password
 
 <p align="center">
   <img src="frontend/img/reset-password.png" alt="Reset Password" width="100%">
 </p>
 
-### 10. 404 Not Found Page
+### 11. 404 Not Found Page
 
 <p align="center">
   <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
 </p>
 
-### 11. Backend Swagger API Documentation
+### 12. Backend Swagger API Documentation
 
 <p align="center">
   <img src="frontend/img/swagger.png" alt="Backend Swagger API Documentation" width="100%">

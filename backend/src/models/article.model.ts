@@ -22,6 +22,10 @@ import { Schema, model, Document } from "mongoose";
  *         summary:
  *           type: string
  *           description: A short summary of the article content.
+ *         topics:
+ *           type: array
+ *           items:
+ *             type: string
  *         source:
  *           type: string
  *           description: The source or publisher of the article.
@@ -47,6 +51,7 @@ export interface IArticle extends Document {
   title: string;
   content: string;
   summary: string;
+  topics: string[];
   source: string;
   fetchedAt: Date;
 }
@@ -56,6 +61,7 @@ const articleSchema = new Schema<IArticle>({
   title: { type: String, required: true },
   content: { type: String, required: true },
   summary: { type: String },
+  topics: { type: [String], default: [] },
   source: { type: String, required: true },
   fetchedAt: { type: Date, default: Date.now },
 });
@@ -69,6 +75,7 @@ articleSchema.set("toJSON", {
       title: ret.title,
       content: ret.content,
       summary: ret.summary,
+      topics: ret.topics,
       source: ret.source,
       fetchedAt: ret.fetchedAt,
     };
