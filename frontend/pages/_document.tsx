@@ -74,12 +74,12 @@ class MyDocument extends Document {
           />
           <meta
             property="og:url"
-            content="https://ai-gov-content-curator.vercel.app/"
+            content="https://ai-article-curator.vercel.app/"
           />
           <meta property="og:type" content="website" />
           <meta
             property="og:image"
-            content="https://ai-gov-content-curator.vercel.app/android-chrome-192x192.png"
+            content="https://ai-article-curator.vercel.app/android-chrome-192x192.png"
           />
           <meta property="og:site_name" content="AI-Powered Article Curator" />
           <meta property="og:locale" content="en_US" />
@@ -93,14 +93,11 @@ class MyDocument extends Document {
           />
           <meta
             name="twitter:image"
-            content="https://ai-gov-content-curator.vercel.app/android-chrome-192x192.png"
+            content="https://ai-article-curator.vercel.app/android-chrome-192x192.png"
           />
 
           {/* Canonical URL */}
-          <link
-            rel="canonical"
-            href="https://ai-gov-content-curator.vercel.app/"
-          />
+          <link rel="canonical" href="https://ai-article-curator.vercel.app/" />
 
           {/* Structured Data - JSON-LD */}
           <script
@@ -110,11 +107,11 @@ class MyDocument extends Document {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
                 name: "Article Curator",
-                url: "https://ai-gov-content-curator.vercel.app/",
+                url: "https://ai-article-curator.vercel.app/",
                 potentialAction: {
                   "@type": "SearchAction",
                   target:
-                    "https://ai-gov-content-curator.vercel.app/search?q={search_term_string}",
+                    "https://ai-article-curator.vercel.app/?q={search_term_string}",
                   "query-input": "required name=search_term_string",
                 },
               }),
