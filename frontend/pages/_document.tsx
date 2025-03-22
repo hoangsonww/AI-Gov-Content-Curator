@@ -83,6 +83,10 @@ class MyDocument extends Document {
           />
           <meta property="og:site_name" content="AI-Powered Article Curator" />
           <meta property="og:locale" content="en_US" />
+          <meta
+            name="google-site-verification"
+            content="BJMztlbEd_3AQ4AlDSI0NqJMb-PmqRff5Qt7X9wEWjI"
+          />
 
           {/* Twitter Card */}
           <meta name="twitter:card" content="summary_large_image" />
