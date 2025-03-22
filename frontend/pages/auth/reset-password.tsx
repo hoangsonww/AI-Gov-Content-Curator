@@ -64,7 +64,7 @@ export default function ResetPassword() {
         <title>Article Curator - Reset Password</title>
       </Head>
       <div className="reset-container">
-        <h1 className="reset-title">🔑 Reset Password</h1>
+        <h1 className="reset-title">Reset Password 🔑</h1>
         <p
           className="subtitle"
           style={{ textAlign: "center", marginBottom: "1.5rem" }}
