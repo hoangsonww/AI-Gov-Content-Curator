@@ -13,7 +13,7 @@ const RETRY_DELAY_MS = 2000;
 
 export const extractTopics = async (content: string): Promise<string[]> => {
   const fullSystemInstruction = process.env.AI_INSTRUCTIONS || "";
-  const googleAiApiKey = process.env.GOOGLE_AI_API_KEY;
+  const googleAiApiKey = process.env.GOOGLE_AI_API_KEY || "";
   const genAI = new GoogleGenerativeAI(googleAiApiKey);
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
@@ -53,7 +53,10 @@ export const extractTopics = async (content: string): Promise<string[]> => {
         safetySettings,
         history,
       });
-      const prompt = `Extract a list of topics from the following article content. Return the topics as a comma-separated list (do not include any quotes or special characters - plain text and commas ONLY):\n\n${content}`;
+
+      const prompt = `Extract a list of topics from the following article content. Return the topics as a comma-separated list (do not include 
+      any quotes or special characters - plain text and commas ONLY and ensure each topic is not too long):\n\n${content}`;
+
       const result = await chatSession.sendMessage(prompt);
       if (!result.response || !result.response.text) {
         throw new Error("Failed to get text response from the AI.");

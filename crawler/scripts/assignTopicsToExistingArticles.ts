@@ -14,44 +14,36 @@ const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 const assignTopicsToArticles = async () => {
   try {
-    await mongoose.connect(MONGODB_URI, {});
+    await mongoose.connect(MONGODB_URI);
     logger.info("Connected to MongoDB ✅");
 
-    const query = {
-      $or: [{ topics: { $exists: false } }, { topics: { $size: 0 } }],
-    };
-
-    const total = await Article.countDocuments(query);
-    logger.info(`Found ${total} articles missing topics.`);
+    // Fetch ALL articles (remove filter so we override existing topics)
+    const total = await Article.countDocuments({});
+    logger.info(`Found ${total} total articles — will update all.`);
 
     let processed = 0;
 
     while (true) {
-      const articles = await Article.find(query).limit(BATCH_LIMIT);
+      const articles = await Article.find({}).limit(BATCH_LIMIT);
 
       if (articles.length === 0) break;
 
       for (const article of articles) {
         try {
           logger.info(`Extracting topics for article: ${article.title}`);
-          const topics = await extractTopics(article.content);
+          const topics = await extractTopics(article.summary);
           article.topics = topics;
           await article.save();
           processed++;
-          logger.info(
-            `✅ Updated article "${article.title}" with topics: ${topics.join(", ")}`,
-          );
+          logger.info(`✅ Updated "${article.title}" → ${topics.join(", ")}`);
           await delay(DELAY_BETWEEN_UPDATES_MS);
         } catch (err) {
-          logger.error(
-            `❌ Failed to extract/save topics for article "${article.title}":`,
-            err,
-          );
+          logger.error(`❌ Failed updating "${article.title}":`, err);
         }
       }
     }
 
-    logger.info(`🎉 Finished updating ${processed} articles with topics.`);
+    logger.info(`🎉 Finished updating ${processed} articles.`);
     await mongoose.disconnect();
     logger.info("Disconnected from MongoDB");
   } catch (err) {

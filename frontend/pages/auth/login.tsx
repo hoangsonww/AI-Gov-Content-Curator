@@ -31,7 +31,13 @@ export default function Login() {
         <title>Article Curator - Login</title>
       </Head>
       <div className="login-container">
-        <h1 className="login-title">Login</h1>
+        <h1 className="login-title">Login 🔒</h1>
+        <p
+          className="subtitle"
+          style={{ textAlign: "center", marginBottom: "1.5rem" }}
+        >
+          Welcome back — sign in to continue
+        </p>
         {error && <p className="error-msg">{error}</p>}
         {message && <p className="success-msg">{message}</p>}
         <form className="login-form" onSubmit={handleSubmit}>

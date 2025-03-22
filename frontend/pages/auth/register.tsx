@@ -43,7 +43,13 @@ export default function Register() {
         <title>Article Curator - Register</title>
       </Head>
       <div className="register-container">
-        <h1 className="register-title">Register</h1>
+        <h1 className="register-title">Register 📝</h1>
+        <p
+          className="subtitle"
+          style={{ textAlign: "center", marginBottom: "1.5rem" }}
+        >
+          Create your free account and get started!
+        </p>
         {error && <p className="error-msg">{error}</p>}
         {message && <p className="success-msg">{message}</p>}
         <form className="register-form" onSubmit={handleSubmit}>

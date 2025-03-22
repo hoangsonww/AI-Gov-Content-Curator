@@ -88,14 +88,16 @@ export const fetchAndSummarize = async () => {
         // Extract topics from the article content
         let topics: string[] = [];
         try {
-          topics = await extractTopics(articleData.content);
+          topics = await extractTopics(summary);
         } catch (topicError) {
           logger.error(
             `Topic extraction failed for article at ${url}:`,
             topicError,
           );
-          // Optionally, you can skip articles that fail topic extraction:
+          // Optionally, we can skip articles that fail topic extraction:
           // continue;
+          // For now, we will just log the error and proceed with an empty topics array
+          // to still save the article without topics.
         }
 
         // Create and save the article with topics included
@@ -104,7 +106,7 @@ export const fetchAndSummarize = async () => {
           title: articleData.title,
           content: articleData.content,
           summary,
-          topics, // newly added field
+          topics,
           source: articleData.source,
           fetchedAt: new Date(),
         });

@@ -56,7 +56,10 @@ export default function AllArticles() {
       >
         All Articles 📚
       </h2>
-      <p style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+      <p
+        className="subtitle fade-down"
+        style={{ textAlign: "center", marginBottom: "1.5rem" }}
+      >
         Browse everything we've collected, summarized, and saved for you.
       </p>
       <ArticleList articles={articles} />
