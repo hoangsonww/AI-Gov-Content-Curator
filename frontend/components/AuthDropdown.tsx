@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { MdPerson } from "react-icons/md";
 import { validateToken } from "../services/api";
+import { toast } from "react-toastify";
 
 interface AuthDropdownProps {
   theme: "light" | "dark" | "system";
@@ -63,10 +64,13 @@ export default function AuthDropdown({
   };
 
   const handleLogout = () => {
+    toast("Logged out successfully 🚪");
     localStorage.removeItem("token");
     setIsLoggedIn(false);
     toggle();
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   };
 
   return (

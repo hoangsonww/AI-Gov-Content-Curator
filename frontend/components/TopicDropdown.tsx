@@ -58,25 +58,25 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
         <span className="dropdown-arrow">{showDropdown ? "▲" : "▼"}</span>
       </div>
       {showDropdown && (
-      <div className={`dropdown-menu ${showDropdown ? "open" : ""}`}>
-        <input
-          type="text"
-          className="dropdown-search"
-          placeholder="Search topics..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <ul className="dropdown-list">
-          {filteredTopics.map((topic) => (
-            <li key={topic} onClick={() => handleSelect(topic)}>
-              {topic}
-            </li>
-          ))}
-          {filteredTopics.length === 0 && (
-            <li className="no-match">No matching topics</li>
-          )}
-        </ul>
-      </div>
+        <div className={`dropdown-menu ${showDropdown ? "open" : ""}`}>
+          <input
+            type="text"
+            className="dropdown-search"
+            placeholder="Search topics..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <ul className="dropdown-list">
+            {filteredTopics.map((topic) => (
+              <li key={topic} onClick={() => handleSelect(topic)}>
+                {topic}
+              </li>
+            ))}
+            {filteredTopics.length === 0 && (
+              <li className="no-match">No matching topics</li>
+            )}
+          </ul>
+        </div>
       )}
     </div>
   );

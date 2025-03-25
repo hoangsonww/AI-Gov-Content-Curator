@@ -27,9 +27,7 @@ export default function ResetPassword() {
     try {
       const data = await requestPasswordReset(email);
       setResetToken(data.resetToken || "");
-      setMessage(
-        "",
-      );
+      setMessage("");
       toast("Reset token sent successfully 🚀");
       setStep(2);
     } catch (err) {
