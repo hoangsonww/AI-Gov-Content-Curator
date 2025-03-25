@@ -4,6 +4,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { requestPasswordReset, confirmPasswordReset } from "../../services/api";
+import { toast } from "react-toastify";
 
 export default function ResetPassword() {
   const [step, setStep] = useState<number>(1);
@@ -27,13 +28,15 @@ export default function ResetPassword() {
       const data = await requestPasswordReset(email);
       setResetToken(data.resetToken || "");
       setMessage(
-        "Reset token sent and email verified successfully. Please reset your password.",
+        "",
       );
+      toast("Reset token sent successfully 🚀");
       setStep(2);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred.",
       );
+      toast("Could not send reset token. Please try again.");
     }
   };
 
@@ -50,11 +53,13 @@ export default function ResetPassword() {
     try {
       await confirmPasswordReset(email, resetToken, newPassword);
       setMessage("Password reset successfully. Redirecting to login...");
+      toast("Reset token sent successfully 🎉");
       setTimeout(() => router.push("/auth/login"), 2000);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred.",
       );
+      toast("An error occurred while resetting your password.");
     }
   };
 

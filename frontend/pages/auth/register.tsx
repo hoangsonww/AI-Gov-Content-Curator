@@ -4,6 +4,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { registerUser } from "../../services/api";
+import { toast } from "react-toastify";
 
 export default function Register() {
   const [name, setName] = useState<string>("");
@@ -28,12 +29,14 @@ export default function Register() {
 
     try {
       await registerUser(name, email, password);
-      setMessage("Registration successful, redirecting to login...");
-      setTimeout(() => router.push("/auth/login"), 2000);
+      setMessage("");
+      toast("Registration successful! 🔓");
+      router.push("/api/users/");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred",
       );
+      toast("Could not register user. Please try again.");
     }
   };
 

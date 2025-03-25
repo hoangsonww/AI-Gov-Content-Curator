@@ -4,6 +4,7 @@ import Link from "next/link";
 import Head from "next/head";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { loginUser } from "../../services/api";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -18,10 +19,12 @@ export default function Login() {
     setError("");
     try {
       const data = await loginUser(email, password);
-      setMessage("Login successful, redirecting to home...");
+      setMessage("");
+      toast("Login successful! 🔐");
       router.push("/");
     } catch (err: any) {
       setError(err.message);
+      toast("Could not login user. Please try again.");
     }
   };
 
