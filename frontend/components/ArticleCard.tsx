@@ -51,7 +51,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       await toggleFavoriteArticle(token, article._id);
       setIsFavorited((prev) => !prev);
 
-      toast(`Article ${isFavorited ? "unfavorited" : "favorited"}.`);
+      toast(`Article ${isFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
     } catch (err) {
       console.error("Error toggling favorite", err);
     }
