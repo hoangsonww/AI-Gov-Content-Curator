@@ -10,6 +10,7 @@ import {
   fetchFavoriteArticleIds,
   toggleFavoriteArticle,
 } from "../services/api";
+import { toast } from "react-toastify";
 
 const ArrowIcon = MdOutlineArrowForwardIos as React.FC<{ size?: number }>;
 
@@ -49,6 +50,8 @@ export default function ArticleCard({ article }: ArticleCardProps) {
 
       await toggleFavoriteArticle(token, article._id);
       setIsFavorited((prev) => !prev);
+
+      toast(`Article ${isFavorited ? "unfavorited" : "favorited"}.`);
     } catch (err) {
       console.error("Error toggling favorite", err);
     }

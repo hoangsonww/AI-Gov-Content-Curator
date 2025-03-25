@@ -57,6 +57,7 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
         {selectedTopic || "All Topics"}
         <span className="dropdown-arrow">{showDropdown ? "▲" : "▼"}</span>
       </div>
+      {showDropdown && (
       <div className={`dropdown-menu ${showDropdown ? "open" : ""}`}>
         <input
           type="text"
@@ -76,6 +77,7 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
           )}
         </ul>
       </div>
+      )}
     </div>
   );
 };
