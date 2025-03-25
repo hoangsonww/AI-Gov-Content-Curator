@@ -64,6 +64,7 @@ Each component is maintained in its own directory:
 - [Logging, Error Handling & Future Enhancements](#logging-error-handling--future-enhancements)
 - [Contributing](#contributing)
 - [License](#license)
+- [Contact](#contact)
 - [Conclusion](#conclusion)
 
 ---
@@ -79,7 +80,7 @@ The **AI-Powered Article Content Curator** system is designed to provide governm
 - **Data Storage & API Serving:**  
   Articles—comprising URLs, titles, full content, AI-generated summaries, source details, and fetch timestamps—are stored in MongoDB (managed through Mongoose). An Express.js API, integrated within a Next.js project, exposes REST endpoints for fetching article lists and individual article details.
 - **Frontend Experience:**  
-  A responsive Next.js/React interface allows users to easily browse paginated article lists, filter by source, and view detailed article pages.
+  A responsive Next.js/React interface allows users to easily browse paginated article lists, filter by source, and view detailed article pages, with dark/light mode support. The frontend also includes user authentication, enabling users to mark articles as favorites for quick access.
 - **Scheduled Updates:**  
   Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content. This ensures that the system (articles) remains fresh and up-to-date.
 - **Architecture:**
@@ -549,12 +550,25 @@ This project is licensed under the MIT License. See the [LICENSE](./LICENSE) fil
 
 ---
 
+## Contact
+
+If you have any questions or suggestions, feel free to reach out to me:
+
+- **David Nguyen**
+  - [LinkedIn](https://www.linkedin.com/in/hoangsonw/)
+  - [GitHub](https://github.com/hoangsonww)
+  - [Email](mailto:hoangson091104@gmail.com)
+
+A new development team might be formed to continue the project, so please check back for updates!
+
+---
+
 ## Conclusion
 
 The **AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.
 
 ---
 
-Happy Building and Crawling! 🚀
+Cheers to a more informed world! 🚀
 
 **[🔝 Back to Top](#ai-powered-article-content-curator)**

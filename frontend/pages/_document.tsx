@@ -50,7 +50,7 @@ class MyDocument extends Document {
           <meta name="author" content="Son Nguyen" />
           <meta name="language" content="English" />
 
-          {/* Theme color */}
+          {/* Theme Color */}
           <meta name="theme-color" content="#ffffff" />
 
           {/* Apple Touch Icon */}
@@ -137,6 +137,29 @@ class MyDocument extends Document {
               `,
             }}
           />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    const stored = localStorage.getItem('theme');
+                    const useDark = stored === 'dark'
+                      || (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    const theme = useDark ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    const meta = document.querySelector('meta[name="theme-color"]');
+                    if (meta) {
+                      meta.content = useDark ? '#121212' : '#ffffff';
+                    }
+                  } catch {}
+                })();
+              `,
+            }}
+          />
+          <style>{`
+            html { background-color: var(--bg-color); }
+            [data-theme="dark"] html { background-color: #121212; }
+          `}</style>
         </Head>
         <body>
           <Main />

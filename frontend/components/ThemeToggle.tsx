@@ -1,6 +1,9 @@
-import { useEffect, useRef } from "react";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { MdDarkMode, MdLightMode, MdSettingsBrightness } from "react-icons/md";
+import { toast } from "react-toastify";
 
 const DarkModeIcon = MdDarkMode as React.FC<{ size?: number }>;
 const LightModeIcon = MdLightMode as React.FC<{ size?: number }>;
@@ -24,45 +27,72 @@ export default function ThemeToggle({
   closeOther,
 }: ThemeToggleProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [appliedTheme, setAppliedTheme] = useState<"light" | "dark">("light");
 
   const handleSelect = (newTheme: "light" | "dark" | "system") => {
     localStorage.setItem("theme", newTheme);
     onThemeChange(newTheme);
     toggle();
+    toast(
+      newTheme === "system"
+        ? `Using System Preference (${appliedTheme.charAt(0).toUpperCase() + appliedTheme.slice(1)})`
+        : `Switched to ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)} Mode`,
+    );
   };
 
-  let displayedTheme = theme;
-  if (theme === "system") {
-    const isDark =
-      typeof window !== "undefined"
-        ? window.matchMedia("(prefers-color-scheme: dark)").matches
-        : false;
-    displayedTheme = isDark ? "dark" : "light";
-  }
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const apply = (isDark: boolean) => {
+      const newTheme = isDark ? "dark" : "light";
+      setAppliedTheme(newTheme);
+      document.documentElement.setAttribute("data-theme", newTheme);
+      if (meta)
+        meta.setAttribute(
+          "content",
+          newTheme === "dark" ? "#121212" : "#ffffff",
+        );
+    };
 
-  // Modified handleToggle: if already open, just toggle (close it); otherwise, close other dropdowns then toggle.
+    if (theme === "system") {
+      const mql = window.matchMedia("(prefers-color-scheme: dark)");
+      apply(mql.matches);
+
+      const listener = (e: MediaQueryListEvent) => {
+        apply(e.matches);
+        toast(
+          `System preference changed to ${e.matches ? "Dark" : "Light"} mode`,
+        );
+      };
+
+      mql.addEventListener("change", listener);
+      return () => mql.removeEventListener("change", listener);
+    }
+
+    apply(theme === "dark");
+  }, [theme]);
+
+  const displayedTheme = appliedTheme;
+
   const handleToggle = () => {
-    if (open) {
-      toggle();
-    } else {
+    if (open) toggle();
+    else {
       closeOther();
       toggle();
     }
   };
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        !containerRef.current.contains(e.target as Node) &&
+        open
       ) {
-        if (open) {
-          toggle();
-        }
+        toggle();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, [open, toggle]);
 
   return (
@@ -72,8 +102,11 @@ export default function ThemeToggle({
         onClick={handleToggle}
         aria-label="Toggle theme"
       >
-        {displayedTheme === "light" && <LightModeIcon size={24} />}
-        {displayedTheme === "dark" && <DarkModeIcon size={24} />}
+        {displayedTheme === "light" ? (
+          <LightModeIcon size={24} />
+        ) : (
+          <DarkModeIcon size={24} />
+        )}
       </button>
 
       {open && (
@@ -81,19 +114,25 @@ export default function ThemeToggle({
           <Option
             label="Light"
             icon={<LightModeIcon size={20} />}
-            isSelected={theme === "light"}
+            isSelected={
+              theme === "light" ||
+              (theme === "system" && appliedTheme === "light")
+            }
             onClick={() => handleSelect("light")}
           />
           <Option
             label="Dark"
             icon={<DarkModeIcon size={20} />}
-            isSelected={theme === "dark"}
+            isSelected={
+              theme === "dark" ||
+              (theme === "system" && appliedTheme === "dark")
+            }
             onClick={() => handleSelect("dark")}
           />
           <Option
             label="System"
             icon={<SettingsBrightnessIcon size={20} />}
-            isSelected={theme === "system"}
+            isSelected={false}
             onClick={() => handleSelect("system")}
           />
         </div>

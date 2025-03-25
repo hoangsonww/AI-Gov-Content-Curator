@@ -13,6 +13,7 @@
   --loading-text: #777;
   --no-result-text: #999;
   --hover-bg: #f0f0f0;
+  --toastify-text: #333333;
 }
 
 /* Dark theme overrides */
@@ -29,6 +30,7 @@
   --loading-text: #aaa;
   --no-result-text: #ccc;
   --hover-bg: #2a2a2a;
+  --toastify-text: #cdcdcd;
 }
 
 /* ---------- Global Styles ---------- */
@@ -37,6 +39,6 @@ body {
   color: var(--text-color);
   font-family: "Inter", sans-serif;
   transition:
-    background-color 0.4s ease,
-    color 0.4s ease;
+    background-color 0.2s ease,
+    color 0.2s ease;
 }

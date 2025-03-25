@@ -3,6 +3,8 @@ import Link from "next/link";
 import { MdArticle, MdFavorite } from "react-icons/md";
 import ThemeToggle from "./ThemeToggle";
 import AuthDropdown from "./AuthDropdown";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ArticleIcon = MdArticle as React.FC<{ size?: number }>;
 
@@ -28,7 +30,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   };
 
   return (
-    <header className="navbar-container">
+    <header className="navbar-container fade-down">
       <nav className="navbar-content">
         <Link href="/" className="brand-link">
           <div className="navbar-brand">
@@ -58,6 +60,19 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
           />
         </div>
       </nav>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={3000}
+        closeOnClick
+        toastStyle={{
+          backgroundColor: "var(--card-bg)",
+          color: "var(--toastify-text)",
+          border: "1px solid var(--card-border)",
+          borderRadius: "6px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+          fontFamily: "'Inter', sans-serif",
+        }}
+      />
     </header>
   );
 }

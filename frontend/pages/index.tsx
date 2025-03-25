@@ -76,7 +76,7 @@ export default function HomePage({
       </Head>
       <div style={{ marginBottom: "2rem" }}>
         {/* SEARCH BAR & TOPIC DROPDOWN */}
-        <div className="search-container">
+        <div className="search-container fade-down">
           <input
             type="text"
             placeholder="Search articles..."
