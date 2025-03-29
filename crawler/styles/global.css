@@ -118,23 +118,18 @@ footer p {
   opacity: 0.8;
 }
 
-/* KEYFRAMES */
-@keyframes bouncePeriodic {
-  0% {
-    transform: scale(0.5) translateY(-50px);
-    opacity: 0;
+.logo-icon {
+  font-size: 3rem;
+  color: #4af7bf;
+  animation: subtleJump 2s ease-in-out infinite;
+}
+
+@keyframes subtleJump {
+  0%, 100% {
+    transform: translateY(0);
   }
-  20% {
-    transform: scale(1.2) translateY(15px);
-    opacity: 1;
-  }
-  30% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
+  50% {
+    transform: translateY(-10px);
   }
 }
 
