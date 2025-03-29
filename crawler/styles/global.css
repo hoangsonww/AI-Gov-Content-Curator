@@ -125,7 +125,8 @@ footer p {
 }
 
 @keyframes subtleJump {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -184,7 +185,9 @@ footer p {
 
 .icon-links a {
   color: #4af7bf;
-  transition: color 0.3s, transform 0.3s;
+  transition:
+    color 0.3s,
+    transform 0.3s;
 }
 
 .icon-links a:hover {
