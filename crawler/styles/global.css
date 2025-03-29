@@ -173,3 +173,21 @@ footer p {
     padding: 0.6rem 1rem;
   }
 }
+
+.icon-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  font-size: 1.5rem;
+}
+
+.icon-links a {
+  color: #4af7bf;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.icon-links a:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
