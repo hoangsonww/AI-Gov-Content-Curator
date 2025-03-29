@@ -91,6 +91,21 @@ export default function Home() {
               <i className="fas fa-arrow-right"></i>
             </button>
           </div>
+
+          <div className="icon-links">
+            <a href="https://github.com/your-repo" target="_blank" rel="noopener noreferrer">
+              <i className="fab fa-github"></i>
+            </a>
+            <a href="https://your-website.com" target="_blank" rel="noopener noreferrer">
+              <i className="fas fa-globe"></i>
+            </a>
+            <a href="mailto:contact@yourdomain.com">
+              <i className="fas fa-envelope"></i>
+            </a>
+            <a href="https://your-website.com/info" target="_blank" rel="noopener noreferrer">
+              <i className="fas fa-info-circle"></i>
+            </a>
+          </div>
         </div>
 
         <footer>
