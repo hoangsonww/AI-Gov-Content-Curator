@@ -2,7 +2,6 @@ import { GetStaticProps } from "next";
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import useSWR from "swr";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 import ArticleSearch from "../components/ArticleSearch";
@@ -25,8 +24,6 @@ interface HomePageProps {
   latestArticles: Article[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function HomePage({
   topArticles,
   latestArticles,
@@ -36,7 +33,6 @@ export default function HomePage({
     typeof router.query.topic === "string" ? router.query.topic : "";
   const initialSearch =
     typeof router.query.q === "string" ? router.query.q : "";
-
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedTopic, setSelectedTopic] = useState(initialTopic);
 
@@ -58,19 +54,11 @@ export default function HomePage({
 
   const isSearchActive =
     searchQuery.trim() !== "" || selectedTopic.trim() !== "";
-
   const handleClearSearch = () => {
     setSearchQuery("");
     setSelectedTopic("");
     router.push("/", undefined, { shallow: true });
   };
-
-  // Use SWR to fetch the most recent "latest articles" data.
-  // The initial data is provided from ISR, then SWR updates in the background.
-  const { data: liveLatestArticles } = useSWR("/api/latestArticles", fetcher, {
-    fallbackData: latestArticles,
-    refreshInterval: 10000, // refresh every 10 seconds (adjust as needed)
-  });
 
   return (
     <>
@@ -78,7 +66,6 @@ export default function HomePage({
         <title>Article Curator - AI-Powered News Article Content Curator</title>
       </Head>
       <div style={{ marginBottom: "2rem" }}>
-        {/* SEARCH BAR & TOPIC DROPDOWN */}
         <div className="search-container fade-down">
           <input
             type="text"
@@ -110,7 +97,6 @@ export default function HomePage({
             }}
           />
         </div>
-
         {isSearchActive ? (
           <ArticleSearch
             query={searchQuery}
@@ -127,7 +113,7 @@ export default function HomePage({
               Freshly gathered, thoughtfully summarized.
             </p>
             <div className="latest-articles-container">
-              <LatestArticles articles={liveLatestArticles} />
+              <LatestArticles articles={latestArticles} />
             </div>
             <hr style={{ margin: "2rem 0" }} />
             <div className="all-articles-container">
@@ -140,18 +126,19 @@ export default function HomePage({
   );
 }
 
+// Using SSG to fetch top and latest articles. Leading to faster page loads and better SEO.
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
   try {
-    const [topData, latestData] = await Promise.all([
+    const [topArticles, latestArticles] = await Promise.all([
       getTopArticles(),
       getLatestArticles(),
     ]);
     return {
       props: {
-        topArticles: topData,
-        latestArticles: latestData,
+        topArticles,
+        latestArticles,
       },
-      revalidate: 60, // Regenerate this page every 60 seconds
+      revalidate: 10, // Regenerate the page every 10 seconds
     };
   } catch (error) {
     console.error("Error fetching articles:", error);

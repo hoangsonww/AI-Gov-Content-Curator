@@ -89,7 +89,7 @@ export async function getLatestArticles(
 ): Promise<Article[]> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(`${BASE_URL}/articles?page=2&limit=10`);
+      const res = await fetch(`${BASE_URL}/articles?page=1&limit=10`);
 
       if (!res.ok) {
         console.error(
