@@ -1,7 +1,8 @@
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import useSWR from "swr";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 import ArticleSearch from "../components/ArticleSearch";
@@ -24,23 +25,21 @@ interface HomePageProps {
   latestArticles: Article[];
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function HomePage({
   topArticles,
   latestArticles,
 }: HomePageProps) {
   const router = useRouter();
-
-  // Use router query to pre-select topic and query if provided.
   const initialTopic =
     typeof router.query.topic === "string" ? router.query.topic : "";
   const initialSearch =
     typeof router.query.q === "string" ? router.query.q : "";
 
-  // Live state for search query and topic selection.
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedTopic, setSelectedTopic] = useState(initialTopic);
 
-  // Whenever the query parameters change, update state.
   useEffect(() => {
     if (typeof router.query.topic === "string") {
       setSelectedTopic(router.query.topic);
@@ -50,7 +49,6 @@ export default function HomePage({
     }
   }, [router.query]);
 
-  // When on the root path "/", clear search state.
   useEffect(() => {
     if (router.asPath === "/") {
       setSearchQuery("");
@@ -58,16 +56,21 @@ export default function HomePage({
     }
   }, [router.asPath]);
 
-  // Toggle search mode if either search query or topic is provided.
   const isSearchActive =
     searchQuery.trim() !== "" || selectedTopic.trim() !== "";
 
-  // Handler to clear search and topic.
   const handleClearSearch = () => {
     setSearchQuery("");
     setSelectedTopic("");
     router.push("/", undefined, { shallow: true });
   };
+
+  // Use SWR to fetch the most recent "latest articles" data.
+  // The initial data is provided from ISR, then SWR updates in the background.
+  const { data: liveLatestArticles } = useSWR("/api/latestArticles", fetcher, {
+    fallbackData: latestArticles,
+    refreshInterval: 10000, // refresh every 10 seconds (adjust as needed)
+  });
 
   return (
     <>
@@ -84,7 +87,9 @@ export default function HomePage({
             onChange={(e) => {
               setSearchQuery(e.target.value);
               router.push(
-                `/?q=${encodeURIComponent(e.target.value)}&topic=${encodeURIComponent(selectedTopic)}`,
+                `/?q=${encodeURIComponent(
+                  e.target.value,
+                )}&topic=${encodeURIComponent(selectedTopic)}`,
                 undefined,
                 { shallow: true },
               );
@@ -96,7 +101,9 @@ export default function HomePage({
             onChange={(topic) => {
               setSelectedTopic(topic);
               router.push(
-                `/?q=${encodeURIComponent(searchQuery)}&topic=${encodeURIComponent(topic)}`,
+                `/?q=${encodeURIComponent(
+                  searchQuery,
+                )}&topic=${encodeURIComponent(topic)}`,
                 undefined,
                 { shallow: true },
               );
@@ -105,7 +112,6 @@ export default function HomePage({
         </div>
 
         {isSearchActive ? (
-          // Display search results when either search query or topic is provided.
           <ArticleSearch
             query={searchQuery}
             topic={selectedTopic}
@@ -121,7 +127,7 @@ export default function HomePage({
               Freshly gathered, thoughtfully summarized.
             </p>
             <div className="latest-articles-container">
-              <LatestArticles articles={latestArticles} />
+              <LatestArticles articles={liveLatestArticles} />
             </div>
             <hr style={{ margin: "2rem 0" }} />
             <div className="all-articles-container">
@@ -134,13 +140,7 @@ export default function HomePage({
   );
 }
 
-export const getServerSideProps: GetServerSideProps<HomePageProps> = async ({
-  res,
-}) => {
-  res.setHeader(
-    "Cache-Control",
-    "public, s-maxage=60, stale-while-revalidate=59",
-  );
+export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
   try {
     const [topData, latestData] = await Promise.all([
       getTopArticles(),
@@ -151,6 +151,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async ({
         topArticles: topData,
         latestArticles: latestData,
       },
+      revalidate: 60, // Regenerate this page every 60 seconds
     };
   } catch (error) {
     console.error("Error fetching articles:", error);
