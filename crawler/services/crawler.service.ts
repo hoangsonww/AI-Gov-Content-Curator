@@ -16,8 +16,9 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Use Puppeteer to fetch an article dynamically.
- * This version uses puppeteer-core with @sparticuz/chromium,
- * which is optimized for environments like Vercel.
+ * This version first attempts to wait for "networkidle2".
+ * If that times out (which may occur on sites like The Washington Post),
+ * it falls back to waiting for "domcontentloaded".
  */
 export const fetchDynamicArticle = async (
   url: string,
@@ -34,7 +35,26 @@ export const fetchDynamicArticle = async (
   await page.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
   );
-  await page.goto(url, { waitUntil: "networkidle2" });
+
+  // Try to navigate using networkidle2 (which waits for no more than 2 network connections)
+  try {
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 15000 });
+  } catch (error) {
+    console.warn(
+      `Navigation using "networkidle2" timed out for ${url}. Falling back to "domcontentloaded"...`,
+    );
+    try {
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
+    } catch (fallbackError) {
+      console.error(
+        `Navigation failed for ${url} even with "domcontentloaded":`,
+        fallbackError,
+      );
+      await browser.close();
+      throw fallbackError;
+    }
+  }
+
   const html = await page.content();
 
   // Remove unnecessary elements to reduce noise
@@ -52,7 +72,8 @@ export const fetchDynamicArticle = async (
 
 /**
  * Attempt a static fetch with Axios and Cheerio.
- * If it fails (e.g., 403) or returns incomplete data, fall back to the dynamic fetch.
+ * If it fails (e.g., 403 or ECONNRESET) or returns incomplete data,
+ * fall back to using the dynamic fetch.
  */
 export const fetchStaticArticle = async (
   url: string,
@@ -67,7 +88,6 @@ export const fetchStaticArticle = async (
           "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
       },
     });
-
     const $ = cheerio.load(data);
     $("script").remove();
     $("style").remove();

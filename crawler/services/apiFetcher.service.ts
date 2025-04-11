@@ -6,9 +6,12 @@ export const fetchArticlesFromNewsAPI = async (): Promise<ArticleData[]> => {
   if (!apiKey) {
     throw new Error("Missing NEWS_API_KEY");
   }
-  const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}`;
+
+  const url = `https://newsapi.org/v2/everything?language=en&q=politics OR government OR election&sortBy=publishedAt&apiKey=${apiKey}`;
+
   const response = await axios.get(url);
   const articles = response.data.articles;
+
   return articles.map((a: any) => ({
     url: a.url,
     title: a.title,

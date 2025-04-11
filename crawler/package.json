@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\"",
+    "crawl": "npx ts-node schedule/fetchAndSummarize.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
