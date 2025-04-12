@@ -1,5 +1,5 @@
 import puppeteer from "puppeteer-core";
-import chromium = require("@sparticuz/chromium");
+const chromium = require("@sparticuz/chromium");
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { URL } from "url";
@@ -12,13 +12,13 @@ export interface ArticleData {
 }
 
 const RETRY_DELAY_MS = 2000;
+const AXIOS_TIMEOUT_MS = 10000; // Abort axios requests after 10 seconds
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Use Puppeteer to fetch an article dynamically.
  * This version first attempts to wait for "networkidle2".
- * If that times out (which may occur on sites like The Washington Post),
- * it falls back to waiting for "domcontentloaded".
+ * If that times out, it falls back to "domcontentloaded".
  */
 export const fetchDynamicArticle = async (
   url: string,
@@ -28,7 +28,7 @@ export const fetchDynamicArticle = async (
   const browser = await puppeteer.launch({
     executablePath, // Use the lightweight Chromium binary path
     headless: chromium.headless, // Use recommended headless settings
-    args: chromium.args, // Use necessary arguments for a Lambda/Vercel environment
+    args: chromium.args, // Necessary arguments for your environment
   });
 
   const page = await browser.newPage();
@@ -36,7 +36,6 @@ export const fetchDynamicArticle = async (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
   );
 
-  // Try to navigate using networkidle2 (which waits for no more than 2 network connections)
   try {
     await page.goto(url, { waitUntil: "networkidle2", timeout: 15000 });
   } catch (error) {
@@ -56,8 +55,6 @@ export const fetchDynamicArticle = async (
   }
 
   const html = await page.content();
-
-  // Remove unnecessary elements to reduce noise
   const $ = cheerio.load(html);
   $("script").remove();
   $("style").remove();
@@ -72,8 +69,8 @@ export const fetchDynamicArticle = async (
 
 /**
  * Attempt a static fetch with Axios and Cheerio.
- * If it fails (e.g., 403 or ECONNRESET) or returns incomplete data,
- * fall back to using the dynamic fetch.
+ * If it fails (e.g., ECONNRESET, timeout, or 403), fall back to the dynamic fetch.
+ * Now uses a timeout so that requests don't stall for too long.
  */
 export const fetchStaticArticle = async (
   url: string,
@@ -87,6 +84,7 @@ export const fetchStaticArticle = async (
         Accept:
           "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
       },
+      timeout: AXIOS_TIMEOUT_MS, // Set timeout for axios request
     });
     const $ = cheerio.load(data);
     $("script").remove();
@@ -97,14 +95,19 @@ export const fetchStaticArticle = async (
     const content = $("body").text().trim() || "";
     return { url, title, content, source: url };
   } catch (error: any) {
-    if (retries > 0 && error.code === "ECONNRESET") {
+    // For ECONNRESET or timeout errors, retry a limited number of times
+    if (
+      retries > 0 &&
+      (error.code === "ECONNRESET" || error.code === "ECONNABORTED")
+    ) {
       console.warn(
-        `ECONNRESET for ${url}. Retrying in ${RETRY_DELAY_MS}ms... (${retries} retries left)`,
+        `Error (${error.code}) for ${url}. Retrying in ${RETRY_DELAY_MS}ms... (${retries} retries left)`,
       );
       await delay(RETRY_DELAY_MS);
       return fetchStaticArticle(url, retries - 1);
     }
 
+    // If error is a 403, fall back to dynamic fetching immediately
     if (
       axios.isAxiosError(error) &&
       error.response &&
@@ -116,6 +119,7 @@ export const fetchStaticArticle = async (
       return await fetchDynamicArticle(url);
     }
 
+    // If we've exhausted retries or encountered another error, throw to be caught in the main loop.
     throw error;
   }
 };
@@ -151,6 +155,7 @@ export const crawlArticlesFromHomepage = async (
           Accept:
             "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         },
+        timeout: AXIOS_TIMEOUT_MS,
       });
       html = data;
     } catch (err) {

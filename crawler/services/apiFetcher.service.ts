@@ -7,7 +7,21 @@ export const fetchArticlesFromNewsAPI = async (): Promise<ArticleData[]> => {
     throw new Error("Missing NEWS_API_KEY");
   }
 
-  const url = `https://newsapi.org/v2/everything?language=en&q=politics OR government OR election&sortBy=publishedAt&apiKey=${apiKey}`;
+  // Restrict articles to the specified trusted domains:
+  // - New York Times
+  // - The Washington Post
+  // - Dallas Morning News
+  // - Austin American Statesman
+  // - Houston Chronicle
+  // - San Antonio Express News
+  const trustedDomains =
+    "nytimes.com,washingtonpost.com,dallasnews.com,statesman.com,houstonchronicle.com,expressnews.com";
+
+  // Use the "everything" endpoint with a broad political query.
+  // The query is encoded to ensure proper URL formatting.
+  const query = encodeURIComponent("politics OR government OR election");
+
+  const url = `https://newsapi.org/v2/everything?language=en&q=${query}&sortBy=publishedAt&domains=${trustedDomains}&apiKey=${apiKey}`;
 
   const response = await axios.get(url);
   const articles = response.data.articles;

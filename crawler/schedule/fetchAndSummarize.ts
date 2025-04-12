@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import * as dotenv from "dotenv";
 import Article from "../models/article.model";
 import {
+  ArticleData,
   crawlArticlesFromHomepage,
   fetchStaticArticle,
 } from "../services/crawler.service";
@@ -15,6 +16,7 @@ mongoose.set("strictQuery", false);
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 const DELAY_BETWEEN_REQUESTS_MS = 1000;
+const MAX_FETCH_TIME_MS = 20000; // Maximum time to wait for an article fetch
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
@@ -56,7 +58,7 @@ export const fetchAndSummarize = async () => {
     // 6) Filter out articles that already exist in the database
     const existingDocs = await Article.find(
       { url: { $in: articleUrls } },
-      { url: 1 }, // only return the url field
+      { url: 1 },
     );
     const existingUrls = new Set(existingDocs.map((doc) => doc.url));
     const newUrls = articleUrls.filter((u) => !existingUrls.has(u));
@@ -69,7 +71,16 @@ export const fetchAndSummarize = async () => {
     for (const url of newUrls) {
       try {
         logger.info(`Fetching article from ${url}`);
-        const articleData = await fetchStaticArticle(url);
+        // Wrap the fetch with a timeout to avoid stalling
+        const articleData = await Promise.race([
+          fetchStaticArticle(url),
+          new Promise<ArticleData>((_, reject) =>
+            setTimeout(
+              () => reject(new Error("Fetch timeout")),
+              MAX_FETCH_TIME_MS,
+            ),
+          ),
+        ]);
 
         if (!articleData.content || articleData.content.trim() === "") {
           logger.warn(`Skipping article at ${url} due to empty content`);
@@ -94,10 +105,7 @@ export const fetchAndSummarize = async () => {
             `Topic extraction failed for article at ${url}:`,
             topicError,
           );
-          // Optionally, we can skip articles that fail topic extraction:
-          // continue;
-          // For now, we will just log the error and proceed with an empty topics array
-          // to still save the article without topics.
+          // Proceed with an empty topics array
         }
 
         // Create and save the article with topics included
