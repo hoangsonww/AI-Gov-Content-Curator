@@ -21,6 +21,7 @@ import "../styles/clear-btn.css";
 import "../styles/footer.css";
 import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";
+import { Analytics } from "@vercel/analytics/react";
 
 function App({ Component, pageProps }: AppProps) {
   const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
@@ -101,6 +102,7 @@ function App({ Component, pageProps }: AppProps) {
 
   return (
     <Layout theme={theme} toggleTheme={toggleTheme}>
+      <Analytics />
       <Component {...pageProps} />
       {showScroll && (
         <button
