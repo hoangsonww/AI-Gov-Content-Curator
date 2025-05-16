@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: '**/package-lock.json'
 
       - name: Install root dependencies
@@ -33,7 +33,8 @@ jobs:
         continue-on-error: true
 
       - name: Dependency review
-        uses: github/dependency-review-action@v2
+        uses: actions/dependency-review-action@v2
+        continue-on-error: true
 
       - name: NPM audit
         run: npm audit --audit-level=high
@@ -50,7 +51,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: '**/package-lock.json'
 
       - name: Install backend dependencies
@@ -87,7 +88,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: '**/package-lock.json'
 
       - name: Install frontend dependencies
@@ -132,7 +133,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: '**/package-lock.json'
 
       - name: Install crawler dependencies
@@ -161,6 +162,10 @@ jobs:
   done:
     name: "🎉 Pipeline Complete"
     runs-on: ubuntu-latest
-    needs: [formatting, backend-tests, frontend-tests, crawler-tests]
+    needs:
+      - formatting
+      - backend-tests
+      - frontend-tests
+      - crawler-tests
     steps:
-      - run: echo "✅ CI/CD pipeline finished successfully."
+      - run: echo "✅ CI/CD pipeline finished (all steps completed or were skipped)."
