@@ -67,3 +67,20 @@ main {
 .Toastify__toast-container .Toastify__close-button svg {
   fill: var(--text-color);
 }
+
+:root {
+  --selection-bg: #6366F1;
+  --selection-fg: #ffffff;
+}
+
+/* Chrome, Edge, Safari, Opera */
+::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-fg);
+}
+
+/* Firefox */
+::-moz-selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-fg);
+}

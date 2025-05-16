@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import articleRoutes from "./routes/article.routes";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
+import newsletterRoutes from "./routes/newsletter.routes";
 
 import swaggerDocs from "./swagger/swagger";
 import swaggerUi from "swagger-ui-express";
@@ -89,6 +90,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use("/api/articles", articleRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 // 404 for unsupported routes
 app.use((req: Request, res: Response) => {

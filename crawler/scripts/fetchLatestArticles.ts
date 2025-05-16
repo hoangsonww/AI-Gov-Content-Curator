@@ -34,6 +34,10 @@ const {
   NEWS_API_KEY1,
   NEWS_API_KEY2,
   NEWS_API_KEY3,
+  NEWS_API_KEY4,
+  NEWS_API_KEY5,
+  NEWS_API_KEY6,
+  NEWS_API_KEY7,
   CRAWL_URLS = "",
   AI_INSTRUCTIONS = "Summarize concisely",
   GOOGLE_AI_API_KEY,
@@ -49,6 +53,10 @@ const NEWS_KEYS = [
   NEWS_API_KEY1,
   NEWS_API_KEY2,
   NEWS_API_KEY3,
+  NEWS_API_KEY4,
+  NEWS_API_KEY5,
+  NEWS_API_KEY6,
+  NEWS_API_KEY7
 ].filter(Boolean) as string[];
 if (!NEWS_KEYS.length) throw new Error("No NEWS_API_KEY* found");
 

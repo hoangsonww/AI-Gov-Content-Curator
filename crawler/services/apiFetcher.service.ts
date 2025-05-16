@@ -9,7 +9,16 @@ const STATIC_EXT_RE =
 dotenv.config();
 
 /* ─────────── helper to rotate keys ─────────── */
-const NEWS_KEYS = [process.env.NEWS_API_KEY, process.env.NEWS_API_KEY1].filter(
+const NEWS_KEYS = [
+  process.env.NEWS_API_KEY,
+  process.env.NEWS_API_KEY1,
+  process.env.NEWS_API_KEY2,
+  process.env.NEWS_API_KEY3,
+  process.env.NEWS_API_KEY4,
+  process.env.NEWS_API_KEY5,
+  process.env.NEWS_API_KEY6,
+  process.env.NEWS_API_KEY7
+].filter(
   Boolean,
 ) as string[];
 

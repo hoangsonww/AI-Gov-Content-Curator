@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "package.json", "use": "@vercel/next" }
+  ],
+  "crons": [
+    {
+      "path": "/api/scheduled/sendNewsletter",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
