@@ -39,6 +39,7 @@ Each component is maintained in its own directory:
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
+![Resend](https://img.shields.io/badge/Resend-FF4B00?style=flat&logo=resend&logoColor=white)
 ![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat&logo=gnu-bash&logoColor=white)
 ![Makefile](https://img.shields.io/badge/Makefile-000?style=flat&logo=make&logoColor=white)
 ![Winston](https://img.shields.io/badge/Winston-000?style=flat&logo=prometheus&logoColor=white)
@@ -103,6 +104,8 @@ The **AI-Powered Article Content Curator** system is designed to provide governm
   A responsive Next.js/React interface allows users to easily browse paginated article lists, filter by source, and view detailed article pages, with dark/light mode support. The frontend also includes user authentication, enabling users to mark articles as favorites for quick access.
 - **Scheduled Updates:**  
   Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content. This ensures that the system (articles) remains fresh and up-to-date.
+- **Newsletter Subscription:**  
+  Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
 - **Architecture:**
   Monorepo structure with separate directories for the backend, crawler, and frontend. Each component is designed to be scalable, maintainable, and deployable on Vercel.
 - **User Authentication:**  
@@ -142,8 +145,8 @@ Below is a high-level diagram outlining the system architecture:
                   |                    |
                   |   Data Processing  |
                   | (Summarization via |
-                  |  Gemini AI /       |
-                  | GoogleGenerativeAI)|
+                  | Google Generative  |
+                  |        AI)         |
                   |                    |
                   +---------+----------+
                             |
@@ -154,14 +157,14 @@ Below is a high-level diagram outlining the system architecture:
                   |   (via Mongoose)   |<------------>| (Article Caching) |
                   |                    |              |                   |
                   +---------+----------+              +-------------------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Express.js API   |
-                  |  (REST Endpoints)  |
-                  |                    |
-                  +---------+----------+
+                            |                                   |
+                            v                                   v
+                  +--------------------+             +--------------------+
+                  |                    |             |                    |
+                  |   Express.js API   |             | Newsletter Service |
+                  |  (REST Endpoints)  |             |  (Resend API with  |
+                  |                    |             |     CRON Jobs)     |
+                  +---------+----------+             +--------------------+
                             |
                             v
                   +--------------------+
@@ -172,9 +175,39 @@ Below is a high-level diagram outlining the system architecture:
                   +--------------------+
 ```
 
+This project consists of 4 primary microservices that interact with each other:
+
+1. **Crawler:**
+   - Crawls government homepages and public API sources to extract article URLs and metadata.
+   - Uses Axios and Cheerio for static HTML parsing, with Puppeteer as a fallback for dynamic content.
+   - Scheduled to run daily at 6:00 AM UTC via a serverless function on Vercel.
+   - Provides a basic landing page with information about the crawler and links to the backend and frontend.
+   - Deployed on Vercel at [https://ai-content-curator-crawler.vercel.app](https://ai-content-curator-crawler.vercel.app).
+2. **Backend:**
+   - Built with Express.js and Next.js, serving as a RESTful API for the frontend.
+   - Integrates Google Generative AI (Gemini) for content summarization.
+   - Stores articles in MongoDB using Mongoose, with fields for URL, title, full content, summary, source information, and fetch timestamp.
+   - Scheduled serverless function to fetch and process new articles twice daily at 6:00 AM and 6:00 PM UTC.
+   - Deployed on Vercel at [https://ai-content-curator-backend.vercel.app](https://ai-content-curator-backend.vercel.app).
+3. **Newsletter Service:**
+   - Allows users to subscribe to a newsletter for daily updates on the latest articles.
+   - Integrated with Resend API for managing subscriptions and sending emails.
+   - [Deployed on Vercel](https://ai-content-curator-newsletters.vercel.app/) as a serverless function, scheduled to run daily at 9:00 AM UTC.
+4. **Frontend:**
+   - Built with Next.js and React, providing a modern, mobile-responsive UI for browsing and viewing curated articles.
+   - Fetches and displays a paginated list of articles from the backend API, with filtering options.
+   - Dedicated pages for full article content, AI-generated summaries, source information, and fetched timestamps.
+   - User authentication for marking articles as favorites.
+   - Deployed on Vercel at [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app).
+
+This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
+
 ---
 
 ## User Interface
+
+The user interface is built with Next.js and React, providing a modern, mobile-responsive experience.
+Below are some screenshots of the application (some screenshots may be outdated and not reflect the latest UI - visit [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app) for the latest version):
 
 ### 1. Home Page
 
@@ -216,6 +249,12 @@ Below is a high-level diagram outlining the system architecture:
 
 <p align="center">
   <img src="frontend/img/favorites-unauth.png" alt="Favorite Articles Page (Unauthenticated User)" width="100%">
+</p>
+
+### 8. Newsletter Subscription Page
+
+<p align="center">
+  <img src="frontend/img/newsletter.png" alt="Newsletter Subscription Page" width="100%">
 </p>
 
 ### 8. User Authentication
@@ -293,16 +332,26 @@ The **Backend** is responsible for storing articles and serving them via RESTful
 
 ### Configuration (Backend)
 
-Create a `.env` file in the `backend` directory with the following:
+Create a `.env` file in the ROOT directory with the following (this will be shared across all components in this monorepo):
 
 ```dotenv
-MONGODB_URI=your_production_mongodb_connection_string
-GOOGLE_AI_API_KEY=your_google_ai_api_key
-AI_INSTRUCTIONS=Your system instructions for Gemini AI
-NEWS_API_KEY=your_newsapi_key
+MONGODB_URI=<your_mongodb_uri>
+GOOGLE_AI_API_KEY=<your_google_ai_api_key>
+GOOGLE_AI_API_KEY1=<your_google_ai_api_key1_optional>
+GOOGLE_AI_API_KEY2=<your_google_ai_api_key2_optional>
+GOOGLE_AI_API_KEY3=<your_google_ai_api_key3_optional>
+AI_INSTRUCTIONS=Summarize the articles concisely and naturally (change if needed)
+NEWS_API_KEY=<your_news_api_key>
+NEWS_API_KEY1=<your_news_api_key1>
 PORT=3000
-CRAWL_URLS=https://www.whitehouse.gov/briefing-room/,https://www.congress.gov/,https://www.state.gov/press-releases/,https://www.bbc.com/news,https://www.nytimes.com/
+CRAWL_URLS=https://www.state.gov/press-releases/,https://www.bbc.com/news,https://www.nytimes.com/,https://www.dallasnews.com/news/,https://www.houstonchronicle.com/,,https://www.whitehouse.gov/briefing-room/,https://www.congress.gov/,https://www.statesman.com/news/politics-elections/
+AICC_API_URL=https://ai-content-curator-backend.vercel.app/
+RESEND_API_KEY=<your_resend_api_key>
+RESEND_FROM="AI Curator <your_email>"
+UNSUBSCRIBE_BASE_URL=<your_unsubscribe_base_url>
 ```
+
+Refer to the `.env.example` file for more details on each variable.
 
 ### Running Locally (Backend)
 
@@ -386,20 +435,6 @@ The **Crawler** automatically retrieves article links and metadata from governme
    ```bash
    npm install
    ```
-
-### Configuration (Crawler)
-
-Create a `.env` file in the `crawler` directory with the following variables:
-
-```dotenv
-MONGODB_URI=your_mongodb_connection_string
-GOOGLE_AI_API_KEY=your_google_ai_api_key
-GOOGLE_AI_API_KEY1=your_other_google_ai_api_key # add more API keys if needed
-AI_INSTRUCTIONS=Your system instructions for Gemini AI
-NEWS_API_KEY=your_newsapi_key
-PORT=3000
-CRAWL_URLS=https://www.whitehouse.gov/briefing-room/,https://www.congress.gov/,https://www.state.gov/press-releases/,https://www.bbc.com/news,https://www.nytimes.com/
-```
 
 ### Running Locally (Crawler)
 
@@ -547,6 +582,46 @@ Access the application at [http://localhost:3000](http://localhost:3000).
    ```
 
 Alternatively, you can deploy directly from the Vercel dashboard.
+
+---
+
+## Newsletter Subscription
+
+The app also includes a newsletter subscription feature, allowing users to sign up for updates.
+This is integrated with a third-party service ([Resend](https://resend.com)) for managing subscriptions.
+
+### Features (Newsletter)
+
+- **Subscription Form:**  
+  Users can enter their email addresses to subscribe to the newsletter.
+- **Unsubscribe Option:**  
+  Users can unsubscribe from the newsletter at any time.
+- **Daily Updates:**  
+   Subscribers receive daily updates with the latest articles. Only the
+  latest articles are sent to subscribers, ensuring they receive the most relevant information.
+
+### Prerequisites & Installation (Newsletter)
+
+> Note: This assumes that you have already set up the backend and frontend as described above.
+
+1. **Prerequisites:** Sign up for a Resend account and obtain your API key.
+2. **Go to Domain Settings:** In your Resend dashboard, navigate to the "Domains" section and add your domain (you'll have to have
+   purchased a domain name that you have access to). Render will ask that you verify your domain ownership by adding a TXT record to your DNS settings, as
+   well as adding an MX record to your DNS settings, and more. Follow the instructions provided by Resend to complete this step.
+3. **Configure Environment Variables:** Create a `.env` file in the `newsletter` directory with the following variables:
+   - `RESEND_API_KEY`: Your Resend API key.
+   - `RESEND_DOMAIN`: The domain you added in the Resend dashboard.
+4. **Deploy the CRON Job:** Simply run `vercel --prod` in the `newsletter` directory to deploy the CRON job that sends daily updates to subscribers.
+5. **Configure the CRON Job:** In your Vercel dashboard, navigate to the "Functions" section and set up a CRON job that runs daily at 9:00 AM UTC. This job will send the latest articles to subscribers.
+6. **That's it!** Your newsletter subscription feature is now set up and ready to go. Users can subscribe to receive daily updates with the latest articles.
+
+### Note
+
+- The newsletter subscription feature is designed to be simple and effective. It allows users to stay informed about the latest articles without overwhelming them with too many emails.
+- The subscription form is integrated into the frontend, and users can easily sign up or unsubscribe at any time.
+- The daily updates are sent via email, ensuring that subscribers receive the most relevant information without having to check the app constantly.
+- The newsletter feature is built using the Resend API, which provides a reliable and scalable solution for managing subscriptions and sending emails.
+- Sometimes, the emails may end up in the spam folder, so users should check their spam folder if they don't see the emails in their inbox.
 
 ---
 
