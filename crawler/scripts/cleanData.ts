@@ -9,12 +9,12 @@ import { Schema, model, Types } from "mongoose";
 
 /* ─────────── Mongo model (same shape used elsewhere) ─────────── */
 const ArticleSchema = new Schema({
-  url:       String,
-  title:     String,
-  content:   String,
-  summary:   String,
-  topics:    [String],
-  source:    String,
+  url: String,
+  title: String,
+  content: String,
+  summary: String,
+  topics: [String],
+  source: String,
   fetchedAt: Date,
 });
 const Article = model("Article", ArticleSchema);
@@ -45,7 +45,10 @@ async function main() {
 
   /* ---- Phase 1: bulk remove by URL pattern ---- */
   const urlDeleteRes = await Article.deleteMany({
-    $or: [{ url: { $regex: STATIC_EXT_RE } }, { url: { $regex: SHARE_URL_RE } }],
+    $or: [
+      { url: { $regex: STATIC_EXT_RE } },
+      { url: { $regex: SHARE_URL_RE } },
+    ],
   });
   console.log(`Phase 1  removed by URL  : ${urlDeleteRes.deletedCount}`);
 
@@ -56,7 +59,7 @@ async function main() {
     .cursor();
 
   for await (const doc of cursor) {
-    const title   = (doc as any).title?.trim() ?? "";
+    const title = (doc as any).title?.trim() ?? "";
     const content = (doc as any).content ?? "";
 
     if (

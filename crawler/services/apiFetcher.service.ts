@@ -6,13 +6,12 @@ const PAGE_SIZE = 100;
 const STATIC_EXT_RE =
   /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|eot|ttf|otf|json|webmanifest|xml|rss|atom|mp4|mpeg|mov|zip|gz|pdf)(\?|$)/i;
 
-dotenv.config()
+dotenv.config();
 
 /* ─────────── helper to rotate keys ─────────── */
-const NEWS_KEYS = [
-  process.env.NEWS_API_KEY,
-  process.env.NEWS_API_KEY1,
-].filter(Boolean) as string[];
+const NEWS_KEYS = [process.env.NEWS_API_KEY, process.env.NEWS_API_KEY1].filter(
+  Boolean,
+) as string[];
 
 if (!NEWS_KEYS.length) throw new Error("No NEWS_API_KEY* provided");
 
@@ -35,7 +34,9 @@ async function safeGet(urlBase: string): Promise<AxiosResponse<any>> {
       const ax = err as AxiosError<any>;
       const status = ax.response?.status || 0;
       if (status === 401 || status === 429) {
-        console.warn(`🔑 rotate NewsAPI key → ${(keyIdx + 1) % NEWS_KEYS.length}`);
+        console.warn(
+          `🔑 rotate NewsAPI key → ${(keyIdx + 1) % NEWS_KEYS.length}`,
+        );
         nextKey();
         tries++;
         continue;
@@ -82,7 +83,9 @@ export const fetchArticlesFromNewsAPI = async (): Promise<ArticleData[]> => {
       batch.map(async (page) => {
         const resp = await safeGet(`${base}&page=${page}`);
         return resp.data.articles
-          .filter((x: any) => !STATIC_EXT_RE.test(x.url) && !x.url.includes("#"))
+          .filter(
+            (x: any) => !STATIC_EXT_RE.test(x.url) && !x.url.includes("#"),
+          )
           .map((x: any) => ({
             url: x.url,
             title: x.title,

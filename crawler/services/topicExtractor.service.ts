@@ -15,7 +15,11 @@ const API_KEYS = [
   process.env.GOOGLE_AI_API_KEY3,
 ].filter(Boolean) as string[];
 
-const MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
+const MODELS = [
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
+];
 
 const MAX_RETRIES_PER_PAIR = 2;
 const BACKOFF_MS = 1500;
@@ -31,30 +35,53 @@ const generationConfig: GenerationConfig = {
 };
 
 const safetySettings = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
 ];
 
 const MAX_CONTENT_CHARS = 2_000;
 
 /* ── helpers ── */
 const makePrompt = (text: string) =>
-  `Extract 5‑10 concise topics from the following text. `
-  + `Return as a comma‑separated list (no quotes/brackets):\n\n${text}`;
+  `Extract 5‑10 concise topics from the following text. ` +
+  `Return as a comma‑separated list (no quotes/brackets):\n\n${text}`;
 
 const clean = (s: string) =>
-  Array.from(new Set(s.split(/[\n,]+/).map((t) => t.trim().toLowerCase()).filter(Boolean)));
+  Array.from(
+    new Set(
+      s
+        .split(/[\n,]+/)
+        .map((t) => t.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
 
-const isRate = (e: any) => e?.status === 429 || /quota|rate/i.test(e?.message || "");
-const isOverload = (e: any) => e?.status === 503 || /overload|unavailable/i.test(e?.message || "");
+const isRate = (e: any) =>
+  e?.status === 429 || /quota|rate/i.test(e?.message || "");
+const isOverload = (e: any) =>
+  e?.status === 503 || /overload|unavailable/i.test(e?.message || "");
 
 /* ──────────────────────────── EXPORT ──────────────────────────── */
 
 export async function extractTopics(raw: string): Promise<string[]> {
   const content =
-    raw.length > MAX_CONTENT_CHARS ? raw.slice(0, MAX_CONTENT_CHARS) + "…" : raw;
+    raw.length > MAX_CONTENT_CHARS
+      ? raw.slice(0, MAX_CONTENT_CHARS) + "…"
+      : raw;
 
   for (const key of API_KEYS) {
     for (const model of MODELS) {
@@ -66,7 +93,9 @@ export async function extractTopics(raw: string): Promise<string[]> {
       for (let attempt = 1; attempt <= MAX_RETRIES_PER_PAIR; attempt++) {
         try {
           const result = await genAI.generateContent({
-            contents: [{ role: "user", parts: [{ text: makePrompt(content) }] }],
+            contents: [
+              { role: "user", parts: [{ text: makePrompt(content) }] },
+            ],
             generationConfig,
             safetySettings,
           });

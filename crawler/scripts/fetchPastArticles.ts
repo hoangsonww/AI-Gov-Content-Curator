@@ -52,7 +52,9 @@ const NEWS_KEYS = [
 ].filter(Boolean) as string[];
 if (!NEWS_KEYS.length) throw new Error("No NEWS_API_KEY* provided");
 
-const HOMEPAGES = CRAWL_URLS.split(",").map((s) => s.trim()).filter(Boolean);
+const HOMEPAGES = CRAWL_URLS.split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 /* ─────────── constants ─────────── */
 const CRAWL_CONCURRENCY = 3;
@@ -78,7 +80,11 @@ const AI_KEYS = [
   GOOGLE_AI_API_KEY2,
   GOOGLE_AI_API_KEY3,
 ].filter(Boolean) as string[];
-const AI_MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
+const AI_MODELS = [
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
+];
 const AI_RETRIES = 2;
 
 async function gemini(
@@ -152,7 +158,10 @@ async function fetchStatic(url: string) {
 }
 async function fetchDynamic(url: string, browser: Browser) {
   const p = await browser.newPage();
-  await p.goto(url, { timeout: BROWSER_TIMEOUT, waitUntil: "domcontentloaded" });
+  await p.goto(url, {
+    timeout: BROWSER_TIMEOUT,
+    waitUntil: "domcontentloaded",
+  });
   const title = await p.title();
   const content = await p.evaluate(() => document.body.innerText);
   await p.close();
@@ -180,7 +189,9 @@ async function crawlHomepage(u: string): Promise<string[]> {
       const { data } = await axios.get(cur, { timeout: STATIC_TIMEOUT_MS });
       const links = [...data.matchAll(/href=["']([^"']+)["']/g)]
         .map((m) => new URL(m[1], cur).href)
-        .filter((l) => POLI_RE.test(l) && !STATIC_EXT_RE.test(l) && !l.includes("#"));
+        .filter(
+          (l) => POLI_RE.test(l) && !STATIC_EXT_RE.test(l) && !l.includes("#"),
+        );
       queue.push(...links);
     } catch {}
   }
@@ -209,7 +220,8 @@ async function ingest(url: string, browser: Browser) {
     }
     if (art.content.length < 200) return;
 
-    const summary = (await summarizeAI(art.content)) || art.content.slice(0, 400) + "…";
+    const summary =
+      (await summarizeAI(art.content)) || art.content.slice(0, 400) + "…";
     const topics = await topicsAI(summary);
 
     await Article.updateOne(
@@ -238,8 +250,7 @@ async function* newsApiIterator(): AsyncGenerator<{ url: string }, void, void> {
   let to = new Date(); // walk back from "now"
   let keyIdx = 0;
 
-  const QUERY =
-    `"us politics" OR congress OR senate OR president OR election AND NOT sports`;
+  const QUERY = `"us politics" OR congress OR senate OR president OR election AND NOT sports`;
 
   while (true) {
     let page = 1;
@@ -263,8 +274,7 @@ async function* newsApiIterator(): AsyncGenerator<{ url: string }, void, void> {
         if (data.status !== "ok" || !data.articles?.length) break;
 
         for (const art of data.articles) {
-          if (!STATIC_EXT_RE.test(art.url) && POLI_RE.test(art.url))
-            yield art;
+          if (!STATIC_EXT_RE.test(art.url) && POLI_RE.test(art.url)) yield art;
         }
 
         lastPublished = data.articles[data.articles.length - 1].publishedAt;
@@ -306,7 +316,10 @@ async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log("Mongo connected");
 
-  const browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox"],
+  });
 
   while (true) {
     const loopStart = Date.now();
@@ -321,7 +334,9 @@ async function main() {
           const links = await crawlHomepage(hp);
           for (let j = 0; j < links.length; j += FETCH_CONCURRENCY) {
             await Promise.all(
-              links.slice(j, j + FETCH_CONCURRENCY).map((l) => ingest(l, browser)),
+              links
+                .slice(j, j + FETCH_CONCURRENCY)
+                .map((l) => ingest(l, browser)),
             );
           }
         }),

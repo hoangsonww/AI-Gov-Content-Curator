@@ -18,7 +18,11 @@ const API_KEYS = [
 
 if (!API_KEYS.length) throw new Error("No GOOGLE_AI_API_KEY* values found");
 
-const MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
+const MODELS = [
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
+];
 
 const MAX_RETRIES_PER_PAIR = 2;
 const BACKOFF_MS = 1500;
