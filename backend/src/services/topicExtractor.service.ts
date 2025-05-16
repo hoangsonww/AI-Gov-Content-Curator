@@ -7,16 +7,13 @@ import {
 import * as dotenv from "dotenv";
 dotenv.config();
 
-/* ─────────────────  KEY + MODEL ROTATION ───────────────── */
-
+/* ── key / model rotation ── */
 const API_KEYS = [
   process.env.GOOGLE_AI_API_KEY,
   process.env.GOOGLE_AI_API_KEY1,
   process.env.GOOGLE_AI_API_KEY2,
   process.env.GOOGLE_AI_API_KEY3,
 ].filter(Boolean) as string[];
-
-if (!API_KEYS.length) throw new Error("No GOOGLE_AI_API_KEY* values found");
 
 const MODELS = [
   "gemini-2.0-flash",
@@ -27,15 +24,14 @@ const MODELS = [
 const MAX_RETRIES_PER_PAIR = 2;
 const BACKOFF_MS = 1500;
 
-/* ─────────────────  PARAMS ───────────────── */
-
+/* ── params ── */
 const SYSTEM = (process.env.AI_INSTRUCTIONS ?? "").trim();
 
 const generationConfig: GenerationConfig = {
-  temperature: 0.9,
-  topP: 0.95,
-  topK: 64,
-  maxOutputTokens: 1024,
+  temperature: 0.7,
+  topP: 0.9,
+  topK: 40,
+  maxOutputTokens: 256,
 };
 
 const safetySettings = [
@@ -57,14 +53,36 @@ const safetySettings = [
   },
 ];
 
-const isRateOrQuota = (e: any) =>
-  e?.status === 429 || /quota|rate|exceed/i.test(e?.message || "");
-const isOverloaded = (e: any) =>
+const MAX_CONTENT_CHARS = 2_000;
+
+/* ── helpers ── */
+const makePrompt = (text: string) =>
+  `Extract 5‑10 concise topics from the following text. ` +
+  `Return as a comma‑separated list (no quotes/brackets):\n\n${text}`;
+
+const clean = (s: string) =>
+  Array.from(
+    new Set(
+      s
+        .split(/[\n,]+/)
+        .map((t) => t.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
+
+const isRate = (e: any) =>
+  e?.status === 429 || /quota|rate/i.test(e?.message || "");
+const isOverload = (e: any) =>
   e?.status === 503 || /overload|unavailable/i.test(e?.message || "");
 
-/* ─────────────────────────────  EXPORT  ───────────────────────────── */
+/* ──────────────────────────── EXPORT ──────────────────────────── */
 
-export async function summarizeContent(article: string): Promise<string> {
+export async function extractTopics(raw: string): Promise<string[]> {
+  const content =
+    raw.length > MAX_CONTENT_CHARS
+      ? raw.slice(0, MAX_CONTENT_CHARS) + "…"
+      : raw;
+
   for (const key of API_KEYS) {
     for (const model of MODELS) {
       const genAI = new GoogleGenerativeAI(key).getGenerativeModel({
@@ -76,20 +94,17 @@ export async function summarizeContent(article: string): Promise<string> {
         try {
           const result = await genAI.generateContent({
             contents: [
-              {
-                role: "user",
-                parts: [{ text: `Summarize briefly:\n\n${article}` }],
-              },
+              { role: "user", parts: [{ text: makePrompt(content) }] },
             ],
             generationConfig,
             safetySettings,
           });
-          const text = result?.response?.text?.().trim();
-          if (!text) throw new Error("Empty Gemini response");
-          return text;
+          const out = result?.response?.text?.().trim();
+          if (!out) throw new Error("Empty Gemini response");
+          return clean(out);
         } catch (err: any) {
           if (
-            (isRateOrQuota(err) || isOverloaded(err)) &&
+            (isRate(err) || isOverload(err)) &&
             attempt < MAX_RETRIES_PER_PAIR
           ) {
             await new Promise((r) => setTimeout(r, BACKOFF_MS * attempt));
@@ -99,5 +114,5 @@ export async function summarizeContent(article: string): Promise<string> {
       }
     }
   }
-  throw new Error("All keys/models exhausted while summarizing");
+  throw new Error("All keys/models exhausted while extracting topics");
 }

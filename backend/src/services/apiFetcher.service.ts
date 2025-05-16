@@ -1,18 +1,101 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { ArticleData } from "./crawler.service";
+import * as dotenv from "dotenv";
 
-export const fetchArticlesFromNewsAPI = async (): Promise<ArticleData[]> => {
-  const apiKey = process.env.NEWS_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing NEWS_API_KEY");
+const PAGE_SIZE = 100;
+const STATIC_EXT_RE =
+  /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|eot|ttf|otf|json|webmanifest|xml|rss|atom|mp4|mpeg|mov|zip|gz|pdf)(\?|$)/i;
+
+dotenv.config();
+
+/* ─────────── helper to rotate keys ─────────── */
+const NEWS_KEYS = [process.env.NEWS_API_KEY, process.env.NEWS_API_KEY1].filter(
+  Boolean,
+) as string[];
+
+if (!NEWS_KEYS.length) throw new Error("No NEWS_API_KEY* provided");
+
+let keyIdx = 0;
+const nextKey = () => {
+  keyIdx = (keyIdx + 1) % NEWS_KEYS.length;
+  return NEWS_KEYS[keyIdx];
+};
+
+/**
+ * Fetch a single NewsAPI URL with automatic key rotation on 401/429 errors.
+ */
+async function safeGet(urlBase: string): Promise<AxiosResponse<any>> {
+  let tries = 0;
+  while (tries < NEWS_KEYS.length) {
+    const url = `${urlBase}&apiKey=${NEWS_KEYS[keyIdx]}`;
+    try {
+      return await axios.get(url);
+    } catch (err) {
+      const ax = err as AxiosError<any>;
+      const status = ax.response?.status || 0;
+      if (status === 401 || status === 429) {
+        console.warn(
+          `🔑 rotate NewsAPI key → ${(keyIdx + 1) % NEWS_KEYS.length}`,
+        );
+        nextKey();
+        tries++;
+        continue;
+      }
+      throw err;
+    }
   }
-  const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}`;
-  const response = await axios.get(url);
-  const articles = response.data.articles;
-  return articles.map((a: any) => ({
-    url: a.url,
-    title: a.title,
-    content: a.content || a.description || "",
-    source: a.source.name || "NewsAPI",
-  }));
+  throw new Error("All NewsAPI keys exhausted");
+}
+
+/* ─────────── exported function ─────────── */
+export const fetchArticlesFromNewsAPI = async (): Promise<ArticleData[]> => {
+  /* trusted domains & query */
+  const domains =
+    "nytimes.com,washingtonpost.com,dallasnews.com,statesman.com,houstonchronicle.com,expressnews.com";
+  const query = encodeURIComponent("politics OR government OR election");
+  const base =
+    `https://newsapi.org/v2/everything?language=en&q=${query}` +
+    `&sortBy=publishedAt&domains=${domains}&pageSize=${PAGE_SIZE}`;
+
+  /* first page */
+  const firstResp = await safeGet(`${base}&page=1`);
+  const total = firstResp.data.totalResults || 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const first: ArticleData[] = firstResp.data.articles
+    .filter((a: any) => !STATIC_EXT_RE.test(a.url) && !a.url.includes("#"))
+    .map((a: any) => ({
+      url: a.url,
+      title: a.title,
+      content: a.content || a.description || "",
+      source: a.source.name || "NewsAPI",
+    }));
+
+  const pages: number[] = [];
+  for (let p = 2; p <= totalPages; p++) pages.push(p);
+
+  const chunks: ArticleData[][] = [];
+  const CONC = 5;
+
+  for (let i = 0; i < pages.length; i += CONC) {
+    const batch = pages.slice(i, i + CONC);
+    const resps = await Promise.all(
+      batch.map(async (page) => {
+        const resp = await safeGet(`${base}&page=${page}`);
+        return resp.data.articles
+          .filter(
+            (x: any) => !STATIC_EXT_RE.test(x.url) && !x.url.includes("#"),
+          )
+          .map((x: any) => ({
+            url: x.url,
+            title: x.title,
+            content: x.content || x.description || "",
+            source: x.source.name || "NewsAPI",
+          }));
+      }),
+    );
+    chunks.push(...resps);
+  }
+
+  return [...first, ...chunks.flat()];
 };
