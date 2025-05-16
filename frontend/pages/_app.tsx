@@ -18,6 +18,7 @@ import "../styles/load-more-btn.css";
 import "../styles/back-to-top-btn.css";
 import "../styles/password-toggle.css";
 import "../styles/clear-btn.css";
+import "../styles/newsletter.css";
 import "../styles/footer.css";
 import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";

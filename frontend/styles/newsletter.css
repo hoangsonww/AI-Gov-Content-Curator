@@ -1,0 +1,21 @@
+/* ---------- Navbar link styles (Newsletter & Favorites) ---------- */
+.newsletter-link,
+.favorites-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--navbar-text);
+  text-decoration: none;
+  border-radius: 8px;
+  transition:
+      transform 0.2s ease,
+      background-color 0.2s ease;
+}
+
+.newsletter-link:hover,
+.favorites-link:hover {
+  transform: scale(1.1);
+  background-color: var(--card-bg);
+}

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import { MdArticle, MdFavorite } from "react-icons/md";
+import { MdArticle, MdFavorite, MdMailOutline } from "react-icons/md";
 import ThemeToggle from "./ThemeToggle";
 import AuthDropdown from "./AuthDropdown";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ArticleIcon = MdArticle as React.FC<{ size?: number }>;
+const MailIcon = MdMailOutline as React.FC<{ size?: number }>;
 
 interface NavbarProps {
   theme: "light" | "dark" | "system";
@@ -16,7 +17,7 @@ interface NavbarProps {
 export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   // Manage which dropdown is open: "theme", "auth", or null.
   const [openDropdown, setOpenDropdown] = useState<"theme" | "auth" | null>(
-    null,
+    null
   );
 
   // Toggle a dropdown – if already open, close it; if not, close any open dropdown and open this one.
@@ -38,12 +39,23 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
             <span className="brand-text">Article Curator</span>
           </div>
         </Link>
+
         <div className="navbar-right">
+          {/* Newsletter subscription link */}
+          <Link href="/newsletter" legacyBehavior>
+            <a className="newsletter-link" title="Newsletter">
+              <MailIcon size={24} />
+            </a>
+          </Link>
+
+          {/* Favorites link */}
           <Link href="/favorites/favorites" legacyBehavior>
-            <a className="favorites-link">
+            <a className="favorites-link" title="Favorites">
               <MdFavorite size={24} />
             </a>
           </Link>
+
+          {/* Theme toggle dropdown */}
           <ThemeToggle
             theme={theme}
             onThemeChange={onThemeChange}
@@ -51,6 +63,8 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
             toggle={() => toggleDropdown("theme")}
             closeOther={closeDropdowns}
           />
+
+          {/* Auth dropdown */}
           <AuthDropdown
             theme={theme}
             onThemeChange={onThemeChange}
@@ -60,6 +74,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
           />
         </div>
       </nav>
+
       <ToastContainer
         position="bottom-center"
         autoClose={3000}
