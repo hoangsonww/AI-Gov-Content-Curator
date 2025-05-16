@@ -394,6 +394,7 @@ Create a `.env` file in the `crawler` directory with the following variables:
 ```dotenv
 MONGODB_URI=your_mongodb_connection_string
 GOOGLE_AI_API_KEY=your_google_ai_api_key
+GOOGLE_AI_API_KEY1=your_other_google_ai_api_key # add more API keys if needed
 AI_INSTRUCTIONS=Your system instructions for Gemini AI
 NEWS_API_KEY=your_newsapi_key
 PORT=3000
@@ -415,7 +416,32 @@ Alternatively, run the crawler directly:
 
 ```bash
 npx ts-node schedule/fetchAndSummarize.ts
+
+# or
+npm run crawl
 ```
+
+Also, there are 2 more scripts for the crawler:
+
+1. Fetch and crawl all past articles (will run indefinitely, unless you stop it):
+
+   ```bash
+   npx ts-node scripts/fetchPastArticles.ts
+   
+   # or
+   npm run fetch:past
+   ```
+   
+2. Fetch and crawl all newest/latest articles:
+
+   ```bash
+    npx ts-node scripts/fetchLatestArticles.ts
+    
+    # or
+    npm run fetch:latest
+    ```
+
+Run these locally to test the crawler functionality. You can also run them in a Docker container if you prefer.
 
 ### Deployment on Vercel (Crawler)
 
