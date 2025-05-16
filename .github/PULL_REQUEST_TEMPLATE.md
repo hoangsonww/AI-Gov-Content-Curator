@@ -3,10 +3,12 @@
 Please include a summary of the change and which issue is fixed.  
 Reference any related issues using `#1234` notation.
 
-**What is the problem this PR is solving?**  
+**What is the problem this PR is solving?**
+
 <!--- Describe the problem or feature request in detail. -->
 
-**How did you solve it?**  
+**How did you solve it?**
+
 <!--- Explain the approach and the reasoning behind your solution. -->
 
 ## Related Issue
@@ -62,12 +64,12 @@ npm run test
 npm --workspace frontend run test:e2e
 # run crawler smoke
 npm --workspace crawler run crawl
-````
+```
 
-* [ ] Unit tests
-* [ ] Integration tests
-* [ ] End-to-end tests
-* [ ] Manual testing steps (please describe)
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] End-to-end tests
+- [ ] Manual testing steps (please describe)
 
 ## Screenshots (if appropriate)
 
@@ -75,10 +77,10 @@ npm --workspace crawler run crawl
 
 ## Deployment Notes
 
-* Does this require new environment variables?
+- Does this require new environment variables?
 
-  * [ ] Yes — documented below
-  * [ ] No
+  - [ ] Yes — documented below
+  - [ ] No
 
 If yes, list and describe:
 
