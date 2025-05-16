@@ -1,28 +1,27 @@
-// services/topicExtractor.service.ts
-
 import {
   GoogleGenerativeAI,
+  GenerationConfig,
   HarmCategory,
   HarmBlockThreshold,
-  GenerationConfig,
 } from "@google/generative-ai";
 import * as dotenv from "dotenv";
-
 dotenv.config();
 
-// --- Configuration & singletons ---
+/* ── key / model rotation ── */
+const API_KEYS = [
+  process.env.GOOGLE_AI_API_KEY,
+  process.env.GOOGLE_AI_API_KEY1,
+  process.env.GOOGLE_AI_API_KEY2,
+  process.env.GOOGLE_AI_API_KEY3,
+].filter(Boolean) as string[];
 
-const AI_INSTRUCTIONS = process.env.AI_INSTRUCTIONS?.trim() || "";
-const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
-if (!GOOGLE_AI_API_KEY) {
-  throw new Error("Missing GOOGLE_AI_API_KEY in environment");
-}
+const MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
 
-const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
-  systemInstruction: AI_INSTRUCTIONS,
-});
+const MAX_RETRIES_PER_PAIR = 2;
+const BACKOFF_MS = 1500;
+
+/* ── params ── */
+const SYSTEM = (process.env.AI_INSTRUCTIONS ?? "").trim();
 
 const generationConfig: GenerationConfig = {
   temperature: 0.7,
@@ -32,90 +31,59 @@ const generationConfig: GenerationConfig = {
 };
 
 const safetySettings = [
-  {
-    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_NONE,
-  },
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
 ];
 
-const MAX_RETRIES = 3;
-const BASE_RETRY_DELAY_MS = 1000; // exponential backoff base
-const MAX_CONTENT_CHARS = 2000; // truncate very long content to speed up prompt
+const MAX_CONTENT_CHARS = 2_000;
 
-/**
- * Extracts topics from article content by calling Google Generative AI.
- * - Reuses the same model instance for speed.
- * - Truncates content to first MAX_CONTENT_CHARS characters.
- * - Applies exponential backoff on rate limits.
- */
-export const extractTopics = async (rawContent: string): Promise<string[]> => {
-  // Truncate to reduce token usage and speed up
+/* ── helpers ── */
+const makePrompt = (text: string) =>
+  `Extract 5‑10 concise topics from the following text. `
+  + `Return as a comma‑separated list (no quotes/brackets):\n\n${text}`;
+
+const clean = (s: string) =>
+  Array.from(new Set(s.split(/[\n,]+/).map((t) => t.trim().toLowerCase()).filter(Boolean)));
+
+const isRate = (e: any) => e?.status === 429 || /quota|rate/i.test(e?.message || "");
+const isOverload = (e: any) => e?.status === 503 || /overload|unavailable/i.test(e?.message || "");
+
+/* ──────────────────────────── EXPORT ──────────────────────────── */
+
+export async function extractTopics(raw: string): Promise<string[]> {
   const content =
-    rawContent.length > MAX_CONTENT_CHARS
-      ? rawContent.slice(0, MAX_CONTENT_CHARS) + "..."
-      : rawContent;
+    raw.length > MAX_CONTENT_CHARS ? raw.slice(0, MAX_CONTENT_CHARS) + "…" : raw;
 
-  const prompt = `Extract 5–10 concise topics from the text below. Return as a comma-separated list with no quotes or brackets:\n\n${content}`;
-
-  let attempt = 0;
-  while (attempt < MAX_RETRIES) {
-    try {
-      const chat = model.startChat({
-        generationConfig,
-        safetySettings,
-        history: [],
+  for (const key of API_KEYS) {
+    for (const model of MODELS) {
+      const genAI = new GoogleGenerativeAI(key).getGenerativeModel({
+        model,
+        systemInstruction: SYSTEM,
       });
 
-      // Race the AI call against a timeout to avoid hangs
-      const result = await Promise.race([
-        chat.sendMessage(prompt),
-        new Promise<never>((_, rej) =>
-          setTimeout(() => rej(new Error("AI request timeout")), 5000),
-        ),
-      ]);
-
-      const text = result.response?.text?.().trim();
-      if (!text) {
-        throw new Error("Empty AI response");
+      for (let attempt = 1; attempt <= MAX_RETRIES_PER_PAIR; attempt++) {
+        try {
+          const result = await genAI.generateContent({
+            contents: [{ role: "user", parts: [{ text: makePrompt(content) }] }],
+            generationConfig,
+            safetySettings,
+          });
+          const out = result?.response?.text?.().trim();
+          if (!out) throw new Error("Empty Gemini response");
+          return clean(out);
+        } catch (err: any) {
+          if (
+            (isRate(err) || isOverload(err)) &&
+            attempt < MAX_RETRIES_PER_PAIR
+          ) {
+            await new Promise((r) => setTimeout(r, BACKOFF_MS * attempt));
+            continue;
+          }
+        }
       }
-
-      // Split on commas or newlines, trim, dedupe
-      const topics = Array.from(
-        new Set(
-          text
-            .split(/[\n,]+/)
-            .map((t) => t.trim().toLowerCase())
-            .filter((t) => t.length > 0),
-        ),
-      );
-
-      return topics;
-    } catch (err: any) {
-      attempt++;
-      const isRateLimit = err.status === 429 || /rate limit/i.test(err.message);
-      if (isRateLimit && attempt < MAX_RETRIES) {
-        const delayMs = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
-        console.warn(
-          `Topic extraction rate-limited (attempt ${attempt}), retrying in ${delayMs}ms…`,
-        );
-        await new Promise((r) => setTimeout(r, delayMs));
-        continue;
-      }
-      // For other errors or if out of retries, rethrow
-      throw err;
     }
   }
-  throw new Error("Failed to extract topics after multiple attempts");
-};
+  throw new Error("All keys/models exhausted while extracting topics");
+}
