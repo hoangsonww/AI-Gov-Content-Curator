@@ -1,0 +1,47 @@
+{
+  "name": "newsletters",
+  "description": "Daily newsletter service for AI Article Content Curator.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Son Nguyen",
+  "keywords": [
+    "newsletter",
+    "email",
+    "service",
+    "ai",
+    "article",
+    "curator",
+    "content",
+    "summarization",
+    "automation",
+    "daily",
+    "updates"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "newsletter": "npx ts-node --transpile-only schedule/sendNewsletter.ts",
+    "send": "node dist/schedule/sendNewsletter.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@vercel/node": "^5.1.16",
+    "dotenv": "^16.5.0",
+    "mongoose": "^8.15.0",
+    "next": "^15.3.2",
+    "nodemailer": "^7.0.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "resend": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.5.0"
+  }
+}
