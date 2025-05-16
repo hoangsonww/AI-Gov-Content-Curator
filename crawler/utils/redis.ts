@@ -9,6 +9,9 @@ const URL_QUEUE_KEY = "articles:queue";
 
 let client: RedisClientType;
 
+/**
+ * Connect to Redis.
+ */
 export async function connectRedis(): Promise<void> {
   if (!client) {
     client = createClient({ url: REDIS_URL });
@@ -20,6 +23,9 @@ export async function connectRedis(): Promise<void> {
   }
 }
 
+/**
+ * Disconnect from Redis.
+ */
 export async function disconnectRedis(): Promise<void> {
   if (client) {
     await client.disconnect();
