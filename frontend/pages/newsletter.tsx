@@ -129,8 +129,9 @@ export default function NewsletterPage() {
           width: 64px;
           height: 64px;
           color: var(--accent-color);
-          animation: float 3s ease-in-out infinite,
-          pulse 2.5s ease-in-out infinite;
+          animation:
+            float 3s ease-in-out infinite,
+            pulse 2.5s ease-in-out infinite;
         }
         h1 {
           margin-top: 0.5rem;
@@ -175,7 +176,9 @@ export default function NewsletterPage() {
           background: var(--accent-color);
           color: #fff;
           cursor: pointer;
-          transition: transform 0.2s, background 0.2s;
+          transition:
+            transform 0.2s,
+            background 0.2s;
         }
         .btn:hover:not(:disabled) {
           transform: translateY(-2px);

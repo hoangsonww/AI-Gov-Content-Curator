@@ -17,10 +17,8 @@ const NEWS_KEYS = [
   process.env.NEWS_API_KEY4,
   process.env.NEWS_API_KEY5,
   process.env.NEWS_API_KEY6,
-  process.env.NEWS_API_KEY7
-].filter(
-  Boolean,
-) as string[];
+  process.env.NEWS_API_KEY7,
+].filter(Boolean) as string[];
 
 if (!NEWS_KEYS.length) throw new Error("No NEWS_API_KEY* provided");
 

@@ -14,7 +14,7 @@ import NewsletterSubscriber from "../models/newsletterSubscriber.model";
     console.log(`Seeded test subscriber ${testEmail}`);
   }
 })().catch((err) =>
-  console.error("Failed to seed test subscriber:", err.message)
+  console.error("Failed to seed test subscriber:", err.message),
 );
 
 /** -----------------------------------------------------------------
@@ -25,7 +25,9 @@ export const subscribe = async (req: Request, res: Response) => {
   const { email } = req.body as { email?: string };
 
   if (!email || !validator.isEmail(email)) {
-    return res.status(400).json({ error: "A valid e‑mail address is required" });
+    return res
+      .status(400)
+      .json({ error: "A valid e‑mail address is required" });
   }
 
   const normalized = email.toLowerCase();
@@ -52,8 +54,9 @@ export const subscribe = async (req: Request, res: Response) => {
  *  ----------------------------------------------------------------*/
 export const unsubscribe = async (req: Request, res: Response) => {
   const email =
-    (req.method === "POST" ? (req.body as { email?: string }).email : undefined) ??
-    (req.query.email as string | undefined);
+    (req.method === "POST"
+      ? (req.body as { email?: string }).email
+      : undefined) ?? (req.query.email as string | undefined);
 
   if (!email || !validator.isEmail(email)) {
     return res
@@ -64,7 +67,9 @@ export const unsubscribe = async (req: Request, res: Response) => {
   const normalized = email.toLowerCase();
 
   try {
-    const deleted = await NewsletterSubscriber.findOneAndDelete({ email: normalized });
+    const deleted = await NewsletterSubscriber.findOneAndDelete({
+      email: normalized,
+    });
 
     if (!deleted) {
       return res

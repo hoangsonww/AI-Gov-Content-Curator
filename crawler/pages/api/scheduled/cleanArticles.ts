@@ -11,13 +11,13 @@ export default async function handler(_: VercelRequest, res: VercelResponse) {
   try {
     const { stdout, stderr } = await run(
       "npx ts-node --transpile-only scripts/cleanArticles.ts",
-      { cwd: process.cwd() }
+      { cwd: process.cwd() },
     );
 
     return res.status(200).json({
       status: "success",
       stdout,
-      stderr
+      stderr,
     });
   } catch (err: any) {
     console.error("cleanArticles failed:", err);

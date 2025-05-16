@@ -25,14 +25,17 @@ export async function sendNewsletter() {
   const subscribers = await NewsletterSubscriber.find({});
   console.log(`Sending to ${subscribers.length} subscriber(s)`);
 
-  const MAX_ARTICLES = 50;           // keep payload < 400 KB
-  const DATE_FMT = Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+  const MAX_ARTICLES = 50; // keep payload < 400 KB
+  const DATE_FMT = Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 
   for (const sub of subscribers) {
     const since = sub.lastSentAt ?? new Date(0);
     const articles = await Article.find({ fetchedAt: { $gt: since } })
       .sort({ fetchedAt: 1 })
-      .limit(MAX_ARTICLES + 1)       // +1 to detect if more were trimmed
+      .limit(MAX_ARTICLES + 1) // +1 to detect if more were trimmed
       .lean();
 
     if (!articles.length) {
@@ -52,15 +55,15 @@ export async function sendNewsletter() {
               ${i + 1}. ${a.title}
             </a>
             ${
-          a.summary
-            ? `<p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#555;">${a.summary}</p>`
-            : ""
-        }
+              a.summary
+                ? `<p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#555;">${a.summary}</p>`
+                : ""
+            }
             <p style="margin:6px 0 0;font-size:12px;color:#999;">
               ${DATE_FMT.format(new Date(a.fetchedAt))} · ${a.source ?? ""}
             </p>
           </td>
-        </tr>`
+        </tr>`,
       )
       .join("");
 
@@ -86,12 +89,12 @@ export async function sendNewsletter() {
     <tr><td style="padding:20px 24px;text-align:center;font-size:12px;color:#999;">
       You’re receiving this because you subscribed on our site.<br>
       ${
-      UNSUBSCRIBE_BASE_URL
-        ? `<a href="${UNSUBSCRIBE_BASE_URL}?email=${encodeURIComponent(
-          sub.email
-        )}" style="color:#0d6efd;text-decoration:none;">Unsubscribe</a>`
-        : ""
-    }
+        UNSUBSCRIBE_BASE_URL
+          ? `<a href="${UNSUBSCRIBE_BASE_URL}?email=${encodeURIComponent(
+              sub.email,
+            )}" style="color:#0d6efd;text-decoration:none;">Unsubscribe</a>`
+          : ""
+      }
     </td></tr>
   </table>
 </td></tr></table></body></html>`;

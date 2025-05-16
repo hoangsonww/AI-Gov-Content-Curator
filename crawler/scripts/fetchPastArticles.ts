@@ -56,7 +56,7 @@ const NEWS_KEYS = [
   NEWS_API_KEY4,
   NEWS_API_KEY5,
   NEWS_API_KEY6,
-  NEWS_API_KEY7
+  NEWS_API_KEY7,
 ].filter(Boolean) as string[];
 if (!NEWS_KEYS.length) throw new Error("No NEWS_API_KEY* provided");
 

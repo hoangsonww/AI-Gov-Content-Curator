@@ -38,8 +38,8 @@ export default function Home() {
         <main className="main-content">
           <p className="description">
             You’ve reached the <strong>newsletter service</strong>, whose only
-            purpose is to run a scheduled cron job that emails daily AI-summarised
-            article digests to our subscribers.
+            purpose is to run a scheduled cron job that emails daily
+            AI-summarised article digests to our subscribers.
           </p>
 
           <p className="description">
@@ -68,7 +68,7 @@ export default function Home() {
               onClick={() =>
                 window.open(
                   "https://ai-content-curator-backend.vercel.app",
-                  "_blank"
+                  "_blank",
                 )
               }
             >
@@ -80,7 +80,7 @@ export default function Home() {
               onClick={() =>
                 window.open(
                   "https://ai-gov-content-curator.vercel.app",
-                  "_blank"
+                  "_blank",
                 )
               }
             >
@@ -122,15 +122,15 @@ export default function Home() {
           padding: 0;
           box-sizing: border-box;
         }
-        
+
         html,
         body {
           height: 100vh;
-          font-family: 'Roboto', sans-serif;
+          font-family: "Roboto", sans-serif;
           background-color: #f5f7fa;
           color: #333;
         }
-        
+
         /* wrapper & font */
         .page-wrapper {
           min-height: 100vh;
@@ -138,7 +138,7 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          font-family: 'Roboto', sans-serif;
+          font-family: "Roboto", sans-serif;
           color: #333;
           text-align: center;
           background-color: #ffffff;
@@ -194,7 +194,9 @@ export default function Home() {
           font-size: 1rem;
           cursor: pointer;
           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          transition: transform 0.2s, box-shadow 0.2s;
+          transition:
+            transform 0.2s,
+            box-shadow 0.2s;
         }
         .btn:hover {
           transform: translateY(-2px);
@@ -214,7 +216,9 @@ export default function Home() {
         .icon-links i {
           font-size: 1.6rem;
           color: #333;
-          transition: transform 0.2s, color 0.3s;
+          transition:
+            transform 0.2s,
+            color 0.3s;
         }
         .icon-links i:hover {
           transform: scale(1.2);

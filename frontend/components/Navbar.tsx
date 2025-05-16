@@ -17,7 +17,7 @@ interface NavbarProps {
 export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   // Manage which dropdown is open: "theme", "auth", or null.
   const [openDropdown, setOpenDropdown] = useState<"theme" | "auth" | null>(
-    null
+    null,
   );
 
   // Toggle a dropdown – if already open, close it; if not, close any open dropdown and open this one.
