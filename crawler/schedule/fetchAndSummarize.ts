@@ -47,7 +47,10 @@ const DELAY_BETWEEN_REQUESTS_MS = parseInt(
   process.env.DELAY_BETWEEN_REQUESTS_MS ?? "1000",
   10,
 );
-const MAX_FETCH_TIME_MS = parseInt(process.env.MAX_FETCH_TIME_MS ?? "60000", 10);
+const MAX_FETCH_TIME_MS = parseInt(
+  process.env.MAX_FETCH_TIME_MS ?? "60000",
+  10,
+);
 
 const STATIC_EXT_RE =
   /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|eot|ttf|otf|json|webmanifest|xml|rss|atom|mp4|mpeg|mov|zip|gz|pdf)(\?|$)/i;
@@ -134,11 +137,7 @@ async function processApiArticle(api: {
 /* ─────────────────── PAGE‑FETCH ARTICLES ─────────────────── */
 
 async function processUrl(url: string): Promise<void> {
-  if (
-    STATIC_EXT_RE.test(url) ||
-    url.includes("#") ||
-    !startProcessing(url)
-  )
+  if (STATIC_EXT_RE.test(url) || url.includes("#") || !startProcessing(url))
     return;
 
   try {

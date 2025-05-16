@@ -427,19 +427,19 @@ Also, there are 2 more scripts for the crawler:
 
    ```bash
    npx ts-node scripts/fetchPastArticles.ts
-   
+
    # or
    npm run fetch:past
    ```
-   
+
 2. Fetch and crawl all newest/latest articles:
 
    ```bash
     npx ts-node scripts/fetchLatestArticles.ts
-    
+
     # or
     npm run fetch:latest
-    ```
+   ```
 
 Run these locally to test the crawler functionality. You can also run them in a Docker container if you prefer.
 

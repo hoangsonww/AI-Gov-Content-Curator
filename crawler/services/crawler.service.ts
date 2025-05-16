@@ -16,6 +16,23 @@ const AXIOS_TIMEOUT_MS = 10000; // Abort axios requests after 10 seconds
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
+ * Make sure we *always* return a non‑empty title.
+ * 1. Prefer the HTML <title>.
+ * 2. Otherwise, use the first full sentence (≤120 chars) from the content.
+ * 3. Finally, fall back to the first 10 words or "Untitled".
+ */
+const deriveTitle = (rawTitle: string, content: string): string => {
+  const title = rawTitle.trim();
+  if (title) return title;
+
+  const firstSentenceMatch = content.match(/(.{1,120}?[.!?])\s/);
+  if (firstSentenceMatch) return firstSentenceMatch[1].trim();
+
+  const firstWords = content.split(/\s+/).slice(0, 10).join(" ").trim();
+  return firstWords || "Untitled";
+};
+
+/**
  * Use Puppeteer to fetch an article dynamically.
  * First tries "networkidle2", then falls back to "domcontentloaded".
  */
@@ -56,8 +73,8 @@ export const fetchDynamicArticle = async (
   $("script, style").remove();
   $('head [type="application/ld+json"]').remove();
 
-  const title = $("title").text().trim() || "Untitled";
   const content = $("body").text().trim() || "";
+  const title = deriveTitle($("title").text(), content);
 
   return { url, title, content, source: url };
 };
@@ -86,8 +103,9 @@ export const fetchStaticArticle = async (
     $("script, style").remove();
     $('head [type="application/ld+json"]').remove();
 
-    const title = $("title").text().trim() || "Untitled";
     const content = $("body").text().trim() || "";
+    const title = deriveTitle($("title").text(), content);
+
     return { url, title, content, source: url };
   } catch (err: any) {
     // Retry on network reset or timeout
@@ -174,7 +192,7 @@ export const crawlArticlesFromHomepage = async (
             linksOnPage.push(abs);
           }
         } catch {
-          // ignore
+          /* ignore malformed URLs */
         }
       });
 
