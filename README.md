@@ -81,6 +81,7 @@ Each component is maintained in its own directory:
   - [Backend](#backend-1)
   - [Frontend](#frontend-1)
   - [Crawler](#crawler-1)
+- [Continuous Integration / Continuous Deployment (CI/CD)](#continuous-integration--continuous-deployment-cicd)
 - [License](#license)
 - [Contact](#contact)
 - [Conclusion](#conclusion)
