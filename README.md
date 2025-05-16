@@ -30,9 +30,18 @@ Each component is maintained in its own directory:
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 ![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-333333?style=flat&logo=vitest&logoColor=white)
+![Jest](https://img.shields.io/badge/Jest-C21325?style=flat&logo=jest&logoColor=white)
+![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white)
+![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
+![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat&logo=gnu-bash&logoColor=white)
+![Makefile](https://img.shields.io/badge/Makefile-000?style=flat&logo=make&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
 > Note: This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
 
@@ -61,8 +70,17 @@ Each component is maintained in its own directory:
   - [Configuration](#configuration-frontend)
   - [Running Locally](#running-locally-frontend)
   - [Deployment on Vercel](#deployment-on-vercel-frontend)
-- [Logging, Error Handling & Future Enhancements](#logging-error-handling--future-enhancements)
+- [Command Line Interface (CLI)](#command-line-interface-cli)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Workspace Management](#workspace-management)
+  - [Crawling](#crawling)
+  - [Article CRUD](#article-crud)
 - [Contributing](#contributing)
+- [Testing](#testing)
+  - [Backend](#backend-1)
+  - [Frontend](#frontend-1)
+  - [Crawler](#crawler-1)
 - [License](#license)
 - [Contact](#contact)
 - [Conclusion](#conclusion)
@@ -101,21 +119,21 @@ Below is a high-level diagram outlining the system architecture:
 ```
       +----------------+       +--------------------------+
       |                |       |                          |
-      |   Data Sources |       |   Public API Sources     |
+      |  Data Sources  |       |   Public API Sources     |
       |                |       |   (e.g., NewsAPI)        |
       +--------+-------+       +-------------+------------+
                |                              |
                |                              |
                v                              v
-      +----------------+       +--------------------------+
-      |                |       |                          |
-      | Custom Crawlers|       | API Fetcher Service      |
-      | (Homepage      |       |                          |
-      |  Crawling)     |       +-------------+------------+
-      |                |                     |
-      +--------+-------+                     |
-               |                             |
-               +------------+----------------+
+      +-----------------+       +--------------------------+
+      |                 |       |                          |
+      | Custom Crawlers |       |   API Fetcher Service    |
+      | (Articles       |       |                          |
+      |  Crawling)      |       +-------------+------------+
+      |                 |                     |
+      +--------+--------+                     |
+               |                              |
+               +------------+-----------------+
                             |
                             v
                   +--------------------+
@@ -128,26 +146,26 @@ Below is a high-level diagram outlining the system architecture:
                   +---------+----------+
                             |
                             v
-                  +--------------------+
-                  |                    |
-                  |   MongoDB Storage  |
-                  | (via Mongoose)     |
-                  |                    |
-                  +---------+----------+
+                  +--------------------+              +-------------------+
+                  |                    |              |                   |
+                  |   MongoDB Storage  |              |   Redis Cache     |
+                  |   (via Mongoose)   |<------------>| (Article Caching) |
+                  |                    |              |                   |
+                  +---------+----------+              +-------------------+
                             |
                             v
                   +--------------------+
                   |                    |
                   |   Express.js API   |
-                  | (REST Endpoints)   |
+                  |  (REST Endpoints)  |
                   |                    |
                   +---------+----------+
                             |
                             v
                   +--------------------+
                   |                    |
-                  |   Next.js Frontend |
-                  |  (Consumer of API) |
+                  |  Next.js Frontend  |
+                  | (Consumer of API)  |
                   |                    |
                   +--------------------+
 ```
@@ -504,22 +522,118 @@ Alternatively, you can deploy directly from the Vercel dashboard.
 
 ---
 
-## Logging, Error Handling & Future Enhancements
+## Command Line Interface (CLI)
 
-- **Logging:**
+The `aicc` command gives you a single entrypoint to manage your entire monorepo—frontend, backend, crawler—and perform content‐curation tasks.
 
-  - Development: Uses basic console logging.
-  - Production: Consider integrating advanced logging libraries (e.g., Winston, Sentry) for improved error monitoring.
+### Installation
 
-- **Error Handling:**
+From the **project root**:
 
-  - The backend implements retry mechanisms for AI summarization.
-  - The crawler gracefully handles network errors and switches between Axios/Cheerio and Puppeteer as needed.
+```bash
+# Install dependencies
+npm install
 
-- **Future Enhancements:**
-  - Expand the Next.js UI into a richer dashboard featuring analytics, logs, and user authentication.
-  - Refine scheduling options for more granular updates.
-  - Integrate additional public API sources and extend filtering capabilities.
+# Link the CLI so `aicc` is on your PATH
+npm link
+```
+
+> This sets up a global symlink named `aicc` pointing at `./bin/aicc.js`.
+
+### Usage
+
+Run `aicc` with no arguments to display help:
+
+```bash
+aicc
+```
+
+#### Workspace Management
+
+| Command                | Description                                                   |
+| ---------------------- | ------------------------------------------------------------- |
+| `aicc dev`             | Start **all** services in development mode                    |
+| `aicc dev <service>`   | Start one service (`frontend` / `backend` / `crawler`) in dev |
+| `aicc build`           | Build **all** services for production                         |
+| `aicc build <service>` | Build one service                                             |
+| `aicc start`           | Start **all** services in production mode                     |
+| `aicc start <service>` | Start one service                                             |
+| `aicc lint`            | Run Prettier across all packages                              |
+| `aicc format`          | Alias for `aicc lint`                                         |
+
+**Examples**:
+
+```bash
+# Run frontend + backend + crawler in parallel
+aicc dev
+
+# Build only the backend
+aicc build backend
+
+# Start crawler in prod mode
+aicc start crawler
+
+# Lint & format everything
+aicc lint
+```
+
+#### Crawling
+
+Kick off your scheduled crawler (`schedule/fetchAndSummarize.ts`) in the **crawler** package:
+
+```bash
+aicc crawl
+```
+
+This will `cd crawler` and run `npm run crawl` under the hood.
+
+#### Article CRUD
+
+Interact with your backend’s `/api/articles` endpoints directly from the CLI:
+
+| Command                                                    | Description                                   |
+| ---------------------------------------------------------- | --------------------------------------------- |
+| `aicc article create --title <t> --content <c> [...flags]` | Create a new article                          |
+| `aicc article get <id>`                                    | Fetch one article by its MongoDB `_id`        |
+| `aicc article list [--limit N]`                            | List articles, optionally limiting the number |
+| `aicc article update <id> [--flags]`                       | Update fields on an existing article          |
+| `aicc article delete <id>`                                 | Delete an article by ID                       |
+
+**Flags for `create` & `update`:**
+
+- `--title <string>` — Article title
+- `--content <string>` — Full article content (stored in `content`)
+- `--summary <string>` — Brief summary
+- `--topics <topic1> ...` — One or more topic tags
+- `--source <string>` — Source identifier
+
+**Examples**:
+
+```bash
+# Create a new article
+aicc article create \
+  --title "AI in 2025" \
+  --content "Deep dive into AI trends..." \
+  --summary "Key trends in AI" \
+  --topics ai machine-learning \
+  --source "manual-cli"
+
+# Get an article
+aicc article get 64a1f2d3e4b5c6a7d8e9f0
+
+# List up to 5 articles
+aicc article list --limit 5
+
+# Update title and topics
+aicc article update 64a1f2d3e4b5c6a7d8e9f0 \
+  --title "AI Trends 2025" \
+  --topics ai trends
+
+# Delete an article
+aicc article delete 64a1f2d3e4b5c6a7d8e9f0
+```
+
+With `aicc` in your toolbox, you can develop, build, run, lint, crawl, and manage content—all from one unified interface.
 
 ---
 
@@ -538,9 +652,89 @@ Alternatively, you can deploy directly from the Vercel dashboard.
    git commit -m "Description of your feature"
    ```
 
+   > NOTE: Be sure to run `npm run format` in the root directory to format your code before committing!
+
 4. **Push the Branch and Open a Pull Request.**
 
 Contributions are welcome! Please ensure that your code adheres to the project’s linting and formatting guidelines.
+
+---
+
+## Testing
+
+### Backend
+
+The backend uses Jest + Supertest (with an in-memory MongoDB) for unit and integration tests. From the **backend** workspace root, run:
+
+```bash
+# Install dependencies (npm ci is correct here—it installs exactly from package-lock)
+npm ci
+
+# Run all tests once
+npm run test
+
+# Rerun tests on file changes
+npm run test:watch
+
+# Generate a coverage report
+npm run test:coverage
+```
+
+### Frontend
+
+The frontend uses Playwright for end-to-end testing. From the **frontend** workspace directory, run:
+
+```bash
+# Install dependencies
+npm ci
+
+# Headless E2E run (default)
+npm run test:e2e
+
+# Run in headed mode (open real browser windows)
+npm run test:e2e:headed
+
+# Open the HTML report after a run
+npm run test:e2e:report
+```
+
+By default, the Playwright report is served at `http://localhost:9323` (or another port as printed in your console).
+
+### Crawler
+
+The crawler uses Jest + ts-jest to test the `fetchAndSummarize` job. From the **crawler** workspace root, run:
+
+```bash
+# Install dependencies
+npm ci
+
+# Run all crawler tests once
+npm run test
+
+# (Optional) Re-run on file changes
+npm run test -- --watch
+
+# To execute an actual crawl against your configured URLs:
+npm run crawl
+```
+
+Make sure required environment variables (e.g. `MONGODB_URI`, `CRAWL_URLS`, `CRAWL_MAX_LINKS`, etc.) are defined before invoking `npm run crawl` and any test commands. Using `npm ci` in each workspace ensures a clean, reproducible installation based on your lockfile.
+
+---
+
+## Continuous Integration / Continuous Deployment (CI/CD)
+
+The project uses GitHub Actions for CI/CD. The workflow is defined in `.github/workflows/ci.yml`. It includes:
+
+- **Linting:** Runs ESLint and Prettier checks on all code changes.
+- **Testing:** Executes unit tests for the backend and frontend.
+- **Deployment:** Automatically deploys the backend and frontend to Vercel on successful merges to the main branch.
+- **Docker:** Builds and pushes Docker images for the backend and crawler.
+- **Cron Jobs:** Configures scheduled tasks for the backend and crawler.
+- **Environment Variables:** Sets up environment variables for the backend and crawler.
+- and more...
+
+Additional `.yml` files are also available for specific tasks, such as `backend-ci.yml`, `crawler-ci.yml`, and `frontend-ci.yml`.
 
 ---
 

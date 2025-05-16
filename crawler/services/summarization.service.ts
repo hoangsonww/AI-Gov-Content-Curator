@@ -19,7 +19,7 @@ export const summarizeContent = async (content: string): Promise<string> => {
   const googleAiApiKey = process.env.GOOGLE_AI_API_KEY;
   const genAI = new GoogleGenerativeAI(googleAiApiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash-lite",
     systemInstruction: fullSystemInstruction,
   });
   const generationConfig: GenerationConfig = {

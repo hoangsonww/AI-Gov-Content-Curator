@@ -1,3 +1,5 @@
+// services/topicExtractor.service.ts
+
 import {
   GoogleGenerativeAI,
   HarmCategory,
@@ -8,77 +10,112 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 2000;
+// --- Configuration & singletons ---
 
-export const extractTopics = async (content: string): Promise<string[]> => {
-  const fullSystemInstruction = process.env.AI_INSTRUCTIONS || "";
-  const googleAiApiKey = process.env.GOOGLE_AI_API_KEY || "";
-  const genAI = new GoogleGenerativeAI(googleAiApiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: fullSystemInstruction,
-  });
-  const generationConfig: GenerationConfig = {
-    temperature: 1,
-    topP: 0.95,
-    topK: 64,
-    maxOutputTokens: 8192,
-  };
-  const safetySettings = [
-    {
-      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-  ];
-  const history: Array<any> = [];
+const AI_INSTRUCTIONS = process.env.AI_INSTRUCTIONS?.trim() || "";
+const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
+if (!GOOGLE_AI_API_KEY) {
+  throw new Error("Missing GOOGLE_AI_API_KEY in environment");
+}
+
+const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+  systemInstruction: AI_INSTRUCTIONS,
+});
+
+const generationConfig: GenerationConfig = {
+  temperature: 0.7,
+  topP: 0.9,
+  topK: 40,
+  maxOutputTokens: 256,
+};
+
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
+
+const MAX_RETRIES = 3;
+const BASE_RETRY_DELAY_MS = 1000; // exponential backoff base
+const MAX_CONTENT_CHARS = 2000; // truncate very long content to speed up prompt
+
+/**
+ * Extracts topics from article content by calling Google Generative AI.
+ * - Reuses the same model instance for speed.
+ * - Truncates content to first MAX_CONTENT_CHARS characters.
+ * - Applies exponential backoff on rate limits.
+ */
+export const extractTopics = async (rawContent: string): Promise<string[]> => {
+  // Truncate to reduce token usage and speed up
+  const content =
+    rawContent.length > MAX_CONTENT_CHARS
+      ? rawContent.slice(0, MAX_CONTENT_CHARS) + "..."
+      : rawContent;
+
+  const prompt = `Extract 5–10 concise topics from the text below. Return as a comma-separated list with no quotes or brackets:\n\n${content}`;
 
   let attempt = 0;
   while (attempt < MAX_RETRIES) {
     try {
-      const chatSession = model.startChat({
+      const chat = model.startChat({
         generationConfig,
         safetySettings,
-        history,
+        history: [],
       });
 
-      const prompt = `Extract a list of topics from the following article content. Return the topics as a comma-separated list (do not include 
-      any quotes or special characters - plain text and commas ONLY and ensure each topic is not too long):\n\n${content}`;
+      // Race the AI call against a timeout to avoid hangs
+      const result = await Promise.race([
+        chat.sendMessage(prompt),
+        new Promise<never>((_, rej) =>
+          setTimeout(() => rej(new Error("AI request timeout")), 5000),
+        ),
+      ]);
 
-      const result = await chatSession.sendMessage(prompt);
-      if (!result.response || !result.response.text) {
-        throw new Error("Failed to get text response from the AI.");
+      const text = result.response?.text?.().trim();
+      if (!text) {
+        throw new Error("Empty AI response");
       }
-      const topicsText = result.response.text();
-      // Split the response on commas, trim whitespace, and filter out empty strings.
-      const topics = topicsText
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
+
+      // Split on commas or newlines, trim, dedupe
+      const topics = Array.from(
+        new Set(
+          text
+            .split(/[\n,]+/)
+            .map((t) => t.trim().toLowerCase())
+            .filter((t) => t.length > 0),
+        ),
+      );
+
       return topics;
-    } catch (error: any) {
+    } catch (err: any) {
       attempt++;
-      if (error.status === 429 && attempt < MAX_RETRIES) {
+      const isRateLimit = err.status === 429 || /rate limit/i.test(err.message);
+      if (isRateLimit && attempt < MAX_RETRIES) {
+        const delayMs = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
         console.warn(
-          `Topic extraction rate limited. Retrying attempt ${attempt} after ${RETRY_DELAY_MS}ms...`,
+          `Topic extraction rate-limited (attempt ${attempt}), retrying in ${delayMs}ms…`,
         );
-        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-      } else {
-        throw error;
+        await new Promise((r) => setTimeout(r, delayMs));
+        continue;
       }
+      // For other errors or if out of retries, rethrow
+      throw err;
     }
   }
-  throw new Error("Failed to extract topics after multiple attempts.");
+  throw new Error("Failed to extract topics after multiple attempts");
 };

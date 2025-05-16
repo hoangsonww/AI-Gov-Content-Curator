@@ -6,6 +6,9 @@
 [![Vercel](https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white)](https://vercel.com)
 [![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Playwright](https://img.shields.io/badge/Playwright-333333?style=flat&logo=playwright&logoColor=white)](https://playwright.dev)
+[![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white)](https://eslint.org)
+[![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=black)](https://prettier.io)
 
 This **frontend** provides an interface for government staff (and potentially the public) to browse curated articles, view article details, and perform simple interactions (e.g., pagination, filtering). It is designed to work seamlessly with the **Government Content Curator Backend**.
 
@@ -205,6 +208,34 @@ The frontend is deployed on [Vercel](https://vercel.com):
 
 - **Styles**:  
   You can use CSS Modules, SCSS, or styled-components. By default, Next.js supports global CSS in `pages/_app.tsx` or in a dedicated `styles/global.css`.
+
+---
+
+## Testing
+
+The frontend features Playwright for end-to-end testing. To run tests:
+
+```bash
+npm run test:e2e
+```
+
+Alternatively, you can run tests in headed mode:
+
+```bash
+npm run test:e2e:headed
+```
+
+This will open a browser window and run the tests interactively.
+
+All tests are located in the `tests` directory. You can add or modify tests as needed.
+
+To open the latest test report, run:
+
+```bash
+npm run test:e2e:report
+```
+
+This will open the HTML report in your default browser, available at `http://localhost:9323` or another port if specified.
 
 ---
 
