@@ -1,6 +1,5 @@
 /* ───────── GLOBAL STYLES FOR CHATBOT (revamped) ───────── */
 :root {
-  /* feel free to tweak to match your theme */
   --cb-radius: 18px;
   --cb-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
   --cb-border: 1px solid var(--card-border);
@@ -58,7 +57,7 @@
 
 /* ---- header ---- */
 .cb-header {
-  background: var(--card-bg); /* NOT blue anymore */
+  background: var(--card-bg);
   color: var(--text-color);
   padding: 0.85rem 1rem;
   display: flex;
@@ -67,10 +66,12 @@
   font-weight: 600;
   border-bottom: var(--cb-border);
 }
+
 .cb-header-btns {
   display: flex;
   gap: 0.4rem;
 }
+
 .cb-icon-btn {
   background: transparent;
   border: none;
@@ -80,6 +81,7 @@
   border-radius: 6px;
   transition: background 0.12s;
 }
+
 .cb-icon-btn:hover {
   background: var(--hover-bg);
 }
@@ -93,11 +95,13 @@
   display: flex;
   flex-direction: column;
 }
+
 .cb-placeholder {
   text-align: center;
   color: var(--loading-text);
   font-style: italic;
 }
+
 .cb-bubble {
   max-width: 85%;
   padding: 0.75rem 1rem;
@@ -108,18 +112,21 @@
   margin-bottom: 0.9rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
+
 .cb-bubble.user {
   align-self: flex-end;
   background: var(--accent-color);
   color: var(--bg-color);
   border-bottom-right-radius: 4px;
 }
+
 .cb-bubble.model {
   align-self: flex-start;
   background: var(--hover-bg);
   color: var(--text-color);
   border-bottom-left-radius: 4px;
 }
+
 .cb-loader {
   display: flex;
   align-items: center;
@@ -134,6 +141,7 @@
   border-top: var(--cb-border);
   background: var(--card-bg);
 }
+
 .cb-footer input {
   flex: 1;
   border: none;
@@ -142,10 +150,12 @@
   color: var(--text-color);
   font-size: 0.95rem;
 }
+
 .cb-footer input:focus {
   outline: none;
   background: var(--hover-bg);
 }
+
 .cb-send-btn {
   background: var(--accent-color);
   color: var(--bg-color);
@@ -159,6 +169,7 @@
     opacity 0.15s,
     transform 0.15s;
 }
+
 .cb-send-btn:not(:disabled):hover {
   transform: translateY(-1px);
   opacity: 0.9;
@@ -176,16 +187,19 @@
   border-radius: 8px;
   overflow-x: auto;
 }
+
 .cb-bubble table {
   width: 100%;
   border-collapse: collapse;
   margin: 0.5rem 0;
 }
+
 .cb-bubble th,
 .cb-bubble td {
   border: 1px solid var(--card-border);
   padding: 0.45rem 0.65rem;
 }
+
 .cb-bubble blockquote {
   border-left: 4px solid var(--card-border);
   margin: 0.5rem 0;
@@ -197,6 +211,7 @@
 .cb-spin {
   animation: cb-spin 1s linear infinite;
 }
+
 @keyframes cb-spin {
   to {
     transform: rotate(360deg);
