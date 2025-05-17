@@ -12,6 +12,7 @@ const STATIC_URLS = [
   `${SITE_URL}/auth/register`,
   `${SITE_URL}/auth/reset-password`,
   `${SITE_URL}/favorites/favorites`,
+  `${SITE_URL}/newsletter`,
 ];
 
 export const getServerSideProps: GetServerSideProps = async ({
@@ -29,6 +30,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         .map(
           (url) => `<url>
             <loc>${url}</loc>
+            <lastmod>${new Date().toISOString()}</lastmod>
             <changefreq>daily</changefreq>
             <priority>0.8</priority>
           </url>`
