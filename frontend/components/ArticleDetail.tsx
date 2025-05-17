@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
 import { useRouter } from "next/router";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import {
   fetchFavoriteArticleIds,
   toggleFavoriteArticle,
@@ -16,7 +21,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
-  // Check for token and load favorite status on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -24,15 +28,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       return;
     }
     setIsLoggedIn(true);
-    const loadFavorites = async () => {
+    (async () => {
       try {
         const favorites = await fetchFavoriteArticleIds(token);
         setIsFavorited(favorites.includes(article._id));
       } catch (error) {
         console.error("Error loading favorites", error);
       }
-    };
-    loadFavorites();
+    })();
   }, [article._id]);
 
   const handleFavorite = async () => {
@@ -40,77 +43,122 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       const token = localStorage.getItem("token");
       if (!token) return;
       await toggleFavoriteArticle(token, article._id);
-      setIsFavorited((prev) => !prev);
+      setIsFavorited(prev => !prev);
     } catch (error) {
       console.error("Error toggling favorite", error);
     }
   };
 
   const handleTopicClick = (topic: string) => {
-    // Navigate back to the home page with the selected topic in query.
     router.push(`/?topic=${encodeURIComponent(topic)}`);
   };
 
-  let articleTitle = article.title;
-
-  if (article.title.length == 0 || !article.title || article.title === " ") {
-    articleTitle = "Article Title Unavailable";
-  }
+  const title = article.title?.trim() || "Article Title Unavailable";
 
   return (
-    <div className="article-detail hover-animate">
-      <h1 className="detail-title">{articleTitle}</h1>
-
+    <div className="article-detail hover-animate" style={{ position: "relative" }}>
+      <h1 className="detail-title">{title}</h1>
       <p className="detail-meta">
         Source:{" "}
         {article.url ? (
-          <a
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="article-source-link"
-          >
+          <a href={article.url} target="_blank" rel="noopener noreferrer" className="article-source-link">
             {article.source}
           </a>
         ) : (
           article.source
         )}
       </p>
-
       <p className="detail-meta">
         Fetched at: {new Date(article.fetchedAt).toLocaleString()}
       </p>
-
-      <div className="detail-content">{article.content}</div>
-
-      {article.topics && article.topics.length > 0 && (
+      <div className="detail-content">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex]}
+          components={{
+            ul: ({ node, ...props }) => (
+              <ul style={{ paddingLeft: "1.5em", paddingTop: 0, margin: 0 }} {...props} />
+            ),
+            ol: ({ node, ...props }) => (
+              <ol style={{ paddingLeft: "1.5em", paddingTop: 0, margin: 0 }} {...props} />
+            ),
+            li: ({ node, ...props }) => (
+              <li style={{ margin: 0 }} {...props} />
+            ),
+            table: ({ node, ...props }) => (
+              <div style={{ overflowX: "auto", margin: 0 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }} {...props} />
+              </div>
+            ),
+            th: ({ node, ...props }) => (
+              <th style={{ border: "1px solid #ccc", padding: "0.5em", textAlign: "left" }} {...props} />
+            ),
+            td: ({ node, ...props }) => (
+              <td style={{ border: "1px solid #ccc", padding: "0.5em" }} {...props} />
+            ),
+            pre: ({ node, ...props }) => (
+              <pre
+                style={{
+                  background: "#f6f8fa",
+                  padding: "1em",
+                  margin: 0,
+                  borderRadius: "4px",
+                  overflowX: "auto",
+                }}
+                {...props}
+              />
+            ),
+            code: ({ node, inline, className, children, ...rest }: any) =>
+              inline ? (
+                <code
+                  style={{
+                    background: "#f6f8fa",
+                    padding: "0.2em 0.4em",
+                    borderRadius: "4px",
+                    fontSize: "0.95em",
+                  }}
+                  className={className}
+                  {...rest}
+                >
+                  {children}
+                </code>
+              ) : (
+                <code className={className} {...rest}>
+                  {children}
+                </code>
+              ),
+          }}
+        >
+          {article.content}
+        </ReactMarkdown>
+      </div>
+      {article.topics?.length > 0 && (
         <div className="topics-container">
           <h3>Topics:</h3>
           <div className="topics-list">
-            {article.topics.map((topic) => (
-              <span
-                key={topic}
-                className="topic-link"
-                onClick={() => handleTopicClick(topic)}
-              >
+            {article.topics.map(topic => (
+              <span key={topic} className="topic-link" onClick={() => handleTopicClick(topic)}>
                 {topic}
               </span>
             ))}
           </div>
         </div>
       )}
-
       {isLoggedIn && (
         <button
           className="favorite-btn"
           onClick={handleFavorite}
           aria-label="Favorite Article"
+          style={{
+            background: "none",
+            border: "none",
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            cursor: "pointer",
+          }}
         >
-          {isFavorited ? (
-            <MdFavorite size={20} color="#e74c3c" />
-          ) : (
-            <MdFavoriteBorder size={20} />
-          )}
+          {isFavorited ? <MdFavorite size={20} color="#e74c3c" /> : <MdFavoriteBorder size={20} />}
         </button>
       )}
     </div>
