@@ -1,8 +1,3 @@
-/*  Article page + draggable Gemini chat assistant
- *  – overlay is now rendered via a React Portal
- *  – all styles moved to /styles/chatbot.css (global)
- *  – only variable‑based colours, consistent with your theme
- */
 import React, {
   useState,
   useRef,
@@ -26,8 +21,6 @@ import { MdHome } from "react-icons/md";
 interface ArticlePageProps {
   article: Article | null;
 }
-
-type ChatMessage = { sender: "user" | "model"; text: string };
 
 /* ───────── PAGE ───────── */
 export default function ArticlePage({ article }: ArticlePageProps) {
@@ -54,7 +47,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
           <Link href="/" legacyBehavior>
             <a>
               <MdHome size={20} />
-              Back&nbsp;to&nbsp;Home
+              Back to Home
             </a>
           </Link>
         </div>
@@ -70,7 +63,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
         }
         .page-wrapper {
           position: relative;
-          padding-bottom: 4rem; /* space for toggle */
+          padding-bottom: 4rem;
         }
         .nav-back {
           margin: 2rem 0;

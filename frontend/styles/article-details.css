@@ -79,6 +79,14 @@
   box-shadow: none;
 }
 
+.nav-back a {
+  transition: color 0.2s ease;
+}
+
+.nav-back a:hover {
+  color: var(--text-color) !important;
+}
+
 /* ---------- Favorite Button Styling ---------- */
 .favorite-btn {
   background: none;
