@@ -76,14 +76,37 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeKatex]}
           components={{
+            p: ({ node, ...props }) => (
+              <p style={{ margin: "0", lineHeight: "1.5" }} {...props} />
+            ),
             ul: ({ node, ...props }) => (
-              <ul style={{ paddingLeft: "1.5em", paddingTop: 0, margin: 0 }} {...props} />
+              <ul
+                style={{
+                  paddingLeft: "1.5em",
+                  margin: 0,
+                  paddingTop: 0,
+                  paddingBottom: 0,
+                  listStylePosition: "inside",
+                  lineHeight: "1.4",
+                }}
+                {...props}
+              />
             ),
             ol: ({ node, ...props }) => (
-              <ol style={{ paddingLeft: "1.5em", paddingTop: 0, margin: 0 }} {...props} />
+              <ol
+                style={{
+                  paddingLeft: "1.5em",
+                  margin: 0,
+                  paddingTop: 0,
+                  paddingBottom: 0,
+                  listStylePosition: "inside",
+                  lineHeight: "1.4",
+                }}
+                {...props}
+              />
             ),
             li: ({ node, ...props }) => (
-              <li style={{ margin: 0 }} {...props} />
+              <li style={{ margin: 0, padding: 0, lineHeight: "1.4" }} {...props} />
             ),
             table: ({ node, ...props }) => (
               <div style={{ overflowX: "auto", margin: 0 }}>
@@ -91,7 +114,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               </div>
             ),
             th: ({ node, ...props }) => (
-              <th style={{ border: "1px solid #ccc", padding: "0.5em", textAlign: "left" }} {...props} />
+              <th
+                style={{
+                  border: "1px solid #ccc",
+                  padding: "0.5em",
+                  textAlign: "left",
+                }}
+                {...props}
+              />
             ),
             td: ({ node, ...props }) => (
               <td style={{ border: "1px solid #ccc", padding: "0.5em" }} {...props} />
@@ -116,6 +146,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                     padding: "0.2em 0.4em",
                     borderRadius: "4px",
                     fontSize: "0.95em",
+                    lineHeight: "1.4",
                   }}
                   className={className}
                   {...rest}
@@ -129,7 +160,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               ),
           }}
         >
-          {article.content}
+          {article.summary}
         </ReactMarkdown>
       </div>
       {article.topics?.length > 0 && (
