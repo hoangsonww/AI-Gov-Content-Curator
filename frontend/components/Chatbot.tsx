@@ -13,7 +13,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
-import { Article } from "../pages"; // adjust as needed
+import { Article } from "../pages";
 
 type ChatMessage = { sender: "user" | "model"; text: string };
 
