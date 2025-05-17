@@ -22,8 +22,32 @@ export default function Chatbot({ article }: { article: Article }) {
   const POS_KEY = "chatbot-pos";
   const CLICK_THRESHOLD = 5; // max pixels to count as click
 
+  // ─── 1) Lazy-load initial messages from storage ───
+  const storageKey = `chat-history-${article._id}`;
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (typeof window === "undefined") return [];
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return [];
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  });
+
+  // ─── 2) Skip persisting that very first load ───
+  const skipFirstPersist = useRef(true);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (skipFirstPersist.current) {
+      skipFirstPersist.current = false;
+      return;
+    }
+    localStorage.setItem(storageKey, JSON.stringify(messages));
+  }, [messages, storageKey]);
+
+  // ─── The rest is unchanged ───
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [loaderText, setLoaderText] = useState("Thinking…");
@@ -34,28 +58,7 @@ export default function Chatbot({ article }: { article: Article }) {
   const dragOffset = useRef({ x: 0, y: 0 });
   const [pos, setPos] = useState({ x: EDGE, y: 200 });
 
-  const storageKey = `chat-history-${article._id}`;
-
-  // Load history
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = localStorage.getItem(storageKey);
-    if (raw) {
-      try {
-        setMessages(JSON.parse(raw));
-      } catch {
-        setMessages([]);
-      }
-    }
-  }, [storageKey]);
-
-  // Persist history
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(storageKey, JSON.stringify(messages));
-  }, [messages, storageKey]);
-
-  // Loader text
+  // Loader text switch
   useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
     if (loading) {
@@ -74,13 +77,13 @@ export default function Chatbot({ article }: { article: Article }) {
       const x = raw.x + width / 2 < w / 2 ? EDGE : w - width - EDGE;
       const y = Math.min(
         Math.max(raw.y, EDGE),
-        window.innerHeight - height - EDGE
+        window.innerHeight - height - EDGE,
       );
       const final = { x, y };
       setPos(final);
       localStorage.setItem(POS_KEY, JSON.stringify(final));
     },
-    [EDGE]
+    [EDGE],
   );
 
   // Drag handlers
@@ -103,20 +106,18 @@ export default function Chatbot({ article }: { article: Article }) {
     dragging.current = false;
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
 
-    // Compute total movement
+    // click vs drag
     const dx = e.clientX - startPointer.current.x;
     const dy = e.clientY - startPointer.current.y;
     const distSq = dx * dx + dy * dy;
 
     snap(pos);
-
-    // Treat as click if movement is small
     if (distSq < CLICK_THRESHOLD * CLICK_THRESHOLD) {
       setOpen(true);
     }
   };
 
-  // Load saved position
+  // Load saved button position
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = localStorage.getItem(POS_KEY);
@@ -127,14 +128,14 @@ export default function Chatbot({ article }: { article: Article }) {
     }
   }, []);
 
-  // Re-snap on resize
+  // re-snap on resize
   useEffect(() => {
     const onResize = () => snap(pos);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [pos, snap]);
 
-  // Close on Escape
+  // close on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -143,7 +144,7 @@ export default function Chatbot({ article }: { article: Article }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // Auto-scroll
+  // auto-scroll
   const bodyRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (bodyRef.current) {
@@ -170,7 +171,7 @@ export default function Chatbot({ article }: { article: Article }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ article, userMessage: txt }),
-        }
+        },
       );
       const { reply } = await res.json();
       setMessages((m) => [...m, { sender: "model", text: reply }]);
@@ -184,7 +185,7 @@ export default function Chatbot({ article }: { article: Article }) {
     }
   };
 
-  // Portal for modal
+  // portal for modal
   const [portal, setPortal] = useState<Element | null>(null);
   useEffect(() => {
     let el = document.getElementById("chatbot-portal");
@@ -204,8 +205,8 @@ export default function Chatbot({ article }: { article: Article }) {
         style={{
           left: pos.x,
           top: pos.y,
-          touchAction: "none",       // enable pointer dragging on mobile
-          userSelect: "none",        // prevent text selection
+          touchAction: "none",
+          userSelect: "none",
           position: "fixed",
           zIndex: 1000,
         }}
@@ -236,7 +237,7 @@ export default function Chatbot({ article }: { article: Article }) {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <header className="cb-header">
-                    <span>Chat with ArticleIQ  🧠</span>
+                    <span>Chat with ArticleIQ 🧠</span>
                     <div className="cb-header-btns">
                       <button
                         title="Clear conversation"
@@ -286,7 +287,10 @@ export default function Chatbot({ article }: { article: Article }) {
                                   />
                                 ),
                                 p: ({ node, ...props }) => (
-                                  <p style={{ margin: "0", lineHeight: "1.5" }} {...props} />
+                                  <p
+                                    style={{ margin: "0", lineHeight: "1.5" }}
+                                    {...props}
+                                  />
                                 ),
                                 ul: ({ node, ...props }) => (
                                   <ul
@@ -316,14 +320,21 @@ export default function Chatbot({ article }: { article: Article }) {
                                 ),
                                 li: ({ node, ...props }) => (
                                   <li
-                                    style={{ margin: 0, padding: 0, lineHeight: "1.4" }}
+                                    style={{
+                                      margin: 0,
+                                      padding: 0,
+                                      lineHeight: "1.4",
+                                    }}
                                     {...props}
                                   />
                                 ),
                                 table: ({ node, ...props }) => (
                                   <div style={{ overflowX: "auto", margin: 0 }}>
                                     <table
-                                      style={{ width: "100%", borderCollapse: "collapse" }}
+                                      style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                      }}
                                       {...props}
                                     />
                                   </div>
@@ -340,7 +351,10 @@ export default function Chatbot({ article }: { article: Article }) {
                                 ),
                                 td: ({ node, ...props }) => (
                                   <td
-                                    style={{ border: "1px solid #ccc", padding: "0.5em" }}
+                                    style={{
+                                      border: "1px solid #ccc",
+                                      padding: "0.5em",
+                                    }}
                                     {...props}
                                   />
                                 ),
@@ -356,7 +370,13 @@ export default function Chatbot({ article }: { article: Article }) {
                                     {...props}
                                   />
                                 ),
-                                code: ({ node, inline, className, children, ...rest }: any) =>
+                                code: ({
+                                  node,
+                                  inline,
+                                  className,
+                                  children,
+                                  ...rest
+                                }: any) =>
                                   inline ? (
                                     <code
                                       style={{
@@ -428,7 +448,7 @@ export default function Chatbot({ article }: { article: Article }) {
               </motion.div>
             )}
           </AnimatePresence>,
-          portal
+          portal,
         )}
     </>
   );
