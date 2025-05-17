@@ -43,7 +43,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       const token = localStorage.getItem("token");
       if (!token) return;
       await toggleFavoriteArticle(token, article._id);
-      setIsFavorited(prev => !prev);
+      setIsFavorited((prev) => !prev);
     } catch (error) {
       console.error("Error toggling favorite", error);
     }
@@ -56,12 +56,20 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   const title = article.title?.trim() || "Article Title Unavailable";
 
   return (
-    <div className="article-detail hover-animate" style={{ position: "relative" }}>
+    <div
+      className="article-detail hover-animate"
+      style={{ position: "relative" }}
+    >
       <h1 className="detail-title">{title}</h1>
       <p className="detail-meta">
         Source:{" "}
         {article.url ? (
-          <a href={article.url} target="_blank" rel="noopener noreferrer" className="article-source-link">
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="article-source-link"
+          >
             {article.source}
           </a>
         ) : (
@@ -106,11 +114,17 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               />
             ),
             li: ({ node, ...props }) => (
-              <li style={{ margin: 0, padding: 0, lineHeight: "1.4" }} {...props} />
+              <li
+                style={{ margin: 0, padding: 0, lineHeight: "1.4" }}
+                {...props}
+              />
             ),
             table: ({ node, ...props }) => (
               <div style={{ overflowX: "auto", margin: 0 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }} {...props} />
+                <table
+                  style={{ width: "100%", borderCollapse: "collapse" }}
+                  {...props}
+                />
               </div>
             ),
             th: ({ node, ...props }) => (
@@ -124,7 +138,10 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               />
             ),
             td: ({ node, ...props }) => (
-              <td style={{ border: "1px solid #ccc", padding: "0.5em" }} {...props} />
+              <td
+                style={{ border: "1px solid #ccc", padding: "0.5em" }}
+                {...props}
+              />
             ),
             pre: ({ node, ...props }) => (
               <pre
@@ -167,8 +184,12 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <div className="topics-container">
           <h3>Topics:</h3>
           <div className="topics-list">
-            {article.topics.map(topic => (
-              <span key={topic} className="topic-link" onClick={() => handleTopicClick(topic)}>
+            {article.topics.map((topic) => (
+              <span
+                key={topic}
+                className="topic-link"
+                onClick={() => handleTopicClick(topic)}
+              >
                 {topic}
               </span>
             ))}
@@ -189,7 +210,11 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
             cursor: "pointer",
           }}
         >
-          {isFavorited ? <MdFavorite size={20} color="#e74c3c" /> : <MdFavoriteBorder size={20} />}
+          {isFavorited ? (
+            <MdFavorite size={20} color="#e74c3c" />
+          ) : (
+            <MdFavoriteBorder size={20} />
+          )}
         </button>
       )}
     </div>
