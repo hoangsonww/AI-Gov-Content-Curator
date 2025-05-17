@@ -209,7 +209,7 @@ export default function NewsletterPage() {
           gap: 0.5rem;
           margin-top: 1.5rem;
           font-size: 1rem;
-          animation: fadeIn 0.5s ease both 0.4s;
+          animation: fadeIn 0.5s ease;
         }
         .message.success {
           color: #28a745;
