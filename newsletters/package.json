@@ -24,7 +24,8 @@
     "start": "next start",
     "newsletter": "npx ts-node --transpile-only schedule/sendNewsletter.ts",
     "send": "node dist/schedule/sendNewsletter.js",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "echo \"No test specified\" && exit 0",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\""
   },
   "dependencies": {
     "@vercel/node": "^5.1.16",

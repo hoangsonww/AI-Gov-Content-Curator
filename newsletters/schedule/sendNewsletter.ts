@@ -28,11 +28,16 @@ export async function sendNewsletter() {
   const subscribers = await NewsletterSubscriber.find({});
   console.log(`Sending to ${subscribers.length} subscriber(s)`);
 
-  const MAX_ARTICLES = 50; // keep payload < 400 KB
+  const MAX_ARTICLES = 50; // keep payload < 400 KB
   const DATE_FMT = Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
   });
+
+  // Rate limit: max 2 requests per second → delay 500ms between each send
+  const RATE_LIMIT_DELAY_MS = 500;
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   for (const sub of subscribers) {
     const since = sub.lastSentAt ?? new Date(0);
@@ -42,7 +47,7 @@ export async function sendNewsletter() {
       .lean();
 
     if (!articles.length) {
-      console.log(`${sub.email}: up‑to‑date`);
+      console.log(`${sub.email}: up-to-date`);
       continue;
     }
 
@@ -102,12 +107,13 @@ export async function sendNewsletter() {
         </table>
       </td></tr></table></body></html>`;
 
-    /* plain‑text fallback */
+    /* plain-text fallback */
     const text = shown
       .map((a, i) => `${i + 1}. ${a.title}\n${a.url}`)
       .join("\n\n")
       .concat(trimmed ? "\n\n…and more on the site." : "");
 
+    // send email and throttle to 2 requests/sec
     const { error } = await resend.emails.send({
       from: RESEND_FROM,
       to: sub.email,
@@ -118,11 +124,17 @@ export async function sendNewsletter() {
 
     if (error) {
       console.error(`${sub.email}: FAILED –`, error);
+      // respect rate limit before next request
+      await delay(RATE_LIMIT_DELAY_MS);
       continue;
     }
+
     console.log(`${sub.email}: sent`);
     sub.lastSentAt = new Date();
     await sub.save();
+
+    // respect rate limit before next request
+    await delay(RATE_LIMIT_DELAY_MS);
   }
 
   await mongoose.disconnect();
