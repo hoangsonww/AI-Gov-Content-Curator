@@ -665,6 +665,8 @@ The AI will have access to the article content and will use RAG to generate answ
 
 ### Features (Article Q&A)
 
+The chatbot is given an identity (ArticleIQ) and is designed to answer questions related to the articles. The AI will have access to the article content and will use RAG (Retrieval-Augmented Generation) to generate answers based on the information provided in the article:
+
 - **Ask Questions:** Users can ask questions about specific articles directly from the article detail page.
 - **AI-Generated Answers:** The AI will generate answers based on the content of the article, providing users with relevant information.
 - **User-Friendly Interface:** The Q&A feature is integrated into the article detail page, making it easy for users to ask questions and receive answers without navigating away from the content.
