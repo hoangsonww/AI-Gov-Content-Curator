@@ -67,14 +67,14 @@ export const getServerSideProps: GetServerSideProps = async ({
     const paginatedXml = Array.from({ length: totalPages }, (_, i) => {
       const page = i + 1;
       return `<sitemap>
-  <loc>${SITE_URL}/sitemap.xml?page=${page}</loc>
-</sitemap>`;
+        <loc>${SITE_URL}/sitemap.xml?page=${page}</loc>
+      </sitemap>`;
     }).join("");
 
     const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${paginatedXml}
-</sitemapindex>`;
+      <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      ${paginatedXml}
+      </sitemapindex>`;
 
     res.setHeader("Content-Type", "application/xml");
     res.write(indexXml);
