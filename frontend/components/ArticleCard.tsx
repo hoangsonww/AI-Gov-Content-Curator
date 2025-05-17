@@ -57,12 +57,18 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     }
   };
 
+  let articleTitle = article.title;
+
+  if (article.title.length == 0 || !article.title || article.title === " ") {
+    articleTitle = "Article Title Unavailable";
+  }
+
   return (
     <div
       className="article-card hover-animate"
       style={{ position: "relative" }}
     >
-      <h2 className="article-title">{article.title}</h2>
+      <h2 className="article-title">{articleTitle}</h2>
       {article.summary && <p className="article-summary">{article.summary}</p>}
 
       {/* ✅ Clickable Source Link */}

@@ -1,10 +1,12 @@
 # AI-Powered Article Content Curator
 
-The **AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles. The project is organized into three main components:
+The **AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles. 
+This monorepo, multi-services project is organized into four main components:
 
 - **Backend:** Provides a robust RESTful API to store and serve curated articles.
 - **Crawler:** Automatically crawls and extracts article URLs and metadata from government homepages and public API sources.
 - **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
+- **Newsletter:** Sends daily updates to subscribers with the latest articles.
 
 Each component is maintained in its own directory:
 
@@ -251,46 +253,58 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/article-details-unauth.png" alt="Article Detail Page (Guest User)" width="100%">
 </p>
 
-### 6. Favorite Articles Page
+### 6. Article Q&A Feature
+
+<p align="center">
+  <img src="frontend/img/articles-qa.png" alt="Article Q&A Feature" width="100%">
+</p>
+
+### 7. Favorite Articles Page
 
 <p align="center">
   <img src="frontend/img/favorites.png" alt="Favorite Articles Page" width="100%">
 </p>
 
-### 7. Favorite Articles Page (Unauthenticated User)
+### 8. Favorite Articles Page (Unauthenticated User)
 
 <p align="center">
   <img src="frontend/img/favorites-unauth.png" alt="Favorite Articles Page (Unauthenticated User)" width="100%">
 </p>
 
-### 8. Newsletter Subscription Page
+### 9. Newsletter Subscription Page
 
 <p align="center">
   <img src="frontend/img/newsletter.png" alt="Newsletter Subscription Page" width="100%">
 </p>
 
-### 9. User Authentication
+### 10. User Authentication
 
 <p align="center">
   <img src="frontend/img/login.png" alt="User Authentication" width="100%">
 </p>
 
-### 10. User Registration
+### 11. User Registration
 
 <p align="center">
   <img src="frontend/img/register.png" alt="User Registration" width="100%">
 </p>
 
-### 11. Reset Password
+### 12. Reset Password
 
 <p align="center">
   <img src="frontend/img/reset-password.png" alt="Reset Password" width="100%">
 </p>
 
-### 12. 404 Not Found Page
+### 13. 404 Not Found Page
 
 <p align="center">
   <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
+</p>
+
+### 14. Daily Newsletter Example
+
+<p align="center">
+  <img src="frontend/img/newsletter-example.png" alt="Daily Newsletter Example" width="100%">
 </p>
 
 ---
@@ -669,6 +683,13 @@ The AI will have access to the article content and will use RAG to generate answ
 6. **Test the Feature:** Once everything is set up, you can test the article Q&A feature by navigating to an article detail page of an article and asking questions. The AI will generate answers based on the content of the article.
 7. **That's it!** The article Q&A feature is now integrated into the existing system, providing users with an enhanced experience and quick access to information.
 
+### Using the Article Q&A Feature
+
+To use the article Q&A feature, simply navigate to the article detail page of an article and look for the Q&A section. You can ask questions related to the article, and the AI will generate answers based on the content provided.
+
+Feel free to ask any questions related to the article, and the AI will do its best to provide accurate and relevant answers. This feature is designed to enhance user engagement and provide quick access to information without having
+to read through the entire article.
+
 ---
 
 ## Command Line Interface (CLI)
@@ -830,6 +851,16 @@ chmod +x daily.sh
 ```
 
 Please ensure that you have the necessary permissions and environment variables set up before running the script.
+
+Also, you can set up a cron job to run this script automatically at a specified time each day. To do so, simply run
+the `install_daily_cron.sh` script, which will install the cron job for you.
+
+```bash
+chmod +x install_daily_cron.sh
+./install_daily_cron.sh
+```
+
+This will create a cron job that runs the `daily.sh` script every day at 16:00 (4:00 PM) UTC. You can adjust the timing in the `install_daily_cron.sh` script if needed.
 
 ### Makefile
 

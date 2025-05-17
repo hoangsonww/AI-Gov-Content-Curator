@@ -2,7 +2,7 @@ import { Article } from "../pages";
 
 // We may want to set this to an environment variable or another config.
 // For now, we'll keep it hard-coded.
-const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
+export const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
 
 /**
  * Fetches the top 5 articles from the API.

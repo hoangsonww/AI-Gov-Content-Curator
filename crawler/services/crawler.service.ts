@@ -77,10 +77,14 @@ export const fetchDynamicArticle = async (
   await browser.close();
 
   const $ = cheerio.load(html);
-  $("script, style").remove();
+
+  // Remove unwanted elements before extracting text
+  $("script, style, iframe, noscript").remove();
   $('head [type="application/ld+json"]').remove();
 
-  const content = $("body").text().trim() || "";
+  // Extract and sanitize text
+  const content = $("body").text().replace(/\s+/g, " ").trim() || "";
+
   const title = deriveTitle($("title").text(), content);
 
   return { url, title, content, source: url };
@@ -109,10 +113,14 @@ export const fetchStaticArticle = async (
     });
 
     const $ = cheerio.load(data);
-    $("script, style").remove();
+
+    // Remove unwanted elements before extracting text
+    $("script, style, iframe, noscript").remove();
     $('head [type="application/ld+json"]').remove();
 
-    const content = $("body").text().trim() || "";
+    // Extract and sanitize text
+    const content = $("body").text().replace(/\s+/g, " ").trim() || "";
+
     const title = deriveTitle($("title").text(), content);
 
     return { url, title, content, source: url };

@@ -129,10 +129,41 @@ export default function HomePage({
 // Using SSG to fetch top and latest articles. Leading to faster page loads and better SEO.
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
   try {
-    const [topArticles, latestArticles] = await Promise.all([
-      getTopArticles(),
-      getLatestArticles(),
-    ]);
+    // Kick off topArticles immediately
+    const topArticlesPromise = getTopArticles();
+
+    // Inline retry for latestArticles
+    const maxAttempts = 5;
+    const delayMs = 1000;
+    let latestArticles: Article[] = [];
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        latestArticles = await getLatestArticles();
+        if (latestArticles.length > 0) {
+          break; // success!
+        }
+        console.warn(
+          `getLatestArticles attempt ${attempt} returned empty array; retrying…`,
+        );
+      } catch (err) {
+        console.warn(`getLatestArticles attempt ${attempt} failed:`, err);
+      }
+
+      if (attempt < maxAttempts) {
+        await new Promise((res) => setTimeout(res, delayMs));
+      }
+    }
+
+    if (latestArticles.length === 0) {
+      throw new Error(
+        `getLatestArticles returned empty after ${maxAttempts} attempts`,
+      );
+    }
+
+    // Await topArticles once latestArticles is good
+    const topArticles = await topArticlesPromise;
+
     return {
       props: {
         topArticles,
@@ -142,6 +173,11 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
     };
   } catch (error) {
     console.error("Error fetching articles:", error);
-    return { props: { topArticles: [], latestArticles: [] } };
+    return {
+      props: {
+        topArticles: [],
+        latestArticles: [],
+      },
+    };
   }
 };

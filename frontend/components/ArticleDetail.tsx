@@ -51,9 +51,15 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     router.push(`/?topic=${encodeURIComponent(topic)}`);
   };
 
+  let articleTitle = article.title;
+
+  if (article.title.length == 0 || !article.title || article.title === " ") {
+    articleTitle = "Article Title Unavailable";
+  }
+
   return (
     <div className="article-detail hover-animate">
-      <h1 className="detail-title">{article.title}</h1>
+      <h1 className="detail-title">{articleTitle}</h1>
 
       <p className="detail-meta">
         Source:{" "}

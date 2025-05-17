@@ -14,7 +14,7 @@ NEWSLETTER_DIR := newsletters
         dev-backend build-backend start-backend test-backend lint-backend typecheck-backend docker-backend \
         dev-crawler build-crawler start-crawler test-crawler lint-crawler typecheck-crawler docker-crawler \
         dev-newsletter build-newsletter start-newsletter newsletter send-newsletter lint-newsletter typecheck-newsletter \
-        dev build start test lint typecheck docker reboot
+        dev build start test lint typecheck docker reboot docker-compute
 
 help:
 	@echo ""
@@ -210,5 +210,9 @@ docker:
 	$(MAKE) docker-backend    && \
 	$(MAKE) docker-crawler    && \
 	$(MAKE) docker-newsletter
+
+docker-compute:
+	@echo "→ Entering compute container shell…"
+	./shell/docker_computer.sh
 
 reboot: clean bootstrap dev

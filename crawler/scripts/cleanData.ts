@@ -4,7 +4,7 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import mongoose, { Schema, model, Types } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 /* ─────────── Mongo model (minimal shape) ─────────── */
 const ArticleSchema = new Schema({
@@ -16,7 +16,9 @@ const ArticleSchema = new Schema({
   source: String,
   fetchedAt: Date,
 });
-const Article = model("Article", ArticleSchema);
+// Avoid OverwriteModelError by reusing existing model if already defined
+const Article =
+  mongoose.models.Article || mongoose.model("Article", ArticleSchema);
 
 /* ─────────── ENV ─────────── */
 const { MONGODB_URI = "" } = process.env;
@@ -52,7 +54,7 @@ function looksBinary(txt = ""): boolean {
 
 /**
  * Connects to Mongo, deletes unmeaningful articles by a series of heuristics,
- * then disconnects. Logs each phase’s result.
+ * then normalizes odd titles, then disconnects. Logs each phase’s result.
  */
 export async function cleanupArticles(): Promise<void> {
   await mongoose.connect(MONGODB_URI);
@@ -78,6 +80,13 @@ export async function cleanupArticles(): Promise<void> {
     const content = ((doc as any).content || "").trim();
     const summary = ((doc as any).summary || "").trim();
 
+    // New: Remove any articles containing embedded iframes or similar tags
+    const hasIframe = /<iframe\b[^>]*>/i.test(content);
+    if (hasIframe) {
+      toDelete.push((doc as any)._id);
+      continue;
+    }
+
     // Heuristic flags
     const isUntitled = title.toLowerCase() === "untitled";
     const tooShort = !title && content.length < SHORT_CONTENT_LEN;
@@ -88,7 +97,7 @@ export async function cleanupArticles(): Promise<void> {
       BOILERPLATE_RE.test(content) || BOILERPLATE_RE.test(summary);
 
     if (isUntitled || tooShort || isBinary || isErrorish || isBoiler) {
-      toDelete.push((doc as any)._id);
+      toDelete.push((doc as any)._1);
     }
   }
 
@@ -96,9 +105,43 @@ export async function cleanupArticles(): Promise<void> {
     ? await Article.deleteMany({ _id: { $in: toDelete } })
     : { deletedCount: 0 };
 
-  console.log(`Phase 2 — removed by content/title heuristics: ${heurDeleted}`);
-  console.log("🧹 Cleanup complete");
+  console.log(
+    `Phase 2 — removed by content/title heuristics & embeds: ${heurDeleted}`,
+  );
 
+  // Phase 3 — Normalize odd titles (leading punctuation/whitespace, etc.)
+  const ODD_TITLE_RE = /^[^A-Za-z0-9]+/;
+  const bulkOps: any[] = [];
+  const cursor2 = Article.find(
+    { title: { $regex: ODD_TITLE_RE } },
+    { _id: 1, title: 1 },
+  )
+    .lean()
+    .cursor();
+
+  for await (const doc of cursor2) {
+    const rawTitle = (doc as any).title || "";
+    const cleaned = rawTitle.replace(ODD_TITLE_RE, "").trim();
+    if (cleaned && cleaned !== rawTitle) {
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: (doc as any)._id },
+          update: { $set: { title: cleaned } },
+        },
+      });
+    }
+  }
+
+  if (bulkOps.length > 0) {
+    const bulkResult = await Article.bulkWrite(bulkOps);
+    console.log(
+      `Phase 3 — normalized titles on ${bulkResult.modifiedCount} articles`,
+    );
+  } else {
+    console.log("Phase 3 — no odd titles found to normalize");
+  }
+
+  console.log("🧹 Cleanup complete");
   await mongoose.disconnect();
   console.log("✅ MongoDB disconnected");
 }

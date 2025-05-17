@@ -30,6 +30,7 @@ export default function Chatbot({ article }: { article: Article }) {
   // Draggable toggle refs/state
   const dragRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  const moved = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const [pos, setPos] = useState({ x: EDGE, y: 200 });
 
@@ -88,11 +89,13 @@ export default function Chatbot({ article }: { article: Article }) {
   // ─── Drag handlers ───
   const onPointerDown = (e: React.PointerEvent) => {
     dragging.current = true;
+    moved.current = false;
     dragOffset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragging.current) return;
+    moved.current = true;
     setPos({
       x: e.clientX - dragOffset.current.x,
       y: e.clientY - dragOffset.current.y,
@@ -103,6 +106,7 @@ export default function Chatbot({ article }: { article: Article }) {
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
     snap(pos);
   };
+
   useEffect(() => {
     const onResize = () => snap(pos);
     window.addEventListener("resize", onResize);
@@ -182,7 +186,11 @@ export default function Chatbot({ article }: { article: Article }) {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onClick={() => !dragging.current && setOpen(true)}
+        onClick={() => {
+          if (!moved.current) {
+            setOpen(true);
+          }
+        }}
       >
         <AiOutlineRobot size={26} />
       </div>
