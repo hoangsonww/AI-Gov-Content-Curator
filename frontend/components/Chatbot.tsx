@@ -216,7 +216,7 @@ export default function Chatbot({ article }: { article: Article }) {
                 >
                   {/* Header */}
                   <header className="cb-header">
-                    <span>Chat with ArticleIQ</span>
+                    <span>Chat with ArticleIQ  🧠</span>
                     <div className="cb-header-btns">
                       <button
                         title="Clear conversation"
@@ -239,7 +239,7 @@ export default function Chatbot({ article }: { article: Article }) {
                   <div className="cb-body" ref={bodyRef}>
                     {messages.length === 0 && !loading ? (
                       <div className="cb-placeholder">
-                        <strong>Welcome to ArticleIQ!</strong>
+                        <strong>Welcome to ArticleIQ! 📰</strong>
                         <p>Start by asking a question about this article.</p>
                       </div>
                     ) : (
