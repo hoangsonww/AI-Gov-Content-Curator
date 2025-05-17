@@ -65,6 +65,7 @@
   align-items: center;
   font-weight: 600;
   border-bottom: var(--cb-border);
+  height: 50px;
 }
 
 .cb-header-btns {
@@ -140,6 +141,7 @@
   display: flex;
   border-top: var(--cb-border);
   background: var(--card-bg);
+  height: 50px;
 }
 
 .cb-footer input {

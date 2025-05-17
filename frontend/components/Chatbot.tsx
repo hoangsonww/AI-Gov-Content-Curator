@@ -20,6 +20,7 @@ type ChatMessage = { sender: "user" | "model"; text: string };
 export default function Chatbot({ article }: { article: Article }) {
   const EDGE = 18;
   const POS_KEY = "chatbot-pos";
+  const CLICK_THRESHOLD = 5; // max pixels to count as click
 
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -27,17 +28,15 @@ export default function Chatbot({ article }: { article: Article }) {
   const [loading, setLoading] = useState(false);
   const [loaderText, setLoaderText] = useState("Thinking…");
 
-  // Draggable toggle refs/state
   const dragRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
-  const moved = useRef(false);
+  const startPointer = useRef({ x: 0, y: 0 });
   const dragOffset = useRef({ x: 0, y: 0 });
   const [pos, setPos] = useState({ x: EDGE, y: 200 });
 
-  // Build the storage key from current article ID
   const storageKey = `chat-history-${article._id}`;
 
-  // ─── Load chat history when this article first appears ───
+  // Load history
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = localStorage.getItem(storageKey);
@@ -47,18 +46,16 @@ export default function Chatbot({ article }: { article: Article }) {
       } catch {
         setMessages([]);
       }
-    } else {
-      setMessages([]);
     }
   }, [storageKey]);
 
-  // ─── Persist chat history on every change ───
+  // Persist history
   useEffect(() => {
     if (typeof window === "undefined") return;
     localStorage.setItem(storageKey, JSON.stringify(messages));
   }, [messages, storageKey]);
 
-  // ─── Loader text: switch after 3s ───
+  // Loader text
   useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
     if (loading) {
@@ -68,7 +65,7 @@ export default function Chatbot({ article }: { article: Article }) {
     return () => clearTimeout(t);
   }, [loading]);
 
-  // ─── Snap helper ───
+  // Snap helper
   const snap = useCallback(
     (raw: { x: number; y: number }) => {
       const w = window.innerWidth;
@@ -77,50 +74,76 @@ export default function Chatbot({ article }: { article: Article }) {
       const x = raw.x + width / 2 < w / 2 ? EDGE : w - width - EDGE;
       const y = Math.min(
         Math.max(raw.y, EDGE),
-        window.innerHeight - height - EDGE,
+        window.innerHeight - height - EDGE
       );
       const final = { x, y };
       setPos(final);
       localStorage.setItem(POS_KEY, JSON.stringify(final));
     },
-    [EDGE],
+    [EDGE]
   );
 
-  // ─── Drag handlers ───
+  // Drag handlers
   const onPointerDown = (e: React.PointerEvent) => {
     dragging.current = true;
-    moved.current = false;
+    startPointer.current = { x: e.clientX, y: e.clientY };
     dragOffset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
+
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragging.current) return;
-    moved.current = true;
     setPos({
       x: e.clientX - dragOffset.current.x,
       y: e.clientY - dragOffset.current.y,
     });
   };
+
   const onPointerUp = (e: React.PointerEvent) => {
     dragging.current = false;
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+
+    // Compute total movement
+    const dx = e.clientX - startPointer.current.x;
+    const dy = e.clientY - startPointer.current.y;
+    const distSq = dx * dx + dy * dy;
+
     snap(pos);
+
+    // Treat as click if movement is small
+    if (distSq < CLICK_THRESHOLD * CLICK_THRESHOLD) {
+      setOpen(true);
+    }
   };
 
+  // Load saved position
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = localStorage.getItem(POS_KEY);
+    if (raw) {
+      try {
+        setPos(JSON.parse(raw));
+      } catch {}
+    }
+  }, []);
+
+  // Re-snap on resize
   useEffect(() => {
     const onResize = () => snap(pos);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [pos, snap]);
 
-  // ─── Close on Escape ───
+  // Close on Escape
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
     if (open) window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // ─── Auto-scroll to bottom ───
+  // Auto-scroll
   const bodyRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (bodyRef.current) {
@@ -128,13 +151,11 @@ export default function Chatbot({ article }: { article: Article }) {
     }
   }, [messages, loading]);
 
-  // ─── Clear conversation ───
   const clearMessages = () => {
     setMessages([]);
     localStorage.removeItem(storageKey);
   };
 
-  // ─── Send user message ───
   const send = async () => {
     if (!input.trim() || loading) return;
     const txt = input.trim();
@@ -149,7 +170,7 @@ export default function Chatbot({ article }: { article: Article }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ article, userMessage: txt }),
-        },
+        }
       );
       const { reply } = await res.json();
       setMessages((m) => [...m, { sender: "model", text: reply }]);
@@ -163,7 +184,7 @@ export default function Chatbot({ article }: { article: Article }) {
     }
   };
 
-  // ─── Portal for modal ───
+  // Portal for modal
   const [portal, setPortal] = useState<Element | null>(null);
   useEffect(() => {
     let el = document.getElementById("chatbot-portal");
@@ -175,22 +196,22 @@ export default function Chatbot({ article }: { article: Article }) {
     setPortal(el);
   }, []);
 
-  // ─── Render ───
   return (
     <>
-      {/* Toggle button */}
       <div
         ref={dragRef}
         className="cb-toggle"
-        style={{ left: pos.x, top: pos.y }}
+        style={{
+          left: pos.x,
+          top: pos.y,
+          touchAction: "none",       // enable pointer dragging on mobile
+          userSelect: "none",        // prevent text selection
+          position: "fixed",
+          zIndex: 1000,
+        }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onClick={() => {
-          if (!moved.current) {
-            setOpen(true);
-          }
-        }}
       >
         <AiOutlineRobot size={26} />
       </div>
@@ -214,7 +235,6 @@ export default function Chatbot({ article }: { article: Article }) {
                   transition={{ type: "spring", stiffness: 260, damping: 30 }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {/* Header */}
                   <header className="cb-header">
                     <span>Chat with ArticleIQ  🧠</span>
                     <div className="cb-header-btns">
@@ -235,7 +255,6 @@ export default function Chatbot({ article }: { article: Article }) {
                     </div>
                   </header>
 
-                  {/* Body */}
                   <div className="cb-body" ref={bodyRef}>
                     {messages.length === 0 && !loading ? (
                       <div className="cb-placeholder">
@@ -291,7 +310,6 @@ export default function Chatbot({ article }: { article: Article }) {
                     )}
                   </div>
 
-                  {/* Footer */}
                   <footer className="cb-footer">
                     <input
                       value={input}
@@ -319,7 +337,7 @@ export default function Chatbot({ article }: { article: Article }) {
               </motion.div>
             )}
           </AnimatePresence>,
-          portal,
+          portal
         )}
     </>
   );
