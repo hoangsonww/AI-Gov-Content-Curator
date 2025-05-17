@@ -22,18 +22,21 @@ export const getServerSideProps: GetServerSideProps = async ({
   if (pageParam) {
     const page = parseInt(pageParam as string, 10) || 1;
 
-    // On page 1, include both static URLs and first batch of articles.
+    // On page 1, include static URLs with priority 0.8
     let urlEntries = "";
     if (page === 1) {
-      urlEntries += STATIC_URLS.map(
-        (url) => `<url>
+      urlEntries += STATIC_URLS
+        .map(
+          (url) => `<url>
   <loc>${url}</loc>
   <changefreq>daily</changefreq>
-  <priority>1.0</priority>
+  <priority>0.8</priority>
 </url>`
-      ).join("");
+        )
+        .join("");
     }
 
+    // Fetch articles for this page and output with priority 1.0
     const articles: Article[] = await getArticles(page, PAGE_LIMIT);
     urlEntries += articles
       .map(
@@ -41,7 +44,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   <loc>${SITE_URL}/articles/${article._id}</loc>
   <lastmod>${new Date(article.fetchedAt).toISOString()}</lastmod>
   <changefreq>daily</changefreq>
-  <priority>0.8</priority>
+  <priority>1.0</priority>
 </url>`
       )
       .join("");
@@ -56,7 +59,7 @@ ${urlEntries}
     res.end();
     return { props: {} };
   } else {
-    // Generate a sitemap index that only points at the paginated sitemap pages
+    // Generate sitemap index pointing only at paginated sitemap pages
     const totalArticles = await getTotalArticles();
     const total = totalArticles || 0;
     const totalPages = Math.ceil(total / PAGE_LIMIT);
