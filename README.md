@@ -31,7 +31,6 @@ Each component is maintained in its own directory:
 ![Vercel](https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white)
 ![Cron](https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=timescale&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-%23000000.svg?style=flat&logo=JSON%20web%20tokens&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
@@ -50,7 +49,7 @@ Each component is maintained in its own directory:
 ![Winston](https://img.shields.io/badge/Winston-000?style=flat&logo=prometheus&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
-> Note: This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
+> **Note:** This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
 
 ---
 

@@ -1,6 +1,8 @@
 import Head from "next/head";
 import { useState } from "react";
 import { MdCheckCircle, MdError, MdMailOutline } from "react-icons/md";
+import { AiOutlineBell } from "react-icons/ai";
+import { MdNotificationsOff } from "react-icons/md";
 
 export default function NewsletterPage() {
   const [email, setEmail] = useState("");
@@ -75,16 +77,20 @@ export default function NewsletterPage() {
           <div className="buttons">
             <button
               className="btn pulse"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
               onClick={() => handle("subscribe")}
               disabled={loading}
             >
+              <AiOutlineBell />
               Subscribe
             </button>
             <button
               className="btn pulse unsubscribe"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
               onClick={() => handle("unsubscribe")}
               disabled={loading}
             >
+              <MdNotificationsOff />
               Unsubscribe
             </button>
           </div>
