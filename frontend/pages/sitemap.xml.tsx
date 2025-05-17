@@ -28,10 +28,10 @@ export const getServerSideProps: GetServerSideProps = async ({
       urlEntries += STATIC_URLS
         .map(
           (url) => `<url>
-  <loc>${url}</loc>
-  <changefreq>daily</changefreq>
-  <priority>0.8</priority>
-</url>`
+            <loc>${url}</loc>
+            <changefreq>daily</changefreq>
+            <priority>0.8</priority>
+          </url>`
         )
         .join("");
     }
