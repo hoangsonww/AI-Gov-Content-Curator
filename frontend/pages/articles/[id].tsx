@@ -19,16 +19,14 @@ import { MdHome } from "react-icons/md";
 /* ───────── TYPES ───────── */
 
 interface ArticlePageProps {
-  article: Article | null;
+  article: Article;
 }
 
 /* ───────── PAGE ───────── */
 export default function ArticlePage({ article }: ArticlePageProps) {
-  if (!article) return <div className="error-message">Article not found</div>;
-
   let title = `${article.title.split(" ").slice(0, 5).join(" ")}`;
 
-  if (!title || title.length == 0) {
+  if (!title || title.length === 0) {
     title = "Title not available";
   }
 
@@ -56,11 +54,6 @@ export default function ArticlePage({ article }: ArticlePageProps) {
       </div>
 
       <style jsx>{`
-        .error-message {
-          padding: 2rem;
-          color: var(--accent-color);
-          text-align: center;
-        }
         .page-wrapper {
           position: relative;
           padding-bottom: 4rem;
@@ -90,11 +83,23 @@ export const getStaticPaths: GetStaticPaths = async () => ({
 
 export const getStaticProps: GetStaticProps<ArticlePageProps> = async (ctx) => {
   const { id } = ctx.params || {};
+
   try {
     const article = await getArticleById(id as string);
-    if (article?.summary) article.content = article.summary;
-    return { props: { article }, revalidate: 43200 };
+    // if API returns null or empty, trigger 404
+    if (!article) {
+      return { notFound: true, revalidate: 43200 };
+    }
+    // use summary as content if present
+    if (article.summary) {
+      article.content = article.summary;
+    }
+    return {
+      props: { article },
+      revalidate: 43200, // 12 hours
+    };
   } catch {
-    return { props: { article: null }, revalidate: 43200 };
+    // error fetching → also 404
+    return { notFound: true, revalidate: 43200 };
   }
 };
