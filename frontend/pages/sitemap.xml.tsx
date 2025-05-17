@@ -16,9 +16,9 @@ const STATIC_URLS = [
 ];
 
 export const getServerSideProps: GetServerSideProps = async ({
-                                                               query,
-                                                               res,
-                                                             }) => {
+  query,
+  res,
+}) => {
   const pageParam = query.page;
   if (pageParam) {
     const page = parseInt(pageParam as string, 10) || 1;
@@ -26,16 +26,14 @@ export const getServerSideProps: GetServerSideProps = async ({
     // On page 1, include static URLs with priority 0.8
     let urlEntries = "";
     if (page === 1) {
-      urlEntries += STATIC_URLS
-        .map(
-          (url) => `<url>
+      urlEntries += STATIC_URLS.map(
+        (url) => `<url>
             <loc>${url}</loc>
             <lastmod>${new Date().toISOString()}</lastmod>
             <changefreq>daily</changefreq>
             <priority>0.8</priority>
-          </url>`
-        )
-        .join("");
+          </url>`,
+      ).join("");
     }
 
     // Fetch articles for this page and output with priority 1.0
@@ -47,7 +45,7 @@ export const getServerSideProps: GetServerSideProps = async ({
           <lastmod>${new Date(article.fetchedAt).toISOString()}</lastmod>
           <changefreq>daily</changefreq>
           <priority>1.0</priority>
-        </url>`
+        </url>`,
       )
       .join("");
 

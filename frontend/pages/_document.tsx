@@ -33,8 +33,14 @@ class MyDocument extends Document {
           {/* Primary Meta Tags */}
           <title>{title}</title>
           <meta name="description" content={description} />
-          <meta name="keywords" content="AI, article curator, news aggregator, government news, content curation, topic filtering" />
-          <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+          <meta
+            name="keywords"
+            content="AI, article curator, news aggregator, government news, content curation, topic filtering"
+          />
+          <meta
+            name="robots"
+            content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+          />
           <meta name="rating" content="General" />
           <meta name="distribution" content="Global" />
           <meta name="revisit-after" content="7 days" />
@@ -47,7 +53,10 @@ class MyDocument extends Document {
           {/* Dublin Core Meta Tags */}
           <meta name="DC.title" content={title} />
           <meta name="DC.creator" content={author} />
-          <meta name="DC.subject" content="Government news, AI curation, content filtering" />
+          <meta
+            name="DC.subject"
+            content="Government news, AI curation, content filtering"
+          />
           <meta name="DC.description" content={description} />
           <meta name="DC.publisher" content={publisherName} />
           <meta name="DC.contributor" content="Son Nguyen" />
@@ -63,7 +72,11 @@ class MyDocument extends Document {
 
           {/* Favicons & Touch Icons */}
           <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+          <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/apple-touch-icon.png"
+          />
           <link rel="manifest" href="/manifest.json" />
 
           {/* Preconnect */}
@@ -107,7 +120,10 @@ class MyDocument extends Document {
           <link rel="canonical" href={siteUrl} />
 
           {/* Google Site Verification */}
-          <meta name="google-site-verification" content="BJMztlbEd_3AQ4AlDSI0NqJMb-PmqRff5Qt7X9wEWjI" />
+          <meta
+            name="google-site-verification"
+            content="BJMztlbEd_3AQ4AlDSI0NqJMb-PmqRff5Qt7X9wEWjI"
+          />
 
           {/* Structured Data – JSON-LD */}
           <script
@@ -119,78 +135,81 @@ class MyDocument extends Document {
                   {
                     "@type": "Organization",
                     "@id": `${siteUrl}/#organization`,
-                    "name": "Article Curator, Inc.",
-                    "url": siteUrl,
-                    "logo": {
+                    name: "Article Curator, Inc.",
+                    url: siteUrl,
+                    logo: {
                       "@type": "ImageObject",
-                      "url": `${siteUrl}/favicon.ico`
-                    }
+                      url: `${siteUrl}/favicon.ico`,
+                    },
                   },
                   {
                     "@type": "WebSite",
                     "@id": `${siteUrl}/#website`,
-                    "url": siteUrl,
-                    "name": "Article Curator",
-                    "description": description,
-                    "publisher": { "@id": `${siteUrl}/#organization` },
-                    "potentialAction": [
+                    url: siteUrl,
+                    name: "Article Curator",
+                    description: description,
+                    publisher: { "@id": `${siteUrl}/#organization` },
+                    potentialAction: [
                       {
                         "@type": "SearchAction",
-                        "target": `${siteUrl}/?q={search_term_string}`,
-                        "query-input": "required name=search_term_string"
+                        target: `${siteUrl}/?q={search_term_string}`,
+                        "query-input": "required name=search_term_string",
                       },
                       {
                         "@type": "SearchAction",
-                        "target": `${siteUrl}/?q={search_term_string}&topic={topic}`,
+                        target: `${siteUrl}/?q={search_term_string}&topic={topic}`,
                         "query-input": [
                           "required name=search_term_string",
-                          "required name=topic"
-                        ]
-                      }
-                    ]
+                          "required name=topic",
+                        ],
+                      },
+                    ],
                   },
                   {
                     "@type": "WebPage",
                     "@id": `${siteUrl}/#homepage`,
-                    "url": siteUrl,
-                    "name": "Home – Article Curator",
-                    "isPartOf": { "@id": `${siteUrl}/#website` },
-                    "inLanguage": "en-US",
-                    "breadcrumb": {
+                    url: siteUrl,
+                    name: "Home – Article Curator",
+                    isPartOf: { "@id": `${siteUrl}/#website` },
+                    inLanguage: "en-US",
+                    breadcrumb: {
                       "@type": "BreadcrumbList",
-                      "itemListElement": [
+                      itemListElement: [
                         {
                           "@type": "ListItem",
-                          "position": 1,
-                          "name": "Home",
-                          "item": siteUrl
-                        }
-                      ]
+                          position: 1,
+                          name: "Home",
+                          item: siteUrl,
+                        },
+                      ],
                     },
-                    "potentialAction": {
+                    potentialAction: {
                       "@type": "ReadAction",
-                      "target": [siteUrl]
-                    }
+                      target: [siteUrl],
+                    },
                   },
                   {
                     "@type": "SiteNavigationElement",
-                    "name": "Main Navigation",
-                    "url": [
+                    name: "Main Navigation",
+                    url: [
                       `${siteUrl}/`,
                       `${siteUrl}/newsletter`,
                       `${siteUrl}/auth/login`,
                       `${siteUrl}/auth/register`,
                       `${siteUrl}/auth/reset-password`,
-                      `${siteUrl}/favorites/favorites`
-                    ]
-                  }
-                ]
-              })
+                      `${siteUrl}/favorites/favorites`,
+                    ],
+                  },
+                ],
+              }),
             }}
           />
 
           {/* Google Analytics */}
-          <script async src="https://www.googletagmanager.com/gtag/js?id=G-8K8KF8XSPD" />
+          <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-8K8KF8XSPD"
+          />
           <script
             dangerouslySetInnerHTML={{
               __html: `
@@ -227,8 +246,8 @@ class MyDocument extends Document {
           `}</style>
         </Head>
         <body>
-        <Main />
-        <NextScript />
+          <Main />
+          <NextScript />
         </body>
       </Html>
     );
