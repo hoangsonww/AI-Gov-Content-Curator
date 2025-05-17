@@ -1,4 +1,4 @@
-# .github/Dockerfile
+# Root Dockerfile
 FROM node:18-bullseye
 
 # Create app dir

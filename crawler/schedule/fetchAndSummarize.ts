@@ -25,6 +25,7 @@ import { fetchArticlesFromNewsAPI } from "../services/apiFetcher.service";
 import { summarizeContent } from "../services/summarization.service";
 import { extractTopics } from "../services/topicExtractor.service";
 import logger from "../utils/logger";
+import { cleanupArticles } from "../scripts/cleanData";
 
 dotenv.config();
 mongoose.set("strictQuery", false);
@@ -59,6 +60,12 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /* ─────────────────── DUPLICATE‑SAFE UPSERT ─────────────────── */
 
+/**
+ * Upsert an article into the database.
+ * If the article already exists, it will be skipped.
+ *
+ * @param data - The article data to upsert.
+ */
 async function upsertArticle(data: {
   url: string;
   title: string;
@@ -84,17 +91,34 @@ async function upsertArticle(data: {
 
 const processingUrls = new Set<string>();
 
+/**
+ * Start processing a URL. If it's already being processed, return false.
+ *
+ * @param url - The URL to process.
+ * @returns true if the URL is now being processed, false if it was already in process.
+ */
 function startProcessing(url: string): boolean {
   if (processingUrls.has(url)) return false;
   processingUrls.add(url);
   return true;
 }
+
+/**
+ * Mark a URL as done processing.
+ *
+ * @param url - The URL that has finished processing.
+ */
 function doneProcessing(url: string) {
   processingUrls.delete(url);
 }
 
 /* ─────────────────── NEWS‑API ARTICLES ─────────────────── */
 
+/**
+ * Process an article from the NewsAPI.
+ *
+ * @param api - The article data from the API.
+ */
 async function processApiArticle(api: {
   url: string;
   title?: string;
@@ -136,6 +160,11 @@ async function processApiArticle(api: {
 
 /* ─────────────────── PAGE‑FETCH ARTICLES ─────────────────── */
 
+/**
+ * Process a URL to fetch and summarize its content.
+ *
+ * @param url - The URL to process.
+ */
 async function processUrl(url: string): Promise<void> {
   if (STATIC_EXT_RE.test(url) || url.includes("#") || !startProcessing(url))
     return;
@@ -184,6 +213,9 @@ async function processUrl(url: string): Promise<void> {
 
 /* ─────────────────── MAIN ─────────────────── */
 
+/**
+ * Fetch and summarize articles from various sources.
+ */
 export async function fetchAndSummarize(): Promise<void> {
   await mongoose.connect(MONGODB_URI);
   logger.info("✅ Mongo connected");
@@ -239,9 +271,14 @@ export async function fetchAndSummarize(): Promise<void> {
     await wait(1000);
   }
 
+  /* 7. Cleanup */
+  logger.info("🧹 Cleaning up...");
+  await cleanupArticles();
+
   logger.info("🏁 Pipeline complete");
 }
 
+// Run the script if executed directly
 if (require.main === module) {
   fetchAndSummarize()
     .then(() => {

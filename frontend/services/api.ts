@@ -261,8 +261,8 @@ export const loginUser = async (email: string, password: string) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Login failed. Please retry.");
 
-    // Save token to localStorage
     localStorage.setItem("token", data.token);
+
     return data;
   } catch (error: any) {
     throw new Error(

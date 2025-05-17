@@ -16,10 +16,10 @@ const AXIOS_TIMEOUT_MS = 10000; // Abort axios requests after 10 seconds
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Make sure we *always* return a non‑empty title.
- * 1. Prefer the HTML <title>.
- * 2. Otherwise, use the first full sentence (≤120 chars) from the content.
- * 3. Finally, fall back to the first 10 words or "Untitled".
+ * Derive a title from the raw title or the body of the article.
+ *
+ * @param rawTitle - The raw title of the article.
+ * @param content - The body content of the article.
  */
 const deriveTitle = (rawTitle: string, content: string): string => {
   const title = rawTitle.trim();
@@ -33,8 +33,9 @@ const deriveTitle = (rawTitle: string, content: string): string => {
 };
 
 /**
- * Use Puppeteer to fetch an article dynamically.
- * First tries "networkidle2", then falls back to "domcontentloaded".
+ * Fetch a dynamic article using Puppeteer.
+ *
+ * @param url - The URL of the article to fetch.
  */
 export const fetchDynamicArticle = async (
   url: string,
@@ -80,8 +81,10 @@ export const fetchDynamicArticle = async (
 };
 
 /**
- * Attempt a static fetch with Axios and Cheerio.
- * On certain errors, retries or falls back to dynamic fetch.
+ * Fetch a static article using Axios.
+ *
+ * @param url - The URL of the article to fetch.
+ * @param retries - The number of retries on failure.
  */
 export const fetchStaticArticle = async (
   url: string,
@@ -131,9 +134,14 @@ export const fetchStaticArticle = async (
 };
 
 /**
- * Crawl one or more homepages up to maxLinks, maxDepth, using concurrency.
- * Dovetails across multiple sources by seeding all homepages together in the queue,
- * then workers pull from the shared queue in parallel, interleaving domains naturally.
+ * Crawl a list of homepage URLs to find articles.
+ * Performs a breadth-first search (BFS) to collect links level by level.
+ * Includes headers rotation and site protection bypassing to avoid 403 errors.
+ *
+ * @param homepageUrls - A single URL or an array of URLs to crawl.
+ * @param maxLinks - The maximum number of links to collect.
+ * @param maxDepth - The maximum depth to crawl.
+ * @param concurrency - The number of concurrent requests.
  */
 export const crawlArticlesFromHomepage = async (
   homepageUrls: string | string[],

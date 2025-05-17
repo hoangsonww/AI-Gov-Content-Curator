@@ -12,6 +12,9 @@ const BATCH_LIMIT = 20;
 const DELAY_BETWEEN_UPDATES_MS = 500;
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+/**
+ * Assign topics to existing articles in the database
+ */
 const assignTopicsToArticles = async () => {
   try {
     await mongoose.connect(MONGODB_URI);
@@ -52,6 +55,7 @@ const assignTopicsToArticles = async () => {
   }
 };
 
+// Run the script if executed directly
 if (require.main === module) {
   assignTopicsToArticles().then(() => process.exit(0));
 }

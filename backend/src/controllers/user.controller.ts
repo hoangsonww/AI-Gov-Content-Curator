@@ -3,7 +3,10 @@ import User from "../models/user.model";
 import Article from "../models/article.model";
 
 /**
- * Get full details of favorite articles for the logged-in user
+ * Get favorite articles for the logged-in user
+ *
+ * @param req The request object containing user information
+ * @param res The response object to send the list of favorite articles
  */
 export const getFavoriteArticles = async (req: Request, res: Response) => {
   try {
@@ -21,6 +24,9 @@ export const getFavoriteArticles = async (req: Request, res: Response) => {
 
 /**
  * Get favorite article IDs for the logged-in user
+ *
+ * @param req The request object containing user information
+ * @param res The response object to send the list of favorite article IDs
  */
 export const getFavoriteArticleIds = async (req: Request, res: Response) => {
   try {
@@ -36,7 +42,10 @@ export const getFavoriteArticleIds = async (req: Request, res: Response) => {
 };
 
 /**
- * Toggle favorite status for an article
+ * Toggle favorite status of an article for the logged-in user
+ *
+ * @param req The request object containing article ID in the body
+ * @param res The response object to send the updated list of favorite articles
  */
 export const toggleFavoriteArticle = async (req: Request, res: Response) => {
   const { articleId } = req.body;
@@ -72,6 +81,7 @@ export const toggleFavoriteArticle = async (req: Request, res: Response) => {
 
 /**
  * Validate user token
+ *
  * @param req The request object
  * @param res The response object
  */
@@ -82,6 +92,9 @@ export const validateTokenController = async (req: Request, res: Response) => {
 /**
  * Search favorite articles for the logged-in user by title or summary.
  * Supports pagination through 'page' and 'limit' query parameters.
+ *
+ * @param req The request object containing the search query and pagination parameters
+ * @param res The response object to send the search results or an error message
  */
 export const searchFavoriteArticles = async (req: Request, res: Response) => {
   try {

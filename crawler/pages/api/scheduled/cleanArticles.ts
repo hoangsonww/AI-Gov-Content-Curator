@@ -5,7 +5,10 @@ import { promisify } from "util";
 const run = promisify(exec);
 
 /**
- * Invokes the TypeScript clean‑up script on Vercel’s serverless runtime.
+ * This API route is scheduled to run every day at 6 AM UTC.
+ *
+ * @param _ - The request object (not used).
+ * @param res - The response object to send the result.
  */
 export default async function handler(_: VercelRequest, res: VercelResponse) {
   try {

@@ -1,0 +1,204 @@
+/* ───────── GLOBAL STYLES FOR CHATBOT (revamped) ───────── */
+:root {
+  /* feel free to tweak to match your theme */
+  --cb-radius: 18px;
+  --cb-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+  --cb-border: 1px solid var(--card-border);
+}
+
+/* ---- draggable toggle button ---- */
+.cb-toggle {
+  position: fixed;
+  z-index: 1000;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-color) 0%, #0074ff 100%);
+  color: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+  transition:
+    box-shadow 0.18s,
+    transform 0.18s;
+}
+
+.cb-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- overlay ---- */
+.cb-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+/* ---- modal ---- */
+.cb-modal {
+  width: min(420px, 92vw);
+  max-height: 90vh;
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: var(--cb-radius);
+  box-shadow: var(--cb-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--cb-border);
+}
+
+/* ---- header ---- */
+.cb-header {
+  background: var(--card-bg); /* NOT blue anymore */
+  color: var(--text-color);
+  padding: 0.85rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  border-bottom: var(--cb-border);
+}
+.cb-header-btns {
+  display: flex;
+  gap: 0.4rem;
+}
+.cb-icon-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  transition: background 0.12s;
+}
+.cb-icon-btn:hover {
+  background: var(--hover-bg);
+}
+
+/* ---- body ---- */
+.cb-body {
+  flex: 1;
+  padding: 1rem 1rem 1.2rem;
+  overflow-y: auto;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+}
+.cb-placeholder {
+  text-align: center;
+  color: var(--loading-text);
+  font-style: italic;
+}
+.cb-bubble {
+  max-width: 85%;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  word-break: break-word;
+  border-radius: var(--cb-radius);
+  margin-bottom: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.cb-bubble.user {
+  align-self: flex-end;
+  background: var(--accent-color);
+  color: var(--bg-color);
+  border-bottom-right-radius: 4px;
+}
+.cb-bubble.model {
+  align-self: flex-start;
+  background: var(--hover-bg);
+  color: var(--text-color);
+  border-bottom-left-radius: 4px;
+}
+.cb-loader {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--loading-text);
+  font-size: 0.9rem;
+}
+
+/* ---- footer ---- */
+.cb-footer {
+  display: flex;
+  border-top: var(--cb-border);
+  background: var(--card-bg);
+}
+.cb-footer input {
+  flex: 1;
+  border: none;
+  padding: 1rem;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+.cb-footer input:focus {
+  outline: none;
+  background: var(--hover-bg);
+}
+.cb-send-btn {
+  background: var(--accent-color);
+  color: var(--bg-color);
+  border: none;
+  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+.cb-send-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+.cb-send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---- markdown inside bubbles ---- */
+.cb-bubble pre {
+  background: #1e1f24;
+  color: #e8e8e8;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.cb-bubble table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+.cb-bubble th,
+.cb-bubble td {
+  border: 1px solid var(--card-border);
+  padding: 0.45rem 0.65rem;
+}
+.cb-bubble blockquote {
+  border-left: 4px solid var(--card-border);
+  margin: 0.5rem 0;
+  padding-left: 0.8rem;
+  color: var(--no-result-text);
+}
+
+/* ---- spinning icon ---- */
+.cb-spin {
+  animation: cb-spin 1s linear infinite;
+}
+@keyframes cb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

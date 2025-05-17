@@ -2,6 +2,7 @@ import Head from "next/head";
 
 /**
  * Very simple Homepage if user navigates to the crawler -- it should just redirect to the backend or frontend.
+ * Served just in case someone tries to access the crawler's deployed URL directly.
  * Since crawler is a cron job, it doesn't need a frontend.
  */
 export default function Home() {

@@ -1,76 +1,107 @@
+/*  Article page + draggable Gemini chat assistant
+ *  – overlay is now rendered via a React Portal
+ *  – all styles moved to /styles/chatbot.css (global)
+ *  – only variable‑based colours, consistent with your theme
+ */
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useLayoutEffect,
+} from "react";
+import ReactDOM from "react-dom";
 import { GetStaticPaths, GetStaticProps } from "next";
-import Link from "next/link";
 import Head from "next/head";
-import { MdHome } from "react-icons/md";
+import Link from "next/link";
+
 import { Article } from "../index";
 import ArticleDetail from "../../components/ArticleDetail";
 import { getArticleById } from "../../services/api";
+import Chatbot from "../../components/Chatbot";
+import { MdHome } from "react-icons/md";
+
+/* ───────── TYPES ───────── */
 
 interface ArticlePageProps {
   article: Article | null;
 }
 
+type ChatMessage = { sender: "user" | "model"; text: string };
+
+/* ───────── PAGE ───────── */
 export default function ArticlePage({ article }: ArticlePageProps) {
-  if (!article) {
-    return <div className="error-message">Article not found</div>;
+  if (!article) return <div className="error-message">Article not found</div>;
+
+  let title = `${article.title.split(" ").slice(0, 5).join(" ")}`;
+
+  if (!title || title.length == 0) {
+    title = "Title not available";
   }
 
-  // Use the first 5 words of the article's title for the dynamic page title.
-  const titleWords = article.title.split(" ").slice(0, 5).join(" ");
-  const dynamicTitle = `Article Curator - ${titleWords}`;
+  const dynamicTitle = `Article Curator – ${title}`;
 
   return (
     <>
       <Head>
         <title>{dynamicTitle}</title>
       </Head>
-      <div>
+
+      <div className="page-wrapper">
         <ArticleDetail article={article} />
-        <div className="back-home-container">
+
+        <div className="nav-back">
           <Link href="/" legacyBehavior>
-            <a className="back-home-link">
-              <MdHome className="home-icon" size={20} />
-              Back to Home
+            <a>
+              <MdHome size={20} />
+              Back&nbsp;to&nbsp;Home
             </a>
           </Link>
         </div>
+
+        <Chatbot article={article} />
       </div>
+
+      <style jsx>{`
+        .error-message {
+          padding: 2rem;
+          color: var(--accent-color);
+          text-align: center;
+        }
+        .page-wrapper {
+          position: relative;
+          padding-bottom: 4rem; /* space for toggle */
+        }
+        .nav-back {
+          margin: 2rem 0;
+          text-align: center;
+        }
+        .nav-back a {
+          color: var(--accent-color);
+          text-decoration: none;
+          font-weight: 600;
+          display: inline-flex;
+          gap: 0.4rem;
+          align-items: center;
+        }
+      `}</style>
     </>
   );
 }
 
-// Use getStaticPaths with fallback blocking so that pages are generated on-demand.
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [],
-    fallback: "blocking",
-  };
-};
+/* ───────── STATIC HELPERS ───────── */
+export const getStaticPaths: GetStaticPaths = async () => ({
+  paths: [],
+  fallback: "blocking",
+});
 
-export const getStaticProps: GetStaticProps = async (context) => {
-  const { id } = context.params || {};
-
+export const getStaticProps: GetStaticProps<ArticlePageProps> = async (ctx) => {
+  const { id } = ctx.params || {};
   try {
     const article = await getArticleById(id as string);
-
-    // Overwrite the 'content' field with the 'summary' so ArticleDetail displays the summary.
-    if (article && article.summary) {
-      article.content = article.summary;
-    }
-
-    return {
-      props: {
-        article,
-      },
-      revalidate: 43200, // Revalidate every 12 hours
-    };
-  } catch (error) {
-    console.error("Error fetching article:", error);
-    return {
-      props: {
-        article: null,
-      },
-      revalidate: 43200,
-    };
+    if (article?.summary) article.content = article.summary;
+    return { props: { article }, revalidate: 43200 };
+  } catch {
+    return { props: { article: null }, revalidate: 43200 };
   }
 };

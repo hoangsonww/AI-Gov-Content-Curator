@@ -25,6 +25,7 @@ import { fetchArticlesFromNewsAPI } from "../services/apiFetcher.service";
 import { summarizeContent } from "../services/summarization.service";
 import { extractTopics } from "../services/topicExtractor.service";
 import logger from "../utils/logger";
+import { cleanUp } from "../scripts/cleanData";
 
 dotenv.config();
 mongoose.set("strictQuery", false);
@@ -55,10 +56,14 @@ const MAX_FETCH_TIME_MS = parseInt(
 const STATIC_EXT_RE =
   /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|eot|ttf|otf|json|webmanifest|xml|rss|atom|mp4|mpeg|mov|zip|gz|pdf)(\?|$)/i;
 
+// Wait time between requests to avoid overwhelming the server
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/* ─────────────────── DUPLICATE‑SAFE UPSERT ─────────────────── */
-
+/**
+ * Upsert article into MongoDB
+ *
+ * @param data - Article data to be upserted
+ */
 async function upsertArticle(data: {
   url: string;
   title: string;
@@ -84,17 +89,34 @@ async function upsertArticle(data: {
 
 const processingUrls = new Set<string>();
 
+/**
+ * Start processing a URL
+ *
+ * @param url - The URL to process
+ * @returns true if the URL was not already being processed, false otherwise
+ */
 function startProcessing(url: string): boolean {
   if (processingUrls.has(url)) return false;
   processingUrls.add(url);
   return true;
 }
+
+/**
+ * Mark a URL as done processing
+ *
+ * @param url - The URL that has finished processing
+ */
 function doneProcessing(url: string) {
   processingUrls.delete(url);
 }
 
 /* ─────────────────── NEWS‑API ARTICLES ─────────────────── */
 
+/**
+ * Process an article from the NewsAPI
+ *
+ * @param api - The article data from the API
+ */
 async function processApiArticle(api: {
   url: string;
   title?: string;
@@ -136,6 +158,11 @@ async function processApiArticle(api: {
 
 /* ─────────────────── PAGE‑FETCH ARTICLES ─────────────────── */
 
+/**
+ * Process a URL to fetch and summarize its content
+ *
+ * @param url - The URL to process
+ */
 async function processUrl(url: string): Promise<void> {
   if (STATIC_EXT_RE.test(url) || url.includes("#") || !startProcessing(url))
     return;
@@ -184,6 +211,11 @@ async function processUrl(url: string): Promise<void> {
 
 /* ─────────────────── MAIN ─────────────────── */
 
+/**
+ * Main function to fetch and summarize articles
+ *
+ * @returns Promise<void>
+ */
 export async function fetchAndSummarize(): Promise<void> {
   await mongoose.connect(MONGODB_URI);
   logger.info("✅ Mongo connected");
@@ -239,9 +271,14 @@ export async function fetchAndSummarize(): Promise<void> {
     await wait(1000);
   }
 
+  /* 7. Clean up */
+  logger.info("🧹 Cleaning up...");
+  await cleanUp();
+
   logger.info("🏁 Pipeline complete");
 }
 
+// CLI entry point
 if (require.main === module) {
   fetchAndSummarize()
     .then(() => {

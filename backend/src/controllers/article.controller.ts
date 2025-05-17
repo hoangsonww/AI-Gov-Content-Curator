@@ -155,12 +155,6 @@ export const getAllTopics = async (req: Request, res: Response) => {
 /**
  * Get a list of articles filtered by a specific topic.
  *
- * @param req The request object containing the topic as a URL parameter and optional pagination.
- * @param res The response object to send the filtered articles or an error message.
- */
-/**
- * Get a list of articles filtered by a specific topic.
- *
  * The function uses an aggregation pipeline to normalize each article’s topics by
  * converting them to lowercase and removing spaces. Then, it matches articles where
  * the normalized topics array contains the provided topic (also normalized).

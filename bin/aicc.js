@@ -1,5 +1,15 @@
 #!/usr/bin/env node
 
+/**
+ * @file CLI for AI-Article-Content-Curator monorepo
+ * @fileOverview This script provides a command-line interface to manage the monorepo, including running services, managing articles, and more.
+ * @description This script provides a command-line interface to manage the monorepo, including running services, managing articles, and more.
+ * @module aicc
+ * @author David Nguyen
+ * @license MIT
+ * @version 1.0.0
+ */
+
 const { spawn } = require("child_process");
 const { Command } = require("commander");
 const axios = require("axios");

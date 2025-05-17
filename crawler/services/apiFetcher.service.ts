@@ -23,13 +23,19 @@ const NEWS_KEYS = [
 if (!NEWS_KEYS.length) throw new Error("No NEWS_API_KEY* provided");
 
 let keyIdx = 0;
+
+/**
+ * Rotate to the next NewsAPI key.
+ */
 const nextKey = () => {
   keyIdx = (keyIdx + 1) % NEWS_KEYS.length;
   return NEWS_KEYS[keyIdx];
 };
 
 /**
- * Fetch a single NewsAPI URL with automatic key rotation on 401/429 errors.
+ * Get the articles from the NewsAPI with key rotation.
+ *
+ * @param urlBase - The base URL for the API request.
  */
 async function safeGet(urlBase: string): Promise<AxiosResponse<any>> {
   let tries = 0;
@@ -54,7 +60,11 @@ async function safeGet(urlBase: string): Promise<AxiosResponse<any>> {
   throw new Error("All NewsAPI keys exhausted");
 }
 
-/* ─────────── exported function ─────────── */
+/**
+ * Fetch articles from the NewsAPI.
+ *
+ * @returns An array of articles.
+ */
 export const fetchArticlesFromNewsAPI = async (): Promise<ArticleData[]> => {
   /* trusted domains & query */
   const domains =

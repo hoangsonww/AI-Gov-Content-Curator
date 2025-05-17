@@ -62,14 +62,20 @@ export default function AllArticles() {
       >
         Browse everything we've collected, summarized, and saved for you.
       </p>
-      <ArticleList articles={articles} />
+      <ArticleList articles={articles} loading={loading} />
 
       {hasMore && !loading && (
         <button className="load-more-btn" onClick={handleLoadMore}>
           Load More
         </button>
       )}
-      {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
+
+      {loading && (
+        <div style={{ textAlign: "center", padding: "1rem 0" }}>
+          <div className="spinner" />
+        </div>
+      )}
+
       {!hasMore && (
         <p className="fade-down" style={{ textAlign: "center" }}>
           No more articles to load. More articles coming soon! 🚀

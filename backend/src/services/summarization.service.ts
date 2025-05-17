@@ -35,7 +35,7 @@ const generationConfig: GenerationConfig = {
   temperature: 0.9,
   topP: 0.95,
   topK: 64,
-  maxOutputTokens: 1024,
+  maxOutputTokens: 8192,
 };
 
 const safetySettings = [
@@ -57,13 +57,28 @@ const safetySettings = [
   },
 ];
 
+/**
+ * Check if the error is a rate limit or quota exceeded error.
+ *
+ * @param e The error object to check.
+ */
 const isRateOrQuota = (e: any) =>
   e?.status === 429 || /quota|rate|exceed/i.test(e?.message || "");
+
+/**
+ * Check if the error indicates that the service is overloaded or unavailable.
+ *
+ * @param e The error object to check.
+ */
 const isOverloaded = (e: any) =>
   e?.status === 503 || /overload|unavailable/i.test(e?.message || "");
 
-/* ─────────────────────────────  EXPORT  ───────────────────────────── */
-
+/**
+ * Summarize the content of an article using Google Generative AI.
+ *
+ * @param article - The article content to summarize.
+ * @returns The summarized text.
+ */
 export async function summarizeContent(article: string): Promise<string> {
   for (const key of API_KEYS) {
     for (const model of MODELS) {

@@ -1,4 +1,3 @@
-// pages/newsletter.tsx
 import Head from "next/head";
 import { useState } from "react";
 import { MdCheckCircle, MdError, MdMailOutline } from "react-icons/md";

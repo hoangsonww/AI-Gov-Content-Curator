@@ -17,10 +17,12 @@ import NewsletterSubscriber from "../models/newsletterSubscriber.model";
   console.error("Failed to seed test subscriber:", err.message),
 );
 
-/** -----------------------------------------------------------------
- *  POST /api/newsletter/subscribe
- *  Body: { "email": "user@example.com" }
- *  ----------------------------------------------------------------*/
+/**
+ * Subscribe a user to the newsletter
+ *
+ * @param req The request object containing the email address in the body
+ * @param res The response object to send the subscription status
+ */
 export const subscribe = async (req: Request, res: Response) => {
   const { email } = req.body as { email?: string };
 
@@ -46,12 +48,12 @@ export const subscribe = async (req: Request, res: Response) => {
   }
 };
 
-/** -----------------------------------------------------------------
- *  GET or POST /api/newsletter/unsubscribe
- *  Accepts:
- *    •  Body JSON:   { "email": "user@example.com" }     (POST)
- *    •  Query parm: /unsubscribe?email=user@example.com  (GET)
- *  ----------------------------------------------------------------*/
+/**
+ * Unsubscribe a user from the newsletter
+ *
+ * @param req The request object containing the email address in the body or query
+ * @param res The response object to send the unsubscription status
+ */
 export const unsubscribe = async (req: Request, res: Response) => {
   const email =
     (req.method === "POST"

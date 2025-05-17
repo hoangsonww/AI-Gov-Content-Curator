@@ -3,10 +3,14 @@ import ArticleCard from "./ArticleCard";
 
 interface ArticleListProps {
   articles: Article[];
+  loading?: boolean;
 }
 
-export default function ArticleList({ articles }: ArticleListProps) {
-  if (!articles || articles.length === 0) {
+export default function ArticleList({
+  articles,
+  loading = false,
+}: ArticleListProps) {
+  if (!loading && (!articles || articles.length === 0)) {
     return <div className="error-message">No articles found.</div>;
   }
 

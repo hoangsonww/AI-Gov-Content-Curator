@@ -80,7 +80,20 @@ const STATIC_RE =
   /\.(png|jpe?g|gif|svg|ico|webp|css|js|woff2?|ttf|eot|json|xml|webmanifest)(\?|$)/i;
 
 /* ─────────── helpers ─────────── */
+
+/**
+ * Sleep for a given number of milliseconds.
+ *
+ * @param ms - The number of milliseconds to sleep.
+ */
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Convert a Date object to an ISO 8601 string.
+ *
+ * @param d - The Date object to convert.
+ * @returns The ISO 8601 string representation of the date.
+ */
 const iso = (d: Date) => d.toISOString().split(".")[0] + "Z";
 
 /* ─────────── Gemini helpers (unchanged) ─────────── */
@@ -97,6 +110,13 @@ const AI_MODELS = [
 ];
 const AI_RETRIES = 2;
 
+/**
+ * Fetch a summary from Gemini AI.
+ *
+ * @param prompt - The prompt to send to the AI.
+ * @param system - The system instruction for the AI.
+ * @param maxOut - The maximum number of output tokens.
+ */
 async function gemini(
   prompt: string,
   system: string,
@@ -133,13 +153,25 @@ async function gemini(
     }
   return "";
 }
+
+/**
+ * Summarize a given text using Gemini AI.
+ *
+ * @param t - The text to summarize.
+ */
 const summarizeAI = (t: string) =>
   gemini(`Summarize:\n${t.slice(0, 5000)}`, AI_INSTRUCTIONS, 1024);
+
+/**
+ * Generate topics for a given text using Gemini AI.
+ *
+ * @param t - The text to generate topics for.
+ */
 const topicsAI = async (t: string) =>
   gemini(
     `Give 5‑10 concise topics (comma‑separated, no quotes) for:\n${t.slice(0, 2000)}`,
     "",
-    256,
+    512,
   ).then((o) =>
     Array.from(
       new Set(
@@ -152,6 +184,12 @@ const topicsAI = async (t: string) =>
   );
 
 /* ─────────── Fetch helpers ─────────── */
+
+/**
+ * Fetch static content from a URL.
+ *
+ * @param url - The URL to fetch.
+ */
 async function fetchStatic(url: string) {
   const { data } = await axios.get(url, { timeout: STATIC_TIMEOUT_MS });
   const title = (data.match(/<title[^>]*>(.*?)<\/title>/i)?.[1] ?? "").trim();
@@ -163,6 +201,13 @@ async function fetchStatic(url: string) {
     .trim();
   return { title, content: text };
 }
+
+/**
+ * Fetch dynamic content from a URL using Puppeteer.
+ *
+ * @param url - The URL to fetch.
+ * @param browser - The Puppeteer browser instance.
+ */
 async function fetchDynamic(url: string, browser: Browser) {
   const p = await browser.newPage();
   await p.goto(url, {
@@ -176,6 +221,12 @@ async function fetchDynamic(url: string, browser: Browser) {
 }
 
 /* ─────────── Crawl helpers ─────────── */
+
+/**
+ * Crawl a homepage for links to articles.
+ *
+ * @param url - The URL of the homepage to crawl.
+ */
 async function crawlHomepage(url: string): Promise<string[]> {
   const queue = [url];
   const seen = new Set<string>();
@@ -212,6 +263,12 @@ async function crawlHomepage(url: string): Promise<string[]> {
 /* ─────────── ingest pipeline ─────────── */
 const working = new Set<string>();
 
+/**
+ * Ingest an article from a URL.
+ *
+ * @param url - The URL of the article to ingest.
+ * @param browser - The Puppeteer browser instance.
+ */
 async function ingest(url: string, browser: Browser) {
   if (
     working.has(url) ||
@@ -260,6 +317,12 @@ async function ingest(url: string, browser: Browser) {
 }
 
 /* ─────────── NewsAPI polling loop (fresh) ─────────── */
+
+/**
+ * Poll the NewsAPI for fresh articles.
+ *
+ * @param browser - The Puppeteer browser instance.
+ */
 async function newsLoop(browser: Browser) {
   let lastChecked = new Date(Date.now() - 5 * 60_000); // start 5 min back
   let keyIdx = 0; // current NewsAPI key
@@ -334,6 +397,12 @@ async function newsLoop(browser: Browser) {
 }
 
 /* ─────────── Homepage crawler loop ─────────── */
+
+/**
+ * Crawl a homepage for links and ingest them.
+ *
+ * @param browser - The Puppeteer browser instance.
+ */
 async function crawlLoop(browser: Browser) {
   while (true) {
     for (let i = 0; i < HOMEPAGES.length; i += CRAWL_CONCURRENCY) {
@@ -355,6 +424,12 @@ async function crawlLoop(browser: Browser) {
 }
 
 /* ─────────── MAIN ─────────── */
+
+/**
+ * Main function to start the crawler.
+ * Note: This is designed to run infinitely to
+ * continuously fetch and process articles as they become available.
+ */
 async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log("Mongo connected");

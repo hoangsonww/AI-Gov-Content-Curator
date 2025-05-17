@@ -14,6 +14,8 @@ Each component is maintained in its own directory:
   - Live: [https://ai-content-curator-crawler.vercel.app/](https://ai-content-curator-crawler.vercel.app/)
 - **Frontend:** `frontend/`
   - Live: [https://ai-article-curator.vercel.app/](https://ai-article-curator.vercel.app/)
+- **Newsletter:** `newsletters/`
+  - Live: [https://ai-content-curator-newsletters.vercel.app/](https://ai-content-curator-newsletters.vercel.app/)
 
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white)
@@ -32,11 +34,12 @@ Each component is maintained in its own directory:
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 ![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+![Shadcn UI](https://img.shields.io/badge/Shadcn_UI-000?style=flat&logo=shadcnui&logoColor=white)
 ![Playwright](https://img.shields.io/badge/Playwright-333333?style=flat&logo=vitest&logoColor=white)
 ![Jest](https://img.shields.io/badge/Jest-C21325?style=flat&logo=jest&logoColor=white)
 ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white)
 ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=black)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
 ![Resend](https://img.shields.io/badge/Resend-FF4B00?style=flat&logo=resend&logoColor=white)
@@ -63,7 +66,6 @@ Each component is maintained in its own directory:
 - [Crawler](#crawler)
   - [Features](#features-1)
   - [Prerequisites & Installation](#prerequisites--installation-crawler)
-  - [Configuration](#configuration-crawler)
   - [Running Locally](#running-locally-crawler)
   - [Deployment on Vercel](#deployment-on-vercel-crawler)
 - [Frontend](#frontend)
@@ -72,12 +74,21 @@ Each component is maintained in its own directory:
   - [Configuration](#configuration-frontend)
   - [Running Locally](#running-locally-frontend)
   - [Deployment on Vercel](#deployment-on-vercel-frontend)
+- [Newsletter Subscription](#newsletter-subscription)
+  - [Features (Newsletter)](#features-newsletter)
+  - [Prerequisites & Installation (Newsletter)](#prerequisites--installation-newsletter)
+- [Article Q&A Feature](#article-qa-feature)
+  - [Features (Article Q&A)](#features-article-qa)
+  - [Prerequisites & Installation (Article Q&A)](#prerequisites--installation-article-qa)
 - [Command Line Interface (CLI)](#command-line-interface-cli)
   - [Installation](#installation)
   - [Usage](#usage)
   - [Workspace Management](#workspace-management)
   - [Crawling](#crawling)
   - [Article CRUD](#article-crud)
+- [Shell Scripts & Makefile](#shell-scripts--makefile)
+  - [Shell Scripts](#shell-scripts)
+  - [Makefile](#makefile)
 - [Contributing](#contributing)
 - [Testing](#testing)
   - [Backend](#backend-1)
@@ -187,12 +198,13 @@ This project consists of 4 primary microservices that interact with each other:
    - Built with Express.js and Next.js, serving as a RESTful API for the frontend.
    - Integrates Google Generative AI (Gemini) for content summarization.
    - Stores articles in MongoDB using Mongoose, with fields for URL, title, full content, summary, source information, and fetch timestamp.
-   - Scheduled serverless function to fetch and process new articles twice daily at 6:00 AM and 6:00 PM UTC.
+   - Scheduled serverless function to fetch and process new articles daily at 6:00 AM UTC.
    - Deployed on Vercel at [https://ai-content-curator-backend.vercel.app](https://ai-content-curator-backend.vercel.app).
 3. **Newsletter Service:**
    - Allows users to subscribe to a newsletter for daily updates on the latest articles.
    - Integrated with Resend API for managing subscriptions and sending emails.
-   - [Deployed on Vercel](https://ai-content-curator-newsletters.vercel.app/) as a serverless function, scheduled to run daily at 9:00 AM UTC.
+   - By default, the newsletter is sent daily at 9:00 AM UTC, from the email address with the `sonnguyenhoang.com` domain.
+   - Deployed on Vercel as a serverless function, at [https://ai-content-curator-newsletters.vercel.app](https://ai-content-curator-newsletters.vercel.app).
 4. **Frontend:**
    - Built with Next.js and React, providing a modern, mobile-responsive UI for browsing and viewing curated articles.
    - Fetches and displays a paginated list of articles from the backend API, with filtering options.
@@ -257,34 +269,28 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/newsletter.png" alt="Newsletter Subscription Page" width="100%">
 </p>
 
-### 8. User Authentication
+### 9. User Authentication
 
 <p align="center">
   <img src="frontend/img/login.png" alt="User Authentication" width="100%">
 </p>
 
-### 9. User Registration
+### 10. User Registration
 
 <p align="center">
   <img src="frontend/img/register.png" alt="User Registration" width="100%">
 </p>
 
-### 10. Reset Password
+### 11. Reset Password
 
 <p align="center">
   <img src="frontend/img/reset-password.png" alt="Reset Password" width="100%">
 </p>
 
-### 11. 404 Not Found Page
+### 12. 404 Not Found Page
 
 <p align="center">
   <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
-</p>
-
-### 12. Backend Swagger API Documentation
-
-<p align="center">
-  <img src="frontend/img/swagger.png" alt="Backend Swagger API Documentation" width="100%">
 </p>
 
 ---
@@ -306,6 +312,18 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   - `GET /api/articles/:id` – Retrieves detailed information for a specific article.
 - **Scheduled Updates:**  
   A serverless function (triggered twice daily at 6:00 AM and 6:00 PM UTC) fetches and processes new articles, so that the system remains up-to-date!
+- **User Authentication:**  
+  Supports user registration, login, and JWT-based authentication for secure access to the system.
+- **Favorite Articles:**  
+  Authenticated users can mark articles as favorites for quick access.
+- **Newsletter Subscription:**  
+  Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
+
+### Backend Swagger API Documentation
+
+<p align="center">
+  <img src="frontend/img/swagger.png" alt="Backend Swagger API Documentation" width="100%">
+</p>
 
 ### Prerequisites & Installation (Backend)
 
@@ -608,10 +626,10 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 2. **Go to Domain Settings:** In your Resend dashboard, navigate to the "Domains" section and add your domain (you'll have to have
    purchased a domain name that you have access to). Render will ask that you verify your domain ownership by adding a TXT record to your DNS settings, as
    well as adding an MX record to your DNS settings, and more. Follow the instructions provided by Resend to complete this step.
-3. **Configure Environment Variables:** Create a `.env` file in the `newsletter` directory with the following variables:
+3. **Configure Environment Variables:** Create a `.env` file in the `newsletters` directory with the following variables:
    - `RESEND_API_KEY`: Your Resend API key.
    - `RESEND_DOMAIN`: The domain you added in the Resend dashboard.
-4. **Deploy the CRON Job:** Simply run `vercel --prod` in the `newsletter` directory to deploy the CRON job that sends daily updates to subscribers.
+4. **Deploy the CRON Job:** Simply run `vercel --prod` in the `newsletters` directory to deploy the CRON job that sends daily updates to subscribers.
 5. **Configure the CRON Job:** In your Vercel dashboard, navigate to the "Functions" section and set up a CRON job that runs daily at 9:00 AM UTC. This job will send the latest articles to subscribers.
 6. **That's it!** Your newsletter subscription feature is now set up and ready to go. Users can subscribe to receive daily updates with the latest articles.
 
@@ -622,6 +640,34 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 - The daily updates are sent via email, ensuring that subscribers receive the most relevant information without having to check the app constantly.
 - The newsletter feature is built using the Resend API, which provides a reliable and scalable solution for managing subscriptions and sending emails.
 - Sometimes, the emails may end up in the spam folder, so users should check their spam folder if they don't see the emails in their inbox.
+
+---
+
+## Article Q&A Feature
+
+The article Q&A feature allows users to ask questions about specific articles and receive AI-generated answers. This feature is integrated into the frontend and backend, providing a seamless experience for users.
+
+The AI will have access to the article content and will use RAG to generate answers based on the information provided in the article. This feature is designed to enhance user engagement and provide quick answers to common questions.
+
+### Features (Article Q&A)
+
+- **Ask Questions:** Users can ask questions about specific articles directly from the article detail page.
+- **AI-Generated Answers:** The AI will generate answers based on the content of the article, providing users with relevant information.
+- **User-Friendly Interface:** The Q&A feature is integrated into the article detail page, making it easy for users to ask questions and receive answers without navigating away from the content.
+- **RAG Integration:** The AI will use RAG (Retrieval-Augmented Generation) to provide accurate and contextually relevant answers based on the article content.
+- **Real-Time Responses:** Users will receive answers in real-time, enhancing the overall user experience and engagement with the content.
+
+### Prerequisites & Installation (Article Q&A)
+
+> Note: This feature is integrated into the existing backend and frontend, so you don't need to set up anything separately.
+
+1. **Prerequisites:** Ensure that you have the backend and frontend set up as described above.
+2. **Install Dependencies:** Make sure you have the necessary dependencies installed in both the backend and frontend directories. You can run `npm install` in the root directory to install dependencies for all components.
+3. **Configure Environment Variables:** Ensure that you have the necessary environment variables set up in your `.env` file. This includes the Google AI API key and any other required variables.
+4. **Deploy the Backend:** If you haven't already, deploy the backend to Vercel using `vercel --prod` in the backend directory. Or, just run locally with `npm run dev`.
+5. **Deploy the Frontend:** If you haven't already, deploy the frontend to Vercel using `vercel --prod` in the frontend directory. Or, just run locally with `npm run dev`.
+6. **Test the Feature:** Once everything is set up, you can test the article Q&A feature by navigating to an article detail page of an article and asking questions. The AI will generate answers based on the content of the article.
+7. **That's it!** The article Q&A feature is now integrated into the existing system, providing users with an enhanced experience and quick access to information.
 
 ---
 
@@ -740,6 +786,72 @@ With `aicc` in your toolbox, you can develop, build, run, lint, crawl, and manag
 
 ---
 
+## Shell Scripts & Makefile
+
+The project includes several shell scripts and a Makefile to simplify common tasks. These scripts are located in the `scripts` directory and can be executed directly from the command line.
+
+### Shell Scripts
+
+Various shell scripts are provided for tasks such as:
+
+- Starting the backend or frontend
+- Running the crawler
+- Building the project
+- Running tests
+- Deploying to Vercel
+- and more...
+
+These scripts are designed to be easy to use and can be executed with a simple command.
+Visit the `shell` directory for more details on each script.
+
+To run a shell script, use the following command:
+
+```bash
+chmod +x scripts/<script_name>.sh
+./scripts/<script_name>.sh
+```
+
+#### `daily.sh` Script in Root Directory
+
+The `daily.sh` script is a shell script that automates the process of running the crawler and sending out the newsletter.
+It is designed to be run daily, and it performs the following tasks:
+
+- Runs the crawler to fetch the latest articles.
+- Processes the articles and generates summaries.
+- Cleanups any temporary files or artifacts, as well as dirty/corrupted articles.
+- Sends out the newsletter to subscribers with the latest articles.
+- Performs any other necessary tasks related to the daily operation of the application.
+
+To run the `daily.sh` script, use the following command:
+
+```bash
+chmod +x daily.sh
+./daily.sh
+```
+
+Please ensure that you have the necessary permissions and environment variables set up before running the script.
+
+### Makefile
+
+The Makefile provides a convenient way to run common tasks using the `make` command. It includes targets for building, testing, and deploying the project.
+
+To use the Makefile, navigate to the project root directory and run:
+
+```bash
+make <target>
+```
+
+#### Example Makefile Targets
+
+| Target         | Description                                |
+| -------------- | ------------------------------------------ |
+| `bootstrap`    | Install dependencies for all packages      |
+| `clean`        | Remove build artifacts and temporary files |
+| `deps`         | Install dependencies for all packages      |
+| `dev:frontend` | Start the frontend in development mode     |
+| `dev:backend`  | Start the backend in development mode      |
+| and more...    |                                            |
+
 ## Contributing
 
 1. **Fork** the repository and clone it locally.
@@ -855,6 +967,7 @@ If you have any questions or suggestions, feel free to reach out to me:
   - [LinkedIn](https://www.linkedin.com/in/hoangsonw/)
   - [GitHub](https://github.com/hoangsonww)
   - [Email](mailto:hoangson091104@gmail.com)
+  - [Website](https://sonnguyenhoang.com/)
 
 A new development team might be formed to continue the project, so please check back for updates!
 
@@ -862,10 +975,14 @@ A new development team might be formed to continue the project, so please check 
 
 ## Conclusion
 
-The **AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.
+The **AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler,
+a newsletter service, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies
+like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member
+or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.
 
 ---
 
+Thank you for exploring this project! If you have any questions, suggestions, or contributions, feel free to reach out. Your feedback is invaluable in making this project even better.
 Cheers to a more informed world! 🚀
 
 **[🔝 Back to Top](#ai-powered-article-content-curator)**

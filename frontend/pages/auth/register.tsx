@@ -30,8 +30,8 @@ export default function Register() {
     try {
       await registerUser(name, email, password);
       setMessage("");
-      toast("Registration successful! 🔓");
-      router.push("/api/users/");
+      toast("Registration successful! Please log in 🔓");
+      router.push("/auth/login");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred",

@@ -7,14 +7,24 @@ import crypto from "crypto";
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 const JWT_EXPIRES_IN = "72h"; // 3 days
 
-// Helper to generate JWT token
+/**
+ * Generate a JWT token for the user
+ *
+ * @param user The user object
+ * @return The generated JWT token
+ */
 const generateToken = (user: IUser) => {
   return jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   });
 };
 
-// Register a new user
+/**
+ * Register a new user
+ *
+ * @param req The request object containing user details
+ * @param res The response object to send the token and user info
+ */
 export const register = async (req: Request, res: Response) => {
   const { email, password, name } = req.body;
   try {
@@ -53,7 +63,12 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-// Log in user
+/**
+ * Login user - authenticate and generate a token
+ *
+ * @param req The request object containing user credentials
+ * @param res The response object to send the token and user info
+ */
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
@@ -81,7 +96,12 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// Verify email
+/**
+ * Verify user email address - check if email is valid and token matches
+ *
+ * @param req The request object containing email and token
+ * @param res The response object to send the verification status
+ */
 export const verifyEmail = async (req: Request, res: Response) => {
   const { email, token } = req.query;
   if (!email || !token)
@@ -102,7 +122,12 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
-// Request password reset
+/**
+ * Reset password request - generate a reset token
+ *
+ * @param req The request object containing user email
+ * @param res The response object to send the reset token
+ */
 export const resetPasswordRequest = async (req: Request, res: Response) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
@@ -122,7 +147,12 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
   }
 };
 
-// Confirm password reset
+/**
+ * Confirm reset password - update the user's password
+ *
+ * @param req The request object containing email, token, and new password
+ * @param res The response object to send the status of the password reset
+ */
 export const confirmResetPassword = async (req: Request, res: Response) => {
   const { email, token, newPassword } = req.body;
   if (!email || !token || !newPassword)

@@ -31,7 +31,7 @@ const generationConfig: GenerationConfig = {
   temperature: 0.7,
   topP: 0.9,
   topK: 40,
-  maxOutputTokens: 256,
+  maxOutputTokens: 1024,
 };
 
 const safetySettings = [
@@ -56,10 +56,21 @@ const safetySettings = [
 const MAX_CONTENT_CHARS = 2_000;
 
 /* ── helpers ── */
+
+/**
+ * Create a prompt for the AI model.
+ *
+ * @param text - The text to extract topics from.
+ */
 const makePrompt = (text: string) =>
   `Extract 5‑10 concise topics from the following text. ` +
   `Return as a comma‑separated list (no quotes/brackets):\n\n${text}`;
 
+/**
+ * Clean and deduplicate a string.
+ *
+ * @param s - The string to clean.
+ */
 const clean = (s: string) =>
   Array.from(
     new Set(
@@ -70,13 +81,28 @@ const clean = (s: string) =>
     ),
   );
 
+/**
+ * Check if the error is a rate limit or quota exceeded error.
+ *
+ * @param e - The error object to check.
+ */
 const isRate = (e: any) =>
   e?.status === 429 || /quota|rate/i.test(e?.message || "");
+
+/**
+ * Check if the error is a server overload or unavailable error.
+ *
+ * @param e - The error object to check.
+ */
 const isOverload = (e: any) =>
   e?.status === 503 || /overload|unavailable/i.test(e?.message || "");
 
-/* ──────────────────────────── EXPORT ──────────────────────────── */
-
+/**
+ * Extract topics from a given text using Google Generative AI.
+ *
+ * @param raw - The raw text to extract topics from.
+ * @returns A promise that resolves to an array of extracted topics.
+ */
 export async function extractTopics(raw: string): Promise<string[]> {
   const content =
     raw.length > MAX_CONTENT_CHARS

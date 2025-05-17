@@ -70,8 +70,36 @@ const STATIC_EXT_RE =
   /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|eot|ttf|otf|json|webmanifest|xml|rss|atom|mp4|mpeg|mov|zip|gz|pdf)(\?|$)/i;
 
 /* ─────────── helpers ─────────── */
+
+/**
+ * Sleep for a given number of milliseconds.
+ *
+ * @param ms - The number of milliseconds to sleep.
+ */
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Convert a Date object to an ISO 8601 string.
+ *
+ * @param d - The Date object to convert.
+ */
 const iso = (d: Date) => d.toISOString().split(".")[0] + "Z";
+
+/**
+ * Derives a title from the raw title and body text.
+ *
+ * @param rawTitle - The raw title of the article.
+ * @param body - The body text of the article.
+ */
+function deriveTitle(rawTitle: string, body: string): string {
+  const clean = rawTitle?.trim() ?? "";
+  if (clean) return clean;
+
+  const firstSentence =
+    body.match(/(.{10,120}?[.!?])\s/)?.[1]?.trim() ?? body.slice(0, 80).trim();
+
+  return firstSentence.replace(/\s+/g, " ");
+}
 
 /* ─────────── Gemini helpers (unchanged logic) ─────────── */
 const AI_KEYS = [
@@ -87,6 +115,13 @@ const AI_MODELS = [
 ];
 const AI_RETRIES = 2;
 
+/**
+ * Generates content using the Gemini model.
+ *
+ * @param prompt - The prompt to generate content for.
+ * @param system - The system instruction for the model.
+ * @param maxOut - The maximum output tokens.
+ */
 async function gemini(
   prompt: string,
   system: string,
@@ -123,8 +158,20 @@ async function gemini(
     }
   return "";
 }
+
+/**
+ * Summarizes the given text using the Gemini model.
+ *
+ * @param txt - The text to summarize.
+ */
 const summarizeAI = (txt: string) =>
-  gemini(`Summarize:\n${txt.slice(0, 5000)}`, AI_INSTRUCTIONS, 1024);
+  gemini(`Summarize:\n${txt.slice(0, 5000)}`, AI_INSTRUCTIONS, 8192);
+
+/**
+ * Generates topics for the given text using the Gemini model.
+ *
+ * @param txt - The text to generate topics for.
+ */
 const topicsAI = async (txt: string) =>
   gemini(
     `Give 5‑10 concise topics (comma‑separated, no quotes) for:\n${txt.slice(
@@ -145,30 +192,49 @@ const topicsAI = async (txt: string) =>
   );
 
 /* ─────────── Fetch helpers ─────────── */
+
+/**
+ * Fetches static content from a given URL.
+ *
+ * @param url - The URL to fetch content from.
+ */
 async function fetchStatic(url: string) {
   const { data } = await axios.get(url, { timeout: STATIC_TIMEOUT_MS });
-  const title = (data.match(/<title[^>]*>(.*?)<\/title>/i)?.[1] ?? "").trim();
+  const rawTitle = data.match(/<title[^>]*>(.*?)<\/title>/i)?.[1] ?? "";
   const text = data
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<\/?[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+  const title = deriveTitle(rawTitle, text);
   return { title, content: text };
 }
+
+/**
+ * Fetches dynamic content from a given URL using Puppeteer.
+ *
+ * @param url - The URL to fetch content from.
+ * @param browser - The Puppeteer browser instance.
+ */
 async function fetchDynamic(url: string, browser: Browser) {
   const p = await browser.newPage();
   await p.goto(url, {
     timeout: BROWSER_TIMEOUT,
     waitUntil: "domcontentloaded",
   });
-  const title = await p.title();
+  const rawTitle = await p.title();
   const content = await p.evaluate(() => document.body.innerText);
   await p.close();
+  const title = deriveTitle(rawTitle, content);
   return { title, content };
 }
 
-/* ─────────── crawl helper ─────────── */
+/**
+ * Crawls a homepage for links to articles.
+ *
+ * @param u - The URL of the homepage to crawl.
+ */
 async function crawlHomepage(u: string): Promise<string[]> {
   const queue = [u];
   const seen = new Set<string>();
@@ -200,6 +266,13 @@ async function crawlHomepage(u: string): Promise<string[]> {
 
 /* ─────────── ingest ─────────── */
 const working = new Set<string>();
+
+/**
+ * Ingests an article from a given URL.
+ *
+ * @param url - The URL of the article to ingest.
+ * @param browser - The Puppeteer browser instance.
+ */
 async function ingest(url: string, browser: Browser) {
   if (
     working.has(url) ||
@@ -246,6 +319,12 @@ async function ingest(url: string, browser: Browser) {
 }
 
 /* ─────────── NewsAPI iterator (back‑fill, key rotation) ─────────── */
+
+/**
+ * An async generator that fetches articles from the NewsAPI.
+ *
+ * @returns An async generator yielding article URLs.
+ */
 async function* newsApiIterator(): AsyncGenerator<{ url: string }, void, void> {
   let to = new Date(); // walk back from "now"
   let keyIdx = 0;
@@ -311,7 +390,9 @@ async function* newsApiIterator(): AsyncGenerator<{ url: string }, void, void> {
   }
 }
 
-/* ─────────── infinite back‑fill loop ─────────── */
+/**
+ * Main function to connect to MongoDB, launch Puppeteer, and start the ingestion loop.
+ */
 async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log("Mongo connected");
@@ -352,6 +433,7 @@ async function main() {
   }
 }
 
+// Execute the main function
 main().catch((e) => {
   console.error(e);
   process.exit(1);
