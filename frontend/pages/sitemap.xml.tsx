@@ -41,11 +41,11 @@ export const getServerSideProps: GetServerSideProps = async ({
     urlEntries += articles
       .map(
         (article) => `<url>
-  <loc>${SITE_URL}/articles/${article._id}</loc>
-  <lastmod>${new Date(article.fetchedAt).toISOString()}</lastmod>
-  <changefreq>daily</changefreq>
-  <priority>1.0</priority>
-</url>`
+          <loc>${SITE_URL}/articles/${article._id}</loc>
+          <lastmod>${new Date(article.fetchedAt).toISOString()}</lastmod>
+          <changefreq>daily</changefreq>
+          <priority>1.0</priority>
+        </url>`
       )
       .join("");
 
