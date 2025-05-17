@@ -1,11 +1,12 @@
-import Link from "next/link";
-import { Article } from "../pages";
 import React, { useState, useEffect } from "react";
-import {
-  MdOutlineArrowForwardIos,
-  MdFavorite,
-  MdFavoriteBorder,
-} from "react-icons/md";
+import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+import { MdOutlineArrowForwardIos, MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import { Article } from "../pages";
 import {
   fetchFavoriteArticleIds,
   toggleFavoriteArticle,
@@ -58,8 +59,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   };
 
   let articleTitle = article.title;
-
-  if (article.title.length == 0 || !article.title || article.title === " ") {
+  if (!articleTitle || articleTitle.trim() === "") {
     articleTitle = "Article Title Unavailable";
   }
 
@@ -69,7 +69,17 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       style={{ position: "relative" }}
     >
       <h2 className="article-title">{articleTitle}</h2>
-      {article.summary && <p className="article-summary">{article.summary}</p>}
+
+      {article.summary && (
+        <div className="article-summary">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          >
+            {article.summary}
+          </ReactMarkdown>
+        </div>
+      )}
 
       {/* ✅ Clickable Source Link */}
       <p className="article-source">
