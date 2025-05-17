@@ -285,6 +285,97 @@ export default function Chatbot({ article }: { article: Article }) {
                                     rel="noopener noreferrer"
                                   />
                                 ),
+                                p: ({ node, ...props }) => (
+                                  <p style={{ margin: "0", lineHeight: "1.5" }} {...props} />
+                                ),
+                                ul: ({ node, ...props }) => (
+                                  <ul
+                                    style={{
+                                      paddingLeft: "1.5em",
+                                      margin: 0,
+                                      paddingTop: 0,
+                                      paddingBottom: 0,
+                                      listStylePosition: "inside",
+                                      lineHeight: "1.4",
+                                    }}
+                                    {...props}
+                                  />
+                                ),
+                                ol: ({ node, ...props }) => (
+                                  <ol
+                                    style={{
+                                      paddingLeft: "1.5em",
+                                      margin: 0,
+                                      paddingTop: 0,
+                                      paddingBottom: 0,
+                                      listStylePosition: "inside",
+                                      lineHeight: "1.4",
+                                    }}
+                                    {...props}
+                                  />
+                                ),
+                                li: ({ node, ...props }) => (
+                                  <li
+                                    style={{ margin: 0, padding: 0, lineHeight: "1.4" }}
+                                    {...props}
+                                  />
+                                ),
+                                table: ({ node, ...props }) => (
+                                  <div style={{ overflowX: "auto", margin: 0 }}>
+                                    <table
+                                      style={{ width: "100%", borderCollapse: "collapse" }}
+                                      {...props}
+                                    />
+                                  </div>
+                                ),
+                                th: ({ node, ...props }) => (
+                                  <th
+                                    style={{
+                                      border: "1px solid #ccc",
+                                      padding: "0.5em",
+                                      textAlign: "left",
+                                    }}
+                                    {...props}
+                                  />
+                                ),
+                                td: ({ node, ...props }) => (
+                                  <td
+                                    style={{ border: "1px solid #ccc", padding: "0.5em" }}
+                                    {...props}
+                                  />
+                                ),
+                                pre: ({ node, ...props }) => (
+                                  <pre
+                                    style={{
+                                      background: "#f6f8fa",
+                                      padding: "1em",
+                                      margin: 0,
+                                      borderRadius: "4px",
+                                      overflowX: "auto",
+                                    }}
+                                    {...props}
+                                  />
+                                ),
+                                code: ({ node, inline, className, children, ...rest }: any) =>
+                                  inline ? (
+                                    <code
+                                      style={{
+                                        background: "#f6f8fa",
+                                        padding: "0.2em 0.4em",
+                                        borderRadius: "4px",
+                                        fontSize: "0.95em",
+                                        lineHeight: "1.4",
+                                      }}
+                                      className={className}
+                                      {...rest}
+                                    >
+                                      {children}
+                                    </code>
+                                  ) : (
+                                    <code className={className} {...rest}>
+                                      {children}
+                                    </code>
+                                  ),
                               }}
                             >
                               {m.text}
