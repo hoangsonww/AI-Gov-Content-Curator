@@ -6,29 +6,49 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://ai-article-curator.vercel.app";
 const PAGE_LIMIT = 50000; // Maximum URLs per sitemap page
 
+const STATIC_URLS = [
+  `${SITE_URL}/`,
+  `${SITE_URL}/auth/login`,
+  `${SITE_URL}/auth/register`,
+  `${SITE_URL}/auth/reset-password`,
+  `${SITE_URL}/favorites/favorites`,
+];
+
 export const getServerSideProps: GetServerSideProps = async ({
-  query,
-  res,
-}) => {
-  // Check if a "page" parameter exists – if yes, output that paginated sitemap.
+                                                               query,
+                                                               res,
+                                                             }) => {
   const pageParam = query.page;
   if (pageParam) {
     const page = parseInt(pageParam as string, 10) || 1;
+
+    // On page 1, include both static URLs and first batch of articles.
+    let urlEntries = "";
+    if (page === 1) {
+      urlEntries += STATIC_URLS.map(
+        (url) => `<url>
+  <loc>${url}</loc>
+  <changefreq>daily</changefreq>
+  <priority>1.0</priority>
+</url>`
+      ).join("");
+    }
+
     const articles: Article[] = await getArticles(page, PAGE_LIMIT);
-    const articlesXml = articles
+    urlEntries += articles
       .map(
         (article) => `<url>
   <loc>${SITE_URL}/articles/${article._id}</loc>
   <lastmod>${new Date(article.fetchedAt).toISOString()}</lastmod>
   <changefreq>daily</changefreq>
   <priority>0.8</priority>
-</url>`,
+</url>`
       )
       .join("");
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${articlesXml}
+${urlEntries}
 </urlset>`;
 
     res.setHeader("Content-Type", "application/xml");
@@ -36,42 +56,20 @@ ${articlesXml}
     res.end();
     return { props: {} };
   } else {
-    // No page parameter – generate a sitemap index.
+    // Generate a sitemap index that only points at the paginated sitemap pages
     const totalArticles = await getTotalArticles();
     const total = totalArticles || 0;
     const totalPages = Math.ceil(total / PAGE_LIMIT);
-
-    // List your static routes.
-    const staticUrls = [
-      `${SITE_URL}/`,
-      `${SITE_URL}/auth/login`,
-      `${SITE_URL}/auth/register`,
-      `${SITE_URL}/auth/reset-password`,
-      `${SITE_URL}/favorites/favorites`,
-    ];
-
-    const staticXml = staticUrls
-      .map(
-        (url) => `<sitemap>
-  <loc>${url}</loc>
-  <changefreq>daily</changefreq>
-  <priority>1</priority>
-</sitemap>`,
-      )
-      .join("");
 
     const paginatedXml = Array.from({ length: totalPages }, (_, i) => {
       const page = i + 1;
       return `<sitemap>
   <loc>${SITE_URL}/sitemap.xml?page=${page}</loc>
-  <changefreq>daily</changefreq>
-  <priority>0.7</priority>
 </sitemap>`;
     }).join("");
 
     const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticXml}
 ${paginatedXml}
 </sitemapindex>`;
 
