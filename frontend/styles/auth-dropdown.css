@@ -46,7 +46,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem !important;
   text-decoration: none;
   color: var(--text-color);
   transition: background-color 0.2s ease;
@@ -87,4 +87,24 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.auth-toggle-btn.active-icon {
+  border-bottom: 2px solid var(--accent-color);
+  border-radius: 0;
+}
+
+.auth-option {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+.auth-option:hover {
+  background-color: var(--hover-bg);
+}
+
+.active-auth-option {
+  border-left: 4px solid var(--accent-color);
 }

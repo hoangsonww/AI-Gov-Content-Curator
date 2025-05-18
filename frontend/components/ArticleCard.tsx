@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import {
@@ -26,6 +25,7 @@ interface ArticleCardProps {
 export default function ArticleCard({ article }: ArticleCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [favLoading, setFavLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -35,25 +35,34 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     }
     setIsLoggedIn(true);
 
-    (async () => {
+    const loadFavorites = async () => {
+      setFavLoading(true);
       try {
         const favorites = await fetchFavoriteArticleIds(token);
         setIsFavorited(favorites.includes(article._id));
       } catch (error) {
         console.error("Error loading favorites", error);
+      } finally {
+        setFavLoading(false);
       }
-    })();
+    };
+
+    loadFavorites();
   }, [article._id]);
 
   const handleFavorite = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    setFavLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
       await toggleFavoriteArticle(token, article._id);
       setIsFavorited((prev) => !prev);
       toast(`Article ${isFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
     } catch (err) {
       console.error("Error toggling favorite", err);
+      toast.error("Error toggling favorite");
+    } finally {
+      setFavLoading(false);
     }
   };
 
@@ -70,7 +79,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         {article.summary && (
           <div className="article-summary">
             <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath]}
+              remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeKatex]}
               components={{
                 ul: ({ node, ...props }) => (
@@ -177,16 +186,19 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             className="favorite-btn"
             onClick={handleFavorite}
             aria-label="Favorite Article"
+            disabled={favLoading}
             style={{
               background: "none",
               border: "none",
               position: "absolute",
               top: "8px",
               right: "8px",
-              cursor: "pointer",
+              cursor: favLoading ? "default" : "pointer",
             }}
           >
-            {isFavorited ? (
+            {favLoading ? (
+              <div className="fav-spinner" />
+            ) : isFavorited ? (
               <MdFavorite size={20} color="#e74c3c" />
             ) : (
               <MdFavoriteBorder size={20} />
@@ -194,6 +206,23 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           </button>
         )}
       </div>
+
+      {/* Spinner styles */}
+      <style jsx>{`
+        .fav-spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid #ccc;
+          border-top-color: #333;
+          border-radius: 50%;
+          animation: fav-spin 0.6s linear infinite;
+        }
+        @keyframes fav-spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </>
   );
 }

@@ -41,25 +41,31 @@ export default function FavoritesPage() {
       <Head>
         <title>Article Curator - My Favorite Articles</title>
       </Head>
+
       <div className="favorites-container">
         <h1 className="favorites-title">My Favorite Articles ⭐️</h1>
 
-        {loading ? (
-          <p className="loading-msg">Loading favorites...</p>
-        ) : !isLoggedIn ? (
+        {loading && (
+          <div className="loading-indicator" aria-label="Loading favorites" />
+        )}
+
+        {!loading && !isLoggedIn && (
           <div className="not-logged-in">
             <p style={{ textAlign: "center" }}>
               Please <Link href="/auth/login">sign in</Link> to view your
               favorite articles.
             </p>
           </div>
-        ) : favoriteArticles.length === 0 ? (
+        )}
+
+        {!loading && isLoggedIn && favoriteArticles.length === 0 && (
           <p className="no-favorites">
             You have not favorited any articles yet.
           </p>
-        ) : (
+        )}
+
+        {!loading && isLoggedIn && favoriteArticles.length > 0 && (
           <>
-            {/* only render subtitle when there's at least one fav */}
             <p
               className="subtitle fade-down"
               style={{ textAlign: "center", marginBottom: "1.5rem" }}
@@ -81,6 +87,23 @@ export default function FavoritesPage() {
           </Link>
         </div>
       </div>
+
+      <style jsx>{`
+        .loading-indicator {
+          width: 32px;
+          height: 32px;
+          margin: 1.5rem auto;
+          border: 4px solid #e0e0e0;
+          border-top-color: #333;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </>
   );
 }

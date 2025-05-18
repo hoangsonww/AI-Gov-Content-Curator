@@ -53,8 +53,9 @@ export default function Custom404() {
           color: var(--text-color);
           font-family: "Inter", sans-serif;
           transition:
-            background 0.4s ease,
-            color 0.4s ease;
+            background 0.2s ease,
+            background-color 0s ease,
+            color 0.2s ease;
         }
 
         .icon-wrapper {
@@ -83,6 +84,8 @@ export default function Custom404() {
           background-color: var(--accent-color);
           color: white;
           padding: 0.75rem 1.5rem;
+          width: auto;
+          white-space: nowrap;
           border-radius: 8px;
           font-weight: 600;
           text-decoration: none;

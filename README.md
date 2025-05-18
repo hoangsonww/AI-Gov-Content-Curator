@@ -222,6 +222,12 @@ This monorepo, microservices architecture is designed to be modular and scalable
 The user interface is built with Next.js and React, providing a modern, mobile-responsive experience.
 Below are some screenshots of the application (some screenshots may be outdated and not reflect the latest UI - visit [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app) for the latest version):
 
+### 0. Landing Page
+
+<p align="center">
+  <img src="frontend/img/landing.png" alt="Landing Page" width="100%">
+</p>
+
 ### 1. Home Page
 
 <p align="center">
@@ -294,13 +300,19 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/reset-password.png" alt="Reset Password" width="100%">
 </p>
 
-### 13. 404 Not Found Page
+### 13. Search Results
+
+<p align="center">
+  <img src="frontend/img/search-results.png" alt="User Profile Page" width="100%">
+</p>
+
+### 14. 404 Not Found Page
 
 <p align="center">
   <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
 </p>
 
-### 14. Daily Newsletter Example
+### 15. Daily Newsletter Email Example
 
 <p align="center">
   <img src="frontend/img/newsletter-example.png" alt="Daily Newsletter Example" width="100%">

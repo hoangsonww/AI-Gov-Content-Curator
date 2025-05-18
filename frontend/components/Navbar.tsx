@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { MdArticle, MdFavorite, MdMailOutline, MdHome } from "react-icons/md";
 import ThemeToggle from "./ThemeToggle";
@@ -15,20 +16,14 @@ interface NavbarProps {
 }
 
 export default function Navbar({ theme, onThemeChange }: NavbarProps) {
-  // Manage which dropdown is open: "theme", "auth", or null.
+  const router = useRouter();
   const [openDropdown, setOpenDropdown] = useState<"theme" | "auth" | null>(
     null,
   );
 
-  // Toggle a dropdown – if already open, close it; if not, close any open dropdown and open this one.
-  const toggleDropdown = (dropdown: "theme" | "auth") => {
+  const toggleDropdown = (dropdown: "theme" | "auth") =>
     setOpenDropdown((prev) => (prev === dropdown ? null : dropdown));
-  };
-
-  // Close any open dropdown.
-  const closeDropdowns = () => {
-    setOpenDropdown(null);
-  };
+  const closeDropdowns = () => setOpenDropdown(null);
 
   return (
     <header className="navbar-container fade-down">
@@ -41,28 +36,39 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
         </Link>
 
         <div className="navbar-right">
-          {/* Home link with home icon */}
           <Link href="/home" legacyBehavior>
-            <a className="home-link" title="Home">
+            <a
+              className={`home-link${
+                router.pathname === "/home" ? " active-link" : ""
+              }`}
+              title="Home"
+            >
               <MdHome size={24} />
             </a>
           </Link>
 
-          {/* Newsletter subscription link */}
           <Link href="/newsletter" legacyBehavior>
-            <a className="newsletter-link" title="Newsletter">
+            <a
+              className={`newsletter-link${
+                router.pathname === "/newsletter" ? " active-link" : ""
+              }`}
+              title="Newsletter"
+            >
               <MailIcon size={24} />
             </a>
           </Link>
 
-          {/* Favorites link */}
           <Link href="/favorites/favorites" legacyBehavior>
-            <a className="favorites-link" title="Favorites">
+            <a
+              className={`favorites-link${
+                router.pathname === "/favorites/favorites" ? " active-link" : ""
+              }`}
+              title="Favorites"
+            >
               <MdFavorite size={24} />
             </a>
           </Link>
 
-          {/* Theme toggle dropdown */}
           <ThemeToggle
             theme={theme}
             onThemeChange={onThemeChange}
@@ -71,7 +77,6 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
             closeOther={closeDropdowns}
           />
 
-          {/* Auth dropdown */}
           <AuthDropdown
             theme={theme}
             onThemeChange={onThemeChange}

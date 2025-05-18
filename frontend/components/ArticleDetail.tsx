@@ -11,6 +11,7 @@ import {
   toggleFavoriteArticle,
 } from "../services/api";
 import { Article } from "../pages/home";
+import { toast } from "react-toastify";
 
 interface ArticleDetailProps {
   article: Article;
@@ -19,33 +20,44 @@ interface ArticleDetailProps {
 export default function ArticleDetail({ article }: ArticleDetailProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       setIsLoggedIn(false);
+      setLoading(false);
       return;
     }
     setIsLoggedIn(true);
+
     (async () => {
       try {
         const favorites = await fetchFavoriteArticleIds(token);
         setIsFavorited(favorites.includes(article._id));
       } catch (error) {
         console.error("Error loading favorites", error);
+        toast.error("Failed to load favorite status");
+      } finally {
+        setLoading(false);
       }
     })();
   }, [article._id]);
 
   const handleFavorite = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
       await toggleFavoriteArticle(token, article._id);
       setIsFavorited((prev) => !prev);
+      toast(`Article ${isFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
     } catch (error) {
       console.error("Error toggling favorite", error);
+      toast.error("Error toggling favorite");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,19 +93,17 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       </p>
       <div className="detail-content">
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkMath]}
+          remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeKatex]}
           components={{
             p: ({ node, ...props }) => (
-              <p style={{ margin: "0", lineHeight: "1.5" }} {...props} />
+              <p style={{ margin: 0, lineHeight: "1.5" }} {...props} />
             ),
             ul: ({ node, ...props }) => (
               <ul
                 style={{
                   paddingLeft: "1.5em",
                   margin: 0,
-                  paddingTop: 0,
-                  paddingBottom: 0,
                   listStylePosition: "inside",
                   lineHeight: "1.4",
                 }}
@@ -105,8 +115,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 style={{
                   paddingLeft: "1.5em",
                   margin: 0,
-                  paddingTop: 0,
-                  paddingBottom: 0,
                   listStylePosition: "inside",
                   lineHeight: "1.4",
                 }}
@@ -114,13 +122,10 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               />
             ),
             li: ({ node, ...props }) => (
-              <li
-                style={{ margin: 0, padding: 0, lineHeight: "1.4" }}
-                {...props}
-              />
+              <li style={{ margin: 0, lineHeight: "1.4" }} {...props} />
             ),
             table: ({ node, ...props }) => (
-              <div style={{ overflowX: "auto", margin: 0 }}>
+              <div style={{ overflowX: "auto" }}>
                 <table
                   style={{ width: "100%", borderCollapse: "collapse" }}
                   {...props}
@@ -196,27 +201,47 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           </div>
         </div>
       )}
+
       {isLoggedIn && (
         <button
           className="favorite-btn"
           onClick={handleFavorite}
           aria-label="Favorite Article"
+          disabled={loading}
           style={{
             background: "none",
             border: "none",
             position: "absolute",
             top: "8px",
             right: "8px",
-            cursor: "pointer",
+            cursor: loading ? "default" : "pointer",
           }}
         >
-          {isFavorited ? (
+          {loading ? (
+            <div className="fav-spinner" />
+          ) : isFavorited ? (
             <MdFavorite size={20} color="#e74c3c" />
           ) : (
             <MdFavoriteBorder size={20} />
           )}
         </button>
       )}
+
+      <style jsx>{`
+        .fav-spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid #ccc;
+          border-top-color: #333;
+          border-radius: 50%;
+          animation: fav-spin 0.6s linear infinite;
+        }
+        @keyframes fav-spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }

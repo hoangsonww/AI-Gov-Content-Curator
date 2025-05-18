@@ -417,7 +417,6 @@ h2 {
   background: var(--hover-bg);
 }
 .faq-list {
-  max-width: 800px;
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -463,55 +462,28 @@ details p {
 }
 
 /* Partners */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
 .partners {
-  padding: 4rem 2rem;
   background: var(--bg-color);
-}
-.partners h2 {
+  padding: 4rem 0;
   text-align: center;
-  margin-bottom: 0.5rem;
-  color: var(--accent-color);
-}
-.partners .section-subtitle {
-  text-align: center;
-  margin-bottom: 2rem;
-  color: var(--text-color);
-  opacity: 0.8;
 }
 .partner-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 2rem;
+  align-items: center;
   justify-items: center;
-  padding: 0 2rem;
+  padding: 0 1rem;
 }
-
-/* Responsive breakpoints */
-@media (max-width: 1200px) {
-  .partner-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-@media (max-width: 900px) {
-  .partner-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-@media (max-width: 600px) {
-  .partner-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 400px) {
-  .partner-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .partner-logo {
   width: 100%;
-  max-width: 200px;
   aspect-ratio: 4 / 1;
+  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;

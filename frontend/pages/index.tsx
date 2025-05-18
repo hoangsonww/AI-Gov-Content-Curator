@@ -140,7 +140,9 @@ export default function LandingPage() {
             </div>
             <div className="scroll-down" onClick={scrollToFeatures}>
               <MdKeyboardArrowDown size={24} />
-              <span className="scroll-text">Scroll Down</span>
+              <span className="scroll-text" style={{ fontSize: 16 }}>
+                Learn More
+              </span>
             </div>
           </div>
         </section>
@@ -390,25 +392,31 @@ export default function LandingPage() {
 
         {/* Partners Section */}
         <section className="partners">
-          <h2>Our Partners</h2>
-          <p className="section-subtitle">Trusted by leading organizations.</p>
-          <div className="partner-grid reveal">
-            {[
-              "White House Briefing Room",
-              "Congress.gov",
-              "BBC News",
-              "The New York Times",
-              "Dallas Morning News",
-              "Houston Chronicle",
-              "State.gov",
-              "NPR",
-              "GovInfo",
-              "USA.gov",
-            ].map((org) => (
-              <div key={org} className="partner-logo">
-                {org}
-              </div>
-            ))}
+          <div className="container">
+            <h2>Our Partners</h2>
+            <p className="section-subtitle">
+              Trusted by leading organizations.
+            </p>
+            <div className="partner-grid">
+              {[
+                "White House Briefing Room",
+                "Congress.gov",
+                "BBC News",
+                "The New York Times",
+                "Dallas Morning News",
+                "Houston Chronicle",
+                "State.gov",
+                "Washington Post",
+                "Austin American-Statesman",
+                "AP News",
+                "USA.gov",
+                "ABC News",
+              ].map((org) => (
+                <div key={org} className="partner-logo">
+                  {org}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -423,7 +431,7 @@ export default function LandingPage() {
               <MdPerson size={32} />
               <h3>Contact the Creator</h3>
               <p>
-                Drop me a line on{" "}
+                Drop me a line directly on{" "}
                 <a href="https://www.linkedin.com/in/hoangsonw/">LinkedIn</a>
               </p>
             </div>

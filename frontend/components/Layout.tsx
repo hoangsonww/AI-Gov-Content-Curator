@@ -10,9 +10,15 @@ interface LayoutProps {
 
 export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}
+    >
       <Navbar theme={theme} onThemeChange={toggleTheme} />
-      <main>{children}</main>
+      <main style={{ flex: 1 }}>{children}</main>
       <Footer />
     </div>
   );
