@@ -1,4 +1,4 @@
-import { Article } from "../pages";
+import { Article } from "../pages/home";
 
 // We may want to set this to an environment variable or another config.
 // For now, we'll keep it hard-coded.
