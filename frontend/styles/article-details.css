@@ -8,7 +8,6 @@
   animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Prevent title overflow — single line with ellipsis */
 .detail-title {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
@@ -121,6 +120,7 @@
   gap: 0.75rem;
   margin: 1.5rem 0;
 }
+
 .action-btn {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -141,11 +141,13 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
 .action-btn.copied {
   border-color: #4bb543;
   background: #e6ffed;
   color: #4bb543;
 }
+
 .action-btn.copied :global(svg) {
   color: #4bb543;
 }
@@ -155,6 +157,7 @@
   margin: 2rem 0;
   text-align: center;
 }
+
 .nav-back a {
   color: var(--accent-color);
   text-decoration: none;
@@ -164,6 +167,7 @@
   align-items: center;
   transition: color 0.2s;
 }
+
 .nav-back a:hover {
   color: var(--text-color);
 }
