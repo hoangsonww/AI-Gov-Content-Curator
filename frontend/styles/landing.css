@@ -227,8 +227,6 @@ h2 {
   border: none;
   line-height: 1;
 }
-
-/* rest unchanged */
 .btn.primary {
   background: linear-gradient(90deg, #0066cc, #45a1ff);
   color: #fff;
@@ -238,7 +236,6 @@ h2 {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
-
 .btn.secondary {
   background: #fff;
   color: var(--accent-color);
@@ -273,13 +270,10 @@ h2 {
   padding: 4rem 2rem;
   background: var(--bg-color);
 }
-
 .feature-grid {
   display: grid;
   gap: 2rem;
   padding: 0 2rem;
-
-  /* On desktop, up to 4 columns */
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   justify-content: center;
 }
