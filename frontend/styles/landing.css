@@ -421,8 +421,6 @@ h2 {
   margin: 0 auto;
   padding: 0 1rem;
 }
-
-/* Smooth expand/collapse and hover */
 details {
   background: var(--card-bg);
   border: 2px solid var(--accent-color);
@@ -434,16 +432,15 @@ details {
     max-height 0.4s ease,
     box-shadow 0.3s ease,
     transform 0.3s ease;
-  max-height: 3.5rem; /* roughly summary height */
+  max-height: 3.5rem;
 }
 details[open] {
-  max-height: 15rem; /* enough to show content */
+  max-height: 15rem;
 }
 details:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
-
 summary {
   font-weight: 600;
   cursor: pointer;
@@ -454,7 +451,6 @@ summary {
 summary::marker {
   display: none;
 }
-
 details[open] summary {
   color: var(--accent-color);
 }
@@ -482,7 +478,6 @@ details p {
   color: var(--text-color);
   opacity: 0.8;
 }
-
 .partner-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
