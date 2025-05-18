@@ -20,7 +20,7 @@ Each component is maintained in its own directory:
   - Live: [https://ai-content-curator-newsletters.vercel.app/](https://ai-content-curator-newsletters.vercel.app/)
 
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
-![Express.js](https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-268?style=flat&logo=express&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-000?style=flat&logo=next.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)
 ![Mongoose](https://img.shields.io/badge/Mongoose-8D99AE?style=flat&logo=mongoose&logoColor=white)
@@ -44,9 +44,10 @@ Each component is maintained in its own directory:
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
 ![Resend](https://img.shields.io/badge/Resend-FF4B00?style=flat&logo=resend&logoColor=white)
+![Nodemailer](https://img.shields.io/badge/Nodemailer-456?style=flat&logo=gmail&logoColor=white)
 ![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat&logo=gnu-bash&logoColor=white)
 ![Makefile](https://img.shields.io/badge/Makefile-000?style=flat&logo=make&logoColor=white)
-![Winston](https://img.shields.io/badge/Winston-000?style=flat&logo=prometheus&logoColor=white)
+![Winston](https://img.shields.io/badge/Winston-350?style=flat&logo=prometheus&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
 > **Note:** This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
@@ -874,6 +875,14 @@ chmod +x install_daily_cron.sh
 ```
 
 This will create a cron job that runs the `daily.sh` script every day at 16:00 (4:00 PM) UTC. You can adjust the timing in the `install_daily_cron.sh` script if needed.
+
+To confirm, run the following command to view your cron jobs:
+
+```bash
+crontab -l
+```
+
+This will display a list of all your cron jobs, including the one you just created for the `daily.sh` script.
 
 > Be sure to keep your computer on and connected to the internet for the cron job to run successfully at the scheduled time!
 

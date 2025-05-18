@@ -63,7 +63,7 @@ h2 {
   background: linear-gradient(135deg, var(--accent-color) 0%, #005bb5 100%);
   color: #fff;
   overflow: hidden;
-  min-height: 80vh;
+  min-height: 84vh;
 }
 /* Ball 1 */
 .hero::before {

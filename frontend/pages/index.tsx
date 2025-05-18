@@ -395,7 +395,7 @@ export default function LandingPage() {
           <div className="container">
             <h2>Our Partners</h2>
             <p className="section-subtitle">
-              Trusted by leading organizations.
+              Where our articles are sourced from.
             </p>
             <div className="partner-grid">
               {[

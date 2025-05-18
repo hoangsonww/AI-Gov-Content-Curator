@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import NewsletterSubscriber from "../models/newsletterSubscriber.model";
 import Article from "../models/article.model";
 import type { Resend as ResendClient } from "resend";
+import { marked } from "marked";
 
 /**
  * Send a newsletter to all subscribers
@@ -56,23 +57,23 @@ export async function sendNewsletter() {
 
     /* ---------- build HTML body ---------- */
     const rows = shown
-      .map(
-        (a, i) => `<tr>
+      .map((a, i) => {
+        // Convert Markdown summary to HTML
+        const summaryHtml = a.summary
+          ? `<div style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#555;">${marked(a.summary)}</div>`
+          : "";
+        return `<tr>
           <td style="padding:16px 24px;border-bottom:1px solid #eee;">
             <a href="${a.url}" style="font-size:16px;font-weight:600;color:#0d6efd;text-decoration:none;">
               ${i + 1}. ${a.title}
             </a>
-            ${
-              a.summary
-                ? `<p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#555;">${a.summary}</p>`
-                : ""
-            }
+            ${summaryHtml}
             <p style="margin:6px 0 0;font-size:12px;color:#999;">
               ${DATE_FMT.format(new Date(a.fetchedAt))} · ${a.source ?? ""}
             </p>
           </td>
-        </tr>`,
-      )
+        </tr>`;
+      })
       .join("");
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>AI Curator</title></head>
@@ -117,7 +118,9 @@ export async function sendNewsletter() {
     const { error } = await resend.emails.send({
       from: RESEND_FROM,
       to: sub.email,
-      subject: `📰 ${shown.length} new article${shown.length > 1 ? "s" : ""} for you`,
+      subject: `📰 ${shown.length} new article${
+        shown.length > 1 ? "s" : ""
+      } for you`,
       html,
       text,
     });
