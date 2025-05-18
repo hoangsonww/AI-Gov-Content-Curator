@@ -1,4 +1,4 @@
-import { Article } from "../pages";
+import { Article } from "../pages/home";
 import ArticleCard from "./ArticleCard";
 
 interface ArticleListProps {

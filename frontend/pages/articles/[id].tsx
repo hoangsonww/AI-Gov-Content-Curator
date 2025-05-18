@@ -1,36 +1,86 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useLayoutEffect,
-} from "react";
-import ReactDOM from "react-dom";
+import React, { useCallback, useState } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import { MdHome, MdContentCopy, MdEmail, MdCheck } from "react-icons/md";
+import { AiOutlineTwitter, AiFillLinkedin } from "react-icons/ai";
+import { FaFacebookF } from "react-icons/fa";
 
-import { Article } from "../index";
+import { Article } from "../home";
 import ArticleDetail from "../../components/ArticleDetail";
-import { getArticleById } from "../../services/api";
 import Chatbot from "../../components/Chatbot";
-import { MdHome } from "react-icons/md";
-
-/* ───────── TYPES ───────── */
+import { getArticleById } from "../../services/api";
 
 interface ArticlePageProps {
   article: Article;
 }
 
-/* ───────── PAGE ───────── */
 export default function ArticlePage({ article }: ArticlePageProps) {
-  let title = `${article.title.split(" ").slice(0, 5).join(" ")}`;
+  const [copied, setCopied] = useState(false);
 
-  if (!title || title.length === 0) {
-    title = "Title not available";
-  }
+  const copyAll = useCallback(() => {
+    const parts = [
+      `Title: ${article.title}`,
+      article.source ? `Source: ${article.source}` : "",
+      article.url ? `URL: ${article.url}` : "",
+      article.summary ? `Summary:\n${article.summary}` : "",
+      article.content ? `Content:\n${article.content}` : "",
+      article.topics?.length ? `Topics: ${article.topics.join(", ")}` : "",
+    ].filter(Boolean);
+    navigator.clipboard.writeText(parts.join("\n\n")).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    });
+  }, [article]);
 
-  const dynamicTitle = `Article Curator – ${title}`;
+  const shareEmail = useCallback(() => {
+    const subject = encodeURIComponent(article.title);
+    const body = encodeURIComponent(
+      `${article.summary || article.content}\n\nRead more at ${
+        typeof window !== "undefined" ? window.location.href : ""
+      }`,
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  }, [article]);
+
+  const shareTwitter = useCallback(() => {
+    const text = encodeURIComponent(
+      `${article.title} – ${article.summary || ""}`,
+    );
+    const url = encodeURIComponent(
+      typeof window !== "undefined" ? window.location.href : "",
+    );
+    window.open(
+      `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      "_blank",
+    );
+  }, [article]);
+
+  const shareLinkedIn = useCallback(() => {
+    const url = encodeURIComponent(
+      typeof window !== "undefined" ? window.location.href : "",
+    );
+    const title = encodeURIComponent(article.title);
+    const summary = encodeURIComponent(article.summary || "");
+    window.open(
+      `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title}&summary=${summary}`,
+      "_blank",
+    );
+  }, [article]);
+
+  const shareFacebook = useCallback(() => {
+    const url = encodeURIComponent(
+      typeof window !== "undefined" ? window.location.href : "",
+    );
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      "_blank",
+    );
+  }, []);
+
+  let titlePreview =
+    article.title.split(" ").slice(0, 5).join(" ") || "Title not available";
+  const dynamicTitle = `Article Curator – ${titlePreview}`;
 
   return (
     <>
@@ -41,8 +91,46 @@ export default function ArticlePage({ article }: ArticlePageProps) {
       <div className="page-wrapper">
         <ArticleDetail article={article} />
 
+        <div className="action-buttons">
+          <button
+            className={`action-btn ${copied ? "copied" : ""}`}
+            onClick={copyAll}
+            title="Copy all article info"
+          >
+            {copied ? <MdCheck size={20} /> : <MdContentCopy size={20} />}
+          </button>
+          <button
+            className="action-btn"
+            onClick={shareEmail}
+            title="Share via Email"
+          >
+            <MdEmail size={20} />
+          </button>
+          <button
+            className="action-btn"
+            onClick={shareTwitter}
+            title="Share on Twitter"
+          >
+            <AiOutlineTwitter size={20} />
+          </button>
+          <button
+            className="action-btn"
+            onClick={shareLinkedIn}
+            title="Share on LinkedIn"
+          >
+            <AiFillLinkedin size={20} />
+          </button>
+          <button
+            className="action-btn"
+            onClick={shareFacebook}
+            title="Share on Facebook"
+          >
+            <FaFacebookF size={20} />
+          </button>
+        </div>
+
         <div className="nav-back">
-          <Link href="/" legacyBehavior>
+          <Link href="/home" legacyBehavior>
             <a>
               <MdHome size={20} />
               Back to Home
@@ -52,30 +140,10 @@ export default function ArticlePage({ article }: ArticlePageProps) {
 
         <Chatbot article={article} />
       </div>
-
-      <style jsx>{`
-        .page-wrapper {
-          position: relative;
-          padding-bottom: 4rem;
-        }
-        .nav-back {
-          margin: 2rem 0;
-          text-align: center;
-        }
-        .nav-back a {
-          color: var(--accent-color);
-          text-decoration: none;
-          font-weight: 600;
-          display: inline-flex;
-          gap: 0.4rem;
-          align-items: center;
-        }
-      `}</style>
     </>
   );
 }
 
-/* ───────── STATIC HELPERS ───────── */
 export const getStaticPaths: GetStaticPaths = async () => ({
   paths: [],
   fallback: "blocking",
@@ -86,11 +154,9 @@ export const getStaticProps: GetStaticProps<ArticlePageProps> = async (ctx) => {
 
   try {
     const article = await getArticleById(id as string);
-    // if API returns null or empty, trigger 404
     if (!article) {
       return { notFound: true, revalidate: 43200 };
     }
-    // use summary as content if present
     if (article.summary) {
       article.content = article.summary;
     }
@@ -99,7 +165,6 @@ export const getStaticProps: GetStaticProps<ArticlePageProps> = async (ctx) => {
       revalidate: 43200, // 12 hours
     };
   } catch {
-    // error fetching → also 404
     return { notFound: true, revalidate: 43200 };
   }
 };

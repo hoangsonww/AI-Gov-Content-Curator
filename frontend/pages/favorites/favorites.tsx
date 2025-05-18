@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
-import { Article } from "../index";
+import { Article } from "../home";
 import ArticleCard from "../../components/ArticleCard";
 import { fetchFavoriteArticles } from "../../services/api";
 
@@ -44,13 +44,6 @@ export default function FavoritesPage() {
       <div className="favorites-container">
         <h1 className="favorites-title">My Favorite Articles ⭐️</h1>
 
-        <p
-          className="subtitle fade-down"
-          style={{ textAlign: "center", marginBottom: "1.5rem" }}
-        >
-          Here are all the articles you've favorited.
-        </p>
-
         {loading ? (
           <p className="loading-msg">Loading favorites...</p>
         ) : !isLoggedIn ? (
@@ -65,15 +58,25 @@ export default function FavoritesPage() {
             You have not favorited any articles yet.
           </p>
         ) : (
-          <div className="article-grid">
-            {favoriteArticles.map((article) => (
-              <ArticleCard key={article._id} article={article} />
-            ))}
-          </div>
+          <>
+            {/* only render subtitle when there's at least one fav */}
+            <p
+              className="subtitle fade-down"
+              style={{ textAlign: "center", marginBottom: "1.5rem" }}
+            >
+              Here are all the articles you’ve favorited.
+            </p>
+
+            <div className="article-grid">
+              {favoriteArticles.map((article) => (
+                <ArticleCard key={article._id} article={article} />
+              ))}
+            </div>
+          </>
         )}
 
         <div className="back-home-container">
-          <Link href="/" className="back-home-link">
+          <Link href="/home" className="back-home-link">
             Back to Home
           </Link>
         </div>

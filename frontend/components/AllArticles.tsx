@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Article } from "../pages";
+import { Article } from "../pages/home";
 import ArticleList from "./ArticleList";
 import { getArticles, getTotalArticles } from "../services/api";
 
@@ -47,15 +47,15 @@ export default function AllArticles() {
 
   return (
     <div style={{ marginTop: "2rem" }}>
-      <h2
+      <h1
+        className="page-title"
         style={{
           fontSize: "2rem",
-          marginBottom: "0.25rem",
           textAlign: "center",
         }}
       >
         All Articles 📚
-      </h2>
+      </h1>
       <p
         className="subtitle fade-down"
         style={{ textAlign: "center", marginBottom: "1.5rem" }}

@@ -3,7 +3,7 @@ import {
   searchArticles as searchArticlesHelper,
   getArticlesByTopic,
 } from "../services/api";
-import { Article } from "../pages";
+import { Article } from "../pages/home";
 import ArticleList from "./ArticleList";
 
 interface ArticleSearchProps {

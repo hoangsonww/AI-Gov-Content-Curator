@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import { MdArticle, MdFavorite, MdMailOutline } from "react-icons/md";
+import { MdArticle, MdFavorite, MdMailOutline, MdHome } from "react-icons/md";
 import ThemeToggle from "./ThemeToggle";
 import AuthDropdown from "./AuthDropdown";
 import { ToastContainer } from "react-toastify";
@@ -41,6 +41,13 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
         </Link>
 
         <div className="navbar-right">
+          {/* Home link with home icon */}
+          <Link href="/home" legacyBehavior>
+            <a className="home-link" title="Home">
+              <MdHome size={24} />
+            </a>
+          </Link>
+
           {/* Newsletter subscription link */}
           <Link href="/newsletter" legacyBehavior>
             <a className="newsletter-link" title="Newsletter">

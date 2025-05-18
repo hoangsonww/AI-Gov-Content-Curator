@@ -21,6 +21,7 @@ import "../styles/clear-btn.css";
 import "../styles/chatbot.css";
 import "../styles/newsletter.css";
 import "../styles/footer.css";
+import "../styles/landing.css";
 import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";
 import { Analytics } from "@vercel/analytics/react";

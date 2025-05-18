@@ -33,7 +33,7 @@ export default function Custom404() {
         <p className="message">
           Oops! We couldn’t find the page you’re looking for.
         </p>
-        <Link href="/" legacyBehavior>
+        <Link href="/home" legacyBehavior>
           <a className="home-link">
             <span>Return Home</span>
             <i className="fas fa-arrow-right"></i>

@@ -863,6 +863,8 @@ chmod +x install_daily_cron.sh
 
 This will create a cron job that runs the `daily.sh` script every day at 16:00 (4:00 PM) UTC. You can adjust the timing in the `install_daily_cron.sh` script if needed.
 
+> Be sure to keep your computer on and connected to the internet for the cron job to run successfully at the scheduled time!
+
 ### Makefile
 
 The Makefile provides a convenient way to run common tasks using the `make` command. It includes targets for building, testing, and deploying the project.

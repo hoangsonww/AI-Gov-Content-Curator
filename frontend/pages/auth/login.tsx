@@ -21,7 +21,7 @@ export default function Login() {
       const data = await loginUser(email, password);
       setMessage("");
       toast("Login successful! 🔐");
-      router.push("/");
+      router.push("/home");
     } catch (err: any) {
       setError(err.message);
       toast("Could not login user. Please try again.");

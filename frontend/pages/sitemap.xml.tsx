@@ -1,6 +1,6 @@
 import { GetServerSideProps } from "next";
 import { getArticles, getTotalArticles } from "../services/api";
-import { Article } from "../pages";
+import { Article } from "./home";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://ai-article-curator.vercel.app";
@@ -8,6 +8,7 @@ const PAGE_LIMIT = 50000; // Maximum URLs per sitemap page
 
 const STATIC_URLS = [
   `${SITE_URL}/`,
+  `${SITE_URL}/home`,
   `${SITE_URL}/auth/login`,
   `${SITE_URL}/auth/register`,
   `${SITE_URL}/auth/reset-password`,

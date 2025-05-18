@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React from "react";
 import Slider from "react-slick";
-import { Article } from "../pages";
+import { Article } from "../pages/home";
 import { MdLibraryBooks } from "react-icons/md";
 
 import "slick-carousel/slick/slick.css";

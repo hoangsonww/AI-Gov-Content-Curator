@@ -10,7 +10,7 @@ import {
   MdFavorite,
   MdFavoriteBorder,
 } from "react-icons/md";
-import { Article } from "../pages";
+import { Article } from "../pages/home";
 import {
   fetchFavoriteArticleIds,
   toggleFavoriteArticle,

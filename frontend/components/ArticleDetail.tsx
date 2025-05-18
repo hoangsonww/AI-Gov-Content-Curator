@@ -10,7 +10,7 @@ import {
   fetchFavoriteArticleIds,
   toggleFavoriteArticle,
 } from "../services/api";
-import { Article } from "../pages";
+import { Article } from "../pages/home";
 
 interface ArticleDetailProps {
   article: Article;
@@ -50,7 +50,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   };
 
   const handleTopicClick = (topic: string) => {
-    router.push(`/?topic=${encodeURIComponent(topic)}`);
+    router.push(`/home?topic=${encodeURIComponent(topic)}`);
   };
 
   const title = article.title?.trim() || "Article Title Unavailable";

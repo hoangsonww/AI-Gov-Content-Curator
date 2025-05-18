@@ -27,6 +27,7 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "sass": "^1.89.0",
     "slick-carousel": "^1.8.1",
     "swr": "^2.3.3"
   },
