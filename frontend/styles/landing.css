@@ -277,14 +277,11 @@ h2 {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   justify-content: center;
 }
-
-/* Ensure exactly one card per row on narrow screens */
 @media (max-width: 600px) {
   .feature-grid {
     grid-template-columns: 1fr;
   }
 }
-
 .feature-card {
   background: var(--card-bg);
   border: 2px solid var(--accent-color);
@@ -295,22 +292,18 @@ h2 {
     transform 0.3s,
     box-shadow 0.3s;
 }
-
 .feature-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
-
 .feature-card svg {
   color: var(--accent-color);
   margin-bottom: 1rem;
 }
-
 .feature-card h3 {
   margin-bottom: 0.5rem;
   font-size: 1.25rem;
 }
-
 .feature-card p {
   color: var(--text-color);
 }
