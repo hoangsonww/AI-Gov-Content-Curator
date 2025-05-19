@@ -20,7 +20,7 @@ FROM node:18-slim
 WORKDIR /app
 
 # Metadata labels
-LABEL org.opencontainers.image.title="newsletters"
+LABEL org.opencontainers.image.title="government-article-curator-newsletter"
 LABEL org.opencontainers.image.version="1.0.0"
 LABEL org.opencontainers.image.description="Daily newsletter service for AI Article Content Curator."
 

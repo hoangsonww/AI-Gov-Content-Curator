@@ -4,7 +4,7 @@ set -euo pipefail
 # ---------------------------------------------
 # Configuration
 # ---------------------------------------------
-IMAGE="ghcr.io/hoangsonww/newsletters:1.0.0"
+IMAGE="ghcr.io/hoangsonww/government-article-curator-newsletter:1.0.0"
 
 : "${GITHUB_ACTOR:?Please export GITHUB_ACTOR=<your GitHub username>}"
 : "${GH_TOKEN:?Please export GH_TOKEN=<your PAT with write:packages>}"
@@ -27,4 +27,4 @@ echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
 echo "📤 Pushing ${IMAGE}"
 docker push "${IMAGE}"
 
-echo "✅ Done! Image available at ghcr.io/hoangsonww/newsletters:1.0.0"
+echo "✅ Done! Image available at ghcr.io/hoangsonww/government-article-curator-newsletter:1.0.0"
