@@ -1,40 +1,32 @@
-# Stage 1: install & build
-FROM node:18-alpine AS builder
+# 1) Builder stage
+FROM node:18-slim AS builder
 WORKDIR /app
 
-# Copy package manifests and lockfile
-COPY package.json package-lock.json tsconfig.json ./
+# Copy manifests
+COPY package.json package-lock.json tsconfig.json jest.config.js ./
 
-# Install all deps
-RUN npm install
+# Copy source code
+COPY models/ models/
+COPY pages/ pages/
+COPY public/ public/
+COPY schedule/ schedule/
+COPY __tests__/ __tests__/
+COPY scripts/ scripts/
 
-# Copy everything else
-COPY . .
+# Install dependencies and build
+RUN npm install && npm run build
 
-# Build Next.js (UI) and compile TS
-RUN npm run build
-RUN npm run build   # ensures schedule/sendNewsletter.ts is compiled to dist/
-
-# Stage 2: production image
-FROM node:18-alpine AS runner
+# 2) Runtime stage
+FROM node:18-slim
 WORKDIR /app
-ENV NODE_ENV=production
 
-# Only production deps
-COPY package.json package-lock.json ./
-RUN npm install --production
+# Metadata labels
+LABEL org.opencontainers.image.title="newsletters"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.description="Daily newsletter service for AI Article Content Curator."
 
-# Copy built output from builder
-COPY --from=builder /app/.next      ./.next
-COPY --from=builder /app/public     ./public
-COPY --from=builder /app/dist       ./dist
-COPY --from=builder /app/models     ./models
-COPY --from=builder /app/schedule   ./schedule
-COPY --from=builder /app/next.config.js ./
+# Copy built artifacts and dependencies
+COPY --from=builder /app ./
 
-EXPOSE 3000
-
-# Default to starting the UI.
-# To send the newsletter, override with:
-#   docker run <image> npm run newsletter
-CMD ["npm", "run", "start"]
+# Default command: send the newsletter
+CMD ["npm", "run", "send"]
