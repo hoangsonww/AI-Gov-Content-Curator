@@ -11,7 +11,6 @@ COPY pages/ pages/
 COPY public/ public/
 COPY schedule/ schedule/
 COPY __tests__/ __tests__/
-COPY scripts/ scripts/
 
 # Install dependencies and build
 RUN npm install && npm run build
