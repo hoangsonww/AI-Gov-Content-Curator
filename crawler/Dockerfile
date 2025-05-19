@@ -1,30 +1,34 @@
-# Stage 1: Build the application
-FROM node:18-alpine AS builder
+# 1) Builder stage
+FROM node:18-slim AS builder
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install
+# Copy manifests
+COPY package.json package-lock.json tsconfig.json jest.config.js ./
 
-# Copy the entire project and build the Next.js app
-COPY . .
-RUN npm run build
+# Copy source code
+COPY pages/ pages/
+COPY models/ models/
+COPY public/ public/
+COPY schedule/ schedule/
+COPY scripts/ scripts/
+COPY services/ services/
+COPY styles/ styles/
+COPY utils/ utils/
 
-# Stage 2: Create the production image
-FROM node:18-alpine
+# Install dependencies and build
+RUN npm install && npm run build
+
+# 2) Runtime stage
+FROM node:18-slim
 WORKDIR /app
 
-# Copy only production dependencies
-COPY package*.json ./
-RUN npm install --production
+# Metadata labels
+LABEL org.opencontainers.image.title="government-article-curator-crawler"
+LABEL org.opencontainers.image.version="1.1.0"
+LABEL org.opencontainers.image.description="A crawler that fetches and summarizes government articles on a schedule, powered by Puppeteer, Google Generative AI, Cheerio, CRON, and more."
 
-# Copy built assets from the builder stage
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
+# Copy the built app and runtime files
+COPY --from=builder /app ./
 
-# Expose the port used by the application
-EXPOSE 3000
-
-# Start the application in production mode
-CMD ["npm", "start"]
+# Default to running the crawler
+CMD ["npm", "run", "crawl"]
