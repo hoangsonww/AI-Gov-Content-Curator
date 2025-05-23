@@ -76,6 +76,7 @@
 }
 .auth-toggle-btn:hover {
   color: var(--accent-color);
+  transform: scale(1);
 }
 .auth-dropdown {
   position: absolute;
