@@ -3,6 +3,8 @@ import { useState } from "react";
 import { MdCheckCircle, MdError, MdMailOutline } from "react-icons/md";
 import { AiOutlineBell } from "react-icons/ai";
 import { MdNotificationsOff } from "react-icons/md";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function NewsletterPage() {
   const [email, setEmail] = useState("");
@@ -30,13 +32,19 @@ export default function NewsletterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.message || "Unknown");
-      setStatus({
-        type: "success",
-        message:
-          action === "subscribe"
-            ? data.message || "Subscribed successfully! 🎉"
-            : data.message || "Unsubscribed successfully.",
-      });
+
+      const successMessage =
+        action === "subscribe"
+          ? data.message || "Subscribed successfully! 🎉"
+          : data.message || "Unsubscribed successfully.";
+
+      setStatus({ type: "success", message: successMessage });
+
+      if (action === "subscribe") {
+        toast.info(
+          "Our newsletter will come from news@sonnguyenhoang.com. Be sure to add it to your contacts or whitelist the email address to ensure you don’t miss our newsletters.",
+        );
+      }
     } catch (err: any) {
       setStatus({ type: "error", message: err.message });
     } finally {

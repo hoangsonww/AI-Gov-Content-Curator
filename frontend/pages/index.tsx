@@ -220,7 +220,7 @@ export default function LandingPage() {
           <h2>Our Numbers</h2>
           <p className="section-subtitle">Numbers that speak for themselves.</p>
           <div className="stats-grid reveal">
-            <CountUp end={1450} label="Articles Curated" delay={200} />
+            <CountUp end={2000} label="Articles Curated" delay={200} />
             <CountUp end={200} label="Sources Integrated" delay={600} />
             <CountUp end={1200} label="Daily Subscribers" delay={1000} />
           </div>

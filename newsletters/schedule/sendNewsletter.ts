@@ -76,13 +76,15 @@ export async function sendNewsletter() {
       })
       .join("");
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>AI Curator</title></head>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>AI Article Curator Newsletter</title></head>
       <body style="margin:0;background:#f5f7fa;font-family:Arial,Helvetica,sans-serif;">
       <table width="100%" cellspacing="0" cellpadding="0" style="padding:20px 0;">
       <tr><td align="center">
         <table width="600" cellspacing="0" cellpadding="0" style="background:#fff;border-radius:8px;overflow:hidden;">
           <tr style="background:#0d6efd;color:#fff;"><td style="padding:24px;text-align:center;font-size:22px;font-weight:700;">
-            AI Article Curator
+            <a href="https://sonnguyenhoang.com" style="color:#fff;text-decoration:none;">
+              AI Article Curator Newsletter
+            </a>
           </td></tr>
           <tr><td style="padding:20px 24px;font-size:15px;color:#333;">
             Hi there 👋 – here are the latest ${shown.length} article(s) since your last digest:
@@ -96,6 +98,10 @@ export async function sendNewsletter() {
               : ""
           }
           <tr><td style="padding:20px 24px;text-align:center;font-size:12px;color:#999;">
+            For the full list of articles, visit our website at <a href="https://ai-article-curator.vercel.app" 
+            style="color:#0d6efd;text-decoration:none;">ai-article-curator.vercel.app</a>.<br>
+          </td></tr>
+          <tr><td style="padding:20px 24px;text-align:center;font-size:12px;color:#999;">
             You’re receiving this because you subscribed on our site.<br>
             ${
               UNSUBSCRIBE_BASE_URL
@@ -104,6 +110,9 @@ export async function sendNewsletter() {
                   )}" style="color:#0d6efd;text-decoration:none;">Unsubscribe</a>`
                 : ""
             }
+          </td></tr>
+          <tr><td style="padding:20px 24px;text-align:center;font-size:12px;color:#999;">
+            Visit our site: <a href="https://sonnguyenhoang.com" style="color:#0d6efd;text-decoration:none;">sonnguyenhoang.com</a>
           </td></tr>
         </table>
       </td></tr></table></body></html>`;

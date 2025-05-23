@@ -16,7 +16,8 @@ const ArticleSchema = new Schema({
   source: String,
   fetchedAt: Date,
 });
-// Avoid OverwriteModelError by reusing existing model if already defined
+
+// Avoids OverwriteModelError by reusing existing model if already defined
 const Article =
   mongoose.models.Article || mongoose.model("Article", ArticleSchema);
 
@@ -54,7 +55,9 @@ function looksBinary(txt = ""): boolean {
 
 /**
  * Connects to Mongo, deletes unmeaningful articles by a series of heuristics,
- * then normalizes odd titles, then disconnects. Logs each phase’s result.
+ * then normalizes odd titles, cleans repeated or garbled suffixes,
+ * strips camel-case concatenated suffixes, then disconnects.
+ * Logs each phase’s result.
  */
 export async function cleanupArticles(): Promise<void> {
   await mongoose.connect(MONGODB_URI);
@@ -80,9 +83,8 @@ export async function cleanupArticles(): Promise<void> {
     const content = ((doc as any).content || "").trim();
     const summary = ((doc as any).summary || "").trim();
 
-    // New: Remove any articles containing embedded iframes or similar tags
-    const hasIframe = /<iframe\b[^>]*>/i.test(content);
-    if (hasIframe) {
+    // Remove any articles containing embedded iframes or similar tags
+    if (/<iframe\b/i.test(content)) {
       toDelete.push((doc as any)._id);
       continue;
     }
@@ -97,32 +99,118 @@ export async function cleanupArticles(): Promise<void> {
       BOILERPLATE_RE.test(content) || BOILERPLATE_RE.test(summary);
 
     if (isUntitled || tooShort || isBinary || isErrorish || isBoiler) {
-      toDelete.push((doc as any)._1);
+      toDelete.push((doc as any)._id);
     }
   }
 
   const { deletedCount: heurDeleted } = toDelete.length
     ? await Article.deleteMany({ _id: { $in: toDelete } })
     : { deletedCount: 0 };
-
   console.log(
     `Phase 2 — removed by content/title heuristics & embeds: ${heurDeleted}`,
   );
 
-  // Phase 3 — Normalize odd titles (leading punctuation/whitespace, etc.)
+  // Phase 3 — Clean repeated title segments (e.g., "TDMNTDMN")
+  const repeaterBulk: any[] = [];
+  const cursor3 = Article.find({}, { _id: 1, title: 1 }).lean().cursor();
+  for await (const doc of cursor3) {
+    const orig = ((doc as any).title || "").trim();
+    const dupMatch = orig.match(/^(.*?)([A-Za-z]{2,})\2$/);
+    if (dupMatch) {
+      const cleaned = (dupMatch[1] + dupMatch[2]).trim();
+      if (cleaned !== orig) {
+        repeaterBulk.push({
+          updateOne: {
+            filter: { _id: (doc as any)._id },
+            update: { $set: { title: cleaned } },
+          },
+        });
+      }
+    }
+  }
+  if (repeaterBulk.length) {
+    const res = await Article.bulkWrite(repeaterBulk);
+    console.log(
+      `Phase 3 — cleaned repeated title segments on ${res.modifiedCount} articles`,
+    );
+  } else {
+    console.log("Phase 3 — no repeated title segments found to clean");
+  }
+
+  // Phase 4 — Strip camel-case concatenated suffixes
+  //    e.g. "…offensiveBritish Broadcasting Corporation"
+  const camelBulk: any[] = [];
+  const cursor4 = Article.find({}, { _id: 1, title: 1 }).lean().cursor();
+  for await (const doc of cursor4) {
+    const orig = ((doc as any).title || "").trim();
+    const idx = orig
+      .split("")
+      .findIndex(
+        (ch: string, i: number) =>
+          i > 0 && /[a-z]/.test(orig[i - 1]) && /[A-Z]/.test(ch),
+      );
+    if (idx > 0) {
+      const cleaned = orig.slice(0, idx).trim();
+      if (cleaned && cleaned !== orig) {
+        camelBulk.push({
+          updateOne: {
+            filter: { _id: (doc as any)._id },
+            update: { $set: { title: cleaned } },
+          },
+        });
+      }
+    }
+  }
+  if (camelBulk.length) {
+    const res = await Article.bulkWrite(camelBulk);
+    console.log(
+      `Phase 4 — stripped camel-case suffixes on ${res.modifiedCount} articles`,
+    );
+  } else {
+    console.log("Phase 4 — no camel-case suffixes found to strip");
+  }
+
+  // Phase 5 — Strip garbled uppercase suffixes (e.g., "NewsTDMN")
+  const suffixBulk: any[] = [];
+  const cursor5 = Article.find({}, { _id: 1, title: 1 }).lean().cursor();
+  const TRAILING_UPPER_RE = /[A-Z]{3,}$/;
+  for await (const doc of cursor5) {
+    const orig = ((doc as any).title || "").trim();
+    if (TRAILING_UPPER_RE.test(orig)) {
+      const cleaned = orig.replace(TRAILING_UPPER_RE, "").trim();
+      if (cleaned && cleaned !== orig) {
+        suffixBulk.push({
+          updateOne: {
+            filter: { _id: (doc as any)._id },
+            update: { $set: { title: cleaned } },
+          },
+        });
+      }
+    }
+  }
+  if (suffixBulk.length) {
+    const res = await Article.bulkWrite(suffixBulk);
+    console.log(
+      `Phase 5 — stripped garbled suffixes on ${res.modifiedCount} articles`,
+    );
+  } else {
+    console.log("Phase 5 — no garbled suffixes found to strip");
+  }
+
+  // Phase 6 — Normalize odd titles (leading punctuation/whitespace)
   const ODD_TITLE_RE = /^[^A-Za-z0-9]+/;
   const bulkOps: any[] = [];
-  const cursor2 = Article.find(
+  const cursor6 = Article.find(
     { title: { $regex: ODD_TITLE_RE } },
     { _id: 1, title: 1 },
   )
     .lean()
     .cursor();
 
-  for await (const doc of cursor2) {
+  for await (const doc of cursor6) {
     const rawTitle = (doc as any).title || "";
     const cleaned = rawTitle.replace(ODD_TITLE_RE, "").trim();
-    if (cleaned && cleaned !== rawTitle) {
+    if (cleaned !== rawTitle) {
       bulkOps.push({
         updateOne: {
           filter: { _id: (doc as any)._id },
@@ -131,14 +219,11 @@ export async function cleanupArticles(): Promise<void> {
       });
     }
   }
-
-  if (bulkOps.length > 0) {
-    const bulkResult = await Article.bulkWrite(bulkOps);
-    console.log(
-      `Phase 3 — normalized titles on ${bulkResult.modifiedCount} articles`,
-    );
+  if (bulkOps.length) {
+    const res = await Article.bulkWrite(bulkOps);
+    console.log(`Phase 6 — normalized titles on ${res.modifiedCount} articles`);
   } else {
-    console.log("Phase 3 — no odd titles found to normalize");
+    console.log("Phase 6 — no odd titles found to normalize");
   }
 
   console.log("🧹 Cleanup complete");
