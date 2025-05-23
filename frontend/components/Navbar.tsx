@@ -89,19 +89,6 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   //   setTimeout(() => window.location.reload(), 1000);
   // };
 
-  const selectTheme = (newTheme: "light" | "dark" | "system") => {
-    localStorage.setItem("theme", newTheme);
-    onThemeChange(newTheme);
-    toast(
-      newTheme === "system"
-        ? `Using System Preference`
-        : `Switched to ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)}`
-    );
-  };
-
-  const authPaths = ["/auth/login", "/auth/register", "/auth/reset-password"];
-  const isAuthRoute = authPaths.includes(router.pathname);
-
   return (
     <header className="navbar-container fade-down">
       <nav className="navbar-content">
