@@ -248,13 +248,9 @@
     border-left: 4px solid var(--accent-color) !important;
     color: var(--accent-color) !important;
   }
-
-  /* panels below toggles */
   .mobile-dropdown-panel {
     background: var(--card-bg) !important;
   }
-
-  /* bottom controls container */
   .mobile-bottom-controls {
     display: flex;
     justify-content: space-around;
@@ -279,8 +275,6 @@
 .mobile-dropdown.closing {
   animation: mobileSlideUp 0.25s ease-in forwards;
 }
-
-/* Ensure box remains invisible pointer‐events disabled while closing */
 .mobile-dropdown.closing {
   pointer-events: none;
 }
