@@ -1,14 +1,10 @@
+/* Navbar Container */
 .navbar-container {
   background-color: var(--navbar-bg);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
 }
 
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
+/* Navbar Content */
 .navbar-content {
   display: flex;
   align-items: center;
@@ -16,26 +12,275 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0.75rem 1rem;
+  position: relative;
 }
 
+/* Brand */
 .brand-link {
   text-decoration: none;
   color: var(--navbar-text);
   display: flex;
   align-items: center;
 }
-
 .brand-link:hover {
   color: var(--accent-color);
 }
-
 .navbar-brand {
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
-
 .brand-text {
   font-size: 1.3rem;
   font-weight: 700;
+}
+
+/* Desktop Nav Links */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--navbar-text);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-link:hover,
+.nav-link.active-link {
+  color: var(--accent-color);
+}
+
+/* Auth Dropdown (Desktop) */
+.auth-dropdown-container {
+  position: relative;
+}
+.auth-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--navbar-text);
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: color 0.2s;
+}
+.auth-toggle-btn:hover {
+  color: var(--accent-color);
+}
+.auth-dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: dropdownFadeSlide 0.3s ease-out forwards;
+  min-width: 150px;
+}
+.auth-section {
+  padding: 0.5rem 1rem;
+}
+.auth-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.95rem;
+  text-align: center;
+}
+.auth-option svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.auth-option:hover {
+  background-color: var(--hover-bg);
+}
+.logout-option {
+  color: #e74c3c;
+}
+.active-auth-option {
+  border-left: 4px solid var(--accent-color);
+}
+
+/* Theme Toggle (Desktop) */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: none;
+  border: none;
+  color: var(--navbar-text);
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.2s;
+  border-radius: 8px;
+}
+.theme-toggle-btn:hover {
+  color: var(--accent-color);
+}
+.theme-dropdown {
+  position: absolute;
+  right: 0;
+  top: 2.8rem;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: dropdownFadeSlide 0.3s ease-out forwards;
+}
+.theme-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: background 0.2s ease, color 0.2s ease;
+  color: var(--text-color);
+}
+.theme-option-btn:hover {
+  background: var(--hover-bg);
+}
+
+/* Dropdown Animation */
+@keyframes dropdownFadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Styles */
+.mobile-dropdown-container {
+  display: none;
+  position: relative;
+}
+.mobile-menu-button {
+  background: none;
+  border: none;
+  color: var(--navbar-text);
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .navbar-right {
+    display: none;
+  }
+  .mobile-dropdown-container {
+    display: block;
+  }
+  .mobile-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
+    z-index: 50;
+    min-width: 200px;
+  }
+
+  /* unify all mobile-link styling */
+  .mobile-link {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    color: var(--navbar-text) !important;
+    text-decoration: none !important;
+    background: none !important;
+    border: none !important;
+    width: 100% !important;
+    transition: background 0.2s, color 0.2s, border-left 0.2s !important;
+    border-left: 4px solid transparent !important;
+    cursor: pointer !important;
+  }
+  .mobile-link:hover {
+    background-color: var(--hover-bg) !important;
+    color: var(--accent-color) !important;
+  }
+  .mobile-link.active-link {
+    border-left: 4px solid var(--accent-color) !important;
+    color: var(--accent-color) !important;
+  }
+
+  /* panels below toggles */
+  .mobile-dropdown-panel {
+    background: var(--card-bg) !important;
+  }
+
+  /* bottom controls container */
+  .mobile-bottom-controls {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--card-border);
+  }
+}
+
+/* Mobile dropdown animations */
+@keyframes mobileSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes mobileSlideUp {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+
+.mobile-dropdown.opening {
+  animation: mobileSlideDown 0.3s ease-out forwards;
+}
+.mobile-dropdown.closing {
+  animation: mobileSlideUp 0.25s ease-in forwards;
+}
+
+/* Ensure box remains invisible pointer‐events disabled while closing */
+.mobile-dropdown.closing {
+  pointer-events: none;
 }
