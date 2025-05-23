@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -14,29 +16,56 @@ interface AuthDropdownProps {
 }
 
 export default function AuthDropdown({
-  theme,
-  onThemeChange,
-  open,
-  toggle,
-  closeOther,
-}: AuthDropdownProps) {
+                                       theme,
+                                       onThemeChange,
+                                       open,
+                                       toggle,
+                                       closeOther,
+                                     }: AuthDropdownProps) {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Poll token validity
+  // Check token validity, retrying up to 5 times on error with exponential backoff
   useEffect(() => {
-    const interval = setInterval(async () => {
+    let cancelled = false;
+
+    async function poll() {
       const token = localStorage.getItem("token");
-      const valid = token ? await validateToken(token) : false;
-      if (!valid) {
-        localStorage.removeItem("token");
-        setIsLoggedIn(false);
+      if (!token) {
+        if (!cancelled) setIsLoggedIn(false);
       } else {
-        setIsLoggedIn(true);
+        let valid = false;
+        // try up to 5 attempts
+        for (let attempt = 0; attempt < 5; attempt++) {
+          try {
+            valid = await validateToken(token);
+            break;
+          } catch (err) {
+            // on error, wait 2^attempt * 500ms
+            const delay = Math.pow(2, attempt) * 500;
+            await new Promise((res) => setTimeout(res, delay));
+          }
+        }
+
+        if (!valid) {
+          localStorage.removeItem("token");
+          if (!cancelled) setIsLoggedIn(false);
+        } else if (!cancelled) {
+          setIsLoggedIn(true);
+        }
       }
-    }, 500);
-    return () => clearInterval(interval);
+
+      if (!cancelled) {
+        // schedule next poll
+        setTimeout(poll, 500);
+      }
+    }
+
+    poll();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Close on outside click
