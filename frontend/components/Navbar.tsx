@@ -74,14 +74,14 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
 
   // Keep auth state fresh
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(token ? await validateToken(token) : false);
-      if (!token) localStorage.removeItem("token");
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
+  // useEffect(() => {
+  //   const interval = setInterval(async () => {
+  //     const token = localStorage.getItem("token");
+  //     setIsLoggedIn(token ? await validateToken(token) : false);
+  //     if (!token) localStorage.removeItem("token");
+  //   }, 500);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const handleLogout = () => {
     toast("Logged out successfully 🚪");
