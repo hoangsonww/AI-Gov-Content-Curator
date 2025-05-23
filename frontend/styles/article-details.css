@@ -11,9 +11,10 @@
 .detail-title {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-wrap: break-word;
 }
 
 .detail-meta {

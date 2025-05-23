@@ -29,9 +29,11 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   const router = useRouter();
 
   // Desktop popovers
-  const [openDropdown, setOpenDropdown] = useState<"theme" | "auth" | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<"theme" | "auth" | null>(
+    null,
+  );
   const toggleDesktop = (which: "theme" | "auth") =>
-    setOpenDropdown(prev => (prev === which ? null : which));
+    setOpenDropdown((prev) => (prev === which ? null : which));
   const closeDesktop = () => setOpenDropdown(null);
 
   // Mobile menu + exit animation
@@ -44,12 +46,12 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   const [mobileAuthOpen, setMobileAuthOpen] = useState(false);
   const toggleMobileTheme = () => {
     setMobileAuthOpen(false);
-    setMobileThemeOpen(o => !o);
+    setMobileThemeOpen((o) => !o);
   };
   const closeMobileTheme = () => setMobileThemeOpen(false);
   const toggleMobileAuth = () => {
     setMobileThemeOpen(false);
-    setMobileAuthOpen(o => !o);
+    setMobileAuthOpen((o) => !o);
   };
   const closeMobileAuth = () => setMobileAuthOpen(false);
 

@@ -6,6 +6,7 @@ import NewsletterSubscriber from "../models/newsletterSubscriber.model";
 import Article from "../models/article.model";
 import type { Resend as ResendClient } from "resend";
 import { marked } from "marked";
+import { cleanupArticles } from "../scripts/cleanData";
 
 /**
  * Send a newsletter to all subscribers
@@ -148,6 +149,11 @@ export async function sendNewsletter() {
     // respect rate limit before next request
     await delay(RATE_LIMIT_DELAY_MS);
   }
+
+  // Cleanup articles
+  console.log("Cleaning up articles...");
+  await cleanupArticles();
+  console.log("Articles cleaned up!");
 
   await mongoose.disconnect();
   console.log("Finished newsletter run");

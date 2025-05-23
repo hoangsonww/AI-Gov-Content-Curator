@@ -64,7 +64,7 @@ function CountUp({
 
   return (
     <div className="stat-card reveal">
-      <span className="stat-number">{count.toLocaleString()}</span>
+      <span className="stat-number">{count.toLocaleString()}+</span>
       <span className="stat-label">{label}</span>
     </div>
   );

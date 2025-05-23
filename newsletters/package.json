@@ -25,7 +25,8 @@
     "newsletter": "npx ts-node --transpile-only schedule/sendNewsletter.ts",
     "send": "node dist/schedule/sendNewsletter.js",
     "test": "jest --coverage",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\"",
+    "clean:articles": "npx ts-node scripts/cleanData.ts"
   },
   "dependencies": {
     "@vercel/node": "^5.1.16",

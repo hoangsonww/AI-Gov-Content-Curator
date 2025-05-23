@@ -132,9 +132,9 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
     // Kick off topArticles immediately
     const topArticlesPromise = getTopArticles();
 
-    // retry for latestArticles
+    // retry for latestArticles with exponential backoff
     const maxAttempts = 5;
-    const delayMs = 1000;
+    const baseDelayMs = 500; // initial delay
     let latestArticles: Article[] = [];
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -151,6 +151,10 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
       }
 
       if (attempt < maxAttempts) {
+        // Exponential backoff with jitter: delay = baseDelayMs * 2^(attempt-1) ± 10%
+        const expDelay = baseDelayMs * 2 ** (attempt - 1);
+        const jitter = expDelay * 0.1;
+        const delayMs = expDelay + (Math.random() * 2 - 1) * jitter;
         await new Promise((res) => setTimeout(res, delayMs));
       }
     }

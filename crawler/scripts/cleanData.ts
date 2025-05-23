@@ -16,7 +16,6 @@ const ArticleSchema = new Schema({
   source: String,
   fetchedAt: Date,
 });
-
 // Avoids OverwriteModelError by reusing existing model if already defined
 const Article =
   mongoose.models.Article || mongoose.model("Article", ArticleSchema);
@@ -28,7 +27,6 @@ if (!MONGODB_URI) {
 }
 
 /* ─────────── Heuristic patterns ─────────── */
-
 /** 1) Non-article URLs (assets, share intents) */
 const STATIC_EXT_RE =
   /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot|otf|json|xml|webmanifest|pdf|zip|gz|mp4|mpeg|mov)(\?|$)/i;
@@ -54,14 +52,19 @@ function looksBinary(txt = ""): boolean {
 }
 
 /**
- * Connects to Mongo, deletes unmeaningful articles by a series of heuristics,
- * then normalizes odd titles, cleans repeated or garbled suffixes,
- * strips camel-case concatenated suffixes, then disconnects.
- * Logs each phase’s result.
+ * Connects to Mongo (if needed), deletes unmeaningful articles by a series
+ * of heuristics, then normalizes odd titles, cleans repeated or garbled
+ * suffixes, strips camel-case concatenated suffixes, then disconnects (only
+ * if it opened the connection). Logs each phase’s result.
  */
 export async function cleanupArticles(): Promise<void> {
-  await mongoose.connect(MONGODB_URI);
-  console.log("✅ MongoDB connected");
+  const alreadyConnected = mongoose.connection.readyState === 1;
+  if (!alreadyConnected) {
+    await mongoose.connect(MONGODB_URI);
+    console.log("✅ MongoDB connected");
+  } else {
+    console.log("🔄 Reusing existing MongoDB connection");
+  }
 
   // Phase 1 — Remove by URL pattern
   const { deletedCount: urlDeleted } = await Article.deleteMany({
@@ -138,7 +141,6 @@ export async function cleanupArticles(): Promise<void> {
   }
 
   // Phase 4 — Strip camel-case concatenated suffixes
-  //    e.g. "…offensiveBritish Broadcasting Corporation"
   const camelBulk: any[] = [];
   const cursor4 = Article.find({}, { _id: 1, title: 1 }).lean().cursor();
   for await (const doc of cursor4) {
@@ -227,8 +229,11 @@ export async function cleanupArticles(): Promise<void> {
   }
 
   console.log("🧹 Cleanup complete");
-  await mongoose.disconnect();
-  console.log("✅ MongoDB disconnected");
+
+  if (!alreadyConnected) {
+    await mongoose.disconnect();
+    console.log("✅ MongoDB disconnected");
+  }
 }
 
 /**

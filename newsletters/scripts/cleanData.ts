@@ -16,7 +16,6 @@ const ArticleSchema = new Schema({
   source: String,
   fetchedAt: Date,
 });
-
 // Avoids OverwriteModelError by reusing existing model if already defined
 const Article =
   mongoose.models.Article || mongoose.model("Article", ArticleSchema);
@@ -54,17 +53,22 @@ function looksBinary(txt = ""): boolean {
 }
 
 /**
- * Connects to Mongo, deletes unmeaningful articles by a series of heuristics,
- * then normalizes odd titles, cleans repeated or garbled suffixes,
- * strips camel-case concatenated suffixes, then disconnects.
- * Logs each phase’s result.
+ * Connects to Mongo (if not already connected), deletes unmeaningful articles
+ * by a series of heuristics, then normalizes odd titles, cleans repeated or
+ * garbled suffixes, strips camel-case concatenated suffixes, then disconnects
+ * if it opened the connection itself. Logs each phase’s result.
  */
 export async function cleanupArticles(): Promise<void> {
-  await mongoose.connect(MONGODB_URI);
-  console.log("✅ MongoDB connected");
+  const alreadyConnected = mongoose.connection.readyState === 1;
+  if (!alreadyConnected) {
+    await mongoose.connect(MONGODB_URI);
+    console.log("✅ MongoDB connected");
+  } else {
+    console.log("🔄 Reusing existing MongoDB connection");
+  }
 
   // Phase 1 — Remove by URL pattern
-  const { deletedCount: urlDeleted } = await Article.deleteMany({
+  const { deletedCount: urlDeleted } = await (Article as any).deleteMany({
     $or: [
       { url: { $regex: STATIC_EXT_RE } },
       { url: { $regex: SHARE_URL_RE } },
@@ -74,7 +78,8 @@ export async function cleanupArticles(): Promise<void> {
 
   // Phase 2 — Stream remaining docs and apply content/title heuristics
   const toDelete: Types.ObjectId[] = [];
-  const cursor = Article.find({}, { _id: 1, title: 1, content: 1, summary: 1 })
+  const cursor = (Article as any)
+    .find({}, { _id: 1, title: 1, content: 1, summary: 1 })
     .lean()
     .cursor();
 
@@ -104,7 +109,7 @@ export async function cleanupArticles(): Promise<void> {
   }
 
   const { deletedCount: heurDeleted } = toDelete.length
-    ? await Article.deleteMany({ _id: { $in: toDelete } })
+    ? await (Article as any).deleteMany({ _id: { $in: toDelete } })
     : { deletedCount: 0 };
   console.log(
     `Phase 2 — removed by content/title heuristics & embeds: ${heurDeleted}`,
@@ -112,7 +117,10 @@ export async function cleanupArticles(): Promise<void> {
 
   // Phase 3 — Clean repeated title segments (e.g., "TDMNTDMN")
   const repeaterBulk: any[] = [];
-  const cursor3 = Article.find({}, { _id: 1, title: 1 }).lean().cursor();
+  const cursor3 = (Article as any)
+    .find({}, { _id: 1, title: 1 })
+    .lean()
+    .cursor();
   for await (const doc of cursor3) {
     const orig = ((doc as any).title || "").trim();
     const dupMatch = orig.match(/^(.*?)([A-Za-z]{2,})\2$/);
@@ -129,7 +137,7 @@ export async function cleanupArticles(): Promise<void> {
     }
   }
   if (repeaterBulk.length) {
-    const res = await Article.bulkWrite(repeaterBulk);
+    const res = await (Article as any).bulkWrite(repeaterBulk);
     console.log(
       `Phase 3 — cleaned repeated title segments on ${res.modifiedCount} articles`,
     );
@@ -138,9 +146,11 @@ export async function cleanupArticles(): Promise<void> {
   }
 
   // Phase 4 — Strip camel-case concatenated suffixes
-  //    e.g. "…offensiveBritish Broadcasting Corporation"
   const camelBulk: any[] = [];
-  const cursor4 = Article.find({}, { _id: 1, title: 1 }).lean().cursor();
+  const cursor4 = (Article as any)
+    .find({}, { _id: 1, title: 1 })
+    .lean()
+    .cursor();
   for await (const doc of cursor4) {
     const orig = ((doc as any).title || "").trim();
     const idx = orig
@@ -162,7 +172,7 @@ export async function cleanupArticles(): Promise<void> {
     }
   }
   if (camelBulk.length) {
-    const res = await Article.bulkWrite(camelBulk);
+    const res = await (Article as any).bulkWrite(camelBulk);
     console.log(
       `Phase 4 — stripped camel-case suffixes on ${res.modifiedCount} articles`,
     );
@@ -172,7 +182,10 @@ export async function cleanupArticles(): Promise<void> {
 
   // Phase 5 — Strip garbled uppercase suffixes (e.g., "NewsTDMN")
   const suffixBulk: any[] = [];
-  const cursor5 = Article.find({}, { _id: 1, title: 1 }).lean().cursor();
+  const cursor5 = (Article as any)
+    .find({}, { _id: 1, title: 1 })
+    .lean()
+    .cursor();
   const TRAILING_UPPER_RE = /[A-Z]{3,}$/;
   for await (const doc of cursor5) {
     const orig = ((doc as any).title || "").trim();
@@ -189,7 +202,7 @@ export async function cleanupArticles(): Promise<void> {
     }
   }
   if (suffixBulk.length) {
-    const res = await Article.bulkWrite(suffixBulk);
+    const res = await (Article as any).bulkWrite(suffixBulk);
     console.log(
       `Phase 5 — stripped garbled suffixes on ${res.modifiedCount} articles`,
     );
@@ -200,10 +213,8 @@ export async function cleanupArticles(): Promise<void> {
   // Phase 6 — Normalize odd titles (leading punctuation/whitespace)
   const ODD_TITLE_RE = /^[^A-Za-z0-9]+/;
   const bulkOps: any[] = [];
-  const cursor6 = Article.find(
-    { title: { $regex: ODD_TITLE_RE } },
-    { _id: 1, title: 1 },
-  )
+  const cursor6 = (Article as any)
+    .find({ title: { $regex: ODD_TITLE_RE } }, { _id: 1, title: 1 })
     .lean()
     .cursor();
 
@@ -220,15 +231,18 @@ export async function cleanupArticles(): Promise<void> {
     }
   }
   if (bulkOps.length) {
-    const res = await Article.bulkWrite(bulkOps);
+    const res = await (Article as any).bulkWrite(bulkOps);
     console.log(`Phase 6 — normalized titles on ${res.modifiedCount} articles`);
   } else {
     console.log("Phase 6 — no odd titles found to normalize");
   }
 
   console.log("🧹 Cleanup complete");
-  await mongoose.disconnect();
-  console.log("✅ MongoDB disconnected");
+
+  if (!alreadyConnected) {
+    await mongoose.disconnect();
+    console.log("✅ MongoDB disconnected");
+  }
 }
 
 /**

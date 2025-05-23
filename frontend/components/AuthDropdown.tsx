@@ -16,12 +16,12 @@ interface AuthDropdownProps {
 }
 
 export default function AuthDropdown({
-                                       theme,
-                                       onThemeChange,
-                                       open,
-                                       toggle,
-                                       closeOther,
-                                     }: AuthDropdownProps) {
+  theme,
+  onThemeChange,
+  open,
+  toggle,
+  closeOther,
+}: AuthDropdownProps) {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
