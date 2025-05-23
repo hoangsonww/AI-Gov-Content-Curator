@@ -91,6 +91,7 @@
 
 .auth-toggle-btn.active-icon {
   border-bottom: 2px solid var(--accent-color);
+  color: var(--accent-color);
   border-radius: 0;
 }
 
