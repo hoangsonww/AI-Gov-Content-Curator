@@ -72,7 +72,6 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [mobileOpen]);
 
-  // Keep auth state fresh
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
   // useEffect(() => {
   //   const interval = setInterval(async () => {
