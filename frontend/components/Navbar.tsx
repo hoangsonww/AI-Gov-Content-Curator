@@ -58,7 +58,6 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
     if (!mobileOpen) return;
     function handleClickOutside(e: MouseEvent) {
       if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) {
-        // trigger closing animation
         setIsClosing(true);
         setTimeout(() => {
           setMobileOpen(false);
