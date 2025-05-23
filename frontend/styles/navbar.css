@@ -200,6 +200,10 @@
   color: var(--navbar-text);
   cursor: pointer;
   padding: 0.25rem;
+  transition: color 0.2s;
+}
+.mobile-menu-button:hover {
+  color: var(--accent-color);
 }
 
 @media (max-width: 768px) {
