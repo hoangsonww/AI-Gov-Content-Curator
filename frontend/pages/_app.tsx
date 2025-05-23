@@ -1,3 +1,5 @@
+// pages/_app.tsx
+"use client";
 import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import "../styles/globals.css";
@@ -26,71 +28,77 @@ import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";
 import { Analytics } from "@vercel/analytics/react";
 
+type ThemeKey = "light" | "dark" | "system";
+
 function App({ Component, pageProps }: AppProps) {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("theme") as
-        | "light"
-        | "dark"
-        | "system"
-        | null;
-      if (stored) {
-        document.documentElement.setAttribute("data-theme", stored);
-        return stored;
-      }
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      const defaultTheme = prefersDark ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", defaultTheme);
-      return defaultTheme;
+  // Initialize theme from localStorage (allowing "system")
+  const [theme, setTheme] = useState<ThemeKey>(() => {
+    if (typeof window === "undefined") return "system";
+    const stored = localStorage.getItem("theme") as ThemeKey | null;
+    // If user explicitly chose "light" or "dark"
+    if (stored === "light" || stored === "dark") {
+      document.documentElement.setAttribute("data-theme", stored);
+      return stored;
     }
+    // Else treat both "system" or no value as system mode
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+    document.documentElement.setAttribute(
+      "data-theme",
+      prefersDark ? "dark" : "light",
+    );
     return "system";
   });
 
-  const [showScroll, setShowScroll] = useState(false);
-
+  // On mount: re-apply saved theme (and OS changes if in "system" mode)
   useEffect(() => {
-    const applyTheme = (selected: "light" | "dark" | "system") => {
+    const applyTheme = (selected: ThemeKey) => {
       if (selected === "system") {
+        setTheme("system");
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)",
         ).matches;
-        const themeToApply = prefersDark ? "dark" : "light";
-        setTheme(themeToApply);
-        document.documentElement.setAttribute("data-theme", themeToApply);
+        document.documentElement.setAttribute(
+          "data-theme",
+          prefersDark ? "dark" : "light",
+        );
       } else {
         setTheme(selected);
         document.documentElement.setAttribute("data-theme", selected);
       }
     };
 
-    const stored = localStorage.getItem("theme") as
-      | "light"
-      | "dark"
-      | "system"
-      | null;
-    if (stored) applyTheme(stored);
+    const stored = localStorage.getItem("theme") as ThemeKey | null;
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      applyTheme(stored);
+    }
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = (e: MediaQueryListEvent) => {
-      if (localStorage.getItem("theme") === "system") applyTheme("system");
+      if (localStorage.getItem("theme") === "system") {
+        document.documentElement.setAttribute(
+          "data-theme",
+          e.matches ? "dark" : "light",
+        );
+      }
     };
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, []);
 
+  // back-to-top button
+  const [showScroll, setShowScroll] = useState(false);
   useEffect(() => {
     const handleScroll = () => setShowScroll(window.scrollY > 300);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleTheme = (selected: "light" | "dark" | "system") => {
+  const toggleTheme = (selected: ThemeKey) => {
     localStorage.setItem("theme", selected);
-    setTheme(selected);
-    document.documentElement.setAttribute("data-theme", selected);
     if (selected === "system") {
+      setTheme("system");
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)",
       ).matches;
@@ -98,6 +106,9 @@ function App({ Component, pageProps }: AppProps) {
         "data-theme",
         prefersDark ? "dark" : "light",
       );
+    } else {
+      setTheme(selected);
+      document.documentElement.setAttribute("data-theme", selected);
     }
   };
 

@@ -29,13 +29,32 @@ export default function ThemeToggle({
   const containerRef = useRef<HTMLDivElement>(null);
   const [appliedTheme, setAppliedTheme] = useState<"light" | "dark">("light");
 
+  const [chosenMode, setChosenMode] = useState<"light" | "dark" | "system">(
+    () => {
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("theme");
+        if (stored === "light" || stored === "dark" || stored === "system") {
+          return stored;
+        }
+      }
+      return theme;
+    },
+  );
+
+  useEffect(() => {
+    setChosenMode(theme);
+  }, [theme]);
+
   const handleSelect = (newTheme: "light" | "dark" | "system") => {
     localStorage.setItem("theme", newTheme);
+    setChosenMode(newTheme);
     onThemeChange(newTheme);
     toggle();
     toast(
       newTheme === "system"
-        ? `Using System Preference (${appliedTheme.charAt(0).toUpperCase() + appliedTheme.slice(1)})`
+        ? `Using System Preference (${
+            appliedTheme.charAt(0).toUpperCase() + appliedTheme.slice(1)
+          })`
         : `Switched to ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)} Mode`,
     );
   };
@@ -71,7 +90,12 @@ export default function ThemeToggle({
     apply(theme === "dark");
   }, [theme]);
 
-  const displayedTheme = appliedTheme;
+  const displayedTheme =
+    appliedTheme === "light" ? (
+      <LightModeIcon size={24} />
+    ) : (
+      <DarkModeIcon size={24} />
+    );
 
   const handleToggle = () => {
     if (open) toggle();
@@ -102,11 +126,7 @@ export default function ThemeToggle({
         onClick={handleToggle}
         aria-label="Toggle theme"
       >
-        {displayedTheme === "light" ? (
-          <LightModeIcon size={24} />
-        ) : (
-          <DarkModeIcon size={24} />
-        )}
+        {displayedTheme}
       </button>
 
       {open && (
@@ -114,25 +134,19 @@ export default function ThemeToggle({
           <Option
             label="Light"
             icon={<LightModeIcon size={20} />}
-            isSelected={
-              theme === "light" ||
-              (theme === "system" && appliedTheme === "light")
-            }
+            isSelected={chosenMode === "light"}
             onClick={() => handleSelect("light")}
           />
           <Option
             label="Dark"
             icon={<DarkModeIcon size={20} />}
-            isSelected={
-              theme === "dark" ||
-              (theme === "system" && appliedTheme === "dark")
-            }
+            isSelected={chosenMode === "dark"}
             onClick={() => handleSelect("dark")}
           />
           <Option
             label="System"
             icon={<SettingsBrightnessIcon size={20} />}
-            isSelected={false}
+            isSelected={chosenMode === "system"}
             onClick={() => handleSelect("system")}
           />
         </div>

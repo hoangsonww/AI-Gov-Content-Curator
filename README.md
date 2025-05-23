@@ -568,8 +568,23 @@ The **Frontend** is built with Next.js and React, providing a modern, mobile-res
 - **Responsive Design:**  
   The UI is optimized for both desktop and mobile devices.
 
+- **Authentication:**  
+  Users can register, log in, and receive a JWT token for secure access to the system. Tokens are stored in HTTP-only cookies for security.
+
+- **Favorite Articles:**  
+  Authenticated users can mark articles as favorites for quick access. This is stored in the backend and displayed in the frontend.
+
+- **Newsletter Subscription:**  
+  Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
+
+- **Dark Mode:**  
+  The frontend offers a dark mode option for improved readability and user experience.
+
 - **Additional UI Components:**  
   Includes components like HeroSlider, LatestArticles, ThemeToggle, and more for an enhanced user experience.
+
+- **Static Site Generation (SSG):**  
+  The frontend uses Next.js's SSG capabilities to pre-render pages for improved performance and SEO.
 
 ### Prerequisites & Installation (Frontend)
 

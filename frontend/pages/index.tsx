@@ -113,6 +113,7 @@ export default function LandingPage() {
       <main>
         {/* Hero Section */}
         <section className="hero">
+          <div className="extra-ball-left" />
           <div className="extra-ball" />
           <div className="hero-content reveal">
             <h1>Article Curator</h1>

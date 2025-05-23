@@ -1,4 +1,6 @@
-import { ReactNode } from "react";
+"use client";
+
+import { ReactNode, useEffect, useRef } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
@@ -9,6 +11,24 @@ interface LayoutProps {
 }
 
 export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
+  // measure navbar height and set it as a CSS variable
+  const navbarWrapper = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateNavHeight = () => {
+      if (navbarWrapper.current) {
+        const h = navbarWrapper.current.offsetHeight;
+        document.documentElement.style.setProperty("--navbar-height", `${h}px`);
+      }
+    };
+
+    updateNavHeight();
+    window.addEventListener("resize", updateNavHeight);
+    return () => {
+      window.removeEventListener("resize", updateNavHeight);
+    };
+  }, []);
+
   return (
     <div
       style={{
@@ -17,8 +37,12 @@ export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
         minHeight: "100vh",
       }}
     >
-      <Navbar theme={theme} onThemeChange={toggleTheme} />
+      <div ref={navbarWrapper}>
+        <Navbar theme={theme} onThemeChange={toggleTheme} />
+      </div>
+
       <main style={{ flex: 1 }}>{children}</main>
+
       <Footer />
     </div>
   );
