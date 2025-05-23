@@ -22,6 +22,25 @@ interface ArticleCardProps {
   article: Article;
 }
 
+// an in-memory and localStorage-backed cache to avoid repeated API calls for
+// thousands of articles
+let cachedFavIds: string[] | null = null;
+async function loadFavCache(token: string): Promise<string[]> {
+  if (cachedFavIds) return cachedFavIds;
+  const fromStorage = localStorage.getItem("favIds");
+  if (fromStorage) {
+    try {
+      cachedFavIds = JSON.parse(fromStorage) as string[];
+      return cachedFavIds!;
+    } catch {}
+  }
+  // if not in storage, fetch once
+  const fetched = await fetchFavoriteArticleIds(token);
+  cachedFavIds = fetched;
+  localStorage.setItem("favIds", JSON.stringify(fetched));
+  return fetched;
+}
+
 export default function ArticleCard({ article }: ArticleCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,19 +54,14 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     }
     setIsLoggedIn(true);
 
-    const loadFavorites = async () => {
-      setFavLoading(true);
-      try {
-        const favorites = await fetchFavoriteArticleIds(token);
-        setIsFavorited(favorites.includes(article._id));
-      } catch (error) {
-        console.error("Error loading favorites", error);
-      } finally {
-        setFavLoading(false);
-      }
-    };
-
-    loadFavorites();
+    // load the favorites cache once, then check membership
+    loadFavCache(token)
+      .then((ids) => {
+        setIsFavorited(ids.includes(article._id));
+      })
+      .catch((err) => {
+        console.error("Error loading favorites", err);
+      });
   }, [article._id]);
 
   const handleFavorite = async () => {
@@ -56,7 +70,19 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     setFavLoading(true);
     try {
       await toggleFavoriteArticle(token, article._id);
-      setIsFavorited((prev) => !prev);
+      setIsFavorited((prev) => {
+        const next = !prev;
+        // update cache in‐memory and in localStorage
+        if (cachedFavIds) {
+          if (next) {
+            cachedFavIds.push(article._id);
+          } else {
+            cachedFavIds = cachedFavIds.filter((id) => id !== article._id);
+          }
+          localStorage.setItem("favIds", JSON.stringify(cachedFavIds));
+        }
+        return next;
+      });
       toast(`Article ${isFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
     } catch (err) {
       console.error("Error toggling favorite", err);
