@@ -73,7 +73,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   }, [mobileOpen]);
 
   // Keep auth state fresh
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
   // useEffect(() => {
   //   const interval = setInterval(async () => {
   //     const token = localStorage.getItem("token");
@@ -83,12 +83,12 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   //   return () => clearInterval(interval);
   // }, []);
 
-  const handleLogout = () => {
-    toast("Logged out successfully 🚪");
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    setTimeout(() => window.location.reload(), 1000);
-  };
+  // const handleLogout = () => {
+  //   toast("Logged out successfully 🚪");
+  //   localStorage.removeItem("token");
+  //   setIsLoggedIn(false);
+  //   setTimeout(() => window.location.reload(), 1000);
+  // };
 
   const selectTheme = (newTheme: "light" | "dark" | "system") => {
     localStorage.setItem("theme", newTheme);
