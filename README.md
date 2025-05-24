@@ -319,6 +319,8 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/newsletter-example.png" alt="Daily Newsletter Example" width="100%">
 </p>
 
+_more pages and features are available in the app - we encourage you to explore!_
+
 ---
 
 ## Backend
