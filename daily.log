@@ -3,7 +3,6 @@ Daily run started at 2025-05-17 15:00:01
 This script is meant to be run daily to complete the following tasks:
 
 1. 📡 Running crawler…
-/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/daily.sh: line 13: cd: crawler: No such file or directory
 ----------------------------------------
 Daily run started at 2025-05-17 21:26:15
 This script is meant to be run daily to complete the following tasks:
@@ -13,7 +12,7 @@ This script is meant to be run daily to complete the following tasks:
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run crawl
 npm verb argv "run" "crawl"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_15_901Z-
@@ -25,7 +24,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T01_26_15_901Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
 npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_16_317Z-
@@ -39,7 +38,7 @@ This script is meant to be run daily to complete the following tasks:
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run crawl
 npm verb argv "run" "crawl"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_25_748Z-
@@ -51,7 +50,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T01_26_25_748Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
 npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_26_243Z-
@@ -82,7 +81,7 @@ This script is meant to run daily to complete the following tasks:
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run crawl
 npm verb argv "run" "crawl"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_05_21_920Z-
@@ -94,7 +93,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_05_21_920Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
 npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_05_22_216Z-
@@ -165,15 +164,15 @@ Phase 3 — normalized titles on 1 articles
 {"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:06:19.462Z"}
 {"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:06:19.462Z"}
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run clean:articles
 npm verb argv "run" "clean:articles"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_06_19_720Z-
@@ -185,7 +184,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_06_19_720Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node scripts/cleanData.ts
 npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_06_19_988Z-
@@ -199,9 +198,9 @@ Phase 3 — no odd titles found to normalize
 🧹 Cleanup complete
 ✅ MongoDB disconnected
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
@@ -228,9 +227,9 @@ snguyen2022@macduffie.org: sent
 nguyenhoangson091104@gmail.com: sent
 Finished newsletter run
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 Daily run finished at 2025-05-18 16:06:39
 ----------------------------------------
@@ -242,7 +241,7 @@ This script is meant to run daily to complete the following tasks:
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run crawl
 npm verb argv "run" "crawl"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_04_457Z-
@@ -254,7 +253,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_04_457Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
 npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_04_716Z-
@@ -308,15 +307,15 @@ Phase 3 — no odd titles found to normalize
 {"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:20:34.440Z"}
 {"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:20:34.440Z"}
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run clean:articles
 npm verb argv "run" "clean:articles"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_34_685Z-
@@ -328,7 +327,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_34_685Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node scripts/cleanData.ts
 npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_34_952Z-
@@ -342,9 +341,9 @@ Phase 3 — no odd titles found to normalize
 🧹 Cleanup complete
 ✅ MongoDB disconnected
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
@@ -371,9 +370,9 @@ snguyen2022@macduffie.org: sent
 nguyenhoangson091104@gmail.com: sent
 Finished newsletter run
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 Daily run finished at 2025-05-18 16:20:45
 ----------------------------------------
@@ -385,7 +384,7 @@ This script is meant to run daily to complete the following tasks:
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run crawl
 npm verb argv "run" "crawl"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_08_218Z-
@@ -397,7 +396,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_08_218Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
 npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_08_472Z-
@@ -451,15 +450,15 @@ Phase 3 — no odd titles found to normalize
 {"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:26:24.924Z"}
 {"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:26:24.924Z"}
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run clean:articles
 npm verb argv "run" "clean:articles"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_25_145Z-
@@ -471,7 +470,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_25_145Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node scripts/cleanData.ts
 npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_25_410Z-
@@ -485,9 +484,9 @@ Phase 3 — no odd titles found to normalize
 🧹 Cleanup complete
 ✅ MongoDB disconnected
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
@@ -514,9 +513,9 @@ snguyen2022@macduffie.org: sent
 nguyenhoangson091104@gmail.com: sent
 Finished newsletter run
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 Daily run finished at 2025-05-18 16:26:36
 ----------------------------------------
@@ -528,7 +527,7 @@ This script is meant to run daily to complete the following tasks:
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run crawl
 npm verb argv "run" "crawl"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_38_54_651Z-
@@ -540,7 +539,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_38_54_651Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
 npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_38_54_945Z-
@@ -593,15 +592,15 @@ Phase 3 — no odd titles found to normalize
 {"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:39:08.532Z"}
 {"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:39:08.532Z"}
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm run clean:articles
 npm verb argv "run" "clean:articles"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_39_08_819Z-
@@ -613,7 +612,7 @@ npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_39_08_819Z-debug-0.
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
 npm info using npm@10.2.3
 npm info using node@v18.19.0
-npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
 npm verb title npm exec ts-node scripts/cleanData.ts
 npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
 npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_39_09_094Z-
@@ -627,9 +626,9 @@ Phase 3 — no odd titles found to normalize
 🧹 Cleanup complete
 ✅ MongoDB disconnected
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
 npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
@@ -656,9 +655,9 @@ snguyen2022@macduffie.org: up-to-date
 nguyenhoangson091104@gmail.com: up-to-date
 Finished newsletter run
 npm verb exit 0
-npm info ok 
+npm info ok
 npm verb exit 0
-npm info ok 
+npm info ok
 
 Daily run finished at 2025-05-18 16:39:23
 ----------------------------------------
