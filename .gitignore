@@ -3,4 +3,3 @@ backend/node_modules
 node_modules
 .env
 .vercel
-daily.log

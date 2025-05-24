@@ -1,0 +1,1100 @@
+----------------------------------------
+Daily run started at 2025-05-17 15:00:01
+This script is meant to be run daily to complete the following tasks:
+
+1. 📡 Running crawler…
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/daily.sh: line 13: cd: crawler: No such file or directory
+----------------------------------------
+Daily run started at 2025-05-17 21:26:15
+This script is meant to be run daily to complete the following tasks:
+
+1. 📡 Running crawler…
+→ cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run crawl
+npm verb argv "run" "crawl"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_15_901Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T01_26_15_901Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
+npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_16_317Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T01_26_16_317Z-debug-0.log
+----------------------------------------
+Daily run started at 2025-05-17 21:26:25
+This script is meant to be run daily to complete the following tasks:
+
+1. 📡 Running crawler…
+→ cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run crawl
+npm verb argv "run" "crawl"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_25_748Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T01_26_25_748Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
+npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T01_26_26_243Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T01_26_26_243Z-debug-0.log
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-18T01:26:31.201Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-18T01:26:31.201Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-18T01:26:32.229Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-18T01:26:32.229Z"}
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-05-18 15:00:00
+Daily run started at 2025-05-18 15:00:00
+This script is meant to be run daily to complete the following tasks:
+This script is meant to be run daily to complete the following tasks:
+
+
+1. 📡 Running crawler…
+1. 📡 Running crawler…
+→ cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
+→ cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/daily.sh: line 19: npm: command not found
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/daily.sh: line 19: npm: command not found
+----------------------------------------
+Daily run started at 2025-05-18 16:05:18
+This script is meant to run daily to complete the following tasks:
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run crawl
+npm verb argv "run" "crawl"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_05_21_920Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_05_21_920Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
+npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_05_22_216Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_05_22_216Z-debug-0.log
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-18T20:05:29.409Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-18T20:05:29.410Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-18T20:05:30.272Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-18T20:05:30.272Z"}
+{"level":"info","message":"🆕 51 fresh URLs to page‑fetch","timestamp":"2025-05-18T20:05:34.202Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-18T20:05:34.302Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-18T20:05:34.309Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-18T20:05:34.315Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-18T20:05:34.320Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-18T20:05:34.329Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-18T20:05:34.427Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-18T20:05:34.431Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-18T20:05:34.434Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-18T20:05:34.437Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-18T20:05:34.445Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-18T20:05:34.606Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-18T20:05:34.610Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-18T20:05:34.640Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-18T20:05:34.650Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-18T20:05:34.659Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-18T20:05:34.756Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-18T20:05:34.760Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-18T20:05:34.763Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-18T20:05:34.765Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-18T20:05:34.768Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-18T20:05:34.856Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-18T20:05:34.859Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-18T20:05:34.861Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-18T20:05:34.864Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-18T20:05:34.866Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-18T20:05:34.952Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-18T20:05:34.956Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-18T20:05:34.959Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-18T20:05:34.961Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-18T20:05:34.963Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-18T20:05:35.135Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-18T20:05:35.161Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-010525-z-z/","timestamp":"2025-05-18T20:05:35.175Z"}
+{"level":"info","message":"✅ Saved: 2 dead, 2 injured after head-on collision on Dallas North TollwayTDMNTDMN","timestamp":"2025-05-18T20:05:39.869Z"}
+{"level":"info","message":"✅ Saved: Authorities investigating Palm Springs fertility clinic explosion identify suspectTDMNTDMN","timestamp":"2025-05-18T20:05:40.075Z"}
+{"level":"info","message":"✅ Saved: Single-vehicle crash in Plano kills three early Sunday morningTDMNTDMN","timestamp":"2025-05-18T20:05:44.630Z"}
+{"level":"info","message":"✅ Saved: Julia James | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-18T20:05:46.179Z"}
+{"level":"info","message":"✅ Saved: Ukraine’s leader meets with US and European officials ahead of high-stakes Trump-Putin callTDMNTDMN","timestamp":"2025-05-18T20:05:46.366Z"}
+{"level":"info","message":"✅ Saved: After hail and strong winds Saturday across North Texas, more severe weather is comingTDMNTDMN","timestamp":"2025-05-18T20:05:46.440Z"}
+{"level":"info","message":"✅ Saved: Pope Leo XIV vows to work for unity so Catholic Church becomes a symbol of peace in the worldTDMNTDMN","timestamp":"2025-05-18T20:05:46.779Z"}
+{"level":"info","message":"✅ Saved: Mexican tall ship strikes Brooklyn Bridge, snapping masts and killing 2 crew membersTDMNTDMN","timestamp":"2025-05-18T20:05:52.737Z"}
+{"level":"info","message":"✅ Saved: Israel says it has begun new ground operations in Gaza | AP News","timestamp":"2025-05-18T20:05:53.291Z"}
+{"level":"info","message":"✅ Saved: Turbulent waters may have contributed to Mexican tall ship's crash into Brooklyn Bridge | AP News","timestamp":"2025-05-18T20:05:53.331Z"}
+{"level":"info","message":"✅ Saved: Russia launches biggest drone attack on Ukraine since start of war | AP News","timestamp":"2025-05-18T20:05:54.021Z"}
+{"level":"info","message":"✅ Saved: Pope Leo XIV pledges to promote unity so the Catholic Church becomes a global symbol of peace | AP News","timestamp":"2025-05-18T20:05:54.659Z"}
+{"level":"info","message":"✅ Saved: On the White House website under Trump, there's a sporadic commitment to documentation | AP News","timestamp":"2025-05-18T20:06:03.158Z"}
+{"level":"info","message":"✅ Saved: Republicans look to get Trump's bill back on track with rare Sunday session | AP News","timestamp":"2025-05-18T20:06:03.967Z"}
+{"level":"info","message":"✅ Saved: Law enforcement searches for 7 escaped inmates still missing from New Orleans jail | AP News","timestamp":"2025-05-18T20:06:04.457Z"}
+{"level":"info","message":"✅ Saved: Trump could leave less documentation behind than any previous president | AP News","timestamp":"2025-05-18T20:06:04.501Z"}
+{"level":"info","message":"✅ Saved: Residents dig out from tornado damage after storms kill 28 in Kentucky, Missouri and Virginia | AP News","timestamp":"2025-05-18T20:06:06.116Z"}
+{"level":"info","message":"✅ Saved: The One Big Beautiful Bill Will Crack Down On Illegal Immigration – The White House","timestamp":"2025-05-18T20:06:15.230Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-18T20:06:16.233Z"}
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — normalized titles on 1 articles
+🧹 Cleanup complete
+✅ MongoDB disconnected
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:06:19.462Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:06:19.462Z"}
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run clean:articles
+npm verb argv "run" "clean:articles"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_06_19_720Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_06_19_720Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node scripts/cleanData.ts
+npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_06_19_988Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_06_19_988Z-debug-0.log
+(node:12564) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm run newsletter
+npm verb argv "run" "newsletter"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_06_28_845Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_06_28_845Z-debug-0.log
+
+> newsletters@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm exec ts-node --transpile-only schedule/sendNewsletter.ts
+npm verb argv "exec" "--" "ts-node" "--transpile-only" "schedule/sendNewsletter.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_06_29_103Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_06_29_103Z-debug-0.log
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+Finished newsletter run
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+Daily run finished at 2025-05-18 16:06:39
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-05-18 16:20:01
+This script is meant to run daily to complete the following tasks:
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run crawl
+npm verb argv "run" "crawl"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_04_457Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_04_457Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
+npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_04_716Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_04_716Z-debug-0.log
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-18T20:20:08.072Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-18T20:20:08.073Z"}
+{"level":"info","message":"🔗 Crawled 152 links","timestamp":"2025-05-18T20:20:18.103Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-18T20:20:18.103Z"}
+{"level":"info","message":"🆕 34 fresh URLs to page‑fetch","timestamp":"2025-05-18T20:20:22.055Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-18T20:20:22.149Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-18T20:20:22.161Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-18T20:20:22.167Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-18T20:20:22.171Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-18T20:20:22.175Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-18T20:20:22.253Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-18T20:20:22.257Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-18T20:20:22.263Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-18T20:20:22.269Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-18T20:20:22.274Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-18T20:20:22.351Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-18T20:20:22.358Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-18T20:20:22.361Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-18T20:20:22.369Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-18T20:20:22.375Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-18T20:20:22.453Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-18T20:20:22.457Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-18T20:20:22.462Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-18T20:20:22.475Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-18T20:20:22.489Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-18T20:20:22.569Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-18T20:20:22.572Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-18T20:20:22.574Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-18T20:20:22.578Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-18T20:20:22.581Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-18T20:20:22.660Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-18T20:20:22.664Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-18T20:20:22.667Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-18T20:20:22.670Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-18T20:20:22.673Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-18T20:20:22.757Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-18T20:20:22.762Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-010525-z-z/","timestamp":"2025-05-18T20:20:22.774Z"}
+{"level":"info","message":"✅ Saved: Biden has been diagnosed with prostate cancer | AP News","timestamp":"2025-05-18T20:20:30.809Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-18T20:20:31.810Z"}
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:20:34.440Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:20:34.440Z"}
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run clean:articles
+npm verb argv "run" "clean:articles"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_34_685Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_34_685Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node scripts/cleanData.ts
+npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_34_952Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_34_952Z-debug-0.log
+(node:13660) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm run newsletter
+npm verb argv "run" "newsletter"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_40_521Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_40_521Z-debug-0.log
+
+> newsletters@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm exec ts-node --transpile-only schedule/sendNewsletter.ts
+npm verb argv "exec" "--" "ts-node" "--transpile-only" "schedule/sendNewsletter.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_20_40_777Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_20_40_777Z-debug-0.log
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+Finished newsletter run
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+Daily run finished at 2025-05-18 16:20:45
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-05-18 16:26:05
+This script is meant to run daily to complete the following tasks:
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run crawl
+npm verb argv "run" "crawl"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_08_218Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_08_218Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
+npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_08_472Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_08_472Z-debug-0.log
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-18T20:26:11.745Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-18T20:26:11.747Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-18T20:26:12.309Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-18T20:26:12.309Z"}
+{"level":"info","message":"🆕 34 fresh URLs to page‑fetch","timestamp":"2025-05-18T20:26:16.333Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-18T20:26:16.429Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-18T20:26:16.435Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-18T20:26:16.439Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-18T20:26:16.442Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-18T20:26:16.451Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-18T20:26:16.530Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-18T20:26:16.542Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-18T20:26:16.544Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-18T20:26:16.546Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-18T20:26:16.554Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-18T20:26:16.629Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-18T20:26:16.637Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-18T20:26:16.641Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-18T20:26:16.643Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-18T20:26:16.651Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-18T20:26:16.727Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-18T20:26:16.737Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-18T20:26:16.741Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-18T20:26:16.743Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-18T20:26:16.751Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-18T20:26:16.828Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-18T20:26:16.854Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-18T20:26:16.865Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-18T20:26:16.877Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-18T20:26:16.899Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-18T20:26:16.973Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-18T20:26:16.989Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-18T20:26:16.992Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-18T20:26:16.998Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-18T20:26:17.012Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-18T20:26:17.106Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-18T20:26:17.109Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-010525-z-z/","timestamp":"2025-05-18T20:26:17.121Z"}
+{"level":"info","message":"✅ Saved: Biden diagnosed with prostate cancer, his spokesman saysTDMNTDMN","timestamp":"2025-05-18T20:26:21.650Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-18T20:26:22.652Z"}
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:26:24.924Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:26:24.924Z"}
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run clean:articles
+npm verb argv "run" "clean:articles"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_25_145Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_25_145Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node scripts/cleanData.ts
+npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_25_410Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_25_410Z-debug-0.log
+(node:14058) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm run newsletter
+npm verb argv "run" "newsletter"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_32_173Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_32_173Z-debug-0.log
+
+> newsletters@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm exec ts-node --transpile-only schedule/sendNewsletter.ts
+npm verb argv "exec" "--" "ts-node" "--transpile-only" "schedule/sendNewsletter.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_26_32_440Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_26_32_440Z-debug-0.log
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+Finished newsletter run
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+Daily run finished at 2025-05-18 16:26:36
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-05-18 16:38:52
+This script is meant to run daily to complete the following tasks:
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run crawl
+npm verb argv "run" "crawl"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_38_54_651Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_38_54_651Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node schedule/fetchAndSummarize.ts
+npm verb argv "exec" "--" "ts-node" "schedule/fetchAndSummarize.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_38_54_945Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_38_54_945Z-debug-0.log
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-18T20:38:59.428Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-18T20:38:59.429Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-18T20:39:00.043Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-18T20:39:00.043Z"}
+{"level":"info","message":"🆕 33 fresh URLs to page‑fetch","timestamp":"2025-05-18T20:39:04.393Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-18T20:39:04.481Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-18T20:39:04.486Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-18T20:39:04.491Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-18T20:39:04.500Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-18T20:39:04.503Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-18T20:39:04.638Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-18T20:39:04.641Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-18T20:39:04.731Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-18T20:39:04.741Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-18T20:39:04.744Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-18T20:39:04.834Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-18T20:39:04.837Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-18T20:39:04.840Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-18T20:39:04.850Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-18T20:39:04.853Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-18T20:39:04.937Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-18T20:39:04.940Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-18T20:39:04.943Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-18T20:39:04.952Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-18T20:39:04.954Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-18T20:39:05.039Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-18T20:39:05.042Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-18T20:39:05.046Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-18T20:39:05.055Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-18T20:39:05.057Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-18T20:39:05.147Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-18T20:39:05.150Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-18T20:39:05.152Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-18T20:39:05.154Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-18T20:39:05.157Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-18T20:39:05.244Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-18T20:39:05.247Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-010525-z-z/","timestamp":"2025-05-18T20:39:05.341Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-18T20:39:05.341Z"}
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-18T20:39:08.532Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-18T20:39:08.532Z"}
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm run clean:articles
+npm verb argv "run" "clean:articles"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_39_08_819Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_39_08_819Z-debug-0.log
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm info found workspace root at /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator 
+npm verb title npm exec ts-node scripts/cleanData.ts
+npm verb argv "exec" "--" "ts-node" "scripts/cleanData.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_39_09_094Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_39_09_094Z-debug-0.log
+(node:16427) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/npm
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm run newsletter
+npm verb argv "run" "newsletter"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_39_19_980Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_39_19_980Z-debug-0.log
+
+> newsletters@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+npm verb cli /Users/davidnguyen/.nvm/versions/node/v18.19.0/bin/node /Users/davidnguyen/.nvm/versions/node/v18.19.0/lib/node_modules/npm/bin/npm-cli.js
+npm info using npm@10.2.3
+npm info using node@v18.19.0
+npm verb title npm exec ts-node --transpile-only schedule/sendNewsletter.ts
+npm verb argv "exec" "--" "ts-node" "--transpile-only" "schedule/sendNewsletter.ts"
+npm verb logfile logs-max:10 dir:/Users/davidnguyen/.npm/_logs/2025-05-18T20_39_20_253Z-
+npm verb logfile /Users/davidnguyen/.npm/_logs/2025-05-18T20_39_20_253Z-debug-0.log
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: up-to-date
+snguyen2022@macduffie.org: up-to-date
+nguyenhoangson091104@gmail.com: up-to-date
+Finished newsletter run
+npm verb exit 0
+npm info ok 
+npm verb exit 0
+npm info ok 
+
+Daily run finished at 2025-05-18 16:39:23
+----------------------------------------
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-05-19 16:00:07
+Daily run started at 2025-05-19 16:00:07
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-19T20:00:28.479Z"}
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-19T20:00:28.479Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-19T20:00:28.482Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-19T20:00:28.482Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-19T20:00:29.547Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-19T20:00:29.547Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-19T20:00:29.548Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-19T20:00:29.548Z"}
+{"level":"info","message":"🆕 56 fresh URLs to page‑fetch","timestamp":"2025-05-19T20:00:33.583Z"}
+{"level":"info","message":"🆕 56 fresh URLs to page‑fetch","timestamp":"2025-05-19T20:00:33.583Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-19T20:00:33.703Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-19T20:00:33.703Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-19T20:00:33.714Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-19T20:00:33.714Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-19T20:00:33.724Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-19T20:00:33.724Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-19T20:00:33.731Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-19T20:00:33.731Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-19T20:00:33.749Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-19T20:00:33.749Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-19T20:00:33.854Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-19T20:00:33.854Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-19T20:00:33.866Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-19T20:00:33.866Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-19T20:00:33.875Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-19T20:00:33.875Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-19T20:00:33.881Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-19T20:00:33.881Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-19T20:00:33.900Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-19T20:00:33.900Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-19T20:00:34.009Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-19T20:00:34.009Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-19T20:00:34.019Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-19T20:00:34.019Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-19T20:00:34.027Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-19T20:00:34.027Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-19T20:00:34.034Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-19T20:00:34.034Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-19T20:00:34.052Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-19T20:00:34.052Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-19T20:00:34.152Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-19T20:00:34.152Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-19T20:00:34.162Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-19T20:00:34.162Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-19T20:00:34.171Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-19T20:00:34.171Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-19T20:00:34.177Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-19T20:00:34.177Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-19T20:00:34.197Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-19T20:00:34.197Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-19T20:00:34.336Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-19T20:00:34.336Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-19T20:00:34.362Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-19T20:00:34.362Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-19T20:00:34.394Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-19T20:00:34.394Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-19T20:00:34.430Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-19T20:00:34.430Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-19T20:00:34.461Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-19T20:00:34.461Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-19T20:00:34.552Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-19T20:00:34.552Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-19T20:00:34.561Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-19T20:00:34.561Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-19T20:00:34.568Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-19T20:00:34.568Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-19T20:00:34.575Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-19T20:00:34.575Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-19T20:00:34.612Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-19T20:00:34.612Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-19T20:00:34.705Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-19T20:00:34.705Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-19T20:00:34.714Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-19T20:00:34.714Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-190525-memdaysale-z/","timestamp":"2025-05-19T20:00:34.784Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-190525-memdaysale-z/","timestamp":"2025-05-19T20:00:34.784Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-other-190525-breknewsbanner-z/","timestamp":"2025-05-19T20:00:34.829Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-other-190525-breknewsbanner-z/","timestamp":"2025-05-19T20:00:34.829Z"}
+{"level":"info","message":"✅ Saved: Ask Curious Texas: What questions do you have about our state?TDMNTDMN","timestamp":"2025-05-19T20:00:39.655Z"}
+{"level":"info","message":"✅ Saved: Ask Curious Texas: What questions do you have about our state?TDMNTDMN","timestamp":"2025-05-19T20:00:39.655Z"}
+{"level":"info","message":"✅ Saved: PolitiFact | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-19T20:00:46.722Z"}
+{"level":"info","message":"✅ Saved: PolitiFact | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-19T20:00:46.722Z"}
+{"level":"info","message":"✅ Saved: Karen Brooks Harper | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-19T20:00:46.731Z"}
+{"level":"info","message":"✅ Saved: Karen Brooks Harper | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-19T20:00:46.731Z"}
+{"level":"info","message":"✅ Saved: Texas AG clears Medicaid health insurer in spying investigationTDMNTDMN","timestamp":"2025-05-19T20:00:46.740Z"}
+{"level":"info","message":"✅ Saved: Texas AG clears Medicaid health insurer in spying investigationTDMNTDMN","timestamp":"2025-05-19T20:00:46.740Z"}
+{"level":"info","message":"✅ Saved: James Comey under fire for saying ’86′, but where does the slang term come from?TDMNTDMN","timestamp":"2025-05-19T20:00:47.069Z"}
+{"level":"info","message":"✅ Saved: James Comey under fire for saying ’86′, but where does the slang term come from?TDMNTDMN","timestamp":"2025-05-19T20:00:47.069Z"}
+{"level":"info","message":"✅ Saved: When will traffic be the worst in Texas? Over 45 million to travel Memorial Day weekendTDMNTDMN","timestamp":"2025-05-19T20:00:47.561Z"}
+{"level":"info","message":"✅ Saved: When will traffic be the worst in Texas? Over 45 million to travel Memorial Day weekendTDMNTDMN","timestamp":"2025-05-19T20:00:47.561Z"}
+{"level":"info","message":"✅ Saved: Man stabbed to death in east Oak Cliff, Dallas police say TDMNTDMN","timestamp":"2025-05-19T20:00:53.838Z"}
+{"level":"info","message":"✅ Saved: Man stabbed to death in east Oak Cliff, Dallas police say TDMNTDMN","timestamp":"2025-05-19T20:00:53.838Z"}
+{"level":"info","message":"✅ Saved: Aurora adds human driver back to Texas truck routeTDMNTDMN","timestamp":"2025-05-19T20:00:53.860Z"}
+{"level":"info","message":"✅ Saved: Aurora adds human driver back to Texas truck routeTDMNTDMN","timestamp":"2025-05-19T20:00:53.860Z"}
+{"level":"info","message":"✅ Saved: Dallas to consider $1 billion loan for Kay Bailey Hutchison Convention Center projectTDMNLinkedIn IconTDMN","timestamp":"2025-05-19T20:00:53.975Z"}
+{"level":"info","message":"✅ Saved: Dallas to consider $1 billion loan for Kay Bailey Hutchison Convention Center projectTDMNLinkedIn IconTDMN","timestamp":"2025-05-19T20:00:53.975Z"}
+{"level":"info","message":"✅ Saved: Devyani Chhetri | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-19T20:00:54.516Z"}
+{"level":"info","message":"✅ Saved: Devyani Chhetri | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-19T20:00:54.516Z"}
+{"level":"info","message":"✅ Saved: Nick Wooten | Dallas Morning NewsTDMNLinkedIn IconTDMN","timestamp":"2025-05-19T20:00:54.961Z"}
+{"level":"info","message":"✅ Saved: Nick Wooten | Dallas Morning NewsTDMNLinkedIn IconTDMN","timestamp":"2025-05-19T20:00:54.961Z"}
+{"level":"info","message":"✅ Saved: More storms take aim at central US | AP News","timestamp":"2025-05-19T20:01:04.257Z"}
+{"level":"info","message":"✅ Saved: More storms take aim at central US | AP News","timestamp":"2025-05-19T20:01:04.257Z"}
+{"level":"info","message":"✅ Saved: Supreme Court allows Trump to strip protections from some Venezuelans | AP News","timestamp":"2025-05-19T20:01:04.391Z"}
+{"level":"info","message":"✅ Saved: Supreme Court allows Trump to strip protections from some Venezuelans | AP News","timestamp":"2025-05-19T20:01:04.391Z"}
+{"level":"info","message":"✅ Saved: First aid trucks enter Gaza after nearly 3 months of Israel's blockade | AP News","timestamp":"2025-05-19T20:01:04.971Z"}
+{"level":"info","message":"✅ Saved: First aid trucks enter Gaza after nearly 3 months of Israel's blockade | AP News","timestamp":"2025-05-19T20:01:04.971Z"}
+{"level":"info","message":"✅ Saved: Storms and tornadoes continue to ravage central US after killing dozens | AP News","timestamp":"2025-05-19T20:01:06.332Z"}
+{"level":"info","message":"✅ Saved: Storms and tornadoes continue to ravage central US after killing dozens | AP News","timestamp":"2025-05-19T20:01:06.332Z"}
+{"level":"info","message":"✅ Saved: Trump says Russia-Ukraine ceasefire talks will begin immediately following call with Putin | AP News","timestamp":"2025-05-19T20:01:07.149Z"}
+{"level":"info","message":"✅ Saved: Trump says Russia-Ukraine ceasefire talks will begin immediately following call with Putin | AP News","timestamp":"2025-05-19T20:01:07.149Z"}
+{"level":"info","message":"✅ Saved: ICYMI: New projection signals good news for families, workers in Trump’s ‘big, beautiful bill’ – The White House","timestamp":"2025-05-19T20:01:16.866Z"}
+{"level":"info","message":"✅ Saved: ICYMI: New projection signals good news for families, workers in Trump’s ‘big, beautiful bill’ – The White House","timestamp":"2025-05-19T20:01:16.866Z"}
+{"level":"info","message":"✅ Saved: WHAT THEY ARE SAYING: Pass the One, Big, Beautiful Bill – The White House","timestamp":"2025-05-19T20:01:17.489Z"}
+{"level":"info","message":"✅ Saved: WHAT THEY ARE SAYING: Pass the One, Big, Beautiful Bill – The White House","timestamp":"2025-05-19T20:01:17.489Z"}
+{"level":"info","message":"✅ Saved: Crew members of tall ship that collided with Brooklyn Bridge return home to Mexico | AP News","timestamp":"2025-05-19T20:01:17.497Z"}
+{"level":"info","message":"✅ Saved: Crew members of tall ship that collided with Brooklyn Bridge return home to Mexico | AP News","timestamp":"2025-05-19T20:01:17.497Z"}
+{"level":"info","message":"✅ Saved: Trump hosts the Kennedy Center board at the White House | AP News","timestamp":"2025-05-19T20:01:17.721Z"}
+{"level":"info","message":"✅ Saved: Trump hosts the Kennedy Center board at the White House | AP News","timestamp":"2025-05-19T20:01:17.721Z"}
+{"level":"info","message":"✅ Saved: WNBA Scores & Daily News | WNBA Stats, Scores & News Today | AP News","timestamp":"2025-05-19T20:01:20.872Z"}
+{"level":"info","message":"✅ Saved: WNBA Scores & Daily News | WNBA Stats, Scores & News Today | AP News","timestamp":"2025-05-19T20:01:20.872Z"}
+{"level":"info","message":"✅ Saved: Remarks by Director Kratsios at the National Academy of Sciences – The White House","timestamp":"2025-05-19T20:01:31.115Z"}
+{"level":"info","message":"✅ Saved: Remarks by Director Kratsios at the National Academy of Sciences – The White House","timestamp":"2025-05-19T20:01:31.115Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-19T20:01:32.118Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-19T20:01:32.118Z"}
+✅ MongoDB connected
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+🧹 Cleanup complete
+✅ MongoDB disconnected
+✅ MongoDB disconnected
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-19T20:01:34.885Z"}
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-19T20:01:34.885Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-19T20:01:34.885Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-19T20:01:34.885Z"}
+
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+(node:4955) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:4955) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no odd titles found to normalize
+Phase 3 — no odd titles found to normalize
+🧹 Cleanup complete
+🧹 Cleanup complete
+✅ MongoDB disconnected
+✅ MongoDB disconnected
+
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+
+> newsletters@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+
+> newsletters@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+Sending to 3 subscriber(s)
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+nguyenhoangson091104@gmail.com: sent
+Finished newsletter run
+Finished newsletter run
+
+
+Daily run finished at 2025-05-19 16:01:55
+Daily run finished at 2025-05-19 16:01:55
+----------------------------------------
+----------------------------------------
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-05-23 16:00:01
+Daily run started at 2025-05-23 16:00:01
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-23T20:00:18.793Z"}
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-05-23T20:00:18.793Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-23T20:00:18.795Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-05-23T20:00:18.795Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-23T20:00:19.806Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-05-23T20:00:19.806Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-23T20:00:19.806Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-05-23T20:00:19.806Z"}
+{"level":"info","message":"✅ Saved: What does ‘being best’ mean to Melania Trump now?","timestamp":"2025-05-23T20:00:21.584Z"}
+{"level":"info","message":"✅ Saved: What does ‘being best’ mean to Melania Trump now?","timestamp":"2025-05-23T20:00:21.584Z"}
+{"level":"info","message":"🆕 44 fresh URLs to page‑fetch","timestamp":"2025-05-23T20:00:23.968Z"}
+{"level":"info","message":"🆕 44 fresh URLs to page‑fetch","timestamp":"2025-05-23T20:00:23.968Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-23T20:00:24.102Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-05-23T20:00:24.102Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-23T20:00:24.107Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/es/","timestamp":"2025-05-23T20:00:24.107Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-23T20:00:24.114Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-05-23T20:00:24.114Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-23T20:00:24.118Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-05-23T20:00:24.118Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-23T20:00:24.128Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-05-23T20:00:24.128Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-23T20:00:24.239Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-05-23T20:00:24.239Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-23T20:00:24.247Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-05-23T20:00:24.247Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-23T20:00:24.250Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-05-23T20:00:24.250Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-23T20:00:24.252Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-05-23T20:00:24.252Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-23T20:00:24.261Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-05-23T20:00:24.261Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-23T20:00:24.345Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-05-23T20:00:24.345Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-23T20:00:24.349Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-05-23T20:00:24.349Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-23T20:00:24.351Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-05-23T20:00:24.351Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-23T20:00:24.354Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-05-23T20:00:24.354Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-23T20:00:24.363Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-05-23T20:00:24.363Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-23T20:00:24.452Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-05-23T20:00:24.452Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-23T20:00:24.454Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-05-23T20:00:24.454Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-23T20:00:24.459Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-05-23T20:00:24.459Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-23T20:00:24.463Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-05-23T20:00:24.463Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-23T20:00:24.475Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-05-23T20:00:24.475Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-23T20:00:24.556Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-05-23T20:00:24.556Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-23T20:00:24.569Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-05-23T20:00:24.569Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-23T20:00:24.572Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-05-23T20:00:24.572Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-23T20:00:24.574Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-05-23T20:00:24.574Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-23T20:00:24.585Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-05-23T20:00:24.585Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-23T20:00:24.680Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-05-23T20:00:24.680Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-23T20:00:24.684Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-05-23T20:00:24.684Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-23T20:00:24.692Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-05-23T20:00:24.692Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-23T20:00:24.698Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-05-23T20:00:24.698Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-23T20:00:24.713Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-05-23T20:00:24.713Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-23T20:00:24.815Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-05-23T20:00:24.815Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-23T20:00:24.819Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-05-23T20:00:24.819Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-other-190525-breknewsbanner-z/","timestamp":"2025-05-23T20:00:24.853Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-other-190525-breknewsbanner-z/","timestamp":"2025-05-23T20:00:24.853Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-190525-memdaysale-z/","timestamp":"2025-05-23T20:00:24.972Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-190525-memdaysale-z/","timestamp":"2025-05-23T20:00:24.972Z"}
+{"level":"info","message":"✅ Saved: Mel Fronczek | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-23T20:00:30.675Z"}
+{"level":"info","message":"✅ Saved: Mel Fronczek | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-23T20:00:30.675Z"}
+{"level":"info","message":"✅ Saved: Billy Joel cancels all concerts after medical diagnosisTDMNTDMN","timestamp":"2025-05-23T20:00:36.747Z"}
+{"level":"info","message":"✅ Saved: Billy Joel cancels all concerts after medical diagnosisTDMNTDMN","timestamp":"2025-05-23T20:00:36.747Z"}
+{"level":"info","message":"✅ Saved: Trump approves disaster declaration for past flooding in TexasTDMNTDMN","timestamp":"2025-05-23T20:00:36.828Z"}
+{"level":"info","message":"✅ Saved: Trump approves disaster declaration for past flooding in TexasTDMNTDMN","timestamp":"2025-05-23T20:00:36.828Z"}
+{"level":"info","message":"✅ Saved: Texas measles outbreak grows by 6 cases, no new counties impacted  TDMNTDMN","timestamp":"2025-05-23T20:00:36.847Z"}
+{"level":"info","message":"✅ Saved: Texas measles outbreak grows by 6 cases, no new counties impacted  TDMNTDMN","timestamp":"2025-05-23T20:00:36.847Z"}
+{"level":"info","message":"✅ Saved: Texas schools should get more flexibility on student discipline, Senate decidesTDMNTDMN","timestamp":"2025-05-23T20:00:37.064Z"}
+{"level":"info","message":"✅ Saved: Texas schools should get more flexibility on student discipline, Senate decidesTDMNTDMN","timestamp":"2025-05-23T20:00:37.064Z"}
+{"level":"info","message":"✅ Saved: Talia Richman | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-23T20:00:37.126Z"}
+{"level":"info","message":"✅ Saved: Talia Richman | Dallas Morning NewsTDMNTDMN","timestamp":"2025-05-23T20:00:37.126Z"}
+{"level":"info","message":"✅ Saved: President Trump Signs Executive Orders to Usher in a Nuclear Renaissance, Restore Gold Standard Science – The White House","timestamp":"2025-05-23T20:00:43.854Z"}
+{"level":"info","message":"✅ Saved: President Trump Signs Executive Orders to Usher in a Nuclear Renaissance, Restore Gold Standard Science – The White House","timestamp":"2025-05-23T20:00:43.854Z"}
+{"level":"info","message":"✅ Saved: Boeing to pay $1.1B to avoid criminal prosecution in 737 Max case | AP News","timestamp":"2025-05-23T20:00:44.368Z"}
+{"level":"info","message":"✅ Saved: Boeing to pay $1.1B to avoid criminal prosecution in 737 Max case | AP News","timestamp":"2025-05-23T20:00:44.368Z"}
+{"level":"info","message":"✅ Saved: New Orleans jail escape highlights decades of issues | AP News","timestamp":"2025-05-23T20:00:45.171Z"}
+{"level":"info","message":"✅ Saved: New Orleans jail escape highlights decades of issues | AP News","timestamp":"2025-05-23T20:00:45.171Z"}
+{"level":"info","message":"✅ Saved: South Africa police minister says Trump 'twisted' facts to push baseless genocide claims | AP News","timestamp":"2025-05-23T20:00:45.173Z"}
+{"level":"info","message":"✅ Saved: South Africa police minister says Trump 'twisted' facts to push baseless genocide claims | AP News","timestamp":"2025-05-23T20:00:45.173Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-23T20:00:46.174Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-05-23T20:00:46.174Z"}
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 1
+Phase 2 — removed by content/title heuristics & embeds: 1
+Phase 3 — cleaned repeated title segments on 6 articles
+Phase 3 — cleaned repeated title segments on 6 articles
+Phase 4 — stripped camel-case suffixes on 5 articles
+Phase 4 — stripped camel-case suffixes on 5 articles
+Phase 5 — stripped garbled suffixes on 1 articles
+Phase 5 — stripped garbled suffixes on 1 articles
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-23T20:00:48.989Z"}
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-05-23T20:00:48.989Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-23T20:00:48.989Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-05-23T20:00:48.989Z"}
+
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+(node:22027) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:22027) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+✅ MongoDB disconnected
+
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+Sending to 3 subscriber(s)
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+nguyenhoangson091104@gmail.com: sent
+Cleaning up articles...
+Cleaning up articles...
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+🧹 Cleanup complete
+Articles cleaned up!
+Finished newsletter run
+Finished newsletter run
+
+
+Daily run finished at 2025-05-23 16:01:11
+Daily run finished at 2025-05-23 16:01:11
+----------------------------------------
+----------------------------------------

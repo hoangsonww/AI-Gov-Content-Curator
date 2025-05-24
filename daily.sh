@@ -41,3 +41,5 @@ npm run newsletter                2>&1 | tee -a "$LOGFILE"
 echo "" | tee -a "$LOGFILE"
 echo "Daily run finished at $(date +"%Y-%m-%d %H:%M:%S")" | tee -a "$LOGFILE"
 echo "----------------------------------------" | tee -a "$LOGFILE"
+
+# Script completed successfully - visit daily.log for details
