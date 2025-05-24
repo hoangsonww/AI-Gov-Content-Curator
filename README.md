@@ -903,6 +903,8 @@ This will display a list of all your cron jobs, including the one you just creat
 
 > Be sure to keep your computer on and connected to the internet for the cron job to run successfully at the scheduled time!
 
+> Logs will be saved in the `daily.log` file in the root directory, so you can check the output of the script and any errors that may occur.
+
 ### Makefile
 
 The Makefile provides a convenient way to run common tasks using the `make` command. It includes targets for building, testing, and deploying the project.
