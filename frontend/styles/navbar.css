@@ -4,6 +4,11 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
 }
 
+header.navbar-container {
+  position: relative;
+  z-index: 1000;
+}
+
 /* Navbar Content */
 .navbar-content {
   display: flex;
@@ -217,6 +222,7 @@
   }
   .mobile-dropdown-container {
     display: block;
+    z-index: 500000;
   }
   .mobile-dropdown {
     position: absolute;
