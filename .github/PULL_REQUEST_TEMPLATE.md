@@ -35,7 +35,11 @@ _Select all that apply_:
 - [ ] `backend`
 - [ ] `crawler`
 - [ ] `bin` / CLI
+- [ ] `newsletters`
+- [ ] `.github` / GitHub Actions
+- [ ] `shell` / scripts
 - [ ] Root / tooling
+- [ ] Other (please specify)
 
 ## Checklist
 
