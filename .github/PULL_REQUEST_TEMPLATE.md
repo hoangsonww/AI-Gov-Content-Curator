@@ -13,7 +13,7 @@ Reference any related issues using `#1234` notation.
 
 ## Related Issue
 
-Fixes # (issue number)
+Add Jira issue link here.
 
 ## Type of Change
 
