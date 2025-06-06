@@ -48,6 +48,7 @@ Each component is maintained in its own directory:
 ![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat&logo=gnu-bash&logoColor=white)
 ![Makefile](https://img.shields.io/badge/Makefile-000?style=flat&logo=make&logoColor=white)
 ![Winston](https://img.shields.io/badge/Winston-350?style=flat&logo=prometheus&logoColor=white)
+![Jira](https://img.shields.io/badge/Jira-0052CC?style=flat&logo=jira&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
 > **Note:** This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
@@ -59,6 +60,12 @@ Each component is maintained in its own directory:
 - [Overview](#overview)
 - [User Interface](#user-interface)
 - [Architecture](#architecture)
+- [Collaboration & Agile Workflow with Jira](#collaboration--agile-workflow-with-jira)
+  - [Introduction](#introduction)
+  - [Agile Approach](#agile-approach)
+  - [Why Jira?](#why-jira)
+  - [Project Board](#project-board)
+  - [Workflow](#workflow)
 - [Backend](#backend)
   - [Features](#features)
   - [Prerequisites & Installation](#prerequisites--installation-backend)
@@ -215,6 +222,72 @@ This project consists of 4 primary microservices that interact with each other:
    - Deployed on Vercel at [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app).
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
+
+---
+
+## Collaboration & Agile Workflow with Jira
+
+### Introduction
+
+This project is currently using Jira for task management and collaboration. The project's Kanban board is organized into six main columns: **Backlog**, **To Do**, **In Progress**, **Testing**, **Code Review**, and **Done**.
+Each task is assigned to a specific team member and includes detailed descriptions, acceptance criteria, and due dates.
+
+### Agile Approach
+
+We are following an AGILE approach to development, which emphasizes iterative progress, collaboration, and flexibility. This allows us to adapt to changes quickly and deliver value to users in a timely manner.
+
+Agile methodologies, such as Scrum or Kanban, are used to manage the development process, ensuring that tasks are prioritized, completed, and reviewed efficiently. This approach helps us maintain a high level of quality and responsiveness to user needs.
+
+We chose Kanban for this project because it allows us to visualize the workflow, limit work in progress, and focus on delivering value incrementally. The Kanban board provides a clear overview of the project's status, making it easy to track progress and identify bottlenecks.
+
+- A in AGILE: Stands for **Adaptive**. We adapt to changes quickly and efficiently, ensuring that the project remains aligned with user needs and expectations.
+- G in AGILE: Stands for **Goal-oriented**. We focus on achieving specific goals and delivering value to users, ensuring that each task contributes to the overall success of the project.
+- I in AGILE: Stands for **Iterative**. We work in iterations, allowing us to continuously improve the project and respond to feedback from users and stakeholders.
+- L in AGILE: Stands for **Lean**. We aim to minimize waste and maximize value, ensuring that resources are used efficiently and effectively.
+- E in AGILE: Stands for **Empowered**. We empower team members to take ownership of their tasks and contribute to the project's success, fostering a collaborative and supportive environment.
+
+We believe that this AGILE approach, combined with the use of Jira for task management, will help us deliver a high-quality product that meets the needs of government staff and the public.
+
+### Why Jira?
+
+We are currently pursuing an AGILE approach to development, and Jira is a great tool for managing tasks, tracking progress, and facilitating collaboration among team members. It allows us to create tasks, assign them to team members, set priorities, and track the status of each task in real-time.
+
+Also, Jira provides a comprehensive set of features for managing projects, including sprint planning, backlog management, and reporting. It allows us to create user stories, epics, and tasks, and track their progress throughout the development cycle.
+
+### Project Board
+
+**You can view the project board and tasks at [https://ai-content-curator.atlassian.net](https://ai-content-curator.atlassian.net/jira/software/projects/AICC/boards/3?atlOrigin=eyJpIjoiZDM2MDQ4MWUwYTVkNGNhNzkzZmI5YjE2NGZmZjc2ZDAiLCJwIjoiaiJ9).**
+
+> Login is required to access the board, and you can create an account if you don't have one.
+
+If you need **access** to the project board, please contact me directly at [sonnguyenhoang.com](https://sonnguyenhoang.com) or via email at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com) for an invitation. I believe that having access to the project board will help you understand the project's progress, tasks, and overall workflow better, and it will also allow you to contribute more effectively to the project.
+
+### Workflow
+
+The workflow for this project is as follows: As soon as you receive a task (verbally or in writing) or come up with an idea:
+
+1. Create a new task in the **Backlog** column of the Jira board.
+2. Add a detailed description of the task, including acceptance criteria and due date.
+3. Assign the task to yourself or another team member.
+4. Create a new branch in the GitHub repository for the task. Make sure that you use the Jira issue key in the branch name (e.g., `AICC-123`).
+   - Mark the Jira task as **To Do**/**In Progress**.
+   - This is very important for Jira to recognize the branch and link it to the task!
+5. Work on the task in your local development environment, committing changes to the branch as you go.
+6. Once the task is complete, push the branch to the remote repository and create a pull request (PR) in GitHub.
+   - Name the PR with a descriptive title that includes the Jira issue key (e.g., `feat(ui): implement new feature [AICC-123`).
+   - Before you commit your changes, make sure to run any applicable tests and ensure that the code is properly formatted and linted.
+7. Assign the PR to the appropriate team member for code review.
+   - Move the Jira task to the **Code Review** column.
+8. Make any necessary changes based on feedback from the code review.
+9. Once the PR is approved, merge it into the main branch.
+   - Make sure to resolve any merge conflicts before merging.
+10. After merging, move the Jira task to the **Done** column.
+
+This workflow ensures that tasks are tracked, code is reviewed, and the project progresses smoothly. It also allows for easy collaboration and communication among team members, and for our pursuit of an AGILE approach to development.
+
+<p align="center">
+  <img src="frontend/img/jira-board.png" alt="Jira Board" width="100%">
+</p>
 
 ---
 
@@ -926,26 +999,13 @@ make <target>
 | `dev:backend`  | Start the backend in development mode      |
 | and more...    |                                            |
 
-## Contributing
+To see all available targets, run:
 
-1. **Fork** the repository and clone it locally.
-2. **Create a Feature Branch:**
+```bash
+make help
+```
 
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-3. **Commit Your Changes:**
-
-   ```bash
-   git commit -m "Description of your feature"
-   ```
-
-   > NOTE: Be sure to run `npm run format` in the root directory to format your code before committing!
-
-4. **Push the Branch and Open a Pull Request.**
-
-Contributions are welcome! Please ensure that your code adheres to the project’s linting and formatting guidelines.
+This will display a list of all targets defined in the Makefile along with their descriptions.
 
 ---
 
@@ -1035,7 +1095,7 @@ This project is licensed under the MIT License. See the [LICENSE](./LICENSE) fil
 
 ## Contact
 
-If you have any questions or suggestions, feel free to reach out to me:
+If you have any questions or suggestions, feel free to reach out to the repository maintainer:
 
 - **David Nguyen**
   - [LinkedIn](https://www.linkedin.com/in/hoangsonw/)
@@ -1043,7 +1103,9 @@ If you have any questions or suggestions, feel free to reach out to me:
   - [Email](mailto:hoangson091104@gmail.com)
   - [Website](https://sonnguyenhoang.com/)
 
-A new development team might be formed to continue the project, so please check back for updates!
+I will be happy to assist you with any questions or issues you may have regarding this project.
+
+> If I don't know the answer, I'll be able to forward your question to the right person in the AICC team who can help you!
 
 ---
 

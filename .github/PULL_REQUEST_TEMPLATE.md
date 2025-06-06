@@ -13,7 +13,7 @@ Reference any related issues using `#1234` notation.
 
 ## Related Issue
 
-Fixes # (issue number)
+Add Jira issue link here.
 
 ## Type of Change
 
@@ -35,7 +35,11 @@ _Select all that apply_:
 - [ ] `backend`
 - [ ] `crawler`
 - [ ] `bin` / CLI
+- [ ] `newsletters`
+- [ ] `.github` / GitHub Actions
+- [ ] `shell` / scripts
 - [ ] Root / tooling
+- [ ] Other (please specify)
 
 ## Checklist
 
