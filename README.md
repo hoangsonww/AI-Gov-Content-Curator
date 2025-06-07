@@ -240,11 +240,11 @@ Agile methodologies, such as Scrum or Kanban, are used to manage the development
 
 We chose Kanban for this project because it allows us to visualize the workflow, limit work in progress, and focus on delivering value incrementally. The Kanban board provides a clear overview of the project's status, making it easy to track progress and identify bottlenecks.
 
-- A in AGILE: Stands for **Adaptive**. We adapt to changes quickly and efficiently, ensuring that the project remains aligned with user needs and expectations.
-- G in AGILE: Stands for **Goal-oriented**. We focus on achieving specific goals and delivering value to users, ensuring that each task contributes to the overall success of the project.
-- I in AGILE: Stands for **Iterative**. We work in iterations, allowing us to continuously improve the project and respond to feedback from users and stakeholders.
-- L in AGILE: Stands for **Lean**. We aim to minimize waste and maximize value, ensuring that resources are used efficiently and effectively.
-- E in AGILE: Stands for **Empowered**. We empower team members to take ownership of their tasks and contribute to the project's success, fostering a collaborative and supportive environment.
+- **A** in AGILE: Stands for **Adaptive**. We adapt to changes quickly and efficiently, ensuring that the project remains aligned with user needs and expectations.
+- **G** in AGILE: Stands for **Goal-oriented**. We focus on achieving specific goals and delivering value to users, ensuring that each task contributes to the overall success of the project.
+- **I** in AGILE: Stands for **Iterative**. We work in iterations, allowing us to continuously improve the project and respond to feedback from users and stakeholders.
+- **L** in AGILE: Stands for **Lean**. We aim to minimize waste and maximize value, ensuring that resources are used efficiently and effectively.
+- **E** in AGILE: Stands for **Empowered**. We empower team members to take ownership of their tasks and contribute to the project's success, fostering a collaborative and supportive environment.
 
 We believe that this AGILE approach, combined with the use of Jira for task management, will help us deliver a high-quality product that meets the needs of government staff and the public.
 
@@ -419,6 +419,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   Authenticated users can mark articles as favorites for quick access.
 - **Newsletter Subscription:**  
   Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
+- **Discussions & Comments:**  
+  Users can also discuss and comment on articles, fostering engagement and collaboration.
 
 ### Backend Swagger API Documentation
 

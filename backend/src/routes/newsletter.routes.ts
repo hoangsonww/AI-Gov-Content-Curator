@@ -16,6 +16,8 @@ const router = Router();
  *   post:
  *     tags: [Newsletter]
  *     summary: Subscribe an e‑mail address to the newsletter
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -45,6 +47,8 @@ router.post("/subscribe", subscribe);
  *   post:
  *     tags: [Newsletter]
  *     summary: Unsubscribe an e‑mail address from the newsletter
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -69,6 +73,8 @@ router.post("/subscribe", subscribe);
  *   get:
  *     tags: [Newsletter]
  *     summary: One‑click unsubscribe via query parameter
+ *     security:
+ *       - ApiKeyAuth: []
  *     parameters:
  *       - in: query
  *         name: email

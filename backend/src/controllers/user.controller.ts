@@ -127,3 +127,20 @@ export const searchFavoriteArticles = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+/**
+ * Get all users (for admin purposes)
+ * @param _req - Request
+ * @param res - Response
+ */
+export const getAllUsers = async (_req: Request, res: Response) => {
+  try {
+    const users = await User.find()
+      .select("_id username name")
+      .sort({ username: 1 });
+    res.json({ data: users });
+  } catch (error) {
+    console.error("Error retrieving all users:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import newsletterRoutes from "./routes/newsletter.routes";
 import chatRoutes from "./routes/chat.routes";
+import commentRoutes from "./routes/comment.routes";
 
 import swaggerDocs from "./swagger/swagger";
 
@@ -20,7 +21,7 @@ const app = express();
 /* ───────────── MongoDB connection ───────────── */
 
 // Tell Mongoose to fail fast instead of silently queuing queries
-mongoose.set("bufferCommands", false);
+// mongoose.set("bufferCommands", false);
 mongoose.set("strictQuery", false);
 
 // Cache the connection across hot‑reloads or server‑less warm starts
@@ -107,18 +108,18 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 
 /* ───────────── Optional safeguard ─────────────
    Reject requests until the DB is connected.
-   Comment out if you prefer to serve even without DB.
 ----------------------------------------------------------------*/
 
-app.use((_req: Request, res: Response, next: NextFunction) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.status(503).json({ error: "Database not connected yet" });
-  }
-  next();
-});
+// app.use((_req: Request, res: Response, next: NextFunction) => {
+//   if (mongoose.connection.readyState !== 1) {
+//     return res.status(503).json({ error: "Database not connected yet" });
+//   }
+//   next();
+// });
 
 /* ───────────── API routes ───────────── */
 
+app.use("/api/comments", commentRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

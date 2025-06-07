@@ -22,6 +22,8 @@ const router = Router();
  *   post:
  *     tags: [Authentication]
  *     summary: Register a new user
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -54,6 +56,8 @@ router.post("/register", register);
  *   post:
  *     tags: [Authentication]
  *     summary: Log in an existing user
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -84,6 +88,8 @@ router.post("/login", login);
  *   get:
  *     tags: [Authentication]
  *     summary: Verify user email address
+ *     security:
+ *       - ApiKeyAuth: []
  *     description: Verify a user's email using a verification token sent via email.
  *     parameters:
  *       - in: query
@@ -115,6 +121,8 @@ router.get("/verify-email", verifyEmail);
  *   post:
  *     tags: [Authentication]
  *     summary: Request a password reset token
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -143,6 +151,8 @@ router.post("/reset-password", resetPasswordRequest);
  *   post:
  *     tags: [Authentication]
  *     summary: Confirm password reset
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:

@@ -16,6 +16,8 @@ const router = Router();
  *   post:
  *     tags: [Chat]
  *     summary: Ask a question about the current article and receive an AI‑powered answer
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:

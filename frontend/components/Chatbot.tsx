@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import ReactDOM from "react-dom";
 import {
-  AiOutlineRobot,
   AiOutlineClose,
   AiOutlineSend,
   AiOutlineLoading3Quarters,
   AiOutlineDelete,
 } from "react-icons/ai";
+import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -214,7 +214,7 @@ export default function Chatbot({ article }: { article: Article }) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
       >
-        <AiOutlineRobot size={26} />
+        <IoChatbubbleEllipsesOutline size={26} />
       </div>
 
       {portal &&
