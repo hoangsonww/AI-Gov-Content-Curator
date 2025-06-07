@@ -163,3 +163,51 @@ export const deleteComment = async (req: Request, res: Response) => {
       .json({ error: err.message || "Failed to delete comment" });
   }
 };
+
+type VoteValue = -1 | 0 | 1;
+
+/**
+ * Records or clears a vote by the authenticated user on the specified comment.
+ * Only the calling user’s own vote array is modified.
+ */
+export const voteComment = async (req: Request, res: Response) => {
+  try {
+    const me = requireUser(req);
+    const { id } = req.params;
+    const { value } = req.body as { value: VoteValue };
+
+    if (!Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid comment ID" });
+    }
+    if (![-1, 0, 1].includes(value)) {
+      return res.status(400).json({ error: "`value` must be -1, 0, or 1" });
+    }
+
+    // 1) Load the comment document
+    const comment = await Comment.findById(id);
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    // 2) Remove any existing vote by this user
+    comment.upvotes.pull(me.id);
+    comment.downvotes.pull(me.id);
+
+    // 3) Apply the new vote
+    if (value === 1) {
+      comment.upvotes.addToSet(me.id);
+    } else if (value === -1) {
+      comment.downvotes.addToSet(me.id);
+    }
+    // if value === 0, cleared
+
+    // 4) Save and return
+    await comment.save();
+    await comment.populate("user", "_id username name");
+    await comment.populate("article", "_id title");
+
+    res.json(comment);
+  } catch (err: any) {
+    res
+      .status(err.status || 500)
+      .json({ error: err.message || "Failed to vote" });
+  }
+};

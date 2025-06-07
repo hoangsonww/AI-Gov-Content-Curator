@@ -96,3 +96,24 @@ export async function deleteCommentAPI(
   });
   if (!res.ok) throw new Error("Failed to delete comment");
 }
+
+/**
+ * Vote on a comment (like/dislike).
+ * POST /api/comments/:commentId/vote
+ */
+export async function voteCommentAPI(
+  commentId: string,
+  value: -1 | 0 | 1,
+  token: string,
+): Promise<Comment> {
+  const res = await fetch(`${BASE_URL}/comments/${commentId}/vote`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token,
+    },
+    body: JSON.stringify({ value }),
+  });
+  if (!res.ok) throw new Error("Failed to vote on comment");
+  return res.json() as Promise<Comment>;
+}
