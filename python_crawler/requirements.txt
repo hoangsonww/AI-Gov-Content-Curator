@@ -1,0 +1,5 @@
+aiohttp>=3.8.4
+beautifulsoup4>=4.12.2
+playwright>=1.38.0
+google-generative-ai>=0.1.0
+python-dotenv>=1.0.0

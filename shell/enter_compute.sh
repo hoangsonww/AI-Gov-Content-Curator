@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# docker_compute.sh
+# enter_compute.sh
 #
 # Opens an interactive shell in the running Docker container named "compute".
-# Usage: ./docker_compute.sh [container_name]
+# Usage: ./enter_compute.sh [container_name]
 #
 
 set -euo pipefail
