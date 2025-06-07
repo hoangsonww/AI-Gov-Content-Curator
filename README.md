@@ -419,6 +419,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   Authenticated users can mark articles as favorites for quick access.
 - **Newsletter Subscription:**  
   Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
+- **Discussions & Comments:**  
+  Users can also discuss and comment on articles, fostering engagement and collaboration.
 
 ### Backend Swagger API Documentation
 

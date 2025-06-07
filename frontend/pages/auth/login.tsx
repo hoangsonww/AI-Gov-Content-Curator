@@ -20,7 +20,7 @@ export default function Login() {
     try {
       const data = await loginUser(email, password);
       setMessage("");
-      toast("Login successful! 🔐");
+      toast("Login successful! Redirecting to Home... 🔐");
       router.push("/home");
     } catch (err: any) {
       setError(err.message);

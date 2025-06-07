@@ -1,3 +1,5 @@
+// pages/articles/[id].tsx
+
 import React, { useCallback, useState } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
@@ -5,7 +7,8 @@ import Link from "next/link";
 import { MdHome, MdContentCopy, MdEmail, MdCheck } from "react-icons/md";
 import { AiOutlineTwitter, AiFillLinkedin } from "react-icons/ai";
 import { FaFacebookF } from "react-icons/fa";
-
+import { motion, Variants } from "framer-motion";
+import Comments from "../../components/Comments";
 import { Article } from "../home";
 import ArticleDetail from "../../components/ArticleDetail";
 import Chatbot from "../../components/Chatbot";
@@ -14,6 +17,20 @@ import { getArticleById } from "../../services/api";
 interface ArticlePageProps {
   article: Article;
 }
+
+const buttonContainer: Variants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const buttonItem: Variants = {
+  hidden: { y: -10, opacity: 0 },
+  show: { y: 0, opacity: 1, transition: { duration: 0.3 } },
+};
 
 export default function ArticlePage({ article }: ArticlePageProps) {
   const [copied, setCopied] = useState(false);
@@ -91,52 +108,79 @@ export default function ArticlePage({ article }: ArticlePageProps) {
       <div className="page-wrapper">
         <ArticleDetail article={article} />
 
-        <div className="action-buttons">
-          <button
-            className={`action-btn ${copied ? "copied" : ""}`}
-            onClick={copyAll}
-            title="Copy all article info"
-          >
-            {copied ? <MdCheck size={20} /> : <MdContentCopy size={20} />}
-          </button>
-          <button
-            className="action-btn"
-            onClick={shareEmail}
-            title="Share via Email"
-          >
-            <MdEmail size={20} />
-          </button>
-          <button
-            className="action-btn"
-            onClick={shareTwitter}
-            title="Share on Twitter"
-          >
-            <AiOutlineTwitter size={20} />
-          </button>
-          <button
-            className="action-btn"
-            onClick={shareLinkedIn}
-            title="Share on LinkedIn"
-          >
-            <AiFillLinkedin size={20} />
-          </button>
-          <button
-            className="action-btn"
-            onClick={shareFacebook}
-            title="Share on Facebook"
-          >
-            <FaFacebookF size={20} />
-          </button>
-        </div>
+        <motion.div
+          className="action-buttons"
+          variants={buttonContainer}
+          initial="hidden"
+          animate="show"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "0.5rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <motion.button
+              className={`action-btn ${copied ? "copied" : ""}`}
+              onClick={copyAll}
+              title="Copy all article info"
+              variants={buttonItem}
+            >
+              {copied ? <MdCheck size={20} /> : <MdContentCopy size={20} />}
+            </motion.button>
+            <motion.button
+              className="action-btn"
+              onClick={shareEmail}
+              title="Share via Email"
+              variants={buttonItem}
+            >
+              <MdEmail size={20} />
+            </motion.button>
+            <motion.button
+              className="action-btn"
+              onClick={shareTwitter}
+              title="Share on Twitter"
+              variants={buttonItem}
+            >
+              <AiOutlineTwitter size={20} />
+            </motion.button>
+            <motion.button
+              className="action-btn"
+              onClick={shareLinkedIn}
+              title="Share on LinkedIn"
+              variants={buttonItem}
+            >
+              <AiFillLinkedin size={20} />
+            </motion.button>
+            <motion.button
+              className="action-btn"
+              onClick={shareFacebook}
+              title="Share on Facebook"
+              variants={buttonItem}
+            >
+              <FaFacebookF size={20} />
+            </motion.button>
+          </div>
 
-        <div className="nav-back">
-          <Link href="/home" legacyBehavior>
-            <a>
+          <Link href="/home" passHref legacyBehavior>
+            <motion.a
+              className="action-btn"
+              title="Back to Home"
+              variants={buttonItem}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <MdHome size={20} />
-              Back to Home
-            </a>
+            </motion.a>
           </Link>
-        </div>
+        </motion.div>
+
+        <Comments articleId={article._id} />
 
         <Chatbot article={article} />
       </div>
@@ -151,7 +195,6 @@ export const getStaticPaths: GetStaticPaths = async () => ({
 
 export const getStaticProps: GetStaticProps<ArticlePageProps> = async (ctx) => {
   const { id } = ctx.params || {};
-
   try {
     const article = await getArticleById(id as string);
     if (!article) {

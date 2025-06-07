@@ -6,16 +6,16 @@ import NewsletterSubscriber from "../models/newsletterSubscriber.model";
  *  Ensure the test account exists exactly once in the DB
  *  (runs once when this module is first evaluated).
  *  ----------------------------------------------------------------*/
-(async () => {
-  const testEmail = "snguyen2022@macduffie.org";
-  const existing = await NewsletterSubscriber.findOne({ email: testEmail });
-  if (!existing) {
-    await NewsletterSubscriber.create({ email: testEmail });
-    console.log(`Seeded test subscriber ${testEmail}`);
-  }
-})().catch((err) =>
-  console.error("Failed to seed test subscriber:", err.message),
-);
+// (async () => {
+//   const testEmail = "snguyen2022@macduffie.org";
+//   const existing = await NewsletterSubscriber.findOne({ email: testEmail });
+//   if (!existing) {
+//     await NewsletterSubscriber.create({ email: testEmail });
+//     console.log(`Seeded test subscriber ${testEmail}`);
+//   }
+// })().catch((err) =>
+//   console.error("Failed to seed test subscriber:", err.message),
+// );
 
 /**
  * Subscribe a user to the newsletter

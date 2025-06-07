@@ -5,6 +5,7 @@ import {
   toggleFavoriteArticle,
   validateTokenController,
   searchFavoriteArticles,
+  getAllUsers,
 } from "../controllers/user.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -16,6 +17,37 @@ const router = Router();
  *   - name: Favorites
  *     description: Manage user's favorite articles
  */
+
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     tags: [Users]
+ *     summary: Retrieve all users
+ *     description: Fetches a list of all registered users with basic info.
+ *     responses:
+ *       200:
+ *         description: Array of user objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       username:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *       500:
+ *         description: Server error
+ */
+router.get("/", getAllUsers);
 
 /**
  * @swagger

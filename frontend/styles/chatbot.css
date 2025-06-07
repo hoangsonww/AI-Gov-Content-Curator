@@ -99,7 +99,6 @@
 .cb-placeholder {
   text-align: center;
   color: var(--loading-text);
-  font-style: italic;
 }
 
 .cb-bubble {

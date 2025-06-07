@@ -1,4 +1,3 @@
-// pages/_app.tsx
 "use client";
 import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
@@ -24,6 +23,7 @@ import "../styles/chatbot.css";
 import "../styles/newsletter.css";
 import "../styles/footer.css";
 import "../styles/landing.css";
+import "../styles/comments.css";
 import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";
 import { Analytics } from "@vercel/analytics/react";

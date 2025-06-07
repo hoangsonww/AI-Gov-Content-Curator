@@ -1,0 +1,358 @@
+:root {
+  --cb-radius: 0.5rem;
+  --cb-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+  --cb-border: 1px solid var(--card-border);
+  --font-inter: "Inter", sans-serif;
+}
+
+.comments-section {
+  font-family: var(--font-inter), sans-serif;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border: var(--cb-border);
+  border-radius: var(--cb-radius);
+  box-shadow: var(--cb-shadow);
+}
+
+.comments-title {
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.comments-subheading {
+  margin: 0.5rem 0 1rem;
+  font-size: 1rem;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.new-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.new-comment-textarea {
+  width: 100%;
+  min-height: 5rem;
+  padding: 1rem;
+  border: var(--cb-border);
+  border-radius: var(--cb-radius);
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-inter), sans-serif;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.new-comment-btn {
+  align-self: flex-end;
+}
+
+.comment {
+  position: relative;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: var(--card-bg);
+  border: var(--cb-border);
+  border-radius: var(--cb-radius);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.comment:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.8;
+  margin-bottom: 0.75rem;
+}
+
+.author {
+  font-weight: 500;
+}
+
+.date {
+  font-style: italic;
+}
+
+.content {
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+  color: var(--text-color);
+}
+
+.controls,
+.edit-mode {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--hover-bg);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+
+.icon-btn:hover {
+  transform: scale(1.15);
+  background: var(--accent-color);
+}
+
+.icon-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--text-color) !important;
+}
+
+.icon-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--text-color) !important;
+}
+
+.page-btn {
+  color: var(--text-color) !important;
+}
+
+.page-btn svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor !important;
+}
+
+.edit-textarea {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem;
+  border: var(--cb-border);
+  border-radius: var(--cb-radius);
+  background: var(--card-bg);
+  color: var(--text-color);
+  font-family: var(--font-inter), sans-serif;
+  resize: vertical;
+}
+
+.btn {
+  font-family: var(--font-inter), sans-serif;
+  border-radius: var(--cb-radius);
+  box-shadow: var(--cb-shadow);
+  transition:
+    transform 0.15s,
+    opacity 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent-color);
+  color: var(--bg-color);
+  border: none;
+  padding: 0.6rem 1.2rem;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.page-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--hover-bg);
+  border: var(--cb-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+
+.page-btn:hover:not(:disabled) {
+  transform: scale(1.15);
+  background: var(--accent-color);
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.page-indicator {
+  font-size: 1rem;
+  color: var(--text-color);
+  text-align: center;
+}
+
+/* empty-state */
+.comments-empty {
+  text-align: center;
+  font-style: italic;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin: 2rem 0;
+}
+
+/* login-prompt */
+.login-prompt {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+.login-prompt a {
+  color: var(--accent-color);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+mention-popup {
+  position: absolute;
+  top: 3.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--cb-radius);
+  box-shadow: var(--cb-shadow);
+  max-height: 8rem;
+  overflow-y: auto;
+  z-index: 10;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+.mention-popup li {
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+.mention-popup li.active,
+.mention-popup li:hover {
+  background: var(--hover-bg);
+}
+
+.mention-popup {
+  position: absolute;
+  top: 3.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--cb-radius);
+  box-shadow: var(--cb-shadow);
+  max-height: 8rem;
+  overflow-y: auto;
+  z-index: 10;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+
+.mention-popup.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.mention-popup li {
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mention-popup li.active,
+.mention-popup li:hover {
+  background: var(--hover-bg);
+}
+
+.edit-mode {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.edit-mode .icon-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* overlay */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.confirm-dialog {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--cb-radius);
+  box-shadow: var(--cb-shadow);
+  text-align: center;
+}
+.confirm-dialog p {
+  margin-bottom: 1rem;
+}
+.confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.confirm-actions .btn,
+.confirm-actions .btn-primary {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem 0;
+  min-width: 0;
+}
+.confirm-actions .btn-primary {
+  background: var(--accent-color);
+  color: var(--bg-color);
+}
