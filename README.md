@@ -34,7 +34,7 @@ Each component is maintained in its own directory:
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
-![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white)
+![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Shadcn UI](https://img.shields.io/badge/Shadcn_UI-000?style=flat&logo=shadcnui&logoColor=white)
 ![Playwright](https://img.shields.io/badge/Playwright-333333?style=flat&logo=vitest&logoColor=white)
@@ -202,26 +202,28 @@ This project consists of 4 primary microservices that interact with each other:
    - Uses Axios and Cheerio for static HTML parsing, with Puppeteer as a fallback for dynamic content.
    - Scheduled to run daily at 6:00 AM UTC via a serverless function on Vercel.
    - Provides a basic landing page with information about the crawler and links to the backend and frontend.
-   - Deployed on Vercel at [https://ai-content-curator-crawler.vercel.app](https://ai-content-curator-crawler.vercel.app).
+   - **_Deployed on Vercel at [https://ai-content-curator-crawler.vercel.app](https://ai-content-curator-crawler.vercel.app)._**
 2. **Backend:**
    - Built with Express.js and Next.js, serving as a RESTful API for the frontend.
    - Integrates Google Generative AI (Gemini) for content summarization.
    - Stores articles in MongoDB using Mongoose, with fields for URL, title, full content, summary, source information, and fetch timestamp.
    - Scheduled serverless function to fetch and process new articles daily at 6:00 AM UTC.
-   - Deployed on Vercel at [https://ai-content-curator-backend.vercel.app](https://ai-content-curator-backend.vercel.app).
+   - **_Deployed on Vercel at [https://ai-content-curator-backend.vercel.app](https://ai-content-curator-backend.vercel.app)._**
 3. **Newsletter Service:**
    - Allows users to subscribe to a newsletter for daily updates on the latest articles.
    - Integrated with Resend API for managing subscriptions and sending emails.
    - By default, the newsletter is sent daily at 9:00 AM UTC, from the email address with the `sonnguyenhoang.com` domain.
-   - Deployed on Vercel as a serverless function, at [https://ai-content-curator-newsletters.vercel.app](https://ai-content-curator-newsletters.vercel.app).
+   - **_Deployed on Vercel as a serverless function, at [https://ai-content-curator-newsletters.vercel.app](https://ai-content-curator-newsletters.vercel.app)._**
 4. **Frontend:**
    - Built with Next.js and React, providing a modern, mobile-responsive UI for browsing and viewing curated articles.
    - Fetches and displays a paginated list of articles from the backend API, with filtering options.
    - Dedicated pages for full article content, AI-generated summaries, source information, and fetched timestamps.
-   - User authentication for marking articles as favorites.
-   - Deployed on Vercel at [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app).
+   - User authentication for marking articles as favorites, commenting, discussions, and upvoting/downvoting comments.
+   - **_Deployed on Vercel at [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app)._**
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
+
+> Note: This architecture diagram is a simplified representation and may not include all components or interactions. For a more detailed view, please refer to the individual service documentation.
 
 ---
 
@@ -421,6 +423,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
 - **Discussions & Comments:**  
   Users can also discuss and comment on articles, fostering engagement and collaboration.
+- **Upvote/Downvote Comments:**  
+  Users can upvote or downvote comments to highlight valuable contributions.
 
 ### Backend Swagger API Documentation
 
