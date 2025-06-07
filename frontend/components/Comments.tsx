@@ -311,7 +311,10 @@ export default function Comments({ articleId }: CommentsProps) {
 
   /* ---------- votes ---------- */
   const vote = async (id: string, v: VoteValue) => {
-    if (!token) return;
+    if (!token) {
+      toast.info("You must be logged in to vote! 😊");
+      return;
+    }
     const prevVote = myVotes[id] ?? 0;
 
     /* optimistic UI */
@@ -338,10 +341,18 @@ export default function Comments({ articleId }: CommentsProps) {
 
   const handleUp = (id: string) => {
     const cur = myVotes[id] ?? 0;
+    if (!token) {
+      toast.info("You must be logged in to vote! 😊");
+      return;
+    }
     vote(id, cur === 1 ? 0 : 1);
   };
   const handleDown = (id: string) => {
     const cur = myVotes[id] ?? 0;
+    if (!token) {
+      toast.info("You must be logged in to vote! 😊");
+      return;
+    }
     vote(id, cur === -1 ? 0 : -1);
   };
 
@@ -601,7 +612,6 @@ export default function Comments({ articleId }: CommentsProps) {
                 style={inEdit ? { marginTop: "0.75rem" } : {}}
               >
                 <button
-                  disabled={!token}
                   className={`vote-btn ${myVote === 1 ? "active" : ""}`}
                   onClick={() => handleUp(c._id)}
                   title={token ? "Up‑vote" : "Log in to vote"}
@@ -610,7 +620,6 @@ export default function Comments({ articleId }: CommentsProps) {
                 </button>
                 <span className="score">{c.score}</span>
                 <button
-                  disabled={!token}
                   className={`vote-btn ${myVote === -1 ? "active" : ""}`}
                   onClick={() => handleDown(c._id)}
                   title={token ? "Down‑vote" : "Log in to vote"}
