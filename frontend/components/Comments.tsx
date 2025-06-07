@@ -5,6 +5,7 @@ import React, {
   useRef,
   ChangeEvent,
   KeyboardEvent,
+  useMemo,
 } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -15,14 +16,28 @@ import {
   MdClose,
   MdChevronLeft,
   MdChevronRight,
+  MdArrowUpward,
+  MdArrowDownward,
+  MdFilterList,
 } from "react-icons/md";
+import {
+  FaPlane,
+  FaCat,
+  FaDog,
+  FaRocket,
+  FaCarSide,
+  FaGhost,
+  FaIceCream,
+  FaLeaf,
+  FaSmile,
+} from "react-icons/fa";
 import {
   fetchCommentsForArticle,
   postComment,
   updateCommentAPI,
   deleteCommentAPI,
+  voteCommentAPI,
   Comment,
-  CommentPage,
 } from "../services/comments";
 import { toast } from "react-toastify";
 
@@ -30,9 +45,16 @@ interface CommentsProps {
   articleId: string;
 }
 
+/* ---------- helpers ---------- */
 interface User {
   _id: string;
   name: string;
+}
+type VoteValue = -1 | 0 | 1;
+interface CommentExt extends Comment {
+  score: number;
+  upvotes?: string[];
+  downvotes?: string[];
 }
 
 function detectMention(text: string, cursor: number) {
@@ -42,53 +64,108 @@ function detectMention(text: string, cursor: number) {
   return { start: at, query: up.slice(at + 1).toLowerCase() };
 }
 
-export default function Comments({ articleId }: CommentsProps) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+/* ---------- avatar palette ---------- */
+const iconPalette = [
+  FaPlane,
+  FaCat,
+  FaDog,
+  FaRocket,
+  FaCarSide,
+  FaGhost,
+  FaIceCream,
+  FaLeaf,
+  FaSmile,
+];
 
+export default function Comments({ articleId }: CommentsProps) {
+  /* ---------- state ---------- */
+  const perPage = 10;
+  const [allComments, setAllComments] = useState<CommentExt[]>([]);
+  const [page, setPage] = useState(1);
+
+  /* sort pop‑over */
+  const [sortOpen, setSortOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<
+    "latest" | "earliest" | "most" | "least"
+  >("latest");
+
+  /* votes – commentId → my vote (‑1/0/1) */
+  const [myVotes, setMyVotes] = useState<Record<string, VoteValue>>({});
+
+  /* new / edit content */
   const [newContent, setNewContent] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
 
+  /* mention */
   const [users, setUsers] = useState<User[]>([]);
   const [mentionMode, setMentionMode] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [mentionIndex, setMentionIndex] = useState(0);
   const [mentionTarget, setMentionTarget] = useState<"new" | "edit">("new");
 
+  /* delete confirm */
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  /* refs */
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
 
+  /* avatar assignment (every icon used before repeat) */
+  const iconAssign = useRef<Record<string, number>>({});
+  const iconCounter = useRef(0);
+
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const myId = useMemo(() => {
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.id as string;
+    } catch {
+      return null;
+    }
+  }, [token]);
 
-  // load comments (always slices client-side to 10 per page)
+  /* ---------- fetch ALL comments once ---------- */
   const load = useCallback(async () => {
     try {
-      const full = (await fetchCommentsForArticle(
+      /* ask backend for a lot – effectively “all” */
+      const bigLimit = 1000;
+      const { comments } = await fetchCommentsForArticle(
         articleId,
-        page,
-        10,
+        1,
+        bigLimit,
         token || undefined,
-      )) as CommentPage;
-      const allComments = full.comments;
-      const start = (page - 1) * 10;
-      const pageComments = allComments.slice(start, start + 10);
-      setComments(pageComments);
-      setHasMore(allComments.length > start + 10);
+      );
+
+      const ext: CommentExt[] = comments.map((c: any) => ({
+        ...c,
+        score: c.score ?? (c.upvotes?.length || 0) - (c.downvotes?.length || 0),
+      }));
+
+      /* capture my existing votes (if logged in) */
+      if (myId) {
+        const mine: Record<string, VoteValue> = {};
+        ext.forEach((c) => {
+          if (c.upvotes?.includes(myId)) mine[c._id] = 1;
+          else if (c.downvotes?.includes(myId)) mine[c._id] = -1;
+        });
+        setMyVotes(mine);
+      }
+
+      setAllComments(ext);
+      setPage(1); // reset page whenever re‑loading
     } catch {
       toast.error("Could not load comments.");
     }
-  }, [articleId, page, token]);
+  }, [articleId, token, myId]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  // prefetch all users
+  /* ---------- users for mention ---------- */
   useEffect(() => {
     fetch("https://ai-content-curator-backend.vercel.app/api/users")
       .then((r) => r.json())
@@ -96,7 +173,7 @@ export default function Comments({ articleId }: CommentsProps) {
       .catch(() => console.error("Failed to fetch users"));
   }, []);
 
-  // shared mention logic for both textareas
+  /* ---------- mention logic ---------- */
   const handleMention = (
     text: string,
     cursor: number,
@@ -180,25 +257,22 @@ export default function Comments({ articleId }: CommentsProps) {
     }, 0);
   };
 
-  // post new comment
+  /* ---------- create / edit ---------- */
   const handlePost = async () => {
     if (!newContent.trim() || !token) return;
     try {
       const saved = await postComment(articleId, newContent, token);
-      // if we're on page 1, insert at top and re-slice
-      if (page === 1) {
-        setComments((prev) =>
-          [saved, ...prev].slice(0, 10)
-        );
-      }
+      const ext: CommentExt = { ...saved, score: 0 };
+      setAllComments((prev) => [ext, ...prev]);
       setNewContent("");
+      setSortBy("latest");
+      setPage(1);
     } catch {
       toast.error("Failed to post comment.");
     }
   };
 
-  // edit existing
-  const startEdit = (c: Comment) => {
+  const startEdit = (c: CommentExt) => {
     setEditingId(c._id);
     setEditingContent(c.content);
   };
@@ -210,20 +284,24 @@ export default function Comments({ articleId }: CommentsProps) {
     if (!editingId || !editingContent.trim() || !token) return;
     try {
       const updated = await updateCommentAPI(editingId, editingContent, token);
-      setComments((p) => p.map((c) => (c._id === editingId ? updated : c)));
+      setAllComments((p) =>
+        p.map((c) =>
+          c._id === editingId ? { ...c, content: updated.content } : c,
+        ),
+      );
       cancelEdit();
     } catch {
       toast.error("Failed to update.");
     }
   };
 
-  // delete flow
+  /* ---------- delete ---------- */
   const onDeleteClick = (id: string) => setConfirmDeleteId(id);
   const confirmDelete = async () => {
     if (!confirmDeleteId || !token) return;
     try {
       await deleteCommentAPI(confirmDeleteId, token);
-      setComments((p) => p.filter((c) => c._id !== confirmDeleteId));
+      setAllComments((p) => p.filter((c) => c._id !== confirmDeleteId));
       setConfirmDeleteId(null);
     } catch {
       toast.error("Failed to delete.");
@@ -231,17 +309,107 @@ export default function Comments({ articleId }: CommentsProps) {
   };
   const cancelDelete = () => setConfirmDeleteId(null);
 
-  const renderContent = (text: string) =>
-    text
-      .split(/(@[^\s]+)/g)
-      .map((part, i) =>
-        part.startsWith("@") ? (
-          <strong key={i}>{part}</strong>
-        ) : (
-          <React.Fragment key={i}>{part}</React.Fragment>
+  /* ---------- votes ---------- */
+  const vote = async (id: string, v: VoteValue) => {
+    if (!token) return;
+    const prevVote = myVotes[id] ?? 0;
+
+    /* optimistic UI */
+    setAllComments((prev) =>
+      prev.map((c) =>
+        c._id === id ? { ...c, score: c.score - prevVote + v } : c,
+      ),
+    );
+    setMyVotes((p) => ({ ...p, [id]: v }));
+
+    try {
+      await voteCommentAPI(id, v, token);
+    } catch {
+      /* rollback */
+      setAllComments((prev) =>
+        prev.map((c) =>
+          c._id === id ? { ...c, score: c.score + prevVote - v } : c,
         ),
       );
+      setMyVotes((p) => ({ ...p, [id]: prevVote }));
+      toast.error("Vote failed.");
+    }
+  };
 
+  const handleUp = (id: string) => {
+    const cur = myVotes[id] ?? 0;
+    vote(id, cur === 1 ? 0 : 1);
+  };
+  const handleDown = (id: string) => {
+    const cur = myVotes[id] ?? 0;
+    vote(id, cur === -1 ? 0 : -1);
+  };
+
+  /* ---------- sorted list + pagination ---------- */
+  const sortedComments = useMemo(() => {
+    const list = [...allComments];
+    switch (sortBy) {
+      case "latest":
+        list.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        break;
+      case "earliest":
+        list.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
+        break;
+      case "most":
+        list.sort((a, b) => b.score - a.score);
+        break;
+      case "least":
+        list.sort((a, b) => a.score - b.score);
+        break;
+    }
+    return list;
+  }, [allComments, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedComments.length / perPage));
+  const pageSlice = sortedComments.slice((page - 1) * perPage, page * perPage);
+
+  /* ---------- outside‑click to close filter popover ---------- */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".filter-container")) {
+        setSortOpen(false);
+      }
+    };
+    if (sortOpen) window.addEventListener("mousedown", handler);
+    return () => window.removeEventListener("mousedown", handler);
+  }, [sortOpen]);
+
+  /* ---------- content renderer ---------- */
+  const renderContent = (text: string) => {
+    const parts: React.ReactNode[] = [];
+    const mentionRegex = /@[^@\s]+(?:\s[^@\s]+)*(?=\s|$)/g;
+    let last = 0,
+      key = 0,
+      m: RegExpExecArray | null;
+    while ((m = mentionRegex.exec(text))) {
+      if (m.index > last)
+        parts.push(
+          <React.Fragment key={key++}>
+            {text.slice(last, m.index)}
+          </React.Fragment>,
+        );
+      parts.push(<strong key={key++}>{m[0].trimEnd()}</strong>);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length)
+      parts.push(
+        <React.Fragment key={key++}>{text.slice(last)}</React.Fragment>,
+      );
+    return parts;
+  };
+
+  /* ---------- render ---------- */
   return (
     <motion.div
       className="comments-section"
@@ -249,12 +417,64 @@ export default function Comments({ articleId }: CommentsProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h3 className="comments-title">Discussion 💬</h3>
+      {/* header + filter */}
+      <div
+        className="comments-header filter-container"
+        style={{ position: "relative", display: "flex", alignItems: "center" }}
+      >
+        <h3 className="comments-title" style={{ flex: 1 }}>
+          Discussion 💬
+        </h3>
+        <button
+          className="icon-btn filter-btn"
+          onClick={() => setSortOpen((o) => !o)}
+          title="Sort comments"
+        >
+          <MdFilterList />
+        </button>
+        {sortOpen && (
+          <div
+            style={{
+              position: "absolute",
+              top: "2.8rem",
+              right: 0,
+              background: "var(--card-bg)",
+              border: "var(--cb-border)",
+              borderRadius: "var(--cb-radius)",
+              boxShadow: "var(--cb-shadow)",
+              padding: "0.5rem 0",
+              zIndex: 200,
+              minWidth: "220px",
+            }}
+          >
+            {[
+              ["latest", "Date (created) – latest"],
+              ["earliest", "Date (created) – earliest"],
+              ["most", "Most up-voted"],
+              ["least", "Least up-voted"],
+            ].map(([val, label]) => (
+              <div
+                key={val}
+                className={`filter-option ${sortBy === val ? "active" : ""}`}
+                onClick={() => {
+                  setSortBy(val as any);
+                  setPage(1);
+                  setSortOpen(false);
+                }}
+              >
+                {label}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <p className="comments-subheading">
         Share your insights about this article below – your perspective could
         spark the next big idea!
       </p>
 
+      {/* new comment box */}
       {!token ? (
         <div className="login-prompt">
           <Link href="/auth/login" legacyBehavior>
@@ -297,42 +517,55 @@ export default function Comments({ articleId }: CommentsProps) {
         </div>
       )}
 
-      {comments.length === 0 ? (
+      {/* list */}
+      {pageSlice.length === 0 ? (
         <div className="comments-empty">
           <em>No comments/discussions yet for this article.</em>
         </div>
       ) : (
-        comments.map((c) => {
+        pageSlice.map((c) => {
           const date = new Date(c.createdAt).toLocaleString();
-          let isMine = false;
-          if (token) {
-            try {
-              const payload = JSON.parse(atob(token.split(".")[1]));
-              isMine = payload.id === c.user._id;
-            } catch {}
+          const isMine = myId === c.user._id;
+
+          /* assign icon per comment */
+          if (iconAssign.current[c._id] === undefined) {
+            iconAssign.current[c._id] =
+              iconCounter.current++ % iconPalette.length;
           }
+          const AvatarIcon = iconPalette[iconAssign.current[c._id]];
+
+          const myVote = myVotes[c._id] ?? 0;
+
+          const inEdit = editingId === c._id;
+
           return (
             <div key={c._id} className="comment">
               <div className="meta">
+                <AvatarIcon className="avatar" />
                 <span className="author">{c.user.name || c.user.username}</span>
                 <span className="date">{date}</span>
               </div>
 
-              {editingId === c._id ? (
-                <div className="edit-mode" style={{ position: "relative" }}>
+              {/* content or edit box */}
+              {inEdit ? (
+                <div
+                  className="edit-mode"
+                  style={{ position: "relative", gap: "0.75rem" }}
+                >
                   <textarea
                     ref={editRef}
                     className="edit-textarea"
                     value={editingContent}
                     onChange={onEditChange}
                     onKeyDown={onKeyDown}
+                    style={{ marginBottom: "0.5rem" }}
                   />
                   {mentionMode && mentionTarget === "edit" && (
                     <ul className="mention-popup show">
-                      {filteredUsers.map((u, idx) => (
+                      {filteredUsers.map((u, idx2) => (
                         <li
                           key={u._id}
-                          className={idx === mentionIndex ? "active" : ""}
+                          className={idx2 === mentionIndex ? "active" : ""}
                           onMouseDown={(e) => {
                             e.preventDefault();
                             pickMention(u);
@@ -343,10 +576,18 @@ export default function Comments({ articleId }: CommentsProps) {
                       ))}
                     </ul>
                   )}
-                  <button className="icon-btn" onClick={saveEdit}>
+                  <button
+                    className="icon-btn"
+                    onClick={saveEdit}
+                    style={{ alignSelf: "flex-start" }}
+                  >
                     <MdCheck />
                   </button>
-                  <button className="icon-btn" onClick={cancelEdit}>
+                  <button
+                    className="icon-btn"
+                    onClick={cancelEdit}
+                    style={{ alignSelf: "flex-start" }}
+                  >
                     <MdClose />
                   </button>
                 </div>
@@ -354,7 +595,32 @@ export default function Comments({ articleId }: CommentsProps) {
                 <p className="content">{renderContent(c.content)}</p>
               )}
 
-              {isMine && editingId !== c._id && (
+              {/* votes */}
+              <div
+                className="votes"
+                style={inEdit ? { marginTop: "0.75rem" } : {}}
+              >
+                <button
+                  disabled={!token}
+                  className={`vote-btn ${myVote === 1 ? "active" : ""}`}
+                  onClick={() => handleUp(c._id)}
+                  title={token ? "Up‑vote" : "Log in to vote"}
+                >
+                  <MdArrowUpward />
+                </button>
+                <span className="score">{c.score}</span>
+                <button
+                  disabled={!token}
+                  className={`vote-btn ${myVote === -1 ? "active" : ""}`}
+                  onClick={() => handleDown(c._id)}
+                  title={token ? "Down‑vote" : "Log in to vote"}
+                >
+                  <MdArrowDownward />
+                </button>
+              </div>
+
+              {/* edit / delete for owner */}
+              {isMine && !inEdit && (
                 <div className="controls">
                   <button className="icon-btn" onClick={() => startEdit(c)}>
                     <MdEdit />
@@ -372,7 +638,7 @@ export default function Comments({ articleId }: CommentsProps) {
         })
       )}
 
-      {/* Confirmation dialog */}
+      {/* delete confirm */}
       {confirmDeleteId && (
         <div className="confirm-overlay">
           <div className="confirm-dialog">
@@ -399,6 +665,7 @@ export default function Comments({ articleId }: CommentsProps) {
         </div>
       )}
 
+      {/* pagination */}
       <div className="pagination">
         <button
           className="page-btn"
@@ -407,11 +674,13 @@ export default function Comments({ articleId }: CommentsProps) {
         >
           <MdChevronLeft />
         </button>
-        <span className="page-indicator">Page {page}</span>
+        <span className="page-indicator">
+          Page {page} / {totalPages}
+        </span>
         <button
           className="page-btn"
-          onClick={() => hasMore && setPage((p) => p + 1)}
-          disabled={!hasMore}
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
         >
           <MdChevronRight />
         </button>

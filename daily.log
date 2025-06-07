@@ -1845,3 +1845,259 @@ Daily run finished at 2025-05-30 16:01:54
 Daily run finished at 2025-05-30 16:01:54
 ----------------------------------------
 ----------------------------------------
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-06-07 16:00:01
+Daily run started at 2025-06-07 16:00:01
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-07T20:00:19.238Z"}
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-07T20:00:19.238Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-07T20:00:19.243Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-07T20:00:19.243Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-07T20:00:20.524Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-07T20:00:20.524Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-07T20:00:20.524Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-07T20:00:20.524Z"}
+{"level":"info","message":"✅ Saved: Anna Wintour becomes an unlikely activist as Washington quashes DEI","timestamp":"2025-06-07T20:00:22.140Z"}
+{"level":"info","message":"✅ Saved: Anna Wintour becomes an unlikely activist as Washington quashes DEI","timestamp":"2025-06-07T20:00:22.140Z"}
+{"level":"info","message":"🆕 59 fresh URLs to page‑fetch","timestamp":"2025-06-07T20:00:24.032Z"}
+{"level":"info","message":"🆕 59 fresh URLs to page‑fetch","timestamp":"2025-06-07T20:00:24.032Z"}
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-06-07T20:00:24.177Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/nyregion","timestamp":"2025-06-07T20:00:24.177Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-06-07T20:00:24.180Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/politics","timestamp":"2025-06-07T20:00:24.180Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-06-07T20:00:24.182Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/us","timestamp":"2025-06-07T20:00:24.182Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-06-07T20:00:24.194Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/todayspaper","timestamp":"2025-06-07T20:00:24.194Z"}
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-07T20:00:25.560Z"}
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-07T20:00:25.560Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-07T20:00:25.572Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-07T20:00:25.572Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-06-07T20:00:25.661Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/obituaries","timestamp":"2025-06-07T20:00:25.661Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-06-07T20:00:25.668Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/california-news","timestamp":"2025-06-07T20:00:25.668Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-06-07T20:00:25.670Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/education","timestamp":"2025-06-07T20:00:25.670Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-06-07T20:00:25.673Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/health","timestamp":"2025-06-07T20:00:25.673Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-06-07T20:00:25.685Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/science","timestamp":"2025-06-07T20:00:25.685Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-06-07T20:00:25.793Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/sports","timestamp":"2025-06-07T20:00:25.793Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-06-07T20:00:25.797Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/business","timestamp":"2025-06-07T20:00:25.797Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-06-07T20:00:25.800Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/technology","timestamp":"2025-06-07T20:00:25.800Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-06-07T20:00:25.802Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/climate","timestamp":"2025-06-07T20:00:25.802Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-06-07T20:00:25.809Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/weather","timestamp":"2025-06-07T20:00:25.809Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-06-07T20:00:25.898Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/upshot","timestamp":"2025-06-07T20:00:25.898Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-06-07T20:00:25.908Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/donald-trump","timestamp":"2025-06-07T20:00:25.908Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-06-07T20:00:25.911Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-supreme-court","timestamp":"2025-06-07T20:00:25.911Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-06-07T20:00:25.913Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/magazine","timestamp":"2025-06-07T20:00:25.913Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-06-07T20:00:25.925Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/topic/organization/us-congress","timestamp":"2025-06-07T20:00:25.925Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-06-07T20:00:26.019Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/news-event/immigration-us","timestamp":"2025-06-07T20:00:26.019Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-06-07T20:00:26.023Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/abortion-news","timestamp":"2025-06-07T20:00:26.023Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-06-07T20:00:26.025Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/column/the-daily","timestamp":"2025-06-07T20:00:26.025Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-06-07T20:00:26.029Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/spotlight/podcasts","timestamp":"2025-06-07T20:00:26.029Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-06-07T20:00:26.041Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world","timestamp":"2025-06-07T20:00:26.041Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-06-07T20:00:26.134Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/asia","timestamp":"2025-06-07T20:00:26.134Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-06-07T20:00:26.146Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/australia","timestamp":"2025-06-07T20:00:26.146Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-06-07T20:00:26.149Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/canada","timestamp":"2025-06-07T20:00:26.149Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-06-07T20:00:26.152Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/americas","timestamp":"2025-06-07T20:00:26.152Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-06-07T20:00:26.164Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/africa","timestamp":"2025-06-07T20:00:26.164Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-06-07T20:00:26.257Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/middleeast","timestamp":"2025-06-07T20:00:26.257Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-06-07T20:00:26.263Z"}
+{"level":"warn","message":"No content https://www.nytimes.com/section/world/europe","timestamp":"2025-06-07T20:00:26.263Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-270525-z-z/","timestamp":"2025-06-07T20:00:26.312Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-270525-z-z/","timestamp":"2025-06-07T20:00:26.312Z"}
+{"level":"info","message":"✅ Saved: Ex-Dallas Cowboys player arrested, faces DWI charge in fatal crashTDMNTDMN","timestamp":"2025-06-07T20:00:31.282Z"}
+{"level":"info","message":"✅ Saved: Ex-Dallas Cowboys player arrested, faces DWI charge in fatal crashTDMNTDMN","timestamp":"2025-06-07T20:00:31.282Z"}
+{"level":"info","message":"✅ Saved: Chris Amaya | Dallas Morning NewsTDMNTDMN","timestamp":"2025-06-07T20:00:33.280Z"}
+{"level":"info","message":"✅ Saved: Chris Amaya | Dallas Morning NewsTDMNTDMN","timestamp":"2025-06-07T20:00:33.280Z"}
+{"level":"info","message":"✅ Saved: Hail on the way to North Texas? Here’s what you need to know (and how to protect yourself)TDMNTDMN","timestamp":"2025-06-07T20:00:38.086Z"}
+{"level":"info","message":"✅ Saved: Hail on the way to North Texas? Here’s what you need to know (and how to protect yourself)TDMNTDMN","timestamp":"2025-06-07T20:00:38.086Z"}
+{"level":"info","message":"✅ Saved: Woman found dead in Trinity River in Tarrant CountyTDMNTDMN","timestamp":"2025-06-07T20:00:39.185Z"}
+{"level":"info","message":"✅ Saved: Woman found dead in Trinity River in Tarrant CountyTDMNTDMN","timestamp":"2025-06-07T20:00:39.185Z"}
+{"level":"info","message":"✅ Saved: Dallas weather: Severe thunderstorms on Sunday to follow heat, humidity SaturdayTDMNTDMN","timestamp":"2025-06-07T20:00:39.413Z"}
+{"level":"info","message":"✅ Saved: Dallas weather: Severe thunderstorms on Sunday to follow heat, humidity SaturdayTDMNTDMN","timestamp":"2025-06-07T20:00:39.413Z"}
+{"level":"info","message":"✅ Saved: Last chance: North Texas voters to decide future of cities, schools in June 7 runoffTDMNTDMN","timestamp":"2025-06-07T20:00:39.490Z"}
+{"level":"info","message":"✅ Saved: Last chance: North Texas voters to decide future of cities, schools in June 7 runoffTDMNTDMN","timestamp":"2025-06-07T20:00:39.490Z"}
+{"level":"info","message":"✅ Saved: ‘A long game’: High-speed rail could drive billions to Dallas. Will it happen? TDMNLinkedIn IconTDMN","timestamp":"2025-06-07T20:00:39.578Z"}
+{"level":"info","message":"✅ Saved: ‘A long game’: High-speed rail could drive billions to Dallas. Will it happen? TDMNLinkedIn IconTDMN","timestamp":"2025-06-07T20:00:39.578Z"}
+{"level":"info","message":"✅ Saved: A Russian attack on the Ukrainian city of Kharkiv kills 3 people | AP NewsAP Mobile App CTA","timestamp":"2025-06-07T20:00:46.055Z"}
+{"level":"info","message":"✅ Saved: A Russian attack on the Ukrainian city of Kharkiv kills 3 people | AP NewsAP Mobile App CTA","timestamp":"2025-06-07T20:00:46.055Z"}
+{"level":"info","message":"✅ Saved: Comics universe sees rise in thoughtful religious diversity | AP News","timestamp":"2025-06-07T20:00:46.307Z"}
+{"level":"info","message":"✅ Saved: Comics universe sees rise in thoughtful religious diversity | AP News","timestamp":"2025-06-07T20:00:46.307Z"}
+{"level":"info","message":"✅ Saved: Exceptions to Trump's travel bans and restrictions | AP News","timestamp":"2025-06-07T20:00:46.368Z"}
+{"level":"info","message":"✅ Saved: Exceptions to Trump's travel bans and restrictions | AP News","timestamp":"2025-06-07T20:00:46.368Z"}
+{"level":"info","message":"✅ Saved: Ex-police chief and convicted killer who escaped from Arkansas prison captured | AP News","timestamp":"2025-06-07T20:00:46.519Z"}
+{"level":"info","message":"✅ Saved: Ex-police chief and convicted killer who escaped from Arkansas prison captured | AP News","timestamp":"2025-06-07T20:00:46.519Z"}
+{"level":"info","message":"✅ Saved: Israel says it retrieved the body of a Thai hostage kidnapped into Gaza | AP News","timestamp":"2025-06-07T20:00:46.572Z"}
+{"level":"info","message":"✅ Saved: Israel says it retrieved the body of a Thai hostage kidnapped into Gaza | AP News","timestamp":"2025-06-07T20:00:46.572Z"}
+{"level":"info","message":"✅ Saved: Trump's tariffs could pay for his tax cuts — but it likely wouldn't be much of a bargain | AP News","timestamp":"2025-06-07T20:00:54.624Z"}
+{"level":"info","message":"✅ Saved: Trump's tariffs could pay for his tax cuts — but it likely wouldn't be much of a bargain | AP News","timestamp":"2025-06-07T20:00:54.624Z"}
+{"level":"info","message":"✅ Saved: Senate Republicans revise controversial ban on state AI regulations | AP News","timestamp":"2025-06-07T20:00:54.662Z"}
+{"level":"info","message":"✅ Saved: Senate Republicans revise controversial ban on state AI regulations | AP News","timestamp":"2025-06-07T20:00:54.662Z"}
+{"level":"info","message":"✅ Saved: Democrat Abigail Spanberger looks to rural Virginia in her bid to be governor | AP News","timestamp":"2025-06-07T20:00:54.721Z"}
+{"level":"info","message":"✅ Saved: Democrat Abigail Spanberger looks to rural Virginia in her bid to be governor | AP News","timestamp":"2025-06-07T20:00:54.721Z"}
+{"level":"info","message":"✅ Saved: MEMO: The One Big Beautiful Bill Improves the Fiscal Trajectory – The White House","timestamp":"2025-06-07T20:00:54.852Z"}
+{"level":"info","message":"✅ Saved: MEMO: The One Big Beautiful Bill Improves the Fiscal Trajectory – The White House","timestamp":"2025-06-07T20:00:54.852Z"}
+{"level":"info","message":"✅ Saved: In his second term, Trump turns to emergency powers to advance his agenda | AP NewsAP Mobile App CTA","timestamp":"2025-06-07T20:00:54.856Z"}
+{"level":"info","message":"✅ Saved: In his second term, Trump turns to emergency powers to advance his agenda | AP NewsAP Mobile App CTA","timestamp":"2025-06-07T20:00:54.856Z"}
+{"level":"info","message":"✅ Saved: MYTHBUSTER: There’s No “Pork” in the One Big Beautiful Bill — Only Wins – The White House","timestamp":"2025-06-07T20:01:04.251Z"}
+{"level":"info","message":"✅ Saved: MYTHBUSTER: There’s No “Pork” in the One Big Beautiful Bill — Only Wins – The White House","timestamp":"2025-06-07T20:01:04.251Z"}
+{"level":"info","message":"✅ Saved: Leading The World in Supersonic Flight – The White House","timestamp":"2025-06-07T20:01:04.303Z"}
+{"level":"info","message":"✅ Saved: Leading The World in Supersonic Flight – The White House","timestamp":"2025-06-07T20:01:04.303Z"}
+{"level":"info","message":"✅ Saved: Unleashing American Drone Dominance – The White House","timestamp":"2025-06-07T20:01:04.491Z"}
+{"level":"info","message":"✅ Saved: Unleashing American Drone Dominance – The White House","timestamp":"2025-06-07T20:01:04.491Z"}
+{"level":"info","message":"✅ Saved: Restoring American Airspace Sovereignty – The White House","timestamp":"2025-06-07T20:01:04.505Z"}
+{"level":"info","message":"✅ Saved: Restoring American Airspace Sovereignty – The White House","timestamp":"2025-06-07T20:01:04.505Z"}
+{"level":"info","message":"✅ Saved: Sustaining Select Efforts to Strengthen the Nation's Cybersecurity and Amending Executive Order 13694 and Executive Order 14144 – The White House","timestamp":"2025-06-07T20:01:04.896Z"}
+{"level":"info","message":"✅ Saved: Sustaining Select Efforts to Strengthen the Nation's Cybersecurity and Amending Executive Order 13694 and Executive Order 14144 – The White House","timestamp":"2025-06-07T20:01:04.896Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Takes Action to Lead the World in Supersonic Flight – The White House","timestamp":"2025-06-07T20:01:15.993Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Takes Action to Lead the World in Supersonic Flight – The White House","timestamp":"2025-06-07T20:01:15.993Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Reprioritizes Cybersecurity Efforts to Protect America – The White House","timestamp":"2025-06-07T20:01:16.194Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Reprioritizes Cybersecurity Efforts to Protect America – The White House","timestamp":"2025-06-07T20:01:16.194Z"}
+{"level":"info","message":"✅ Saved: Eliminating Waste, Fraud, and Abuse in Medicaid – The White House MEMORANDUM FOR THE SECRETARY OF HEALTH AND HUMAN SERVICES THE ADMINISTRATORS OF THE CENTERS FOR MEDICARE AND MEDICAID SERVICES SUBJECT: Eliminating Waste, Fraud, and Abuse in Medicaid My Administration has been relentlessly committed to rooting out waste, fraud, and abuse in Government programs to preserve and protect them for those who rely most on them. The Medicaid program was designed to be a program to compassionately provide taxpayer dollars to healthcare providers who offer care to the most vulnerable Americans. To keep payments reasonable, billable costs for such care were historically capped at the same level that healthcare providers could receive from Medicare. The State and Federal Governments jointly shared this cost burden to ensure those of lesser means did not go untreated. Under the Biden Administration, States and healthcare providers were permitted to game the system. For example, States \"taxed\" healthcare providers, but sent the same money back to them in the form of a \"Medicaid payment,\" which automatically unlocked for healthcare providers an additional \"burden-sharing\" payment from the Federal Government. Through this gimmick, the State could avoid contributing money toward Medicaid services, meaning the State no longer had a reason to be prudent in the amount of reimbursement provided. Instead of paying Medicare rates, many States that utilize these arrangements now pay the same healthcare providers almost three times the Medicare amount, a practice encouraged by the Biden Administration. These State Directed Payments have rapidly accelerated, quadrupling in magnitude over the last 4 years and reaching $110 billion in 2024 alone. This trajectory threatens the Federal Treasury and Medicaid's long-term stability, and the imbalance between Medicaid and Medicare patients threatens to jeopardize access to care for our seniors. I pledged to protect and improve these important Government healthcare programs for those that rely on them. Seniors on Medicare and Medicaid recipients both deserve access to quality care in a system free from the fraud, waste, and abuse, that enriches the unscrupulous and jeopardizes the programs themselves. We will take action to continue to love and cherish the Medicare and Medicaid programs to ensure they are preserved for those who need them most. The Secretary of Health and Human Services shall therefore take appropriate action to eliminate waste, fraud, and abuse in Medicaid, including by ensuring Medicaid payments rates are not higher than Medicare, to the extent permitted by applicable law. This memorandum is not intended to, and does not, create any right or benefit, substantive or procedural, enforceable at law or in equity by any party against the United States, its departments, agencies, or entities, its officers, employees, or agents, or any other person. DONALD J. TRUMP","timestamp":"2025-06-07T20:01:18.022Z"}
+{"level":"info","message":"✅ Saved: Eliminating Waste, Fraud, and Abuse in Medicaid – The White House MEMORANDUM FOR THE SECRETARY OF HEALTH AND HUMAN SERVICES THE ADMINISTRATORS OF THE CENTERS FOR MEDICARE AND MEDICAID SERVICES SUBJECT: Eliminating Waste, Fraud, and Abuse in Medicaid My Administration has been relentlessly committed to rooting out waste, fraud, and abuse in Government programs to preserve and protect them for those who rely most on them. The Medicaid program was designed to be a program to compassionately provide taxpayer dollars to healthcare providers who offer care to the most vulnerable Americans. To keep payments reasonable, billable costs for such care were historically capped at the same level that healthcare providers could receive from Medicare. The State and Federal Governments jointly shared this cost burden to ensure those of lesser means did not go untreated. Under the Biden Administration, States and healthcare providers were permitted to game the system. For example, States \"taxed\" healthcare providers, but sent the same money back to them in the form of a \"Medicaid payment,\" which automatically unlocked for healthcare providers an additional \"burden-sharing\" payment from the Federal Government. Through this gimmick, the State could avoid contributing money toward Medicaid services, meaning the State no longer had a reason to be prudent in the amount of reimbursement provided. Instead of paying Medicare rates, many States that utilize these arrangements now pay the same healthcare providers almost three times the Medicare amount, a practice encouraged by the Biden Administration. These State Directed Payments have rapidly accelerated, quadrupling in magnitude over the last 4 years and reaching $110 billion in 2024 alone. This trajectory threatens the Federal Treasury and Medicaid's long-term stability, and the imbalance between Medicaid and Medicare patients threatens to jeopardize access to care for our seniors. I pledged to protect and improve these important Government healthcare programs for those that rely on them. Seniors on Medicare and Medicaid recipients both deserve access to quality care in a system free from the fraud, waste, and abuse, that enriches the unscrupulous and jeopardizes the programs themselves. We will take action to continue to love and cherish the Medicare and Medicaid programs to ensure they are preserved for those who need them most. The Secretary of Health and Human Services shall therefore take appropriate action to eliminate waste, fraud, and abuse in Medicaid, including by ensuring Medicaid payments rates are not higher than Medicare, to the extent permitted by applicable law. This memorandum is not intended to, and does not, create any right or benefit, substantive or procedural, enforceable at law or in equity by any party against the United States, its departments, agencies, or entities, its officers, employees, or agents, or any other person. DONALD J. TRUMP","timestamp":"2025-06-07T20:01:18.022Z"}
+{"level":"info","message":"✅ Saved: National Ocean Month, 2025 – The White House","timestamp":"2025-06-07T20:01:18.139Z"}
+{"level":"info","message":"✅ Saved: National Ocean Month, 2025 – The White House","timestamp":"2025-06-07T20:01:18.139Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-07T20:01:19.142Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-07T20:01:19.142Z"}
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 3
+Phase 2 — removed by content/title heuristics & embeds: 3
+Phase 3 — cleaned repeated title segments on 53 articles
+Phase 3 — cleaned repeated title segments on 53 articles
+Phase 4 — stripped camel-case suffixes on 138 articles
+Phase 4 — stripped camel-case suffixes on 138 articles
+Phase 5 — stripped garbled suffixes on 11 articles
+Phase 5 — stripped garbled suffixes on 11 articles
+Phase 6 — normalized titles on 2 articles
+🧹 Cleanup complete
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-07T20:01:22.906Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-07T20:01:22.906Z"}
+Phase 6 — normalized titles on 2 articles
+🧹 Cleanup complete
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-07T20:01:22.906Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-07T20:01:22.906Z"}
+
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+(node:81556) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81556) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+✅ MongoDB disconnected
+
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+Sending to 3 subscriber(s)
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+nguyenhoangson091104@gmail.com: sent
+Cleaning up articles...
+Cleaning up articles...
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+Finished newsletter run
+Finished newsletter run
+
+
+Daily run finished at 2025-06-07 16:01:47
+Daily run finished at 2025-06-07 16:01:47
+----------------------------------------
+----------------------------------------

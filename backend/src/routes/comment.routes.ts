@@ -6,6 +6,7 @@ import {
   addComment,
   updateComment,
   deleteComment,
+  voteComment,
 } from "../controllers/comment.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -269,5 +270,96 @@ router.put("/:id", authenticate, updateComment);
  *         description: Server error
  */
 router.delete("/:id", authenticate, deleteComment);
+
+/**
+ * @swagger
+ * /api/comments/{id}/vote:
+ *   post:
+ *     tags: [Comments]
+ *     summary: Up-vote / down-vote / clear vote on a comment
+ *     security:
+ *       - ApiKeyAuth: []
+ *     description: |
+ *       Records or clears a vote by the authenticated user on the specified comment.
+ *       A user may cast **one** vote per comment:
+ *       * `1`  → up-vote
+ *       * `-1` → down-vote
+ *       * `0`  → remove their vote
+ *       Returns the updated comment with all its fields.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: MongoDB ObjectId of the comment
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - value
+ *             properties:
+ *               value:
+ *                 type: integer
+ *                 enum: [-1, 0, 1]
+ *                 description: Vote value
+ *     responses:
+ *       200:
+ *         description: Updated comment object (with recalculated score)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 article:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     title:
+ *                       type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                 content:
+ *                   type: string
+ *                 upvotes:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 downvotes:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 score:
+ *                   type: integer
+ *                   description: upvotes.length − downvotes.length
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid `id` or `value`
+ *       401:
+ *         description: Authentication required
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Server error
+ */
+router.post("/:id/vote", authenticate, voteComment);
 
 export default router;
