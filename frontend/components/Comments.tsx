@@ -65,21 +65,25 @@ export default function Comments({ articleId }: CommentsProps) {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // load comments
+  // load comments (always slices client-side to 10 per page)
   const load = useCallback(async () => {
     try {
-      const { comments, hasMore } = (await fetchCommentsForArticle(
+      const full = (await fetchCommentsForArticle(
         articleId,
         page,
         10,
         token || undefined,
       )) as CommentPage;
-      setComments(comments);
-      setHasMore(hasMore);
+      const allComments = full.comments;
+      const start = (page - 1) * 10;
+      const pageComments = allComments.slice(start, start + 10);
+      setComments(pageComments);
+      setHasMore(allComments.length > start + 10);
     } catch {
       toast.error("Could not load comments.");
     }
   }, [articleId, page, token]);
+
   useEffect(() => {
     load();
   }, [load]);
@@ -181,7 +185,12 @@ export default function Comments({ articleId }: CommentsProps) {
     if (!newContent.trim() || !token) return;
     try {
       const saved = await postComment(articleId, newContent, token);
-      setComments((p) => [saved, ...p].slice(0, 10));
+      // if we're on page 1, insert at top and re-slice
+      if (page === 1) {
+        setComments((prev) =>
+          [saved, ...prev].slice(0, 10)
+        );
+      }
       setNewContent("");
     } catch {
       toast.error("Failed to post comment.");
