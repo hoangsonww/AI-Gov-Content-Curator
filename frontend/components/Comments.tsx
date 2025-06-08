@@ -19,6 +19,7 @@ import {
   MdArrowUpward,
   MdArrowDownward,
   MdFilterList,
+  MdRefresh,
 } from "react-icons/md";
 import {
   FaPlane,
@@ -82,6 +83,7 @@ export default function Comments({ articleId }: CommentsProps) {
   const perPage = 10;
   const [allComments, setAllComments] = useState<CommentExt[]>([]);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   /* sort pop‑over */
   const [sortOpen, setSortOpen] = useState(false);
@@ -89,7 +91,7 @@ export default function Comments({ articleId }: CommentsProps) {
     "latest" | "earliest" | "most" | "least"
   >("latest");
 
-  /* votes – commentId → my vote (‑1/0/1) */
+  /* votes – commentId → my vote (‑1/0/1) */
   const [myVotes, setMyVotes] = useState<Record<string, VoteValue>>({});
 
   /* new / edit content */
@@ -130,6 +132,7 @@ export default function Comments({ articleId }: CommentsProps) {
   /* ---------- fetch ALL comments once ---------- */
   const load = useCallback(async () => {
     try {
+      setLoading(true); // ← start
       /* ask backend for a lot – effectively “all” */
       const bigLimit = 1000;
       const { comments } = await fetchCommentsForArticle(
@@ -158,6 +161,8 @@ export default function Comments({ articleId }: CommentsProps) {
       setPage(1); // reset page whenever re‑loading
     } catch {
       toast.error("Could not load comments.");
+    } finally {
+      setLoading(false); // ← stop
     }
   }, [articleId, token, myId]);
 
@@ -528,8 +533,29 @@ export default function Comments({ articleId }: CommentsProps) {
         </div>
       )}
 
-      {/* list */}
-      {pageSlice.length === 0 ? (
+      {/* list (loading / empty / populated) */}
+      {loading ? (
+        <div
+          className="comments-loading"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            justifyContent: "center",
+            padding: "2rem 0",
+            opacity: 0.8,
+          }}
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, ease: "linear", duration: 1 }}
+            style={{ fontSize: "2rem", display: "inline-block" }}
+          >
+            <MdRefresh />
+          </motion.div>
+          <span>Loading comments…</span>
+        </div>
+      ) : pageSlice.length === 0 ? (
         <div className="comments-empty">
           <em>No comments/discussions yet for this article.</em>
         </div>
