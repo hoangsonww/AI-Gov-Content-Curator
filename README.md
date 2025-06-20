@@ -762,11 +762,12 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 
 ### Note
 
-- The newsletter subscription feature is designed to be simple and effective. It allows users to stay informed about the latest articles without overwhelming them with too many emails.
-- The subscription form is integrated into the frontend, and users can easily sign up or unsubscribe at any time.
-- The daily updates are sent via email, ensuring that subscribers receive the most relevant information without having to check the app constantly.
-- The newsletter feature is built using the Resend API, which provides a reliable and scalable solution for managing subscriptions and sending emails.
-- Sometimes, the emails may end up in the spam folder, so users should check their spam folder if they don't see the emails in their inbox.
+> [!IMPORTANT]
+> - The newsletter subscription feature is designed to be simple and effective. It allows users to stay informed about the latest articles without overwhelming them with too many emails.
+> - The subscription form is integrated into the frontend, and users can easily sign up or unsubscribe at any time.
+> - The daily updates are sent via email, ensuring that subscribers receive the most relevant information without having to check the app constantly.
+> - The newsletter feature is built using the Resend API, which provides a reliable and scalable solution for managing subscriptions and sending emails.
+> - Sometimes, the emails may end up in the spam folder, so users should check their spam folder if they don't see the emails in their inbox.
 
 ---
 
