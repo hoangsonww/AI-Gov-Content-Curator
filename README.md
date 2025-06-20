@@ -51,7 +51,8 @@ Each component is maintained in its own directory:
 ![Jira](https://img.shields.io/badge/Jira-0052CC?style=flat&logo=jira&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
-> **Note:** This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
+> [!IMPORTANT]
+> This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
 
 ---
 
@@ -223,7 +224,8 @@ This project consists of 4 primary microservices that interact with each other:
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
 
-> Note: This architecture diagram is a simplified representation and may not include all components or interactions. For a more detailed view, please refer to the individual service documentation.
+> [!NOTE]
+> This architecture diagram is a simplified representation and may not include all components or interactions. For a more detailed view, please refer to the individual service documentation.
 
 ---
 
@@ -260,6 +262,7 @@ Also, Jira provides a comprehensive set of features for managing projects, inclu
 
 **You can view the project board and tasks at [https://ai-content-curator.atlassian.net](https://ai-content-curator.atlassian.net/jira/software/projects/AICC/boards/3?atlOrigin=eyJpIjoiZDM2MDQ4MWUwYTVkNGNhNzkzZmI5YjE2NGZmZjc2ZDAiLCJwIjoiaiJ9).**
 
+> [!IMPORTANT]
 > Login is required to access the board, and you can create an account if you don't have one.
 
 If you need **access** to the project board, please contact me directly at [sonnguyenhoang.com](https://sonnguyenhoang.com) or via email at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com) for an invitation. I believe that having access to the project board will help you understand the project's progress, tasks, and overall workflow better, and it will also allow you to contribute more effectively to the project.
@@ -434,7 +437,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
 
 ### Prerequisites & Installation (Backend)
 
-> Note: Instead of installing the node modules separately, you can run `npm install` in the root directory to install dependencies for all components.
+> [!TIP]
+> Instead of installing the node modules separately, you can run `npm install` in the root directory to install dependencies for all components.
 
 1. **Prerequisites:**
 
@@ -742,7 +746,8 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 
 ### Prerequisites & Installation (Newsletter)
 
-> Note: This assumes that you have already set up the backend and frontend as described above.
+> [!IMPORTANT]
+> This assumes that you have already set up the backend and frontend as described above.
 
 1. **Prerequisites:** Sign up for a Resend account and obtain your API key.
 2. **Go to Domain Settings:** In your Resend dashboard, navigate to the "Domains" section and add your domain (you'll have to have
@@ -783,7 +788,8 @@ The chatbot is given an identity (ArticleIQ) and is designed to answer questions
 
 ### Prerequisites & Installation (Article Q&A)
 
-> Note: This feature is integrated into the existing backend and frontend, so you don't need to set up anything separately.
+> [!TIP]
+> This feature is integrated into the existing backend and frontend, so you don't need to set up anything separately.
 
 1. **Prerequisites:** Ensure that you have the backend and frontend set up as described above.
 2. **Install Dependencies:** Make sure you have the necessary dependencies installed in both the backend and frontend directories. You can run `npm install` in the root directory to install dependencies for all components.
@@ -818,6 +824,7 @@ npm install
 npm link
 ```
 
+> [!TIP]
 > This sets up a global symlink named `aicc` pointing at `./bin/aicc.js`.
 
 ### Usage
@@ -980,8 +987,10 @@ crontab -l
 
 This will display a list of all your cron jobs, including the one you just created for the `daily.sh` script.
 
+> [!CAUTION]
 > Be sure to keep your computer on and connected to the internet for the cron job to run successfully at the scheduled time!
 
+> [!TIP]
 > Logs will be saved in the `daily.log` file in the root directory, so you can check the output of the script and any errors that may occur.
 
 ### Makefile
@@ -1111,6 +1120,7 @@ If you have any questions or suggestions, feel free to reach out to the reposito
 
 I will be happy to assist you with any questions or issues you may have regarding this project.
 
+> [!TIP]
 > If I don't know the answer, I'll be able to forward your question to the right person in the AICC team who can help you!
 
 ---
