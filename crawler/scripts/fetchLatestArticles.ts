@@ -14,6 +14,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
+import {pcIndex} from "../services/pinecone.client";
 
 /* ─────────── Mongo schema ─────────── */
 const ArticleSchema = new Schema({
@@ -44,6 +45,7 @@ const {
   GOOGLE_AI_API_KEY1,
   GOOGLE_AI_API_KEY2,
   GOOGLE_AI_API_KEY3,
+  PINECONE_NAMESPACE = "ns1",
 } = process.env;
 
 if (!MONGODB_URI) throw new Error("MONGODB_URI missing");
@@ -295,6 +297,7 @@ async function ingest(url: string, browser: Browser) {
       (await summarizeAI(art.content)) || art.content.slice(0, 400) + "…";
     const topics = await topicsAI(summary);
 
+    // MongoDB
     await Article.updateOne(
       { url },
       {
@@ -308,6 +311,12 @@ async function ingest(url: string, browser: Browser) {
       },
       { upsert: true },
     );
+
+    // PineconeDB
+    const articleDoc = await Article.findOne({ url }).select("-content -url -topics -title -source");
+    const index = pcIndex.namespace(PINECONE_NAMESPACE);
+    await index.upsertRecords([articleDoc]); //TODO: add model for Pinecone records
+
     console.log("✓", url);
   } catch (e: any) {
     console.warn("⚠", url, e.message);

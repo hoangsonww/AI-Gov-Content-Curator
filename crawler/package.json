@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@pinecone-database/pinecone": "^6.1.1",
     "@sparticuz/chromium": "^133.0.0",
     "@vercel/node": "^5.1.11",
     "axios": "^1.2.0",

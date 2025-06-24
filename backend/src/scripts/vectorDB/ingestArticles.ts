@@ -5,7 +5,7 @@ import {connectDB, disconnectDB} from "../../lib/db.ts";
 
 dotenv.config();
 
-const INDEX_NAME = 'ai-gov-content-curator';
+const INDEX_NAME = 'ai-gov-content-curator'; //TODO: push to env
 const NAMESPACE = 'ns1';
 const CHUNK_SIZE = 7;
 
@@ -15,7 +15,7 @@ async function initPinecone() {
      * Check if index exist. If not create new.
      */
     const pc = new Pinecone({
-        apiKey: process.env.PINECONE_API_KEY as string
+        apiKey: process.env.PINECONE_API_KEY!
     });
 
     const indices = await pc.listIndexes();
