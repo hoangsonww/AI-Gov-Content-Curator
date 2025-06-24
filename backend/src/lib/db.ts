@@ -22,3 +22,11 @@ export async function connectDB() {
   console.log("🟢  Connected to MongoDB:", mongoose.connection.name);
   return cached;
 }
+
+/**
+ * Disconnects from MongoDB
+ */
+export async function disconnectDB() {
+  await mongoose.disconnect();
+  console.log("🟢   Disconnected MongoDB:", mongoose.connection.name);
+}
