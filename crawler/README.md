@@ -1,4 +1,4 @@
-# Crawler Service for AI Article Content Curator (work in progress)
+# Crawler Service for SynthoraAI - AI Article Content Curator (work in progress)
 
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
