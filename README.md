@@ -19,7 +19,7 @@ This monorepo, multi-services project is organized into four main components:
 - **Backend:** `backend/`
   - Live: [https://ai-content-curator-backend.vercel.app/](https://ai-content-curator-backend.vercel.app/)
 - **Frontend:** `frontend/`
-  - Live: [https://synthoraai.vercel.app//](https://synthoraai.vercel.app//)
+  - Live: [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/)
 - **Crawler:** `crawler/`
   - Live: [https://ai-content-curator-crawler.vercel.app/](https://ai-content-curator-crawler.vercel.app/)
 - **Newsletter:** `newsletters/`
