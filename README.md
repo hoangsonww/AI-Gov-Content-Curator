@@ -19,10 +19,10 @@ This monorepo, multi-services project is organized into four main components:
 
 - **Backend:** `backend/`
   - Live: [https://ai-content-curator-backend.vercel.app/](https://ai-content-curator-backend.vercel.app/)
+- **Frontend:** `frontend/`
+  - Live: [https://synthoraai.vercel.app//](https://synthoraai.vercel.app//)
 - **Crawler:** `crawler/`
   - Live: [https://ai-content-curator-crawler.vercel.app/](https://ai-content-curator-crawler.vercel.app/)
-- **Frontend:** `frontend/`
-  - Live: [https://ai-article-curator.vercel.app/](https://ai-article-curator.vercel.app/)
 - **Newsletter:** `newsletters/`
   - Live: [https://ai-content-curator-newsletters.vercel.app/](https://ai-content-curator-newsletters.vercel.app/)
 
@@ -227,7 +227,7 @@ This project consists of 4 primary microservices that interact with each other:
    - Fetches and displays a paginated list of articles from the backend API, with filtering options.
    - Dedicated pages for full article content, AI-generated summaries, source information, and fetched timestamps.
    - User authentication for marking articles as favorites, commenting, discussions, and upvoting/downvoting comments.
-   - **_Deployed on Vercel at [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app)._**
+   - **_Deployed on Vercel at [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/)._**
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
 
@@ -306,7 +306,7 @@ This workflow ensures that tasks are tracked, code is reviewed, and the project 
 ## User Interface
 
 The user interface is built with Next.js and React, providing a modern, mobile-responsive experience.
-Below are some screenshots of the application (some screenshots may be outdated and not reflect the latest UI - visit [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app) for the latest version):
+Below are some screenshots of the application (some screenshots may be outdated and not reflect the latest UI - visit [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/) for the latest version):
 
 ### 0. Landing Page
 
@@ -1136,7 +1136,7 @@ I will be happy to assist you with any questions or issues you may have regardin
 
 ## Conclusion
 
-The **AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler,
+The **SynthoraAI - AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler,
 a newsletter service, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies
 like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member
 or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.

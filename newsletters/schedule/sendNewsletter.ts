@@ -99,8 +99,8 @@ export async function sendNewsletter() {
               : ""
           }
           <tr><td style="padding:20px 24px;text-align:center;font-size:12px;color:#999;">
-            For the full list of articles, visit our website at <a href="https://ai-article-curator.vercel.app" 
-            style="color:#0d6efd;text-decoration:none;">ai-article-curator.vercel.app</a>.<br>
+            For the full list of articles, visit our website at <a href="https://synthoraai.vercel.app/" 
+            style="color:#0d6efd;text-decoration:none;">synthoraai.vercel.app</a>.<br>
           </td></tr>
           <tr><td style="padding:20px 24px;text-align:center;font-size:12px;color:#999;">
             You’re receiving this because you subscribed on our site.<br>

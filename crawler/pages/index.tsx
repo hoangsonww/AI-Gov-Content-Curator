@@ -104,7 +104,7 @@ export default function Home() {
               <i className="fab fa-github"></i>
             </a>
             <a
-              href="https://ai-article-curator.vercel.app/"
+              href="https://synthoraai.vercel.app//"
               target="_blank"
               rel="noopener noreferrer"
             >

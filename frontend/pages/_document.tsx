@@ -93,7 +93,7 @@ class MyDocument extends Document {
 
           {/* Multilingual alternates */}
           <link rel="alternate" href={siteUrl} hrefLang="en-US" />
-          {/* <link rel="alternate" href="https://es.ai-article-curator.vercel.app" hrefLang="es-ES" /> */}
+          {/* <link rel="alternate" href="https://es.synthoraai.vercel.app" hrefLang="es-ES" /> */}
 
           {/* Open Graph */}
           <meta property="og:title" content={title} />
