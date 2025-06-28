@@ -15,7 +15,7 @@ This monorepo, multi-services project is organized into four main components:
   <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator" width="30%">
 </p>
 
-**High-Level Architecture:** Eaach component is maintained in its own directory:
+**High-Level Architecture:** Each component is maintained in its own directory:
 
 - **Backend:** `backend/`
   - Live: [https://ai-content-curator-backend.vercel.app/](https://ai-content-curator-backend.vercel.app/)
