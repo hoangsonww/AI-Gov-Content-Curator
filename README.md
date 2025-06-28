@@ -11,7 +11,7 @@ This monorepo, multi-services project is organized into four main components:
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
 
 <p align="center">
-  <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator" width="40%">
+  <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator" width="30%">
 </p>
 
 **High-Level Architecture:** Eaach component is maintained in its own directory:
