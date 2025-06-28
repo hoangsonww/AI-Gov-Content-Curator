@@ -8,7 +8,7 @@ export default function Custom404() {
   return (
     <>
       <Head>
-        <title>404: Page Not Found | AI Article Content Curator</title>
+        <title>404: Page Not Found | SynthoraAI - AI Article Content Curator</title>
         <meta
           name="description"
           content="The page you are looking for does not exist."
