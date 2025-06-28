@@ -12,7 +12,7 @@ This monorepo, multi-services project is organized into four main components:
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
 
 <p align="center">
-  <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator" width="30%">
+  <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator Logo" width="30%">
 </p>
 
 **High-Level Architecture:** Each component is maintained in its own directory:
@@ -120,7 +120,7 @@ This monorepo, multi-services project is organized into four main components:
 
 ## Overview
 
-The **AI-Powered Article Content Curator** system is designed to provide government staff with up-to-date, summarized content from trusted government sources and reputable news outlets. By leveraging AI (Google Generative AI / Gemini) for summarization and using modern web technologies, this solution ensures that users receive concise, accurate, and timely information.
+The **SynthoraAI - AI-Powered Article Content Curator** system is designed to provide government staff with up-to-date, summarized content from trusted government sources and reputable news outlets. By leveraging AI (Google Generative AI / Gemini) for summarization and using modern web technologies, this solution ensures that users receive concise, accurate, and timely information.
 
 - **Data Ingestion:**  
   The system aggregates article URLs from multiple sources (government homepages and public APIs like NewsAPI) using a decoupled crawler service.
