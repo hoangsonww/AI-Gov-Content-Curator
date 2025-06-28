@@ -68,7 +68,7 @@ app.get("/api-docs", (_req: Request, res: Response) => {
     <html>
       <head>
         <meta charset="UTF-8" />
-        <title>Article Curator API Docs</title>
+        <title>SynthoraAI - AI Article Curator API Docs</title>
         <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css" />
         <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@4.15.5/favicon-32x32.png" sizes="32x32" />
         <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@4.15.5/favicon-16x16.png" sizes="16x16" />

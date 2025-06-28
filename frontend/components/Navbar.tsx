@@ -98,7 +98,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
         <Link href="/" className="brand-link">
           <div className="navbar-brand">
             <ArticleIcon size={26} />
-            <span className="brand-text">Article Curator</span>
+            <span className="brand-text">SynthoraAI</span>
           </div>
         </Link>
 

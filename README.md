@@ -1,6 +1,8 @@
-# AI-Powered Article Content Curator
+# SynthoraAI - AI-Powered Article Content Curator
 
-The **AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles.
+> [!TIP] > **SynthoraAI - Synthesizing the world’s news & information through AI.**
+
+The **SynthoraAI - AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles.
 This monorepo, multi-services project is organized into four main components:
 
 - **Backend:** Provides a robust RESTful API to store and serve curated articles.
@@ -8,14 +10,18 @@ This monorepo, multi-services project is organized into four main components:
 - **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
 
-Each component is maintained in its own directory:
+<p align="center">
+  <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator Logo" width="30%">
+</p>
+
+**High-Level Architecture:** Each component is maintained in its own directory:
 
 - **Backend:** `backend/`
   - Live: [https://ai-content-curator-backend.vercel.app/](https://ai-content-curator-backend.vercel.app/)
+- **Frontend:** `frontend/`
+  - Live: [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/)
 - **Crawler:** `crawler/`
   - Live: [https://ai-content-curator-crawler.vercel.app/](https://ai-content-curator-crawler.vercel.app/)
-- **Frontend:** `frontend/`
-  - Live: [https://ai-article-curator.vercel.app/](https://ai-article-curator.vercel.app/)
 - **Newsletter:** `newsletters/`
   - Live: [https://ai-content-curator-newsletters.vercel.app/](https://ai-content-curator-newsletters.vercel.app/)
 
@@ -113,7 +119,7 @@ Each component is maintained in its own directory:
 
 ## Overview
 
-The **AI-Powered Article Content Curator** system is designed to provide government staff with up-to-date, summarized content from trusted government sources and reputable news outlets. By leveraging AI (Google Generative AI / Gemini) for summarization and using modern web technologies, this solution ensures that users receive concise, accurate, and timely information.
+The **SynthoraAI - AI-Powered Article Content Curator** system is designed to provide government staff with up-to-date, summarized content from trusted government sources and reputable news outlets. By leveraging AI (Google Generative AI / Gemini) for summarization and using modern web technologies, this solution ensures that users receive concise, accurate, and timely information.
 
 - **Data Ingestion:**  
   The system aggregates article URLs from multiple sources (government homepages and public APIs like NewsAPI) using a decoupled crawler service.
@@ -220,7 +226,7 @@ This project consists of 4 primary microservices that interact with each other:
    - Fetches and displays a paginated list of articles from the backend API, with filtering options.
    - Dedicated pages for full article content, AI-generated summaries, source information, and fetched timestamps.
    - User authentication for marking articles as favorites, commenting, discussions, and upvoting/downvoting comments.
-   - **_Deployed on Vercel at [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app)._**
+   - **_Deployed on Vercel at [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/)._**
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
 
@@ -299,7 +305,7 @@ This workflow ensures that tasks are tracked, code is reviewed, and the project 
 ## User Interface
 
 The user interface is built with Next.js and React, providing a modern, mobile-responsive experience.
-Below are some screenshots of the application (some screenshots may be outdated and not reflect the latest UI - visit [https://ai-article-curator.vercel.app](https://ai-article-curator.vercel.app) for the latest version):
+Below are some screenshots of the application (some screenshots may be outdated and not reflect the latest UI - visit [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/) for the latest version):
 
 ### 0. Landing Page
 
@@ -763,6 +769,7 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 ### Note
 
 > [!IMPORTANT]
+>
 > - The newsletter subscription feature is designed to be simple and effective. It allows users to stay informed about the latest articles without overwhelming them with too many emails.
 > - The subscription form is integrated into the frontend, and users can easily sign up or unsubscribe at any time.
 > - The daily updates are sent via email, ensuring that subscribers receive the most relevant information without having to check the app constantly.
@@ -1128,7 +1135,7 @@ I will be happy to assist you with any questions or issues you may have regardin
 
 ## Conclusion
 
-The **AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler,
+The **SynthoraAI - AI-Powered Article Content Curator** project brings together a powerful backend, an intelligent crawler,
 a newsletter service, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies
 like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member
 or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.

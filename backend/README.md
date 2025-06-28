@@ -1,4 +1,4 @@
-# AI Article Content Curator Backend (work in progress)
+# SynthoraAI - AI Article Content Curator Backend (work in progress)
 
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Express](https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white)](https://expressjs.com)

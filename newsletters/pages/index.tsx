@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>AI Content Curator – Newsletter Service</title>
+        <title>SynthoraAI | AI Article Curator – Newsletter Service</title>
         <meta
           name="description"
           content="This subproject only hosts a scheduled cron job that emails our daily newsletter. Head to the backend or frontend for the full experience."
@@ -32,7 +32,9 @@ export default function Home() {
       <div className="page-wrapper">
         <header>
           <i className="fas fa-envelope-open-text logo-icon"></i>
-          <div className="title">AI Content Curator – Newsletter</div>
+          <div className="title">
+            SynthoraAI - AI Article Curator – Newsletter Service
+          </div>
         </header>
 
         <main className="main-content">

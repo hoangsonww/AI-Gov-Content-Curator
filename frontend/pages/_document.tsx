@@ -13,8 +13,8 @@ class MyDocument extends Document {
   }
 
   render() {
-    const siteUrl = "https://ai-article-curator.vercel.app";
-    const title = "Article Curator – AI-Powered News Article Content Curator";
+    const siteUrl = "https://synthoraai.vercel.app/";
+    const title = "SynthoraAI – AI-Powered News Article Content Curator";
     const description =
       "Discover and manage government-related news articles with ease, powered by AI. Curated summaries, advanced filtering by topic, and seamless reading.";
     const imageUrl = `${siteUrl}/android-chrome-192x192.png`;
@@ -35,7 +35,7 @@ class MyDocument extends Document {
           <meta name="description" content={description} />
           <meta
             name="keywords"
-            content="AI, article curator, news aggregator, government news, content curation, topic filtering"
+            content="AI, article curator, news aggregator, government news, content curation, topic filtering, synthoraai, synthora ai, synthora, synthoraai.com, synthora.ai, ai article curator, ai content curator, news curation, article summaries, government articles"
           />
           <meta
             name="robots"
@@ -93,7 +93,7 @@ class MyDocument extends Document {
 
           {/* Multilingual alternates */}
           <link rel="alternate" href={siteUrl} hrefLang="en-US" />
-          {/* <link rel="alternate" href="https://es.ai-article-curator.vercel.app" hrefLang="es-ES" /> */}
+          {/* <link rel="alternate" href="https://es.synthoraai.vercel.app" hrefLang="es-ES" /> */}
 
           {/* Open Graph */}
           <meta property="og:title" content={title} />
@@ -103,8 +103,11 @@ class MyDocument extends Document {
           <meta property="og:image" content={imageUrl} />
           <meta property="og:image:width" content="192" />
           <meta property="og:image:height" content="192" />
-          <meta property="og:image:alt" content="AI Article Curator Logo" />
-          <meta property="og:site_name" content="AI-Powered Article Curator" />
+          <meta property="og:image:alt" content="SynthoraAI Logo" />
+          <meta
+            property="og:site_name"
+            content="SynthoraAI - AI Content Curator"
+          />
           <meta property="og:locale" content="en_US" />
 
           {/* Twitter Card */}
@@ -114,7 +117,7 @@ class MyDocument extends Document {
           <meta name="twitter:title" content={title} />
           <meta name="twitter:description" content={description} />
           <meta name="twitter:image" content={imageUrl} />
-          <meta name="twitter:image:alt" content="AI Article Curator Logo" />
+          <meta name="twitter:image:alt" content="SynthoraAI Logo" />
 
           {/* Canonical */}
           <link rel="canonical" href={siteUrl} />
@@ -135,7 +138,7 @@ class MyDocument extends Document {
                   {
                     "@type": "Organization",
                     "@id": `${siteUrl}/#organization`,
-                    name: "Article Curator, Inc.",
+                    name: "SynthoraAI, Inc.",
                     url: siteUrl,
                     logo: {
                       "@type": "ImageObject",
@@ -146,7 +149,7 @@ class MyDocument extends Document {
                     "@type": "WebSite",
                     "@id": `${siteUrl}/#website`,
                     url: siteUrl,
-                    name: "Article Curator",
+                    name: "Synthora AI - AI Article Curator",
                     description: description,
                     publisher: { "@id": `${siteUrl}/#organization` },
                     potentialAction: [
@@ -169,7 +172,7 @@ class MyDocument extends Document {
                     "@type": "WebPage",
                     "@id": `${siteUrl}/#homepage`,
                     url: siteUrl,
-                    name: "Home – Article Curator",
+                    name: "Home – SynthoraAI | AI Article Curator",
                     isPartOf: { "@id": `${siteUrl}/#website` },
                     inLanguage: "en-US",
                     breadcrumb: {

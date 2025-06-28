@@ -1,6 +1,6 @@
-# AI Article Curator Newsletter Service
+# SynthoraAI - AI Article Curator Newsletter Service
 
-This directory contains the **Newsletter Service** for the AI Article Curator project. It is responsible for:
+This directory contains the **Newsletter Service** for the SynthoraAI - AI Article Curator project. It is responsible for:
 
 - Maintaining a subscriber list (emails only, no authentication).
 - Periodically fetching new articles from the main database.

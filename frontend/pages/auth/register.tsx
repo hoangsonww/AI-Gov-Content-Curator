@@ -43,7 +43,7 @@ export default function Register() {
   return (
     <>
       <Head>
-        <title>Article Curator - Register</title>
+        <title>SynthoraAI - Register</title>
       </Head>
       <div className="register-container">
         <h1 className="register-title">Register 📝</h1>

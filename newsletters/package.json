@@ -1,6 +1,6 @@
 {
   "name": "government-article-curator-newsletter",
-  "description": "Daily newsletter service for AI Article Content Curator.",
+  "description": "Daily newsletter service for SynthoraAI - AI Article Content Curator.",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
