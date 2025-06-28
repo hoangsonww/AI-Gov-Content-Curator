@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>AI Content Curator - Crawler</title>
+        <title>SynthoraAI | AI Content Curator - Crawler</title>
         <meta
           name="description"
           content="Crawler for cron job only. Visit our backend or frontend for more info."
@@ -35,7 +35,9 @@ export default function Home() {
       <div className="page-wrapper">
         <header>
           <i className="fas fa-robot logo-icon"></i>
-          <div className="title">AI Content Curator - Crawler</div>
+          <div className="title">
+            SynthoraAI - AI Content Curator - Crawler Service
+          </div>
         </header>
 
         <div className="main-content">
@@ -122,7 +124,7 @@ export default function Home() {
         </div>
 
         <footer>
-          <p>&copy; 2025 Article Curator. All rights reserved.</p>
+          <p>&copy; 2025 SynthoraAI. All rights reserved.</p>
         </footer>
       </div>
     </>

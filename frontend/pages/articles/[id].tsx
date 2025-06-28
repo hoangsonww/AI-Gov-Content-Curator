@@ -1,5 +1,3 @@
-// pages/articles/[id].tsx
-
 import React, { useCallback, useState } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
@@ -97,7 +95,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
 
   let titlePreview =
     article.title.split(" ").slice(0, 5).join(" ") || "Title not available";
-  const dynamicTitle = `Article Curator – ${titlePreview}`;
+  const dynamicTitle = `SynthoraAI – ${titlePreview}`;
 
   return (
     <>

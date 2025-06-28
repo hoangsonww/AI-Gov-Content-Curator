@@ -39,7 +39,7 @@ export default function FavoritesPage() {
   return (
     <>
       <Head>
-        <title>Article Curator - My Favorite Articles</title>
+        <title>SynthoraAI - My Favorite Articles</title>
       </Head>
 
       <div className="favorites-container">

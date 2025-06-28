@@ -35,7 +35,9 @@ describe("❇️ Root & Docs endpoints", () => {
   it("GET /api-docs returns HTML", async () => {
     const res = await request(app).get("/api-docs");
     expect(res.status).toBe(200);
-    expect(res.text).toMatch(/<title>Article Curator API Docs<\/title>/);
+    expect(res.text).toMatch(
+      /<title>Synthora AI - AI Article Curator API Docs<\/title>/,
+    );
   });
 
   it("GET /swagger.json returns JSON", async () => {

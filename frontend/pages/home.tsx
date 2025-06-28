@@ -63,7 +63,7 @@ export default function HomePage({
   return (
     <>
       <Head>
-        <title>Article Curator - AI-Powered News Article Content Curator</title>
+        <title>SynthoraAI - AI-Powered News Article Content Curator</title>
       </Head>
       <div style={{ marginBottom: "2rem", marginTop: "2rem" }}>
         <div className="search-container fade-down">

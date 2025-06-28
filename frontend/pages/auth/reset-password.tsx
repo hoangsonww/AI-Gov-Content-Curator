@@ -64,7 +64,7 @@ export default function ResetPassword() {
   return (
     <>
       <Head>
-        <title>Article Curator - Reset Password</title>
+        <title>SynthoraAI - Reset Password</title>
       </Head>
       <div className="reset-container">
         <h1 className="reset-title">Reset Password 🔑</h1>

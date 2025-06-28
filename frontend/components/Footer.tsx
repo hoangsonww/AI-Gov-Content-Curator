@@ -11,7 +11,7 @@ export default function Footer() {
           target="_blank"
           href="https://github.com/hoangsonww/AI-Gov-Content-Curator"
         >
-          Article Curator
+          SynthoraAI
         </a>
         . All rights reserved.
       </p>

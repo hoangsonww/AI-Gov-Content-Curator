@@ -765,6 +765,7 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 ### Note
 
 > [!IMPORTANT]
+>
 > - The newsletter subscription feature is designed to be simple and effective. It allows users to stay informed about the latest articles without overwhelming them with too many emails.
 > - The subscription form is integrated into the frontend, and users can easily sign up or unsubscribe at any time.
 > - The daily updates are sent via email, ensuring that subscribers receive the most relevant information without having to check the app constantly.

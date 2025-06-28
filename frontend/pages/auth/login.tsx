@@ -31,7 +31,7 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Article Curator - Login</title>
+        <title>SynthoraAI - Login</title>
       </Head>
       <div className="login-container">
         <h1 className="login-title">Login 🔒</h1>

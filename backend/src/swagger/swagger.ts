@@ -4,9 +4,9 @@ import path from "path";
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
-    title: "Article Curator API",
+    title: "SynthoraAI - AI Article Curator API",
     version: "1.0.0",
-    description: "API Documentation for Article Curator",
+    description: "API Documentation for Synthora AI - AI Article Curator",
   },
   servers: [
     {

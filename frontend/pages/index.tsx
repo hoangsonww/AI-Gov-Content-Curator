@@ -102,7 +102,7 @@ export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>Article Curator - AI-Powered News Curation</title>
+        <title>SynthoraAI - AI-Powered News Curation</title>
         <meta
           name="description"
           content="Discover, search, and curate the latest news articles - summarized by AI for you."
@@ -116,7 +116,7 @@ export default function LandingPage() {
           <div className="extra-ball-left" />
           <div className="extra-ball" />
           <div className="hero-content reveal">
-            <h1>Article Curator</h1>
+            <h1>SynthoraAI</h1>
             <p>
               The AI-powered face of up-to-date news - aggregate, summarize, and
               stay informed in seconds.
@@ -236,9 +236,10 @@ export default function LandingPage() {
           <div className="testimonial-grid reveal">
             <div className="testimonial-card">
               <p>
-                “Article Curator is indispensable for my legislative research.
-                The AI summaries let me grasp policy briefs in seconds - crucial
-                when I’m preparing for committee hearings.”
+                “SynthoraAI - AI Article Curator is indispensable for my
+                legislative research. The AI summaries let me grasp policy
+                briefs in seconds - crucial when I’m preparing for committee
+                hearings.”
               </p>
               <h4> - Senator Emily Carter</h4>
             </div>
@@ -277,9 +278,9 @@ export default function LandingPage() {
             {/* Three more testimonials below */}
             <div className="testimonial-card">
               <p>
-                “As Legislative Director, I depend on Article Curator to monitor
-                emerging bills. Its real-time alerts have saved our office
-                countless hours in legislative prep.”
+                “As Legislative Director, I depend on SynthoraAI - AI Article
+                Curator to monitor emerging bills. Its real-time alerts have
+                saved our office countless hours in legislative prep.”
               </p>
               <h4> - Legislative Director Maria Sánchez</h4>
             </div>
@@ -294,8 +295,8 @@ export default function LandingPage() {
             <div className="testimonial-card">
               <p>
                 “As Senate Majority Leader, I need fast access to reliable
-                summaries. Article Curator’s AI ensures I’m always prepped for
-                cross–committee discussions.”
+                summaries. SynthoraAI - AI Article Curator’s AI ensures I’m
+                always prepped for cross–committee discussions.”
               </p>
               <h4> - Senator Anna Thompson</h4>
             </div>
@@ -308,11 +309,11 @@ export default function LandingPage() {
           <p className="section-subtitle">Got questions? We’ve got answers.</p>
           <div className="faq-list reveal">
             <details>
-              <summary>What is Article Curator?</summary>
+              <summary>What is SynthoraAI - AI Article Curator?</summary>
               <p>
-                Article Curator is an AI-powered tool that gathers, summarizes,
-                and organizes government-related news so you can stay informed
-                in seconds.
+                SynthoraAI - AI Article Curator is an AI-powered tool that
+                gathers, summarizes, and organizes government-related news so
+                you can stay informed in seconds.
               </p>
             </details>
             <details>
@@ -382,7 +383,9 @@ export default function LandingPage() {
               </p>
             </details>
             <details>
-              <summary>Who can benefit from Article Curator?</summary>
+              <summary>
+                Who can benefit from SynthoraAI - AI Article Curator?
+              </summary>
               <p>
                 Government staff, legislators, policy advisors, and anyone
                 needing quick, reliable summaries of official news and releases.
@@ -473,7 +476,7 @@ export default function LandingPage() {
         <section className="final-cta reveal">
           <h2>Ready to Stay Informed?</h2>
           <p className="section-subtitle">
-            Join thousands using Article Curator daily.
+            Join thousands using SynthoraAI - AI Article Curator daily.
           </p>
           <div className="final-buttons">
             <Link href="/auth/register" className="btn primary">
