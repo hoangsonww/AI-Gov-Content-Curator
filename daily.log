@@ -3467,3 +3467,183 @@ Daily run finished at 2025-06-23 16:01:25
 Daily run finished at 2025-06-23 16:01:25
 ----------------------------------------
 ----------------------------------------
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-06-28 16:00:01
+Daily run started at 2025-06-28 16:00:01
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-28T20:00:17.952Z"}
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-28T20:00:17.952Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-28T20:00:17.957Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-28T20:00:17.957Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-28T20:00:18.942Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-28T20:00:18.943Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-28T20:00:18.942Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-28T20:00:18.943Z"}
+{"level":"info","message":"🆕 22 fresh URLs to page‑fetch","timestamp":"2025-06-28T20:00:21.066Z"}
+{"level":"info","message":"🆕 22 fresh URLs to page‑fetch","timestamp":"2025-06-28T20:00:21.066Z"}
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-270525-z-z/","timestamp":"2025-06-28T20:00:21.315Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-270525-z-z/","timestamp":"2025-06-28T20:00:21.315Z"}
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-28T20:00:22.776Z"}
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-28T20:00:22.776Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-28T20:00:22.819Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-28T20:00:22.819Z"}
+{"level":"info","message":"✅ Saved: Saharan dust will make its way to North Texas Saturday. How long will it stay?TDMNTDMN","timestamp":"2025-06-28T20:00:26.344Z"}
+{"level":"info","message":"✅ Saved: Saharan dust will make its way to North Texas Saturday. How long will it stay?TDMNTDMN","timestamp":"2025-06-28T20:00:26.344Z"}
+{"level":"info","message":"✅ Saved: Dallas weather: Hot with high heat index, low storm chances, possibility of storms July 4TDMNTDMN","timestamp":"2025-06-28T20:00:26.421Z"}
+{"level":"info","message":"✅ Saved: Dallas weather: Hot with high heat index, low storm chances, possibility of storms July 4TDMNTDMN","timestamp":"2025-06-28T20:00:26.421Z"}
+{"level":"info","message":"✅ Saved: North Texas high school football coach arrested in child sex sting, Tarrant sheriff saysTDMNTDMN","timestamp":"2025-06-28T20:00:27.020Z"}
+{"level":"info","message":"✅ Saved: North Texas high school football coach arrested in child sex sting, Tarrant sheriff saysTDMNTDMN","timestamp":"2025-06-28T20:00:27.020Z"}
+{"level":"info","message":"✅ Saved: Dan Patrick tells local GOP chair to resign for posting online poll on Jews, Muslims TDMNTDMN","timestamp":"2025-06-28T20:00:33.315Z"}
+{"level":"info","message":"✅ Saved: Dan Patrick tells local GOP chair to resign for posting online poll on Jews, Muslims TDMNTDMN","timestamp":"2025-06-28T20:00:33.315Z"}
+{"level":"info","message":"✅ Saved: After 8 years leading McKinney, ‘rock ‘n’ roll mayor’ George Fuller is on to his next gigTDMNLinkedIn IconTDMN","timestamp":"2025-06-28T20:00:33.785Z"}
+{"level":"info","message":"✅ Saved: After 8 years leading McKinney, ‘rock ‘n’ roll mayor’ George Fuller is on to his next gigTDMNLinkedIn IconTDMN","timestamp":"2025-06-28T20:00:33.785Z"}
+{"level":"info","message":"✅ Saved: Israeli strikes kill at least 62 people in Gaza as ceasefire prospects move closer | AP News","timestamp":"2025-06-28T20:00:33.837Z"}
+{"level":"info","message":"✅ Saved: Israeli strikes kill at least 62 people in Gaza as ceasefire prospects move closer | AP News","timestamp":"2025-06-28T20:00:33.837Z"}
+{"level":"info","message":"✅ Saved: Trump tells Iran's supreme leader: 'You got beat to hell' | AP News","timestamp":"2025-06-28T20:00:34.588Z"}
+{"level":"info","message":"✅ Saved: Trump tells Iran's supreme leader: 'You got beat to hell' | AP News","timestamp":"2025-06-28T20:00:34.588Z"}
+{"level":"info","message":"✅ Saved: Thousands mourn top Iranian military commanders and scientists killed in Israeli strikes | AP News","timestamp":"2025-06-28T20:00:34.627Z"}
+{"level":"info","message":"✅ Saved: Thousands mourn top Iranian military commanders and scientists killed in Israeli strikes | AP News","timestamp":"2025-06-28T20:00:34.627Z"}
+{"level":"info","message":"✅ Saved: Justice Department fires 3 lawyers involved in Jan. 6 cases | AP News","timestamp":"2025-06-28T20:00:41.579Z"}
+{"level":"info","message":"✅ Saved: Justice Department fires 3 lawyers involved in Jan. 6 cases | AP News","timestamp":"2025-06-28T20:00:41.579Z"}
+{"level":"info","message":"✅ Saved: Supreme Court ruling leaves birthright citizenship in limbo | AP News","timestamp":"2025-06-28T20:00:41.589Z"}
+{"level":"info","message":"✅ Saved: Supreme Court ruling leaves birthright citizenship in limbo | AP News","timestamp":"2025-06-28T20:00:41.589Z"}
+{"level":"info","message":"✅ Saved: Minnesota honors beloved dog alongside slain lawmaker and husband | AP News","timestamp":"2025-06-28T20:00:41.919Z"}
+{"level":"info","message":"✅ Saved: Minnesota honors beloved dog alongside slain lawmaker and husband | AP News","timestamp":"2025-06-28T20:00:41.919Z"}
+{"level":"info","message":"✅ Saved: Newsom files suit against Fox News over Trump call reporting | AP News","timestamp":"2025-06-28T20:00:41.936Z"}
+{"level":"info","message":"✅ Saved: Newsom files suit against Fox News over Trump call reporting | AP News","timestamp":"2025-06-28T20:00:41.936Z"}
+{"level":"info","message":"✅ Saved: Trump administration ends legal protections for half-million Haitians who now face deportations | AP News","timestamp":"2025-06-28T20:00:42.008Z"}
+{"level":"info","message":"✅ Saved: Trump administration ends legal protections for half-million Haitians who now face deportations | AP News","timestamp":"2025-06-28T20:00:42.008Z"}
+{"level":"info","message":"✅ Saved: “A BIG WIN”: Supreme Court Ends Excessive Nationwide Injunctions – The White House","timestamp":"2025-06-28T20:00:49.693Z"}
+{"level":"info","message":"✅ Saved: “A BIG WIN”: Supreme Court Ends Excessive Nationwide Injunctions – The White House","timestamp":"2025-06-28T20:00:49.693Z"}
+{"level":"info","message":"✅ Saved: ICYMI: Cheapest Summer Gas Prices in Four Years – The White House","timestamp":"2025-06-28T20:00:49.808Z"}
+{"level":"info","message":"✅ Saved: ICYMI: Cheapest Summer Gas Prices in Four Years – The White House","timestamp":"2025-06-28T20:00:49.808Z"}
+{"level":"info","message":"✅ Saved: President Trump’s Leadership, Vision Drives NATO Breakthrough – The White House","timestamp":"2025-06-28T20:00:50.098Z"}
+{"level":"info","message":"✅ Saved: President Trump’s Leadership, Vision Drives NATO Breakthrough – The White House","timestamp":"2025-06-28T20:00:50.098Z"}
+{"level":"info","message":"✅ Saved: Trump says he’s terminating trade talks with Canada over tax on tech firms | AP News","timestamp":"2025-06-28T20:00:50.503Z"}
+{"level":"info","message":"✅ Saved: Experts Agree: Iran’s Nuclear Facilities Have Been Obliterated – The White House","timestamp":"2025-06-28T20:00:50.503Z"}
+{"level":"info","message":"✅ Saved: Trump says he’s terminating trade talks with Canada over tax on tech firms | AP News","timestamp":"2025-06-28T20:00:50.503Z"}
+{"level":"info","message":"✅ Saved: Experts Agree: Iran’s Nuclear Facilities Have Been Obliterated – The White House","timestamp":"2025-06-28T20:00:50.503Z"}
+{"level":"info","message":"✅ Saved: Analysis: One Big Beautiful Bill Will Boost Wages, Lower Deficits – The White House","timestamp":"2025-06-28T20:00:59.875Z"}
+{"level":"info","message":"✅ Saved: Analysis: One Big Beautiful Bill Will Boost Wages, Lower Deficits – The White House","timestamp":"2025-06-28T20:00:59.875Z"}
+{"level":"info","message":"✅ Saved: Iran’s Nuclear Facilities Have Been Obliterated — and Suggestions Otherwise are Fake News – The White House","timestamp":"2025-06-28T20:00:59.938Z"}
+{"level":"info","message":"✅ Saved: Iran’s Nuclear Facilities Have Been Obliterated — and Suggestions Otherwise are Fake News – The White House","timestamp":"2025-06-28T20:00:59.938Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-28T20:01:00.939Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-28T20:01:00.939Z"}
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 14
+Phase 1 — removed by URL patterns: 14
+Phase 2 — removed by content/title heuristics & embeds: 13
+Phase 2 — removed by content/title heuristics & embeds: 13
+Phase 3 — cleaned repeated title segments on 32 articles
+Phase 3 — cleaned repeated title segments on 32 articles
+Phase 4 — stripped camel-case suffixes on 82 articles
+Phase 4 — stripped camel-case suffixes on 82 articles
+Phase 5 — stripped garbled suffixes on 10 articles
+Phase 5 — stripped garbled suffixes on 10 articles
+Phase 6 — normalized titles on 2 articles
+Phase 6 — normalized titles on 2 articles
+🧹 Cleanup complete
+🧹 Cleanup complete
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-28T20:01:07.043Z"}
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-28T20:01:07.043Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-28T20:01:07.043Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-28T20:01:07.043Z"}
+
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+(node:72253) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:72253) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+🧹 Cleanup complete
+✅ MongoDB disconnected
+✅ MongoDB disconnected
+
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+Sending to 3 subscriber(s)
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+nguyenhoangson091104@gmail.com: sent
+Cleaning up articles...
+Cleaning up articles...
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+Finished newsletter run
+Finished newsletter run
+
+
+Daily run finished at 2025-06-28 16:01:32
+Daily run finished at 2025-06-28 16:01:32
+----------------------------------------
+----------------------------------------
