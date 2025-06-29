@@ -232,7 +232,7 @@ This project consists of 4 primary microservices that interact with each other:
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
 
 > [!NOTE]
-> This architecture diagram is a simplified representation and may not include all components or interactions. For a more detailed view, please refer to the individual service documentation.
+> This architecture diagram above is a simplified representation and may not include all components or interactions. For a more detailed view, please refer to the individual service documentation.
 
 ---
 
@@ -1140,6 +1140,9 @@ The **SynthoraAI - AI-Powered Article Content Curator** project brings together 
 a newsletter service, and a modern frontend to deliver up-to-date, summarized government-related articles. Leveraging advanced technologies
 like Google Generative AI, Next.js, Express.js, and MongoDB, the system is both scalable and robust. Whether you’re a government staff member
 or a curious public user, this solution provides a streamlined, user-friendly experience to quickly access relevant, summarized content.
+
+> [!NOTE]
+> This project is a work in progress, and contributions are welcome! If you have ideas for improvements, bug fixes, or new features, please feel free to open an issue or submit a pull request.
 
 ---
 
