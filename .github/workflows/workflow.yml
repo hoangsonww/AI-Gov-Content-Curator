@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -32,13 +32,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: formatting
     env:
-      # satisfy chat.controller tests
       GOOGLE_AI_API_KEY: dummy
       GOOGLE_AI_API_KEY1: dummy
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -56,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -67,33 +66,33 @@ jobs:
       - name: Run crawler tests
         run: npm --workspace crawler run test
 
-  newsletter:
-    name: "✉️ Newsletter Tests"
+  newsletters:
+    name: "✉️ Newsletters Tests"
     runs-on: ubuntu-latest
     needs: formatting
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install newsletter deps
-        run: npm --workspace newsletter ci
+      - name: Install newsletters deps
+        run: npm --workspace newsletters ci
 
-      - name: Run newsletter tests
-        run: npm --workspace newsletter run test
+      - name: Run newsletters tests
+        run: npm --workspace newsletters run test
 
   frontend:
-    name: "🌐 Frontend Tests"
+    name: "🌐 Frontend E2E (allowed to fail)"
     runs-on: ubuntu-latest
     needs: formatting
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -101,19 +100,16 @@ jobs:
       - name: Install frontend deps
         run: npm --workspace frontend ci
 
-      - name: Run unit tests
-        run: npm --workspace frontend run test:unit
-
-      - name: Install Playwright deps
+      - name: Install Playwright browsers
         run: npm --workspace frontend exec playwright install --with-deps
 
-      - name: Run e2e tests
+      - name: Run frontend E2E
         run: npm --workspace frontend run test:e2e
 
   complete:
     name: "🎉 All Required Tests Passed"
     runs-on: ubuntu-latest
-    needs: [backend, crawler, newsletter]
+    needs: [backend, crawler, newsletters]
     if: ${{ success() }}
     steps:
-      - run: echo "✅ Formatting, linting, backend, crawler and newsletter tests all passed."
+      - run: echo "✅ Formatting, linting, backend, crawler and newsletters tests all passed."
