@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  # provide dummy keys so chat & topic-extractor tests don’t blow up
+  NEWS_API_KEY: dummy
+  GOOGLE_AI_API_KEY: dummy
+
 jobs:
   formatting:
     name: "🔧 Format & Lint"
@@ -39,11 +44,10 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install backend deps
-        run: npm --workspace backend ci
-
-      - name: Run backend tests
-        run: npm --workspace backend test
+      - name: Install & Test Backend
+        run: |
+          npm --workspace backend ci
+          npm --workspace backend test
 
   crawler:
     name: "🤖 Crawler Tests"
@@ -57,11 +61,14 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install crawler deps
-        run: npm --workspace crawler ci
+      # if crawler/package.json doesn’t list jest as a devDependency,
+      # you can install it via the root:
+      - name: Ensure Jest is available
+        run: npm install --workspace crawler --save-dev jest ts-jest @types/jest
 
-      - name: Run crawler tests
-        run: npm --workspace crawler test
+      - name: Run Crawler Tests
+        run: |
+          npm --workspace crawler test
 
   newsletters:
     name: "✉️ Newsletters Tests"
@@ -75,11 +82,10 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install newsletters deps
-        run: npm --workspace newsletters ci
-
-      - name: Run newsletters tests
-        run: npm --workspace newsletters test
+      - name: Install & Test Newsletters
+        run: |
+          npm --workspace newsletters ci
+          npm --workspace newsletters test
 
   frontend:
     name: "🌐 Frontend E2E"
@@ -93,14 +99,11 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install frontend deps
-        run: npm --workspace frontend ci
-
-      - name: Install Playwright browsers
-        run: npm --workspace frontend exec playwright install --with-deps
-
-      - name: Run frontend E2E
-        run: npm --workspace frontend test:e2e
+      - name: Install & Run Frontend E2E
+        run: |
+          npm --workspace frontend ci
+          npm --workspace frontend exec playwright install --with-deps
+          npm --workspace frontend run test:e2e
         continue-on-error: true
 
   complete:
