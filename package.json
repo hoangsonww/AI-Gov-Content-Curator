@@ -6,7 +6,8 @@
   "workspaces": [
     "frontend",
     "backend",
-    "crawler"
+    "crawler",
+    "newsletters"
   ],
   "bin": {
     "aicc": "./bin/aicc.js"
