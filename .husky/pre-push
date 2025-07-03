@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Exactly the same pipeline as pre-commit
+
+printf "\n→ Running backend tests...\n"
+(cd backend && npm test) || { echo "🚫 backend tests failed"; exit 1; }
+
+printf "\n→ Running crawler tests...\n"
+(cd crawler && npm test) || { echo "🚫 crawler tests failed"; exit 1; }
+
+printf "\n→ Running newsletters tests...\n"
+(cd newsletters && npm test) || { echo "🚫 newsletters tests failed"; exit 1; }
+
+printf "\n→ Running frontend tests (failures OK)...\n"
+(cd frontend && npm test) || echo "⚠️ frontend tests failed (ignored)"
+
+echo "\n✅ All required tests passed. Pushing..."

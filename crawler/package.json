@@ -12,6 +12,8 @@
     "fetch:past": "npx ts-node scripts/fetchPastArticles.ts",
     "fetch:latest": "npx ts-node scripts/fetchLatestArticles.ts",
     "test": "jest --config jest.config.js --runInBand",
+    "test:watch": "jest --config jest.config.js --watch",
+    "test:coverage": "jest --config jest.config.js --coverage",
     "clean:articles": "npx ts-node scripts/cleanData.ts"
   },
   "dependencies": {

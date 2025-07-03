@@ -3,7 +3,11 @@ module.exports = {
   testEnvironment: "node",
   testTimeout: 60000,
   moduleFileExtensions: ["ts", "js", "json"],
-  testMatch: ["**/__tests__/**/*.spec.ts", "**/?(*.)+(spec|test).ts"],
+  testMatch: [
+    "**/__tests__/**/*.spec.ts",
+    "**/__tests__/**/*.spec.js",
+    "**/?(*.)+(spec|test).[jt]s"
+  ],
   globals: {
     "ts-jest": {
       tsconfig: "tsconfig.json",

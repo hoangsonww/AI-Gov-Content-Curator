@@ -444,8 +444,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
 
 ### Prerequisites & Installation (Backend)
 
-> [!TIP]
-> Instead of installing the node modules separately, you can run `npm install` in the root directory to install dependencies for all components.
+> [!CAUTION]
+> Before proceeding, run `npm install` once in the root directory of the monorepo to install the necessary dependencies for managing the project!
 
 1. **Prerequisites:**
 
@@ -460,7 +460,7 @@ The **Backend** is responsible for storing articles and serving them via RESTful
    cd AI-Gov-Content-Curator/backend
    ```
 
-3. **Install Dependencies:**
+3. **Install Dependencies (inside `backend/`):**
 
    ```bash
    npm install
