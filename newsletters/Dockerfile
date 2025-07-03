@@ -10,6 +10,7 @@ COPY models/ models/
 COPY pages/ pages/
 COPY public/ public/
 COPY schedule/ schedule/
+COPY scripts/ scripts/
 COPY __tests__/ __tests__/
 
 # Install dependencies and build
