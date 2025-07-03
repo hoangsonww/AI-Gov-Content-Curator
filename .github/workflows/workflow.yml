@@ -117,16 +117,16 @@ jobs:
     needs: complete
     permissions:
       contents: read
-      packages: write
+      packages: write   # needed to publish to GHCR
     steps:
       - uses: actions/checkout@v3
 
-      - name: Log in to registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          registry: ${{ secrets.DOCKER_REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & push backend image
         uses: docker/build-push-action@v3
@@ -135,8 +135,8 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-backend:${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-backend:latest
+            ghcr.io/hoangsonww/ai-curator-backend:${{ github.sha }}
+            ghcr.io/hoangsonww/ai-curator-backend:latest
 
       - name: Build & push crawler image
         uses: docker/build-push-action@v3
@@ -145,8 +145,8 @@ jobs:
           file: ./crawler/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-crawler:${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-crawler:latest
+            ghcr.io/hoangsonww/ai-curator-crawler:${{ github.sha }}
+            ghcr.io/hoangsonww/ai-curator-crawler:latest
 
       - name: Build & push newsletters image
         uses: docker/build-push-action@v3
@@ -155,8 +155,8 @@ jobs:
           file: ./newsletters/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-newsletters:${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-newsletters:latest
+            ghcr.io/hoangsonww/ai-curator-newsletters:${{ github.sha }}
+            ghcr.io/hoangsonww/ai-curator-newsletters:latest
 
       - name: Build & push frontend image
         uses: docker/build-push-action@v3
@@ -165,5 +165,5 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-frontend:${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/ai-curator-frontend:latest
+            ghcr.io/hoangsonww/ai-curator-frontend:${{ github.sha }}
+            ghcr.io/hoangsonww/ai-curator-frontend:latest
