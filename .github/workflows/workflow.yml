@@ -1,4 +1,4 @@
-name: CI Pipeline AI Content Curator
+name: CI/CD Pipeline for SynthoraAI - AI Article Content Curator
 
 on:
   push:
