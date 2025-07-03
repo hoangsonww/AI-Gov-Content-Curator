@@ -12,6 +12,8 @@
     "fetch:past": "npx ts-node scripts/fetchPastArticles.ts",
     "fetch:latest": "npx ts-node scripts/fetchLatestArticles.ts",
     "test": "jest --config jest.config.js --runInBand",
+    "test:watch": "jest --config jest.config.js --watch",
+    "test:coverage": "jest --config jest.config.js --coverage",
     "clean:articles": "npx ts-node scripts/cleanData.ts"
   },
   "dependencies": {
@@ -31,6 +33,7 @@
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.30",
+    "@types/jest": "^30.0.0",
     "@types/node": "^18.0.0",
     "@types/react": "19.0.10",
     "ts-node": "^10.9.1",

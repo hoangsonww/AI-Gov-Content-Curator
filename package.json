@@ -6,7 +6,8 @@
   "workspaces": [
     "frontend",
     "backend",
-    "crawler"
+    "crawler",
+    "newsletters"
   ],
   "bin": {
     "aicc": "./bin/aicc.js"
@@ -61,7 +62,8 @@
     "build:crawler": "cd crawler && npm run build",
     "start:crawler": "cd crawler && npm run start",
     "lint": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\"",
-    "format": "npm run lint"
+    "format": "npm run lint",
+    "prepare": "if [ \"$NODE_ENV\" = \"development\" ]; then husky install; fi"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -105,7 +107,8 @@
     "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "husky": "^8.0.0"
   },
   "engines": {
     "node": "18.x"

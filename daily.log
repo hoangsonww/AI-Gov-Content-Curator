@@ -3647,3 +3647,369 @@ Daily run finished at 2025-06-28 16:01:32
 Daily run finished at 2025-06-28 16:01:32
 ----------------------------------------
 ----------------------------------------
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-06-29 16:00:01
+Daily run started at 2025-06-29 16:00:01
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-29T20:00:18.487Z"}
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-29T20:00:18.487Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-29T20:00:18.489Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-29T20:00:18.489Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-29T20:00:19.612Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-29T20:00:19.612Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-29T20:00:19.612Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-29T20:00:19.612Z"}
+{"level":"info","message":"✅ Saved: Anna Wintour becomes an unlikely activist as Washington quashes DEI","timestamp":"2025-06-29T20:00:22.153Z"}
+{"level":"info","message":"✅ Saved: Anna Wintour becomes an unlikely activist as Washington quashes DEI","timestamp":"2025-06-29T20:00:22.153Z"}
+{"level":"info","message":"🆕 19 fresh URLs to page‑fetch","timestamp":"2025-06-29T20:00:22.229Z"}
+{"level":"info","message":"🆕 19 fresh URLs to page‑fetch","timestamp":"2025-06-29T20:00:22.229Z"}
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-29T20:00:22.347Z"}
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-29T20:00:22.347Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-29T20:00:22.375Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-29T20:00:22.375Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-270525-z-z/","timestamp":"2025-06-29T20:00:22.926Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-270525-z-z/","timestamp":"2025-06-29T20:00:22.926Z"}
+{"level":"info","message":"✅ Saved: Sen. Thom Tillis won’t seek reelection after vote again tax-cut bill, Trump criticismTDMNTDMN","timestamp":"2025-06-29T20:00:26.134Z"}
+{"level":"info","message":"✅ Saved: Sen. Thom Tillis won’t seek reelection after vote again tax-cut bill, Trump criticismTDMNTDMN","timestamp":"2025-06-29T20:00:26.134Z"}
+{"level":"info","message":"✅ Saved: Cause of Hulen Mall fire in Forth Worth yet to be determinedTDMNLinkedIn IconTDMN","timestamp":"2025-06-29T20:00:27.401Z"}
+{"level":"info","message":"✅ Saved: Cause of Hulen Mall fire in Forth Worth yet to be determinedTDMNLinkedIn IconTDMN","timestamp":"2025-06-29T20:00:27.401Z"}
+{"level":"info","message":"✅ Saved: Sinaloa cartel got FBI official’s phone records, DOJ reports saysTDMNTDMN","timestamp":"2025-06-29T20:00:27.627Z"}
+{"level":"info","message":"✅ Saved: Sinaloa cartel got FBI official’s phone records, DOJ reports saysTDMNTDMN","timestamp":"2025-06-29T20:00:27.627Z"}
+{"level":"info","message":"✅ Saved: Sunny Sunday weather ahead for Dallas-Fort Worth, rain expected in upcoming weekTDMNLinkedIn IconTDMN","timestamp":"2025-06-29T20:00:34.314Z"}
+{"level":"info","message":"✅ Saved: Sunny Sunday weather ahead for Dallas-Fort Worth, rain expected in upcoming weekTDMNLinkedIn IconTDMN","timestamp":"2025-06-29T20:00:34.314Z"}
+{"level":"info","message":"✅ Saved: Russia launches the biggest aerial attack since the start of the war, Ukraine saysTDMNTDMN","timestamp":"2025-06-29T20:00:34.445Z"}
+{"level":"info","message":"✅ Saved: Russia launches the biggest aerial attack since the start of the war, Ukraine saysTDMNTDMN","timestamp":"2025-06-29T20:00:34.445Z"}
+{"level":"info","message":"✅ Saved: Trump tells Fox News he has group of wealthy people to buy TikTokTDMNTDMN","timestamp":"2025-06-29T20:00:34.474Z"}
+{"level":"info","message":"✅ Saved: Trump tells Fox News he has group of wealthy people to buy TikTokTDMNTDMN","timestamp":"2025-06-29T20:00:34.474Z"}
+{"level":"info","message":"✅ Saved: Iran’s judiciary says at least 71 killed in Israel’s attack on Tehran’s Evin prisonTDMNTDMN","timestamp":"2025-06-29T20:00:34.720Z"}
+{"level":"info","message":"✅ Saved: Iran’s judiciary says at least 71 killed in Israel’s attack on Tehran’s Evin prisonTDMNTDMN","timestamp":"2025-06-29T20:00:34.720Z"}
+{"level":"info","message":"✅ Saved: Ukraine says Russia launches biggest aerial attack since war began | AP News","timestamp":"2025-06-29T20:00:35.079Z"}
+{"level":"info","message":"✅ Saved: Ukraine says Russia launches biggest aerial attack since war began | AP News","timestamp":"2025-06-29T20:00:35.079Z"}
+{"level":"info","message":"✅ Saved: Kansas deputy killed by suspect during fireworks call | AP News","timestamp":"2025-06-29T20:00:41.623Z"}
+{"level":"info","message":"✅ Saved: Kansas deputy killed by suspect during fireworks call | AP News","timestamp":"2025-06-29T20:00:41.623Z"}
+{"level":"info","message":"✅ Saved: Humanoid robots captivate fans in China with fully autonomous soccer matches | AP News","timestamp":"2025-06-29T20:00:42.173Z"}
+{"level":"info","message":"✅ Saved: Humanoid robots captivate fans in China with fully autonomous soccer matches | AP News","timestamp":"2025-06-29T20:00:42.173Z"}
+{"level":"info","message":"✅ Saved: Afghanistan tourism is growing under the Taliban | AP News","timestamp":"2025-06-29T20:00:42.442Z"}
+{"level":"info","message":"✅ Saved: Afghanistan tourism is growing under the Taliban | AP News","timestamp":"2025-06-29T20:00:42.442Z"}
+{"level":"info","message":"✅ Saved: Iranians who've been in the US for decades are being arrested in Trump deportation drive | AP News","timestamp":"2025-06-29T20:00:42.664Z"}
+{"level":"info","message":"✅ Saved: Iranians who've been in the US for decades are being arrested in Trump deportation drive | AP News","timestamp":"2025-06-29T20:00:42.664Z"}
+{"level":"info","message":"✅ Saved: Protesters line highway in Florida Everglades to oppose 'Alligator Alcatraz' | AP News","timestamp":"2025-06-29T20:00:42.922Z"}
+{"level":"info","message":"✅ Saved: Protesters line highway in Florida Everglades to oppose 'Alligator Alcatraz' | AP News","timestamp":"2025-06-29T20:00:42.922Z"}
+{"level":"info","message":"✅ Saved: SUNDAY SHOWS: Send the One Big Beautiful Bill to President Trump’s Desk – The White House","timestamp":"2025-06-29T20:00:48.944Z"}
+{"level":"info","message":"✅ Saved: SUNDAY SHOWS: Send the One Big Beautiful Bill to President Trump’s Desk – The White House","timestamp":"2025-06-29T20:00:48.944Z"}
+{"level":"info","message":"✅ Saved: What's in the latest version of Trump's big bill now before the Senate | AP News","timestamp":"2025-06-29T20:00:50.396Z"}
+{"level":"info","message":"✅ Saved: What's in the latest version of Trump's big bill now before the Senate | AP News","timestamp":"2025-06-29T20:00:50.396Z"}
+{"level":"info","message":"✅ Saved: Chief Justice Roberts warns against heated political words about judges | AP News","timestamp":"2025-06-29T20:00:51.570Z"}
+{"level":"info","message":"✅ Saved: Chief Justice Roberts warns against heated political words about judges | AP News","timestamp":"2025-06-29T20:00:51.570Z"}
+{"level":"info","message":"✅ Saved: Senate Democrats slow-walk Trump's big tax bill | AP News","timestamp":"2025-06-29T20:00:52.380Z"}
+{"level":"info","message":"✅ Saved: Senate Democrats slow-walk Trump's big tax bill | AP News","timestamp":"2025-06-29T20:00:52.380Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-29T20:00:53.382Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-29T20:00:53.382Z"}
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 2
+Phase 2 — removed by content/title heuristics & embeds: 2
+Phase 3 — cleaned repeated title segments on 5 articles
+Phase 3 — cleaned repeated title segments on 5 articles
+Phase 4 — stripped camel-case suffixes on 7 articles
+Phase 4 — stripped camel-case suffixes on 7 articles
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+🧹 Cleanup complete
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-29T20:00:58.521Z"}
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-29T20:00:58.521Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-29T20:00:58.521Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-29T20:00:58.521Z"}
+
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+(node:40427) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:40427) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+✅ MongoDB disconnected
+
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+Sending to 3 subscriber(s)
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+nguyenhoangson091104@gmail.com: sent
+Cleaning up articles...
+Cleaning up articles...
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+🧹 Cleanup complete
+Articles cleaned up!
+Finished newsletter run
+Finished newsletter run
+
+
+Daily run finished at 2025-06-29 16:01:26
+Daily run finished at 2025-06-29 16:01:26
+----------------------------------------
+----------------------------------------
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-06-30 16:00:00
+Daily run started at 2025-06-30 16:00:00
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-30T20:00:38.982Z"}
+{"level":"info","message":"✅ Mongo connected","timestamp":"2025-06-30T20:00:38.982Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-30T20:00:38.984Z"}
+{"level":"info","message":"🔍 Crawling homepages…","timestamp":"2025-06-30T20:00:38.984Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-30T20:00:40.039Z"}
+{"level":"info","message":"🔗 Crawled 192 links","timestamp":"2025-06-30T20:00:40.039Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-30T20:00:40.039Z"}
+{"level":"info","message":"📰 Pulling NewsAPI…","timestamp":"2025-06-30T20:00:40.039Z"}
+{"level":"info","message":"✅ Saved: Anna Wintour becomes an unlikely activist as Washington quashes DEI","timestamp":"2025-06-30T20:00:41.815Z"}
+{"level":"info","message":"✅ Saved: Anna Wintour becomes an unlikely activist as Washington quashes DEI","timestamp":"2025-06-30T20:00:41.815Z"}
+{"level":"info","message":"🆕 26 fresh URLs to page‑fetch","timestamp":"2025-06-30T20:00:42.861Z"}
+{"level":"info","message":"🆕 26 fresh URLs to page‑fetch","timestamp":"2025-06-30T20:00:42.861Z"}
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+Static fetch 403 for https://www.nytimes.com/es/, falling back to dynamic...
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-30T20:00:42.995Z"}
+{"level":"warn","message":"static FAIL https://www.nytimes.com/es/: Error: spawn Unknown system error -8. Trying dynamic.","timestamp":"2025-06-30T20:00:42.995Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-30T20:00:43.020Z"}
+{"code":"Unknown system error -8","errno":-8,"level":"error","message":"Full‑article pipeline failed https://www.nytimes.com/es/: spawn Unknown system error -8","stack":"Error: spawn Unknown system error -8\n    at ChildProcess.spawn (node:internal/child_process:414:11)\n    at Object.spawn (node:child_process:761:9)\n    at new Process (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:314:41)\n    at launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/@puppeteer/browsers/src/launch.ts:195:10)\n    at ChromeLauncher.launch (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/puppeteer-core/src/node/BrowserLauncher.ts:131:34)\n    at async fetchDynamicArticle (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/services/crawler.service.ts:50:19)\n    at async processUrl (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:184:13)\n    at async Promise.allSettled (index 0)\n    at async fetchAndSummarize (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:265:5)","syscall":"spawn","timestamp":"2025-06-30T20:00:43.020Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-300625-july4-z/","timestamp":"2025-06-30T20:00:43.079Z"}
+{"level":"warn","message":"No content https://www.dallasnews.com/subscribe/dn-sub_button-300625-july4-z/","timestamp":"2025-06-30T20:00:43.079Z"}
+{"level":"info","message":"✅ Saved: Garland man dies in 18-wheeler crash in Allen TDMNLinkedIn IconTDMN","timestamp":"2025-06-30T20:00:46.484Z"}
+{"level":"info","message":"✅ Saved: Garland man dies in 18-wheeler crash in Allen TDMNLinkedIn IconTDMN","timestamp":"2025-06-30T20:00:46.484Z"}
+{"level":"info","message":"✅ Saved: North Texas Wildlife Center scouts for new facility as it faces shutdown riskTDMNLinkedIn IconTDMN","timestamp":"2025-06-30T20:00:46.651Z"}
+{"level":"info","message":"✅ Saved: North Texas Wildlife Center scouts for new facility as it faces shutdown riskTDMNLinkedIn IconTDMN","timestamp":"2025-06-30T20:00:46.651Z"}
+{"level":"info","message":"✅ Saved: Casey He | Dallas Morning NewsTDMNLinkedIn IconTDMN","timestamp":"2025-06-30T20:00:50.197Z"}
+{"level":"info","message":"✅ Saved: Casey He | Dallas Morning NewsTDMNLinkedIn IconTDMN","timestamp":"2025-06-30T20:00:50.197Z"}
+{"level":"info","message":"✅ Saved: Trump to visit Everglades’ controversial ‘Alligator Alcatraz’ when it opens TuesdayTDMNTDMN","timestamp":"2025-06-30T20:00:56.787Z"}
+{"level":"info","message":"✅ Saved: Trump to visit Everglades’ controversial ‘Alligator Alcatraz’ when it opens TuesdayTDMNTDMN","timestamp":"2025-06-30T20:00:56.787Z"}
+{"level":"info","message":"✅ Saved: Sean ‘Diddy’ Combs’ jury deliberations hit early snagTDMNTDMN","timestamp":"2025-06-30T20:00:56.842Z"}
+{"level":"info","message":"✅ Saved: Sean ‘Diddy’ Combs’ jury deliberations hit early snagTDMNTDMN","timestamp":"2025-06-30T20:00:56.842Z"}
+{"level":"info","message":"✅ Saved: How to claim your share of Apple’s $95 million privacy settlementTDMNTDMN","timestamp":"2025-06-30T20:00:56.877Z"}
+{"level":"info","message":"✅ Saved: How to claim your share of Apple’s $95 million privacy settlementTDMNTDMN","timestamp":"2025-06-30T20:00:56.877Z"}
+{"level":"info","message":"✅ Saved: Man confesses to fatally shooting 19-year-old at Arlington apartment complex, police say TDMNTDMN","timestamp":"2025-06-30T20:00:57.091Z"}
+{"level":"info","message":"✅ Saved: Man confesses to fatally shooting 19-year-old at Arlington apartment complex, police say TDMNTDMN","timestamp":"2025-06-30T20:00:57.091Z"}
+{"level":"info","message":"✅ Saved: UNT Dallas, UNTHSC name sole finalists for presidentTDMNTDMN","timestamp":"2025-06-30T20:00:57.526Z"}
+{"level":"info","message":"✅ Saved: UNT Dallas, UNTHSC name sole finalists for presidentTDMNTDMN","timestamp":"2025-06-30T20:00:57.526Z"}
+{"level":"info","message":"✅ Saved: UK band Bob Vylan investigated by police and banned from US over chants against Israeli military | AP News","timestamp":"2025-06-30T20:01:04.367Z"}
+{"level":"info","message":"✅ Saved: UK band Bob Vylan investigated by police and banned from US over chants against Israeli military | AP News","timestamp":"2025-06-30T20:01:04.367Z"}
+{"level":"info","message":"✅ Saved: Idaho shooting: 2 killed as gunman starts fire to ambush firefighters in Coeur d’Alene | AP News","timestamp":"2025-06-30T20:01:04.830Z"}
+{"level":"info","message":"✅ Saved: Idaho shooting: 2 killed as gunman starts fire to ambush firefighters in Coeur d’Alene | AP News","timestamp":"2025-06-30T20:01:04.830Z"}
+{"level":"info","message":"✅ Saved: 2 Idaho firefighters shot and killed in ambush, authorities say | AP News","timestamp":"2025-06-30T20:01:05.112Z"}
+{"level":"info","message":"✅ Saved: 2 Idaho firefighters shot and killed in ambush, authorities say | AP News","timestamp":"2025-06-30T20:01:05.112Z"}
+{"level":"info","message":"✅ Saved: Trade talks with US resume after Canada rescinded tech tax, PM Carney says | AP News","timestamp":"2025-06-30T20:01:05.222Z"}
+{"level":"info","message":"✅ Saved: Trade talks with US resume after Canada rescinded tech tax, PM Carney says | AP News","timestamp":"2025-06-30T20:01:05.222Z"}
+{"level":"info","message":"✅ Saved: West Bank: Israeli settlers rampage at a military base | AP News","timestamp":"2025-06-30T20:01:05.820Z"}
+{"level":"info","message":"✅ Saved: West Bank: Israeli settlers rampage at a military base | AP News","timestamp":"2025-06-30T20:01:05.820Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Strengthens the Policy of the United States Toward Cuba – The White House","timestamp":"2025-06-30T20:01:12.619Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Strengthens the Policy of the United States Toward Cuba – The White House","timestamp":"2025-06-30T20:01:12.619Z"}
+{"level":"info","message":"✅ Saved: Star witness against Kilmar Abrego Garcia won't be deported | AP News","timestamp":"2025-06-30T20:01:12.793Z"}
+{"level":"info","message":"✅ Saved: Star witness against Kilmar Abrego Garcia won't be deported | AP News","timestamp":"2025-06-30T20:01:12.793Z"}
+{"level":"info","message":"✅ Saved: CIA chief told lawmakers Iran nuclear program set back years | AP News","timestamp":"2025-06-30T20:01:14.658Z"}
+{"level":"info","message":"✅ Saved: CIA chief told lawmakers Iran nuclear program set back years | AP News","timestamp":"2025-06-30T20:01:14.658Z"}
+{"level":"info","message":"✅ Saved: Senate in sprint on Trump's big bill after weekend of setbacks | AP NewsAP Mobile App CTA","timestamp":"2025-06-30T20:01:14.775Z"}
+{"level":"info","message":"✅ Saved: Senate in sprint on Trump's big bill after weekend of setbacks | AP NewsAP Mobile App CTA","timestamp":"2025-06-30T20:01:14.775Z"}
+{"level":"info","message":"✅ Saved: Live updates: Senate rushes to pass Trump's Big Beautiful Bill | AP News","timestamp":"2025-06-30T20:01:17.669Z"}
+{"level":"info","message":"✅ Saved: Live updates: Senate rushes to pass Trump's Big Beautiful Bill | AP News","timestamp":"2025-06-30T20:01:17.669Z"}
+{"level":"info","message":"✅ Saved: Lower Gas Prices Just in Time for Summer Holiday Travel – The White House","timestamp":"2025-06-30T20:01:27.249Z"}
+{"level":"info","message":"✅ Saved: Lower Gas Prices Just in Time for Summer Holiday Travel – The White House","timestamp":"2025-06-30T20:01:27.249Z"}
+{"level":"info","message":"✅ Saved: 60+ Organizations Sign White House Pledge to Support America’s Youth and Invest in AI Education – The White House","timestamp":"2025-06-30T20:01:27.264Z"}
+{"level":"info","message":"✅ Saved: 60+ Organizations Sign White House Pledge to Support America’s Youth and Invest in AI Education – The White House","timestamp":"2025-06-30T20:01:27.264Z"}
+{"level":"info","message":"✅ Saved: The One Big Beautiful Bill Slashes Deficits, National Debt While Unleashing Economic Growth – The White House","timestamp":"2025-06-30T20:01:27.315Z"}
+{"level":"info","message":"✅ Saved: The One Big Beautiful Bill Slashes Deficits, National Debt While Unleashing Economic Growth – The White House","timestamp":"2025-06-30T20:01:27.315Z"}
+{"level":"info","message":"✅ Saved: Simplifying the Funding of Energy Infrastructure and Critical Mineral and Material Projects – The White House","timestamp":"2025-06-30T20:01:27.400Z"}
+{"level":"info","message":"✅ Saved: Simplifying the Funding of Energy Infrastructure and Critical Mineral and Material Projects – The White House","timestamp":"2025-06-30T20:01:27.400Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Provides for the Revocation of Syria Sanctions – The White House","timestamp":"2025-06-30T20:01:27.593Z"}
+{"level":"info","message":"✅ Saved: Fact Sheet: President Donald J. Trump Provides for the Revocation of Syria Sanctions – The White House","timestamp":"2025-06-30T20:01:27.593Z"}
+{"level":"info","message":"✅ Saved: Myth vs. Fact: The One Big Beautiful Bill – The White House","timestamp":"2025-06-30T20:01:37.731Z"}
+{"level":"info","message":"✅ Saved: Myth vs. Fact: The One Big Beautiful Bill – The White House","timestamp":"2025-06-30T20:01:37.731Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-30T20:01:38.733Z"}
+{"level":"info","message":"🧹 Cleaning up...","timestamp":"2025-06-30T20:01:38.733Z"}
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 1
+Phase 2 — removed by content/title heuristics & embeds: 1
+Phase 3 — cleaned repeated title segments on 5 articles
+Phase 3 — cleaned repeated title segments on 5 articles
+Phase 4 — stripped camel-case suffixes on 8 articles
+Phase 4 — stripped camel-case suffixes on 8 articles
+Phase 5 — stripped garbled suffixes on 1 articles
+Phase 5 — stripped garbled suffixes on 1 articles
+Phase 6 — no odd titles found to normalize
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+🧹 Cleanup complete
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-30T20:01:45.666Z"}
+{"level":"info","message":"🏁 Pipeline complete","timestamp":"2025-06-30T20:01:45.666Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-30T20:01:45.667Z"}
+{"level":"info","message":"🎉 fetchAndSummarize finished","timestamp":"2025-06-30T20:01:45.667Z"}
+
+
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+2. 🧹 Cleaning articles… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+
+> government-article-curator-crawler@1.0.0 clean:articles
+> npx ts-node scripts/cleanData.ts
+
+(node:41489) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:41489) [MONGOOSE] DeprecationWarning: Mongoose: the `strictQuery` option will be switched back to `false` by default in Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to prepare for this change. Or use `mongoose.set('strictQuery', true);` to suppress this warning.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ MongoDB connected
+✅ MongoDB connected
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+✅ MongoDB disconnected
+✅ MongoDB disconnected
+
+
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+3. 📨 Sending newsletter… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/newsletters)
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+
+> government-article-curator-newsletter@1.0.0 newsletter
+> npx ts-node --transpile-only schedule/sendNewsletter.ts
+
+Sending to 3 subscriber(s)
+Sending to 3 subscriber(s)
+sonhoangnguyen911@gmail.com: sent
+sonhoangnguyen911@gmail.com: sent
+snguyen2022@macduffie.org: sent
+snguyen2022@macduffie.org: sent
+nguyenhoangson091104@gmail.com: sent
+nguyenhoangson091104@gmail.com: sent
+Cleaning up articles...
+Cleaning up articles...
+🔄 Reusing existing MongoDB connection
+🔄 Reusing existing MongoDB connection
+Phase 1 — removed by URL patterns: 0
+Phase 1 — removed by URL patterns: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 2 — removed by content/title heuristics & embeds: 0
+Phase 3 — no repeated title segments found to clean
+Phase 3 — no repeated title segments found to clean
+Phase 4 — no camel-case suffixes found to strip
+Phase 4 — no camel-case suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 5 — no garbled suffixes found to strip
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+Phase 6 — no odd titles found to normalize
+🧹 Cleanup complete
+Articles cleaned up!
+Finished newsletter run
+Finished newsletter run
+
+
+Daily run finished at 2025-06-30 16:02:12
+Daily run finished at 2025-06-30 16:02:12
+----------------------------------------
+----------------------------------------

@@ -55,6 +55,7 @@ This monorepo, multi-services project is organized into four main components:
 ![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat&logo=gnu-bash&logoColor=white)
 ![Makefile](https://img.shields.io/badge/Makefile-000?style=flat&logo=make&logoColor=white)
 ![Winston](https://img.shields.io/badge/Winston-350?style=flat&logo=prometheus&logoColor=white)
+![Husky](https://img.shields.io/badge/Husky-456?style=flat&logo=haskell&logoColor=white)
 ![Jira](https://img.shields.io/badge/Jira-0052CC?style=flat&logo=jira&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
@@ -444,8 +445,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
 
 ### Prerequisites & Installation (Backend)
 
-> [!TIP]
-> Instead of installing the node modules separately, you can run `npm install` in the root directory to install dependencies for all components.
+> [!CAUTION]
+> Before proceeding, run `npm install` once in the root directory of the monorepo to install the necessary dependencies for managing the project!
 
 1. **Prerequisites:**
 
@@ -460,7 +461,7 @@ The **Backend** is responsible for storing articles and serving them via RESTful
    cd AI-Gov-Content-Curator/backend
    ```
 
-3. **Install Dependencies:**
+3. **Install Dependencies (inside `backend/`):**
 
    ```bash
    npm install
