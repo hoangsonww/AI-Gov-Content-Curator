@@ -7,9 +7,11 @@ on:
     branches: [ master ]
 
 env:
-  # provide dummy keys so chat & topic-extractor tests don’t blow up
+  # Provide dummy API keys so chat.controller tests don't blow up
   NEWS_API_KEY: dummy
   GOOGLE_AI_API_KEY: dummy
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ${{ github.repository }}
 
 jobs:
   formatting:
@@ -23,7 +25,7 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install all workspaces
+      - name: Install dependencies
         run: npm ci
 
       - name: Run Prettier
@@ -39,12 +41,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install & Test Backend
+      - name: Install & run backend tests
         run: |
           npm --workspace backend ci
           npm --workspace backend test
@@ -56,18 +57,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # if crawler/package.json doesn’t list jest as a devDependency,
-      # you can install it via the root:
-      - name: Ensure Jest is available
-        run: npm install --workspace crawler --save-dev jest ts-jest @types/jest
-
-      - name: Run Crawler Tests
+      - name: Install & run crawler tests
         run: |
+          npm --workspace crawler ci
           npm --workspace crawler test
 
   newsletters:
@@ -77,12 +73,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install & Test Newsletters
+      - name: Install & run newsletters tests
         run: |
           npm --workspace newsletters ci
           npm --workspace newsletters test
@@ -94,21 +89,86 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install & Run Frontend E2E
+      - name: Install & run frontend E2E
         run: |
           npm --workspace frontend ci
           npm --workspace frontend exec playwright install --with-deps
           npm --workspace frontend run test:e2e
         continue-on-error: true
 
-  complete:
-    name: "🎉 All Required Tests Passed"
+  docker:
+    name: "🐳 Build & Push Docker Images"
     runs-on: ubuntu-latest
-    needs: [ backend, crawler, newsletters ]
+    needs:
+      - backend
+      - crawler
+      - newsletters
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - run: echo "✅ Backend, crawler & newsletters tests all passed; frontend E2E is best-effort."
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/backend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/backend:${{ github.sha }}
+
+      - name: Build & push crawler image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./crawler
+          file: ./crawler/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/crawler:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/crawler:${{ github.sha }}
+
+      - name: Build & push newsletters image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./newsletters
+          file: ./newsletters/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/newsletters:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/newsletters:${{ github.sha }}
+
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/frontend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/frontend:${{ github.sha }}
+
+  complete:
+    name: "🎉 All Required Tests & Docker Artifacts"
+    runs-on: ubuntu-latest
+    needs:
+      - docker
+      - frontend
+    if: ${{ always() }}
+    steps:
+      - run: echo "✅ Tests passed and Docker images built & pushed."
