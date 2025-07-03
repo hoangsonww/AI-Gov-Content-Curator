@@ -13,27 +13,41 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - run: npm ci
-      - run: npm run format
-      - run: npm run lint
+      - name: Install root deps
+        run: npm ci
+
+      - name: Prettier format
+        run: npm run format
+
+      - name: ESLint lint
+        run: npm run lint
 
   backend:
     name: "✅ Backend Tests"
     runs-on: ubuntu-latest
     needs: formatting
+    env:
+      # satisfy chat.controller tests
+      GOOGLE_AI_API_KEY: dummy
+      GOOGLE_AI_API_KEY1: dummy
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - run: npm --workspace backend ci
-      - run: npm --workspace backend run test
+      - name: Install backend deps
+        run: npm --workspace backend ci
+
+      - name: Run backend tests
+        run: npm --workspace backend run test
 
   crawler:
     name: "🤖 Crawler Tests"
@@ -42,50 +56,64 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - run: npm --workspace crawler ci
-      - run: npm --workspace crawler run test
+      - name: Install crawler deps
+        run: npm --workspace crawler ci
 
-  newsletters:
-    name: "✉️ Newsletters Tests"
+      - name: Run crawler tests
+        run: npm --workspace crawler run test
+
+  newsletter:
+    name: "✉️ Newsletter Tests"
     runs-on: ubuntu-latest
     needs: formatting
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - run: npm --workspace newsletters ci
-      - run: npm --workspace newsletters run test
+      - name: Install newsletter deps
+        run: npm --workspace newsletter ci
+
+      - name: Run newsletter tests
+        run: npm --workspace newsletter run test
 
   frontend:
     name: "🌐 Frontend Tests"
     runs-on: ubuntu-latest
     needs: formatting
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - run: npm --workspace frontend ci
-      - run: npm --workspace frontend run test:unit
-        continue-on-error: true
+      - name: Install frontend deps
+        run: npm --workspace frontend ci
 
-      - name: e2e (Playwright)
-        run: npm --workspace frontend exec playwright install --with-deps && npm --workspace frontend run test:e2e
-        continue-on-error: true
+      - name: Run unit tests
+        run: npm --workspace frontend run test:unit
+
+      - name: Install Playwright deps
+        run: npm --workspace frontend exec playwright install --with-deps
+
+      - name: Run e2e tests
+        run: npm --workspace frontend run test:e2e
 
   complete:
-    name: "🎉 All Done"
+    name: "🎉 All Required Tests Passed"
     runs-on: ubuntu-latest
-    needs: [backend, crawler, newsletters, frontend]
-    if: ${{ always() }}
+    needs: [backend, crawler, newsletter]
+    if: ${{ success() }}
     steps:
-      - run: echo "✅ Formatting, linting and required tests passed."
+      - run: echo "✅ Formatting, linting, backend, crawler and newsletter tests all passed."
