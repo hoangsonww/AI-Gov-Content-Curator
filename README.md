@@ -55,6 +55,7 @@ This monorepo, multi-services project is organized into four main components:
 ![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat&logo=gnu-bash&logoColor=white)
 ![Makefile](https://img.shields.io/badge/Makefile-000?style=flat&logo=make&logoColor=white)
 ![Winston](https://img.shields.io/badge/Winston-350?style=flat&logo=prometheus&logoColor=white)
+![Husky](https://img.shields.io/badge/Husky-456?style=flat&logo=haskell&logoColor=white)
 ![Jira](https://img.shields.io/badge/Jira-0052CC?style=flat&logo=jira&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
