@@ -1098,7 +1098,7 @@ Make sure required environment variables (e.g. `MONGODB_URI`, `CRAWL_URLS`, `CRA
 
 ## Continuous Integration / Continuous Deployment (CI/CD)
 
-The project uses GitHub Actions for CI/CD. The workflow is defined in `.github/workflows/ci.yml`. It includes:
+The project uses **GitHub Actions** for CI/CD. The workflow is defined in `.github/workflows/ci.yml`. It includes:
 
 - **Linting:** Runs ESLint and Prettier checks on all code changes.
 - **Testing:** Executes unit tests for the backend and frontend.
@@ -1107,6 +1107,10 @@ The project uses GitHub Actions for CI/CD. The workflow is defined in `.github/w
 - **Cron Jobs:** Configures scheduled tasks for the backend and crawler.
 - **Environment Variables:** Sets up environment variables for the backend and crawler.
 - and more...
+
+<p align="center">
+  <img src="frontend/img/ci.png" alt="CI/CD Workflow" width="100%">
+</p>
 
 Additional `.yml` files are also available for specific tasks, such as `backend-ci.yml`, `crawler-ci.yml`, and `frontend-ci.yml`.
 

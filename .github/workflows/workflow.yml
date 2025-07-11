@@ -34,15 +34,19 @@ jobs:
 
   backend:
     name: "✅ Backend Tests"
-    runs-on: ubuntu-latest
     needs: formatting
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [18, 20]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: ${{ matrix.node }}
 
       - name: Install & Test Backend
         run: |
@@ -51,15 +55,19 @@ jobs:
 
   crawler:
     name: "🤖 Crawler Tests"
-    runs-on: ubuntu-latest
     needs: formatting
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [18, 20]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: ${{ matrix.node }}
 
       # ensure all devDeps are present
       - name: Install all workspaces
@@ -74,12 +82,10 @@ jobs:
     needs: formatting
     steps:
       - uses: actions/checkout@v3
-
       - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
       - name: Install & Test Newsletters
         run: |
           npm --workspace newsletters ci
@@ -110,6 +116,44 @@ jobs:
     needs: [ backend, crawler, newsletters ]
     steps:
       - run: echo "✅ Backend, crawler & newsletters tests all passed; frontend E2E is best‐effort."
+
+  code-scan:
+    name: "🔍 Code Scanning"
+    runs-on: ubuntu-latest
+    needs: [ backend, crawler, newsletters ]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install all workspaces
+        run: npm ci
+      - name: Static code analysis with Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: p/default
+          timeout: 60
+          continue-on-error: true
+
+  dependency-audit:
+    name: "📦 Dependency Audit"
+    runs-on: ubuntu-latest
+    needs: [ backend, crawler, newsletters ]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install all workspaces
+        run: npm ci
+      - name: npm audit
+        run: npm audit --audit-level=high || true
+      - name: npm audit fix (dry run)
+        run: npm audit fix --dry-run || true
 
   docker:
     name: "🐳 Build & Push Docker Images"
@@ -167,3 +211,137 @@ jobs:
           tags: |
             ghcr.io/hoangsonww/ai-curator-frontend:${{ github.sha }}
             ghcr.io/hoangsonww/ai-curator-frontend:latest
+
+  image-vuln-scan:
+    name: "🔍 Docker Image Vulnerability Scan"
+    runs-on: ubuntu-latest
+    needs: docker
+    continue-on-error: true
+    steps:
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/hoangsonww/ai-curator-backend:latest
+          format: table
+          exit-code: 0
+      - name: Scan crawler image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/hoangsonww/ai-curator-crawler:latest
+          format: table
+          exit-code: 0
+      - name: Scan newsletters image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/hoangsonww/ai-curator-newsletters:latest
+          format: table
+          exit-code: 0
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/hoangsonww/ai-curator-frontend:latest
+          format: table
+          exit-code: 0
+
+  license-check:
+    name: "📜 License Compliance"
+    runs-on: ubuntu-latest
+    needs: docker
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install all workspaces
+        run: npm ci
+      - name: Generate license report
+        run: npx license-checker --production --json > license-report.json || true
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: license-report.json
+
+  outdated-deps:
+    name: "📦 Outdated Dependencies"
+    runs-on: ubuntu-latest
+    needs: docker
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install all workspaces
+        run: npm ci
+
+      - name: Check outdated deps
+        run: npm outdated || true
+
+  markdown-lint:
+    name: "📝 Markdown Lint"
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli
+
+      - name: Lint Markdown
+        run: markdownlint '**/*.md'
+        continue-on-error: true
+
+  link-check:
+    name: "🔗 Link Check"
+    runs-on: ubuntu-latest
+    needs: docker
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Check links in Markdown
+        run: markdown-link-check '**/*.md' || true
+
+  perf-test:
+    name: "⚡ Performance Benchmark"
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install all workspaces
+        run: npm ci
+
+      - name: Run backend server and benchmark
+        continue-on-error: true
+        run: |
+          npm --workspace backend start || true & pid=$!
+          sleep 5
+          npx artillery quick --count 20 -n 50 http://localhost:3000/health || true
+          kill $pid || true
+
+  finalize:
+    name: "🚀 Pipeline Complete"
+    runs-on: ubuntu-latest
+    needs: [ docker, image-vuln-scan, license-check, outdated-deps, markdown-lint, link-check, perf-test ]
+    steps:
+      - run: echo "✅ CI/CD pipeline for SynthoraAI completed successfully."
