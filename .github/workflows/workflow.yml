@@ -34,15 +34,19 @@ jobs:
 
   backend:
     name: "✅ Backend Tests"
-    runs-on: ubuntu-latest
     needs: formatting
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [18, 20]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: ${{ matrix.node }}
 
       - name: Install & Test Backend
         run: |
@@ -51,16 +55,24 @@ jobs:
 
   crawler:
     name: "🤖 Crawler Tests"
-    runs-on: ubuntu-latest
     needs: formatting
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [18, 20]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 18
+
+      - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: ${{ matrix.node }}
+
+      # ensure all devDeps are present
       - name: Install all workspaces
         run: npm ci
+
       - name: Run Crawler Tests
         run: npm --workspace crawler run test
 
@@ -259,8 +271,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+
       - name: Install all workspaces
         run: npm ci
+
       - name: Check outdated deps
         run: npm outdated || true
 
@@ -268,21 +282,66 @@ jobs:
     name: "📝 Markdown Lint"
     runs-on: ubuntu-latest
     needs: docker
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
+
       - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
+
       - name: Install markdownlint
         run: npm install -g markdownlint-cli
+
       - name: Lint Markdown
-        run: markdownlint '**/*.md' || true
+        run: markdownlint '**/*.md'
+        continue-on-error: true
+
+  link-check:
+    name: "🔗 Link Check"
+    runs-on: ubuntu-latest
+    needs: docker
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Check links in Markdown
+        run: markdown-link-check '**/*.md' || true
+
+  perf-test:
+    name: "⚡ Performance Benchmark"
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install all workspaces
+        run: npm ci
+
+      - name: Run backend server and benchmark
+        continue-on-error: true
+        run: |
+          npm --workspace backend start || true & pid=$!
+          sleep 5
+          npx artillery quick --count 20 -n 50 http://localhost:3000/health || true
+          kill $pid || true
 
   finalize:
     name: "🚀 Pipeline Complete"
     runs-on: ubuntu-latest
-    needs: [ docker, image-vuln-scan, license-check, outdated-deps, markdown-lint ]
+    needs: [ docker, image-vuln-scan, license-check, outdated-deps, markdown-lint, link-check, perf-test ]
     steps:
       - run: echo "✅ CI/CD pipeline for SynthoraAI completed successfully."
