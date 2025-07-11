@@ -248,9 +248,41 @@ jobs:
           name: license-report
           path: license-report.json
 
+  outdated-deps:
+    name: "📦 Outdated Dependencies"
+    runs-on: ubuntu-latest
+    needs: docker
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install all workspaces
+        run: npm ci
+      - name: Check outdated deps
+        run: npm outdated || true
+
+  markdown-lint:
+    name: "📝 Markdown Lint"
+    runs-on: ubuntu-latest
+    needs: docker
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli
+      - name: Lint Markdown
+        run: markdownlint '**/*.md' || true
+
   finalize:
     name: "🚀 Pipeline Complete"
     runs-on: ubuntu-latest
-    needs: [ docker, image-vuln-scan, license-check ]
+    needs: [ docker, image-vuln-scan, license-check, outdated-deps, markdown-lint ]
     steps:
       - run: echo "✅ CI/CD pipeline for SynthoraAI completed successfully."
