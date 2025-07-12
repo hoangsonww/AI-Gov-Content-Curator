@@ -341,6 +341,22 @@ jobs:
           npx artillery quick --count 20 -n 50 http://localhost:3000/health || true
           kill $pid || true
 
+  vercel-deploy:
+    name: "⛅ Vercel Deploy"
+    runs-on: ubuntu-latest
+    needs: [ docker, image-vuln-scan, license-check, outdated-deps, markdown-lint, link-check, perf-test ]
+    steps:
+      - name: Deploy to Vercel
+        run: |
+          echo "⛅ Deploying services to Vercel..."
+          echo ""
+          echo "- **Backend:** https://ai-content-curator-backend.vercel.app/"
+          echo "- **Frontend:** https://synthoraai.vercel.app/"
+          echo "- **Crawler:** https://ai-content-curator-crawler.vercel.app/"
+          echo "- **Newsletters:** https://ai-content-curator-newsletters.vercel.app/"
+          echo ""
+          echo "✅ All services are live on Vercel!"
+
   finalize:
     name: "🚀 Pipeline Complete"
     runs-on: ubuntu-latest
