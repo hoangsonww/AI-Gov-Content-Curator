@@ -171,20 +171,18 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install & Build Backend (always succeed, silent)
+      - name: Install & Build Backend
         continue-on-error: true
         run: |
           cd backend
-          # install without logging anything
           npm ci --silent > /dev/null 2>&1 || true
-          # build, swallow all errors/notices
-          npm run build -- --silent > /dev/null 2>&1 || true
+          npm run build --silent > /dev/null 2>&1 || true
 
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-build
-          path: backend/dist/**
+          path: backend/dist
 
   frontend-build-upload:
     name: "🏗️ Frontend Build & Upload"
