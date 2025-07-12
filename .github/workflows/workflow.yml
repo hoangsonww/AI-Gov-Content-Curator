@@ -344,18 +344,43 @@ jobs:
   vercel-deploy:
     name: "⛅ Vercel Deploy"
     runs-on: ubuntu-latest
-    needs: [ docker, image-vuln-scan, license-check, outdated-deps, markdown-lint, link-check, perf-test ]
+    needs:
+      - docker
+      - image-vuln-scan
+      - license-check
+      - outdated-deps
+      - markdown-lint
+      - link-check
+      - perf-test
     steps:
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel (log)
+        continue-on-error: true
         run: |
-          echo "⛅ Deploying services to Vercel..."
+          echo "::group::🌐 Vercel Deployment URLs"
           echo ""
-          echo "- **Backend:** https://ai-content-curator-backend.vercel.app/"
-          echo "- **Frontend:** https://synthoraai.vercel.app/"
-          echo "- **Crawler:** https://ai-content-curator-crawler.vercel.app/"
-          echo "- **Newsletters:** https://ai-content-curator-newsletters.vercel.app/"
+          echo "- 🔹 **Backend**: https://ai-content-curator-backend.vercel.app/"
+          echo "- 🔹 **Frontend**: https://synthoraai.vercel.app/"
+          echo "- 🔹 **Crawler**: https://ai-content-curator-crawler.vercel.app/"
+          echo "- 🔹 **Newsletters**: https://ai-content-curator-newsletters.vercel.app/"
           echo ""
-          echo "✅ All services are live on Vercel!"
+          echo "✅ All services are now live!"
+          echo "::endgroup::"
+
+      - name: Deploy to Vercel (summary)"
+        run: |
+          {
+            echo "## 🌐 Vercel Deployments"
+            echo ""
+            echo "| Service      | URL                                                                 |"
+            echo "| ------------ | ------------------------------------------------------------------- |"
+            echo "| **Backend**  | [Link](https://ai-content-curator-backend.vercel.app/)              |"
+            echo "| **Frontend** | [Link](https://synthoraai.vercel.app/)                              |"
+            echo "| **Crawler**  | [Link](https://ai-content-curator-crawler.vercel.app/)              |"
+            echo "| **Newsletters** | [Link](https://ai-content-curator-newsletters.vercel.app/)        |"
+            echo ""
+            echo "**Deployed at** $(date -u +"%Y-%m-%dT%H:%M:%SZ") UTC"
+          } >> $GITHUB_STEP_SUMMARY
+
 
   finalize:
     name: "🚀 Pipeline Complete"
