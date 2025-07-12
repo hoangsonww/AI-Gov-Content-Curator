@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Son Nguyen
+
 name: CI/CD Pipeline for SynthoraAI - AI Article Content Curator
 
 on:

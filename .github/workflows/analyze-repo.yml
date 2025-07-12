@@ -1,6 +1,6 @@
 # Copyright (c) 2025 Son Nguyen
 
-name: Analyze Lines of Code in EstateWise Repository
+name: Analyze Lines of Code in AI Content Curator Repository
 
 on:
   push:
