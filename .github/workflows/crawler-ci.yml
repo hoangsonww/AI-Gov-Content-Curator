@@ -1,5 +1,8 @@
 name: Crawler CI/CD
 
+# Note: This workflow is deprecated and will be removed in the future.
+# Refer to the updated workflow at .github/workflows/workflow.yml
+
 on:
   push:
     branches:
