@@ -19,10 +19,10 @@ const STATIC_URLS = [
 /**
  * Generate sitemap XML for articles and static pages, dynamically
  * as they are added to the database.
+ * This handles both the sitemap index and paginated sitemaps.
  *
- *
- * @param query
- * @param res
+ * @param query - query parameters from the request
+ * @param res - response object to send the XML
  */
 export const getServerSideProps: GetServerSideProps = async ({
   query,
