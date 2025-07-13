@@ -1,11 +1,11 @@
 {
-  "name": "Government Content Curator Frontend",
-  "short_name": "GCC Frontend",
+  "name": "SynthoraAI - AI-Powered Article Curator",
+  "short_name": "SynthoraAI",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#121212",
-  "description": "Browse the latest curated government articles with a modern, animated UI.",
+  "description": "Browse the latest curated news articles with a modern UI, summarized by AI.",
   "orientation": "portrait-primary",
   "icons": [
     {
