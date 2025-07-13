@@ -16,6 +16,14 @@ const STATIC_URLS = [
   `${SITE_URL}/newsletter`,
 ];
 
+/**
+ * Generate sitemap XML for articles and static pages, dynamically
+ * as they are added to the database.
+ *
+ *
+ * @param query
+ * @param res
+ */
 export const getServerSideProps: GetServerSideProps = async ({
   query,
   res,
