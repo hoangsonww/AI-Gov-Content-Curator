@@ -1,4 +1,4 @@
-name: "📝 Branch Name Jira Check"
+name: "Branch Name Jira Check"
 
 on:
   push:
