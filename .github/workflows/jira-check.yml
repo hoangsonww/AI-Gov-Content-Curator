@@ -1,0 +1,21 @@
+name: "📝 PR Title Jira Check"
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  check-title:
+    name: "🔍 Validate PR Title"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title format
+        shell: bash
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          echo "🔖 PR title: \"$TITLE\""
+          if [[ ! "$TITLE" =~ \[AICC-[0-9]+\]$ ]]; then
+            echo "::error::❌ Pull request title must end with [AICC-<issue-number>]."
+            echo "::error::For example: feat(ui): enhance manifest and add dynamic sitemap generation [AICC-30]"
+            exit 1
+          fi
