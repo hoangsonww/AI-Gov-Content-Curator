@@ -19,7 +19,7 @@ jobs:
         shell: bash
         run: |
           echo "🔖 Branch name: $BRANCH_NAME"
-          if [[ ! "$BRANCH_NAME" =~ \bAICC-[0-9]+\b ]]; then
+          if [[ ! "$BRANCH_NAME" =~ AICC-[0-9]+ ]]; then
             echo "::error::❌ Branch name must include an AICC issue key (e.g. AICC-123)."
             echo "::error::For example: feature/AICC-30-add-new-endpoint"
             echo "::error::If you don’t have an AICC issue number yet, visit:"
