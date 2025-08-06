@@ -17,5 +17,6 @@ jobs:
           if [[ ! "$TITLE" =~ \[AICC-[0-9]+\]$ ]]; then
             echo "::error::❌ Pull request title must end with [AICC-<issue-number>]."
             echo "::error::For example: feat(ui): enhance manifest and add dynamic sitemap generation [AICC-30]"
+            echo "::error::If you don’t have an AICC issue number yet, visit https://ai-content-curator.atlassian.net/jira/software/projects/AICC/list?sortBy=key&direction=DESC to create one."
             exit 1
           fi
