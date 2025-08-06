@@ -1,0 +1,28 @@
+name: "Branch Name Jira Check"
+
+on:
+  push:
+    # run on all branches except main/master
+    branches-ignore:
+      - main
+      - master
+
+jobs:
+  check-branch:
+    name: "🔍 Validate Branch Name"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Validate branch name contains Jira ID
+        shell: bash
+        run: |
+          echo "🔖 Branch name: $BRANCH_NAME"
+          if [[ ! "$BRANCH_NAME" =~ AICC-[0-9]+ ]]; then
+            echo "::error::❌ Branch name must include an AICC issue key (e.g. AICC-123)."
+            echo "::error::For example: feature/AICC-30-add-new-endpoint"
+            echo "::error::If you don’t have an AICC issue number yet, visit:"
+            echo "::error::  https://ai-content-curator.atlassian.net/jira/software/projects/AICC/list?sortBy=key&direction=DESC"
+            exit 1
+          fi
