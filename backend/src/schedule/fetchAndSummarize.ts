@@ -24,7 +24,7 @@ import {
 import { fetchArticlesFromNewsAPI } from "../services/apiFetcher.service";
 import { summarizeContent } from "../services/summarization.service";
 import { extractTopics } from "../services/topicExtractor.service";
-import logger from "../utils/logger";
+import { assignToCluster, generateSignatures } from "../services/clustering.service";
 import { cleanUp } from "../scripts/cleanData";
 
 dotenv.config();
@@ -60,7 +60,7 @@ const STATIC_EXT_RE =
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Upsert article into MongoDB
+ * Upsert article into MongoDB and assign to cluster
  *
  * @param data - Article data to be upserted
  */
@@ -80,6 +80,34 @@ async function upsertArticle(data: {
 
   if (res.upsertedCount) {
     logger.info(`✅ Saved: ${data.title || data.url}`);
+    
+    // Find the newly created article to assign to cluster
+    const article = await Article.findOne({ url: data.url });
+    if (article) {
+      try {
+        // Generate clustering signatures and assign to cluster
+        const signatures = await generateSignatures(article);
+        await Article.findByIdAndUpdate(article._id, {
+          $set: {
+            signatures: {
+              minhash: signatures.minhash,
+              tfidf: signatures.tfidf
+            },
+            normalizedTitle: signatures.normalizedTitle,
+            normalizedLead: signatures.normalizedLead
+          }
+        });
+        
+        // Assign to cluster
+        const clusterId = await assignToCluster(article._id.toString());
+        if (clusterId) {
+          logger.info(`🔗 Assigned article ${article._id} to cluster ${clusterId}`);
+        }
+      } catch (err) {
+        logger.error(`❌ Clustering failed for ${article._id}:`, err);
+        // Continue processing - clustering failure shouldn't stop article ingestion
+      }
+    }
   } else {
     logger.debug(`🔄 Skipped duplicate: ${data.url}`);
   }
