@@ -24,6 +24,7 @@ import {
 import { fetchArticlesFromNewsAPI } from "../services/apiFetcher.service";
 import { summarizeContent } from "../services/summarization.service";
 import { extractTopics } from "../services/topicExtractor.service";
+import logger from "../utils/logger";
 import { assignToCluster, generateSignatures } from "../services/clustering.service";
 import { cleanUp } from "../scripts/cleanData";
 
