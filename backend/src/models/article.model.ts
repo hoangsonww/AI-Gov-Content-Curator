@@ -54,6 +54,20 @@ export interface IArticle extends Document {
   topics: string[];
   source: string;
   fetchedAt: Date;
+  // Clustering fields
+  clusterId?: any; // ObjectId
+  normalizedTitle?: string;
+  normalizedLead?: string;
+  signatures?: {
+    minhash?: string;
+    tfidf?: string;
+  };
+  entities?: {
+    persons: string[];
+    orgs: string[];
+    places: string[];
+    topics: string[];
+  };
 }
 
 const articleSchema = new Schema<IArticle>({
@@ -64,7 +78,27 @@ const articleSchema = new Schema<IArticle>({
   topics: { type: [String], default: [] },
   source: { type: String, required: true },
   fetchedAt: { type: Date, default: Date.now },
+  // Clustering fields
+  clusterId: { type: Schema.Types.ObjectId, ref: 'Cluster' },
+  normalizedTitle: { type: String },
+  normalizedLead: { type: String },
+  signatures: {
+    minhash: { type: String },
+    tfidf: { type: String }
+  },
+  entities: {
+    persons: { type: [String], default: [] },
+    orgs: { type: [String], default: [] },
+    places: { type: [String], default: [] },
+    topics: { type: [String], default: [] }
+  }
 });
+
+// Create indexes for clustering performance
+articleSchema.index({ clusterId: 1 });
+articleSchema.index({ 'signatures.minhash': 1 });
+articleSchema.index({ createdAt: -1 });
+articleSchema.index({ url: 1 }, { unique: true });
 
 // Set a custom toJSON transform to enforce key ordering
 articleSchema.set("toJSON", {
