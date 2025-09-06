@@ -48,7 +48,9 @@ describe("Auth Controller", () => {
   describe("register()", () => {
     it("400 if user already exists", async () => {
       User.findOne.mockResolvedValue({ _id: "exists" });
-      req = mockRequest({ body: { email: "a@b.com", password: "p", name: "N" } });
+      req = mockRequest({
+        body: { email: "a@b.com", password: "p", name: "N" },
+      });
       await register(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalled();
@@ -57,10 +59,14 @@ describe("Auth Controller", () => {
     it("201 on successful registration", async () => {
       User.findOne.mockResolvedValue(null);
       bcrypt.hash = jest.fn().mockResolvedValue("hashedpass");
-      jest.spyOn(crypto, "randomBytes").mockReturnValue(Buffer.from("abcdef", "hex"));
+      jest
+        .spyOn(crypto, "randomBytes")
+        .mockReturnValue(Buffer.from("abcdef", "hex"));
       jwt.sign = jest.fn().mockReturnValue("jwt-token");
 
-      req = mockRequest({ body: { email: "a@b.com", password: "pw", name: "N" } });
+      req = mockRequest({
+        body: { email: "a@b.com", password: "pw", name: "N" },
+      });
       await register(req, res);
 
       expect(res.setHeader).toHaveBeenCalledWith("Authorization", "jwt-token");
@@ -70,7 +76,9 @@ describe("Auth Controller", () => {
 
     it("500 on internal error", async () => {
       User.findOne.mockRejectedValue(new Error("boom"));
-      req = mockRequest({ body: { email: "x@b.com", password: "pw", name: "X" } });
+      req = mockRequest({
+        body: { email: "x@b.com", password: "pw", name: "X" },
+      });
       await register(req, res);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalled();
@@ -96,7 +104,13 @@ describe("Auth Controller", () => {
     });
 
     it("200 on successful login", async () => {
-      User.findOne.mockResolvedValue({ password: "hashed", _id: "u2", email: "a@b.com", name: "N", isVerified: true });
+      User.findOne.mockResolvedValue({
+        password: "hashed",
+        _id: "u2",
+        email: "a@b.com",
+        name: "N",
+        isVerified: true,
+      });
       bcrypt.compare = jest.fn().mockResolvedValue(true);
       jwt.sign = jest.fn().mockReturnValue("jwt-token-2");
       req = mockRequest({ body: { email: "a@b.com", password: "pw" } });
@@ -131,7 +145,11 @@ describe("Auth Controller", () => {
     });
 
     it("200 on success", async () => {
-      const user = { verificationToken: "tok", isVerified: false, save: jest.fn().mockResolvedValue(true) };
+      const user = {
+        verificationToken: "tok",
+        isVerified: false,
+        save: jest.fn().mockResolvedValue(true),
+      };
       User.findOne.mockResolvedValue(user);
       req = mockRequest({ query: { email: "x@x.com", token: "tok" } });
       await verifyEmail(req, res);
@@ -166,7 +184,9 @@ describe("Auth Controller", () => {
     it("200 on token gen", async () => {
       const user = { save: jest.fn().mockResolvedValue(true) };
       User.findOne.mockResolvedValue(user);
-      jest.spyOn(crypto, "randomBytes").mockReturnValue(Buffer.from("123456", "hex"));
+      jest
+        .spyOn(crypto, "randomBytes")
+        .mockReturnValue(Buffer.from("123456", "hex"));
       req = mockRequest({ body: { email: "x@x.com" } });
       await resetPasswordRequest(req, res);
       expect(user.save).toHaveBeenCalled();
@@ -192,7 +212,9 @@ describe("Auth Controller", () => {
 
     it("400 if invalid token/email", async () => {
       User.findOne.mockResolvedValue(null);
-      req = mockRequest({ body: { email: "a@b.com", token: "tkn", newPassword: "np" } });
+      req = mockRequest({
+        body: { email: "a@b.com", token: "tkn", newPassword: "np" },
+      });
       await confirmResetPassword(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalled();
@@ -202,7 +224,9 @@ describe("Auth Controller", () => {
       const user = { save: jest.fn().mockResolvedValue(true) };
       bcrypt.hash = jest.fn().mockResolvedValue("newHash");
       User.findOne.mockResolvedValue(user);
-      req = mockRequest({ body: { email: "a@b.com", token: "tkn", newPassword: "np" } });
+      req = mockRequest({
+        body: { email: "a@b.com", token: "tkn", newPassword: "np" },
+      });
       await confirmResetPassword(req, res);
       expect(user.save).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalled();
@@ -210,7 +234,9 @@ describe("Auth Controller", () => {
 
     it("500 on internal error", async () => {
       User.findOne.mockRejectedValue(new Error("boom"));
-      req = mockRequest({ body: { email: "a@b.com", token: "tkn", newPassword: "np" } });
+      req = mockRequest({
+        body: { email: "a@b.com", token: "tkn", newPassword: "np" },
+      });
       await confirmResetPassword(req, res);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalled();

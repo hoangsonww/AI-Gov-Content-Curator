@@ -6,7 +6,7 @@ module.exports = {
   testMatch: [
     "**/__tests__/**/*.spec.ts",
     "**/__tests__/**/*.spec.js",
-    "**/?(*.)+(spec|test).[jt]s"
+    "**/?(*.)+(spec|test).[jt]s",
   ],
   globals: {
     "ts-jest": {

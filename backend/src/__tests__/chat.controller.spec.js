@@ -1,14 +1,18 @@
 // 1. Mock @google/generative-ai so askGemini uses our stubbed model
 const sendMessageMock = jest.fn();
-const startChatMock = jest.fn().mockReturnValue({ sendMessage: sendMessageMock });
-const getGenerativeModelMock = jest.fn().mockReturnValue({ startChat: startChatMock });
+const startChatMock = jest
+  .fn()
+  .mockReturnValue({ sendMessage: sendMessageMock });
+const getGenerativeModelMock = jest
+  .fn()
+  .mockReturnValue({ startChat: startChatMock });
 const GoogleGenerativeAI = jest.fn().mockImplementation(() => ({
   getGenerativeModel: getGenerativeModelMock,
 }));
 
 jest.mock("@google/generative-ai", () => ({
   GoogleGenerativeAI,
-  GenerationConfig: {},         // not used in tests
+  GenerationConfig: {}, // not used in tests
   HarmCategory: { HARASSMENT: 0 },
   HarmBlockThreshold: { BLOCK_NONE: 0 },
 }));
@@ -36,14 +40,18 @@ describe("chat.controller – handleChat", () => {
     // missing both
     await handleChat(req, res, next);
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ error: "`article` and `userMessage` are required." });
+    expect(res.json).toHaveBeenCalledWith({
+      error: "`article` and `userMessage` are required.",
+    });
 
     // missing userMessage only
     req.body.article = { title: "T", content: "C" };
     req.body.userMessage = undefined;
     await handleChat(req, res, next);
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ error: "`article` and `userMessage` are required." });
+    expect(res.json).toHaveBeenCalledWith({
+      error: "`article` and `userMessage` are required.",
+    });
   });
 
   it("invokes askGemini and returns reply on success", async () => {
