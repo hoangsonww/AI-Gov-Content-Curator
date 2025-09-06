@@ -260,6 +260,40 @@ async function crawlHomepage(u: string): Promise<string[]> {
 /* ─────────── ingest ─────────── */
 const working = new Set<string>();
 
+/* ─────────── ingest pipeline ─────────── */
+
+/**
+ * Triggers notifications for a newly ingested article
+ * @param url - The URL of the article
+ */
+async function triggerNotifications(url: string) {
+  try {
+    const BACKEND_URL = process.env.BACKEND_URL || "https://ai-content-curator-backend.vercel.app";
+    const API_KEY = process.env.NOTIFICATION_API_KEY; // Optional API key for security
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (API_KEY) {
+      headers['Authorization'] = `Bearer ${API_KEY}`;
+    }
+    
+    await axios.post(`${BACKEND_URL}/api/notifications/process-by-url`, 
+      { url }, 
+      { 
+        headers,
+        timeout: 10000, // 10 second timeout
+      }
+    );
+    
+    console.log("📧 Notifications triggered for:", url);
+  } catch (error: any) {
+    // Don't fail the entire ingestion if notifications fail
+    console.warn("⚠ Failed to trigger notifications for:", url, error.message);
+  }
+}
+
 /**
  * Ingest an article from a URL.
  *
@@ -303,6 +337,10 @@ async function ingest(url: string, browser: Browser) {
       },
       { upsert: true },
     );
+    
+    // Trigger notifications for the new article
+    await triggerNotifications(url);
+    
     console.log("✓", url);
   } catch (e: any) {
     console.warn("⚠", url, e.message);
