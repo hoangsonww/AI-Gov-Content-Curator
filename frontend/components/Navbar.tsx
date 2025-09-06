@@ -9,6 +9,7 @@ import {
   MdHome,
   MdMenu,
   MdClose,
+  MdGroup,
 } from "react-icons/md";
 import { validateToken } from "../services/api";
 import { ToastContainer, toast } from "react-toastify";
@@ -120,6 +121,14 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
               <MailIcon size={24} />
             </a>
           </Link>
+          <Link href="/clusters" legacyBehavior>
+            <a
+              className={`nav-link${router.pathname === "/clusters" || router.pathname.startsWith("/clusters/") ? " active-link" : ""}`}
+              title="Clusters"
+            >
+              <MdGroup size={24} />
+            </a>
+          </Link>
           <Link href="/favorites/favorites" legacyBehavior>
             <a
               className={`nav-link${
@@ -197,6 +206,17 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
                 >
                   <MailIcon size={20} />
                   <span>Newsletter</span>
+                </a>
+              </Link>
+
+              <Link href="/clusters" legacyBehavior>
+                <a
+                  className={`mobile-link${
+                    router.pathname === "/clusters" || router.pathname.startsWith("/clusters/") ? " active-link" : ""
+                  }`}
+                >
+                  <MdGroup size={20} />
+                  <span>Clusters</span>
                 </a>
               </Link>
 

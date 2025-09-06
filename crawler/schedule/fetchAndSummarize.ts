@@ -27,6 +27,19 @@ import { extractTopics } from "../services/topicExtractor.service";
 import logger from "../utils/logger";
 import { cleanupArticles } from "../scripts/cleanData";
 
+// Import clustering services for article assignment
+let assignToCluster: any = null;
+let generateSignatures: any = null;
+
+// Try to import clustering services, but don't fail if not available
+try {
+  const clusteringService = require("../services/clustering.service");
+  assignToCluster = clusteringService.assignToCluster;
+  generateSignatures = clusteringService.generateSignatures;
+} catch (err) {
+  logger.warn("Clustering service not available, articles will not be clustered");
+}
+
 dotenv.config();
 mongoose.set("strictQuery", false);
 
@@ -82,6 +95,36 @@ async function upsertArticle(data: {
 
   if (res.upsertedCount) {
     logger.info(`✅ Saved: ${data.title || data.url}`);
+    
+    // Try to assign to cluster if clustering service is available
+    if (assignToCluster && generateSignatures) {
+      const article = await Article.findOne({ url: data.url });
+      if (article) {
+        try {
+          // Generate clustering signatures and assign to cluster
+          const signatures = await generateSignatures(article);
+          await Article.findByIdAndUpdate(article._id, {
+            $set: {
+              signatures: {
+                minhash: signatures.minhash,
+                tfidf: signatures.tfidf
+              },
+              normalizedTitle: signatures.normalizedTitle,
+              normalizedLead: signatures.normalizedLead
+            }
+          });
+          
+          // Assign to cluster
+          const clusterId = await assignToCluster(article._id.toString());
+          if (clusterId) {
+            logger.info(`🔗 Assigned article ${article._id} to cluster ${clusterId}`);
+          }
+        } catch (err) {
+          logger.error(`❌ Clustering failed for ${article._id}:`, err);
+          // Continue processing - clustering failure shouldn't stop article ingestion
+        }
+      }
+    }
   } else {
     logger.debug(`🔄 Skipped duplicate: ${data.url}`);
   }

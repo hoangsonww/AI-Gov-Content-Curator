@@ -11,6 +11,7 @@ import userRoutes from "./routes/user.routes";
 import newsletterRoutes from "./routes/newsletter.routes";
 import chatRoutes from "./routes/chat.routes";
 import commentRoutes from "./routes/comment.routes";
+import clusterRoutes from "./routes/cluster.routes";
 
 import swaggerDocs from "./swagger/swagger";
 
@@ -125,6 +126,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/clusters", clusterRoutes);
+app.use("/api", clusterRoutes); // For /api/articles/:id/cluster and /api/internal/cluster/ingest
 
 /* ───────────── 404 & error handling ───────────── */
 
