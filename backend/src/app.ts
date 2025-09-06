@@ -11,6 +11,7 @@ import userRoutes from "./routes/user.routes";
 import newsletterRoutes from "./routes/newsletter.routes";
 import chatRoutes from "./routes/chat.routes";
 import commentRoutes from "./routes/comment.routes";
+import subscriptionRoutes from "./routes/subscription.routes";
 
 import swaggerDocs from "./swagger/swagger";
 
@@ -125,6 +126,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 /* ───────────── 404 & error handling ───────────── */
 

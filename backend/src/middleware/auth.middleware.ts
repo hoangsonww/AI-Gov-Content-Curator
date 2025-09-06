@@ -11,8 +11,13 @@ export const authenticate = (
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.headers.authorization;
-  if (!token) return res.status(401).json({ error: "No token provided" });
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: "No token provided" });
+
+  let token = authHeader;
+  if (authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
