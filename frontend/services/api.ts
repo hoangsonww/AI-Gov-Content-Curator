@@ -621,3 +621,198 @@ export async function getArticlesByTopic(
   }
   return [];
 }
+
+/**
+ * Subscription interface definition
+ */
+export interface Subscription {
+  _id?: string;
+  userId: string;
+  topics: string[];
+  keywords: string[];
+  sources: string[];
+  mode: 'realtime' | 'daily';
+  emailEnabled: boolean;
+  pushEnabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Fetches all subscriptions for the authenticated user.
+ * 
+ * @param token - User's authentication token.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
+ * @returns List of user subscriptions.
+ */
+export const getUserSubscriptions = async (
+  token: string,
+  retries = 3,
+  delay = 1000,
+): Promise<Subscription[]> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/subscriptions`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: ${await res.text()}`);
+        if (attempt === retries) return [];
+      } else {
+        return await res.json();
+      }
+    } catch (error: any) {
+      console.error(
+        `Attempt ${attempt}: ${error.message || "Failed to fetch subscriptions."}`,
+      );
+      if (attempt === retries) return [];
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return [];
+};
+
+/**
+ * Creates a new subscription for the authenticated user.
+ * 
+ * @param token - User's authentication token.
+ * @param subscription - Subscription data to create.
+ * @returns Created subscription or throws error.
+ */
+export const createSubscription = async (
+  token: string,
+  subscription: Partial<Subscription>,
+): Promise<Subscription> => {
+  try {
+    const res = await fetch(`${BASE_URL}/subscriptions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(subscription),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to create subscription");
+    }
+
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.message || "An error occurred while creating subscription",
+    );
+  }
+};
+
+/**
+ * Updates an existing subscription.
+ * 
+ * @param token - User's authentication token.
+ * @param subscriptionId - ID of subscription to update.
+ * @param updates - Updated subscription data.
+ * @returns Updated subscription or throws error.
+ */
+export const updateSubscription = async (
+  token: string,
+  subscriptionId: string,
+  updates: Partial<Subscription>,
+): Promise<Subscription> => {
+  try {
+    const res = await fetch(`${BASE_URL}/subscriptions/${subscriptionId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updates),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to update subscription");
+    }
+
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.message || "An error occurred while updating subscription",
+    );
+  }
+};
+
+/**
+ * Deletes a subscription.
+ * 
+ * @param token - User's authentication token.
+ * @param subscriptionId - ID of subscription to delete.
+ * @returns Success message or throws error.
+ */
+export const deleteSubscription = async (
+  token: string,
+  subscriptionId: string,
+): Promise<{ message: string }> => {
+  try {
+    const res = await fetch(`${BASE_URL}/subscriptions/${subscriptionId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to delete subscription");
+    }
+
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.message || "An error occurred while deleting subscription",
+    );
+  }
+};
+
+/**
+ * Fetches available sources from the API.
+ * 
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
+ * @returns List of unique sources from articles.
+ */
+export const getSources = async (
+  retries = 3,
+  delay = 1000,
+): Promise<string[]> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/articles/sources`);
+
+      if (!res.ok) {
+        console.error(
+          `Attempt ${attempt}: Error fetching sources: ${res.statusText}`,
+        );
+        if (attempt === retries) return [];
+      } else {
+        const result = await res.json();
+        return result.data || [];
+      }
+    } catch (error) {
+      console.error(
+        `Attempt ${attempt}: Network error while fetching sources:`,
+        error,
+      );
+      if (attempt === retries) return [];
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return [];
+};

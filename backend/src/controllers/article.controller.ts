@@ -259,3 +259,25 @@ export const getArticlesByTopic = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch articles by topic" });
   }
 };
+
+/**
+ * Get a list of all unique sources from articles.
+ *
+ * @param req The request object.
+ * @param res The response object to send the list of sources or an error message.
+ */
+export const getSources = async (req: Request, res: Response) => {
+  try {
+    const sources = await Article.distinct("source");
+    
+    // Filter out null/empty sources and sort
+    const filteredSources = sources
+      .filter((source) => source && source.trim())
+      .sort();
+
+    res.json({ data: filteredSources, total: filteredSources.length });
+  } catch (error) {
+    console.error("Error fetching sources:", error);
+    res.status(500).json({ error: "Failed to fetch sources" });
+  }
+};

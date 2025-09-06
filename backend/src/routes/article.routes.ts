@@ -6,6 +6,7 @@ import {
   searchArticles,
   getAllTopics,
   getArticlesByTopic,
+  getSources,
 } from "../controllers/article.controller";
 
 const router = Router();
@@ -291,6 +292,36 @@ router.get("/topics", getAllTopics);
  *         description: Failed to fetch articles by topic.
  */
 router.get("/topic/:topic", getArticlesByTopic);
+
+/**
+ * @swagger
+ * /api/articles/sources:
+ *   get:
+ *     tags: [Articles]
+ *     summary: Get all unique sources
+ *     security:
+ *       - ApiKeyAuth: []
+ *     description: Retrieve a list of all unique sources from articles.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved sources
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: List of unique sources
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of sources
+ *       500:
+ *         description: Failed to fetch sources.
+ */
+router.get("/sources", getSources);
 
 /**
  * @swagger
