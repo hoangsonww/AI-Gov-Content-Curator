@@ -5093,3 +5093,165 @@ npmnpm ERR!   in workspace: government-article-curator-crawler@1.0.0 ERR!   in w
  
 npm ERR!   at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawlernpm ERR!   at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler 
  
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-08-27 16:00:01
+Daily run started at 2025-08-27 16:00:01
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
+                                     ^
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
+                                     ^
+TypeError: Cannot read properties of undefined (reading 'combine')
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6:38)
+    at Module._compile (node:internal/modules/cjs/loader:1356:14)
+    at Module.m._compile (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Object.require.extensions.<computed> [as .js] (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1013:12)
+    at Module.require (node:internal/modules/cjs/loader:1225:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:27:1)
+TypeError: Cannot read properties of undefined (reading 'combine')
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6:38)
+    at Module._compile (node:internal/modules/cjs/loader:1356:14)
+    at Module.m._compile (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Object.require.extensions.<computed> [as .js] (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1013:12)
+    at Module.require (node:internal/modules/cjs/loader:1225:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:27:1)
+npm npm ERR! Lifecycle script `crawl` failed with error: 
+ERR! Lifecycle script `crawl` failed with error: 
+npm ERR! Error: command failednpm ERR! Error: command failed 
+ 
+npmnpm ERR!   in workspace: government-article-curator-crawler@1.0.0 
+ ERR!   in workspace: government-article-curator-crawler@1.0.0 
+npm ERR!   at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawlernpm ERR!   at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler 
+ 
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-08-30 16:00:01
+Daily run started at 2025-08-30 16:00:01
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
+                                     ^
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
+                                     ^
+TypeError: Cannot read properties of undefined (reading 'combine')
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6:38)
+    at Module._compile (node:internal/modules/cjs/loader:1356:14)
+    at Module.m._compile (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Object.require.extensions.<computed> [as .js] (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1013:12)
+    at Module.require (node:internal/modules/cjs/loader:1225:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:27:1)
+TypeError: Cannot read properties of undefined (reading 'combine')
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6:38)
+    at Module._compile (node:internal/modules/cjs/loader:1356:14)
+    at Module.m._compile (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Object.require.extensions.<computed> [as .js] (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1013:12)
+    at Module.require (node:internal/modules/cjs/loader:1225:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:27:1)
+npm ERR! Lifecycle script `crawl` failed with error:npm ERR! Lifecycle script `crawl` failed with error: 
+ 
+npm ERR! Error: command failednpm ERR! Error: command failed 
+ 
+npmnpm ERR!   in workspace: government-article-curator-crawler@1.0.0 
+ ERR!   in workspace: government-article-curator-crawler@1.0.0 
+npm ERR!   at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawlernpm ERR!   at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler 
+ 
+----------------------------------------
+----------------------------------------
+Daily run started at 2025-09-03 16:00:00
+Daily run started at 2025-09-03 16:00:00
+This script is meant to run daily to complete the following tasks:
+This script is meant to run daily to complete the following tasks:
+
+
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+1. 📡 Running crawler… (cwd: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler)
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+
+> government-article-curator-crawler@1.0.0 crawl
+> npx ts-node schedule/fetchAndSummarize.ts
+
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
+                                     ^
+/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
+                                     ^
+TypeError: Cannot read properties of undefined (reading 'combine')
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6:38)
+    at Module._compile (node:internal/modules/cjs/loader:1356:14)
+    at Module.m._compile (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Object.require.extensions.<computed> [as .js] (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1013:12)
+    at Module.require (node:internal/modules/cjs/loader:1225:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:27:1)
+TypeError: Cannot read properties of undefined (reading 'combine')
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/utils/logger.js:6:38)
+    at Module._compile (node:internal/modules/cjs/loader:1356:14)
+    at Module.m._compile (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Object.require.extensions.<computed> [as .js] (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1013:12)
+    at Module.require (node:internal/modules/cjs/loader:1225:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler/schedule/fetchAndSummarize.ts:27:1)
+npm ERR! Lifecycle script `crawl` failed with error:npm ERR! Lifecycle script `crawl` failed with error: 
+ 
+npm ERR! Error: command failed 
+npm ERR! Error: command failed 
+npmnpm ERR!   in workspace: government-article-curator-crawler@1.0.0 
+ ERR!   in workspace: government-article-curator-crawler@1.0.0 
+npmnpm ERR! ERR!    at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler  at location: /Users/davidnguyen/WebstormProjects/AI-Gov-Content-Curator/crawler 
+ 

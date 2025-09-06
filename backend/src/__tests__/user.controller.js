@@ -40,7 +40,9 @@ describe("Favorite Controller", () => {
       Article.find.mockResolvedValue(articles);
       req = { user: { id: "u1" } };
       await getFavoriteArticles(req, res);
-      expect(Article.find).toHaveBeenCalledWith({ _id: { $in: user.favorites } });
+      expect(Article.find).toHaveBeenCalledWith({
+        _id: { $in: user.favorites },
+      });
       expect(res.json).toHaveBeenCalledWith(articles);
     });
 
@@ -50,7 +52,10 @@ describe("Favorite Controller", () => {
       console.error = jest.fn();
       req = { user: { id: "u1" } };
       await getFavoriteArticles(req, res);
-      expect(console.error).toHaveBeenCalledWith("Error retrieving favorite articles:", err);
+      expect(console.error).toHaveBeenCalledWith(
+        "Error retrieving favorite articles:",
+        err,
+      );
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
     });
@@ -79,7 +84,10 @@ describe("Favorite Controller", () => {
       console.error = jest.fn();
       req = { user: { id: "u1" } };
       await getFavoriteArticleIds(req, res);
-      expect(console.error).toHaveBeenCalledWith("Error retrieving favorites:", err);
+      expect(console.error).toHaveBeenCalledWith(
+        "Error retrieving favorites:",
+        err,
+      );
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
     });
@@ -90,7 +98,9 @@ describe("Favorite Controller", () => {
       req = { body: {} };
       await toggleFavoriteArticle(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: "Article ID is required" });
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Article ID is required",
+      });
     });
 
     it("404 if user not found", async () => {
@@ -102,7 +112,10 @@ describe("Favorite Controller", () => {
     });
 
     it("unfavorites when already in list", async () => {
-      const user = { favorites: ["a1", "b"], save: jest.fn().mockResolvedValue(true) };
+      const user = {
+        favorites: ["a1", "b"],
+        save: jest.fn().mockResolvedValue(true),
+      };
       User.findById.mockResolvedValue(user);
       req = { user: { id: "u1" }, body: { articleId: "a1" } };
       await toggleFavoriteArticle(req, res);
@@ -114,7 +127,10 @@ describe("Favorite Controller", () => {
     });
 
     it("favorites when not already in list", async () => {
-      const user = { favorites: ["b"], save: jest.fn().mockResolvedValue(true) };
+      const user = {
+        favorites: ["b"],
+        save: jest.fn().mockResolvedValue(true),
+      };
       User.findById.mockResolvedValue(user);
       req = { user: { id: "u1" }, body: { articleId: "a1" } };
       await toggleFavoriteArticle(req, res);
@@ -131,7 +147,10 @@ describe("Favorite Controller", () => {
       console.error = jest.fn();
       req = { user: { id: "u1" }, body: { articleId: "a1" } };
       await toggleFavoriteArticle(req, res);
-      expect(console.error).toHaveBeenCalledWith("Error favoriting article:", err);
+      expect(console.error).toHaveBeenCalledWith(
+        "Error favoriting article:",
+        err,
+      );
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
     });
@@ -172,7 +191,9 @@ describe("Favorite Controller", () => {
       req = { user: { id: "u1" }, query: { page: "2", limit: "5" } };
       await searchFavoriteArticles(req, res);
 
-      expect(Article.find).toHaveBeenCalledWith({ _id: { $in: user.favorites } });
+      expect(Article.find).toHaveBeenCalledWith({
+        _id: { $in: user.favorites },
+      });
       expect(chain.skip).toHaveBeenCalledWith((2 - 1) * 5);
       expect(chain.limit).toHaveBeenCalledWith(5);
       expect(res.json).toHaveBeenCalledWith({ data: articles, total: 1 });
@@ -209,7 +230,9 @@ describe("Favorite Controller", () => {
     it("500 on error", async () => {
       const err = new Error("fail");
       User.findById.mockResolvedValue(user);
-      Article.find.mockImplementation(() => { throw err; });
+      Article.find.mockImplementation(() => {
+        throw err;
+      });
       req = { user: { id: "u1" }, query: {} };
       await searchFavoriteArticles(req, res);
       expect(res.status).toHaveBeenCalledWith(500);
@@ -235,11 +258,16 @@ describe("Favorite Controller", () => {
 
     it("500 on error", async () => {
       const err = new Error("oops");
-      User.find.mockImplementation(() => { throw err; });
+      User.find.mockImplementation(() => {
+        throw err;
+      });
       console.error = jest.fn();
       req = {};
       await getAllUsers(req, res);
-      expect(console.error).toHaveBeenCalledWith("Error retrieving all users:", err);
+      expect(console.error).toHaveBeenCalledWith(
+        "Error retrieving all users:",
+        err,
+      );
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
     });

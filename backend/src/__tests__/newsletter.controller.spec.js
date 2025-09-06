@@ -7,7 +7,10 @@ jest.mock("../models/newsletterSubscriber.model", () => ({
 const NewsletterSubscriber = require("../models/newsletterSubscriber.model");
 
 // 2) Import the controller
-const { subscribe, unsubscribe } = require("../controllers/newsletter.controller");
+const {
+  subscribe,
+  unsubscribe,
+} = require("../controllers/newsletter.controller");
 
 describe("Newsletter Controller", () => {
   let req, res, statusMock, jsonMock;
@@ -40,7 +43,9 @@ describe("Newsletter Controller", () => {
       NewsletterSubscriber.findOne.mockResolvedValue({}); // simulate exists
       req = { body: { email: "x@y.com" } };
       await subscribe(req, res);
-      expect(NewsletterSubscriber.findOne).toHaveBeenCalledWith({ email: "x@y.com" });
+      expect(NewsletterSubscriber.findOne).toHaveBeenCalledWith({
+        email: "x@y.com",
+      });
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalled();
     });
@@ -50,8 +55,12 @@ describe("Newsletter Controller", () => {
       NewsletterSubscriber.create.mockResolvedValue({});
       req = { body: { email: "NEW@Y.COM" } };
       await subscribe(req, res);
-      expect(NewsletterSubscriber.findOne).toHaveBeenCalledWith({ email: "new@y.com" });
-      expect(NewsletterSubscriber.create).toHaveBeenCalledWith({ email: "new@y.com" });
+      expect(NewsletterSubscriber.findOne).toHaveBeenCalledWith({
+        email: "new@y.com",
+      });
+      expect(NewsletterSubscriber.create).toHaveBeenCalledWith({
+        email: "new@y.com",
+      });
       expect(statusMock).toHaveBeenCalledWith(201);
       expect(jsonMock).toHaveBeenCalled();
     });
@@ -83,7 +92,9 @@ describe("Newsletter Controller", () => {
       NewsletterSubscriber.findOneAndDelete.mockResolvedValue(null);
       req = { method: "GET", body: {}, query: { email: "x@y.com" } };
       await unsubscribe(req, res);
-      expect(NewsletterSubscriber.findOneAndDelete).toHaveBeenCalledWith({ email: "x@y.com" });
+      expect(NewsletterSubscriber.findOneAndDelete).toHaveBeenCalledWith({
+        email: "x@y.com",
+      });
       expect(statusMock).toHaveBeenCalledWith(404);
       expect(jsonMock).toHaveBeenCalled();
     });
@@ -93,13 +104,17 @@ describe("Newsletter Controller", () => {
       req = { method: "POST", body: { email: "X@Y.COM" }, query: {} };
       await unsubscribe(req, res);
       // normalization lowercases back to "x@y.com"
-      expect(NewsletterSubscriber.findOneAndDelete).toHaveBeenCalledWith({ email: "x@y.com" });
+      expect(NewsletterSubscriber.findOneAndDelete).toHaveBeenCalledWith({
+        email: "x@y.com",
+      });
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalled();
     });
 
     it("500 on internal error", async () => {
-      NewsletterSubscriber.findOneAndDelete.mockRejectedValue(new Error("boom"));
+      NewsletterSubscriber.findOneAndDelete.mockRejectedValue(
+        new Error("boom"),
+      );
       req = { method: "GET", body: {}, query: { email: "x@y.com" } };
       await unsubscribe(req, res);
       expect(statusMock).toHaveBeenCalledWith(500);
