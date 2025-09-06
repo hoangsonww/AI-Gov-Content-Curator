@@ -18,6 +18,7 @@ const {
   searchArticles,
   getAllTopics,
   getArticlesByTopic,
+  getSources,
 } = require("../controllers/article.controller");
 
 describe("Article Controller", () => {
@@ -246,6 +247,32 @@ describe("Article Controller", () => {
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({ error: "Failed to fetch articles by topic" });
+    });
+  });
+
+  describe("getSources()", () => {
+    it("200 returns filtered and sorted sources", async () => {
+      const mockSources = ["example.com", "test.org", "", null, "api.gov"];
+      Article.distinct.mockResolvedValue(mockSources);
+
+      req = {};
+      await getSources(req, res);
+
+      expect(Article.distinct).toHaveBeenCalledWith("source");
+      expect(jsonMock).toHaveBeenCalledWith({ 
+        data: ["api.gov", "example.com", "test.org"], 
+        total: 3 
+      });
+    });
+
+    it("500 on error", async () => {
+      Article.distinct.mockRejectedValue(new Error("database error"));
+
+      req = {};
+      await getSources(req, res);
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({ error: "Failed to fetch sources" });
     });
   });
 });
