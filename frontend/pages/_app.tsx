@@ -24,6 +24,7 @@ import "../styles/newsletter.css";
 import "../styles/footer.css";
 import "../styles/landing.css";
 import "../styles/comments.css";
+import "../styles/rating.css";
 import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";
 import { Analytics } from "@vercel/analytics/react";
@@ -124,6 +125,7 @@ function App({ Component, pageProps }: AppProps) {
           className="back-to-top-btn"
           aria-label="Back to top"
         >
+          {/* @ts-ignore */}
           <MdArrowUpward size={24} />
         </button>
       )}
