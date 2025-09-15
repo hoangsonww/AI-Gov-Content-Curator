@@ -1,6 +1,7 @@
 # SynthoraAI - AI-Powered Article Content Curator
 
-> [!TIP] > **SynthoraAI - Synthesizing the world’s news & information through AI.** 🚀✨
+> [!TIP] 
+> **SynthoraAI - Synthesizing the world’s news & information through AI.** 🚀✨
 
 The **SynthoraAI - AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles.
 This monorepo, multi-services project is organized into four main components:
