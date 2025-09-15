@@ -9,7 +9,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\"",
     "test": "jest --config jest.config.js --runInBand",
     "test:watch": "jest --config jest.config.js --watch",
-    "test:coverage": "jest --config jest.config.js --coverage"
+    "test:coverage": "jest --config jest.config.js --coverage",
+    "prune-articles": "ts-node src/scripts/pruneArticles.ts",
+    "prune-articles:live": "ts-node src/scripts/pruneArticles.ts --live --force"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
