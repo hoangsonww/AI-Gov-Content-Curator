@@ -4,6 +4,38 @@ import { Article } from "../pages/home";
 // For now, we'll keep it hard-coded.
 export const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
 
+export interface BiasAnalysis {
+  politicalLeaning: {
+    position:
+      | "far-left"
+      | "left"
+      | "center-left"
+      | "center"
+      | "center-right"
+      | "right"
+      | "far-right";
+    score: number;
+    explanation: string;
+  };
+  confidence: number;
+  isBiased: boolean;
+  biasIndicators: string[];
+  neutralityScore: number;
+  recommendation: string;
+}
+
+export interface BiasAnalysisResponse {
+  success: boolean;
+  data?: {
+    title: string;
+    contentLength: number;
+    analysis: BiasAnalysis;
+    timestamp: string;
+  };
+  error?: string;
+  message?: string;
+}
+
 /**
  * Fetches the top 5 articles from the API.
  *
@@ -620,4 +652,76 @@ export async function getArticlesByTopic(
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return [];
+}
+
+/**
+ * Analyzes an article for political bias and leaning.
+ * Implements caching to avoid redundant API calls.
+ *
+ * @param articleId The unique identifier of the article.
+ * @param title The title of the article.
+ * @param content The content of the article to analyze.
+ * @returns Bias analysis data or null if an error occurs.
+ */
+export async function analyzeArticleBias(
+  articleId: string,
+  title: string,
+  content: string,
+): Promise<BiasAnalysis | null> {
+  // Check cache first
+  const cacheKey = `bias_analysis_${articleId}`;
+  const cachedData = localStorage.getItem(cacheKey);
+
+  if (cachedData) {
+    try {
+      const parsed = JSON.parse(cachedData);
+      // Check if cache is less than 30 days old
+      const cacheTime = parsed.timestamp || 0;
+      const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+      if (Date.now() - cacheTime < thirtyDaysInMs) {
+        return parsed.analysis;
+      }
+    } catch (error) {
+      console.error("Error parsing cached bias data:", error);
+      localStorage.removeItem(cacheKey);
+    }
+  }
+
+  // Fetch from API if not cached
+  try {
+    const response = await fetch(`${BASE_URL}/bias/analyze`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title, content }),
+    });
+
+    if (!response.ok) {
+      console.error("Error analyzing article bias:", response.statusText);
+      return null;
+    }
+
+    const result: BiasAnalysisResponse = await response.json();
+
+    if (result.success && result.data?.analysis) {
+      // Cache the result
+      const cacheData = {
+        analysis: result.data.analysis,
+        timestamp: Date.now(),
+      };
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+      } catch (error) {
+        console.error("Error caching bias analysis:", error);
+      }
+
+      return result.data.analysis;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Network error while analyzing article bias:", error);
+    return null;
+  }
 }

@@ -11,6 +11,7 @@ import { Article } from "../home";
 import ArticleDetail from "../../components/ArticleDetail";
 import Chatbot from "../../components/Chatbot";
 import RatingSection from "../../components/RatingSection";
+import BiasAnalysisSection from "../../components/BiasAnalysis";
 import { getArticleById } from "../../services/api";
 
 interface ArticlePageProps {
@@ -184,6 +185,8 @@ export default function ArticlePage({ article }: ArticlePageProps) {
             </motion.a>
           </Link>
         </motion.div>
+
+        <BiasAnalysisSection article={article} />
 
         <RatingSection articleId={article._id} />
 

@@ -280,12 +280,14 @@
   outline: none;
   cursor: pointer;
   position: relative;
-  background: linear-gradient(to right,
+  background: linear-gradient(
+    to right,
     #dc2626 0%,
     #f97316 25%,
     var(--loading-text) 50%,
     #22c55e 75%,
-    #10b981 100%);
+    #10b981 100%
+  );
   opacity: 0.8;
   transition: opacity 0.2s;
 }

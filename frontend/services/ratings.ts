@@ -41,7 +41,7 @@ export async function createOrUpdateRating(
   articleId: string,
   value: number,
   ratingType: "meter" | "stars" = "meter",
-  comment?: string
+  comment?: string,
 ): Promise<{ success: boolean; data?: Rating; message?: string }> {
   try {
     const sessionId = getSessionId();
@@ -78,9 +78,7 @@ export async function createOrUpdateRating(
 /**
  * Get the current user's/session's rating for an article
  */
-export async function getUserRating(
-  articleId: string
-): Promise<Rating | null> {
+export async function getUserRating(articleId: string): Promise<Rating | null> {
   try {
     const sessionId = getSessionId();
     const token = localStorage.getItem("token");
@@ -113,11 +111,11 @@ export async function getUserRating(
  * Get rating statistics for an article
  */
 export async function getArticleRatingStats(
-  articleId: string
+  articleId: string,
 ): Promise<RatingStats | null> {
   try {
     const response = await fetch(
-      `${BASE_URL}/ratings/article/${articleId}/stats`
+      `${BASE_URL}/ratings/article/${articleId}/stats`,
     );
 
     if (!response.ok) {
@@ -136,7 +134,7 @@ export async function getArticleRatingStats(
  * Delete a rating
  */
 export async function deleteRating(
-  ratingId: string
+  ratingId: string,
 ): Promise<{ success: boolean; message?: string }> {
   try {
     const sessionId = getSessionId();
@@ -170,8 +168,10 @@ export async function deleteRating(
  * Get bulk ratings for multiple articles
  */
 export async function getBulkArticleRatings(
-  articleIds: string[]
-): Promise<Array<{ articleId: string; averageRating: number; totalRatings: number }>> {
+  articleIds: string[],
+): Promise<
+  Array<{ articleId: string; averageRating: number; totalRatings: number }>
+> {
   try {
     const response = await fetch(`${BASE_URL}/ratings/bulk`, {
       method: "POST",

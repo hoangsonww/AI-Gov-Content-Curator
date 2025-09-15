@@ -5,11 +5,13 @@
 The rating system provides the following endpoints:
 
 ### 1. Create or Update Rating
+
 ```bash
 POST /api/ratings
 ```
 
 **Request Body:**
+
 ```json
 {
   "articleId": "68275522a116499139f16a6a",
@@ -21,6 +23,7 @@ POST /api/ratings
 ```
 
 **Example with meter rating (-100 to 100):**
+
 ```bash
 curl -X POST http://localhost:3000/api/ratings \
   -H "Content-Type: application/json" \
@@ -34,6 +37,7 @@ curl -X POST http://localhost:3000/api/ratings \
 ```
 
 **Example with star rating (1 to 5):**
+
 ```bash
 curl -X POST http://localhost:3000/api/ratings \
   -H "Content-Type: application/json" \
@@ -47,36 +51,43 @@ curl -X POST http://localhost:3000/api/ratings \
 ```
 
 ### 2. Get User's Rating for an Article
+
 ```bash
 GET /api/ratings/article/{articleId}/user?sessionId={sessionId}
 ```
 
 **Example:**
+
 ```bash
 curl -X GET "http://localhost:3000/api/ratings/article/68275522a116499139f16a6a/user?sessionId=session-123"
 ```
 
 ### 3. Get All Ratings for an Article
+
 ```bash
 GET /api/ratings/article/{articleId}?page=1&limit=10
 ```
 
 **Example:**
+
 ```bash
 curl -X GET "http://localhost:3000/api/ratings/article/68275522a116499139f16a6a?page=1&limit=10"
 ```
 
 ### 4. Get Rating Statistics for an Article
+
 ```bash
 GET /api/ratings/article/{articleId}/stats
 ```
 
 **Example:**
+
 ```bash
 curl -X GET "http://localhost:3000/api/ratings/article/68275522a116499139f16a6a/stats"
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -100,11 +111,13 @@ curl -X GET "http://localhost:3000/api/ratings/article/68275522a116499139f16a6a/
 ```
 
 ### 5. Get Bulk Ratings for Multiple Articles
+
 ```bash
 POST /api/ratings/bulk
 ```
 
 **Request Body:**
+
 ```json
 {
   "articleIds": [
@@ -116,6 +129,7 @@ POST /api/ratings/bulk
 ```
 
 **Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/ratings/bulk \
   -H "Content-Type: application/json" \
@@ -128,11 +142,13 @@ curl -X POST http://localhost:3000/api/ratings/bulk \
 ```
 
 ### 6. Delete a Rating
+
 ```bash
 DELETE /api/ratings/{ratingId}
 ```
 
 **Request Body (for anonymous users):**
+
 ```json
 {
   "sessionId": "session-123"
@@ -140,6 +156,7 @@ DELETE /api/ratings/{ratingId}
 ```
 
 **Example:**
+
 ```bash
 curl -X DELETE http://localhost:3000/api/ratings/507f1f77bcf86cd799439011 \
   -H "Content-Type: application/json" \
@@ -151,12 +168,14 @@ curl -X DELETE http://localhost:3000/api/ratings/507f1f77bcf86cd799439011 \
 ## Testing the System
 
 ### Run the test script:
+
 ```bash
 cd backend
 npx ts-node src/scripts/test-rating-system.ts
 ```
 
 ### Start the server and test via API:
+
 ```bash
 npm run dev
 ```
@@ -167,21 +186,21 @@ npm run dev
 
 ```javascript
 // Create/Update Rating
-const submitRating = async (articleId, value, ratingType = 'meter') => {
-  const sessionId = localStorage.getItem('sessionId') || generateSessionId();
+const submitRating = async (articleId, value, ratingType = "meter") => {
+  const sessionId = localStorage.getItem("sessionId") || generateSessionId();
 
-  const response = await fetch('/api/ratings', {
-    method: 'POST',
+  const response = await fetch("/api/ratings", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       articleId,
       value,
       ratingType,
       sessionId,
-      comment: commentText
-    })
+      comment: commentText,
+    }),
   });
 
   const data = await response.json();
@@ -197,9 +216,9 @@ const getArticleStats = async (articleId) => {
 
 // Get user's rating
 const getUserRating = async (articleId) => {
-  const sessionId = localStorage.getItem('sessionId');
+  const sessionId = localStorage.getItem("sessionId");
   const response = await fetch(
-    `/api/ratings/article/${articleId}/user?sessionId=${sessionId}`
+    `/api/ratings/article/${articleId}/user?sessionId=${sessionId}`,
   );
   const data = await response.json();
   return data.data;
@@ -209,11 +228,13 @@ const getUserRating = async (articleId) => {
 ## Rating Types
 
 ### Meter Rating System
+
 - Range: -100 to 100
 - Use case: Sentiment analysis, approval ratings, political lean
 - Visual: Can be displayed as a horizontal meter/slider
 
 ### Star Rating System
+
 - Range: 1 to 5
 - Use case: Quality ratings, traditional reviews
 - Visual: Standard 5-star display

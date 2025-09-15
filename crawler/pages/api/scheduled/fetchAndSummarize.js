@@ -159,15 +159,12 @@ function handler(req, res) {
           console.error("Error in scheduled function:", err_1);
           return [
             2 /*return*/,
-            res
-              .status(500)
-              .json({
-                status: "error",
-                message:
-                  (err_1 === null || err_1 === void 0
-                    ? void 0
-                    : err_1.message) || "Unknown error",
-              }),
+            res.status(500).json({
+              status: "error",
+              message:
+                (err_1 === null || err_1 === void 0 ? void 0 : err_1.message) ||
+                "Unknown error",
+            }),
           ];
         case 3:
           return [2 /*return*/];

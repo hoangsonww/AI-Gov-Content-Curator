@@ -8,7 +8,13 @@ import mongoose from "mongoose";
  */
 export const createOrUpdateRating = async (req: Request, res: Response) => {
   try {
-    const { articleId, value, ratingType = "meter", comment, sessionId } = req.body;
+    const {
+      articleId,
+      value,
+      ratingType = "meter",
+      comment,
+      sessionId,
+    } = req.body;
     const userId = (req as any).user?.id;
 
     // Validate article exists
@@ -227,7 +233,8 @@ export const getArticleRatingStats = async (req: Request, res: Response) => {
         const key = `${range} to ${range + 20}`;
         meterDistribution[key] = (meterDistribution[key] || 0) + 1;
       } else if (rating.type === "stars") {
-        starDistribution[rating.value] = (starDistribution[rating.value] || 0) + 1;
+        starDistribution[rating.value] =
+          (starDistribution[rating.value] || 0) + 1;
       }
     });
 
@@ -309,7 +316,7 @@ export const getBulkArticleRatings = async (req: Request, res: Response) => {
       });
     }
 
-    const objectIds = articleIds.map(id => new mongoose.Types.ObjectId(id));
+    const objectIds = articleIds.map((id) => new mongoose.Types.ObjectId(id));
 
     const ratings = await Rating.aggregate([
       {
@@ -336,17 +343,19 @@ export const getBulkArticleRatings = async (req: Request, res: Response) => {
 
     // Create a map for easy lookup
     const ratingsMap: { [key: string]: any } = {};
-    ratings.forEach(rating => {
+    ratings.forEach((rating) => {
       ratingsMap[rating.articleId.toString()] = rating;
     });
 
     // Ensure all requested articles are in the response
-    const result = articleIds.map(id => {
-      return ratingsMap[id] || {
-        articleId: id,
-        averageRating: 0,
-        totalRatings: 0,
-      };
+    const result = articleIds.map((id) => {
+      return (
+        ratingsMap[id] || {
+          articleId: id,
+          averageRating: 0,
+          totalRatings: 0,
+        }
+      );
     });
 
     return res.status(200).json({

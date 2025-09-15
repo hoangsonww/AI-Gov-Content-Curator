@@ -1,0 +1,491 @@
+/* Bias Analysis Section Styles */
+.bias-analysis-container {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.bias-analysis-container.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.bias-loading {
+  text-align: center;
+  font-family: "Inter", sans-serif;
+}
+
+.bias-loading p {
+  color: var(--text-color);
+  opacity: 0.6;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  border: 3px solid var(--card-border);
+  border-top: 3px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.bias-analysis-container h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--card-border);
+}
+
+.bias-content {
+  font-family: "Inter", sans-serif;
+}
+
+/* Political Spectrum */
+.political-spectrum {
+  position: relative;
+  margin-bottom: 3rem;
+  padding-top: 1.5rem;
+}
+
+.spectrum-bar {
+  display: flex;
+  height: 44px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  border: 2px solid var(--card-border);
+  position: relative;
+  background: var(--bg-color);
+}
+
+[data-theme="dark"] .spectrum-bar {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.spectrum-segment {
+  flex: 1;
+  position: relative;
+  transition: all 0.3s ease;
+  opacity: 0.3;
+  cursor: pointer;
+}
+
+.spectrum-segment:hover {
+  opacity: 0.6;
+}
+
+.spectrum-segment.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.spectrum-segment[data-position="far-left"] {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+}
+
+.spectrum-segment[data-position="left"] {
+  background: linear-gradient(135deg, #283593 0%, #3949ab 100%);
+}
+
+.spectrum-segment[data-position="center-left"] {
+  background: linear-gradient(135deg, #3949ab 0%, #5e35b1 100%);
+}
+
+.spectrum-segment[data-position="center"] {
+  background: linear-gradient(135deg, #7e57c2 0%, #9575cd 100%);
+}
+
+.spectrum-segment[data-position="center-right"] {
+  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+}
+
+.spectrum-segment[data-position="right"] {
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+}
+
+.spectrum-segment[data-position="far-right"] {
+  background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+}
+
+.segment-label {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  white-space: nowrap;
+  color: var(--text-color);
+  opacity: 0;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  transition: opacity 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.spectrum-segment.active .segment-label {
+  opacity: 0.8;
+}
+
+.spectrum-indicator {
+  position: absolute;
+  top: -20px;
+  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.indicator-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.indicator-value {
+  background: var(--text-color);
+  color: var(--bg-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  margin-bottom: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .indicator-value {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.indicator-arrow {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid var(--text-color);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.indicator-line {
+  width: 2px;
+  height: 20px;
+  background: var(--text-color);
+  margin-top: -1px;
+}
+
+/* Metrics Grid */
+.bias-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  background: var(--bg-color);
+  padding: 1.25rem;
+  border-radius: 6px;
+  border: 1px solid var(--card-border);
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .metric-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.metric-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-color);
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Inter", sans-serif;
+}
+
+.position-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  font-family: "Inter", sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.bias-far-left {
+  background: #1a237e;
+}
+.bias-left {
+  background: #3949ab;
+}
+.bias-center-left {
+  background: #5e35b1;
+}
+.bias-center {
+  background: #9575cd;
+}
+.bias-center-right {
+  background: #ef5350;
+}
+.bias-right {
+  background: #e53935;
+}
+.bias-far-right {
+  background: #b71c1c;
+}
+
+.score {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+.explanation {
+  font-size: 0.85rem;
+  color: var(--text-color);
+  opacity: 0.8;
+  line-height: 1.5;
+  font-family: "Inter", sans-serif;
+}
+
+/* Meters */
+.confidence-meter,
+.neutrality-meter {
+  width: 100%;
+  height: 20px;
+  background: var(--card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-color), #2563eb);
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.neutrality-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.confidence-value,
+.neutrality-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+/* Details Section */
+.bias-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--card-border);
+}
+
+.detail-section h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+.bias-badge {
+  display: inline-block;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+}
+
+.bias-badge.biased {
+  background: rgba(255, 193, 7, 0.15);
+  color: #f39c12;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+[data-theme="dark"] .bias-badge.biased {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.bias-badge.unbiased {
+  background: rgba(39, 174, 96, 0.15);
+  color: #27ae60;
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+[data-theme="dark"] .bias-badge.unbiased {
+  background: rgba(39, 174, 96, 0.1);
+  color: #2ecc71;
+  border: 1px solid rgba(39, 174, 96, 0.2);
+}
+
+.bias-indicators {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bias-indicators li {
+  padding: 0.75rem 1rem;
+  background: var(--bg-color);
+  border-left: 3px solid var(--accent-color);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+}
+
+.bias-indicators li:hover {
+  transform: translateX(4px);
+  background: var(--hover-bg);
+}
+
+.recommendation {
+  padding: 1rem;
+  background: var(--bg-color);
+  border-left: 3px solid var(--accent-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+}
+
+.recommendation:hover {
+  background: var(--hover-bg);
+}
+
+/* Ensure all text uses Inter font */
+.bias-analysis-container * {
+  font-family: "Inter", sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bias-analysis-container {
+    padding: 1rem;
+  }
+
+  .bias-analysis-container h2 {
+    font-size: 1.1rem;
+  }
+
+  .metric-row {
+    grid-template-columns: 1fr;
+  }
+
+  .spectrum-bar {
+    height: 36px;
+  }
+
+  .spectrum-segment .segment-label {
+    font-size: 0.55rem;
+    bottom: -24px;
+  }
+
+  .indicator-value {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+
+  .indicator-arrow {
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 10px solid var(--text-color);
+  }
+
+  .indicator-line {
+    height: 16px;
+  }
+
+  .metric-card {
+    padding: 1rem;
+  }
+
+  .position-badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .spectrum-bar {
+    height: 28px;
+  }
+
+  .indicator-arrow {
+    font-size: 1rem;
+  }
+
+  .bias-analysis-container h2 {
+    font-size: 1rem;
+  }
+}

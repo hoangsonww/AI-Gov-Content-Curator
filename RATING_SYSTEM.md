@@ -1,11 +1,13 @@
 # Article Rating System Implementation
 
 ## Overview
+
 A flexible rating system has been implemented to allow users to rate articles with either a meter-style rating (-100 to 100) or traditional star ratings (1-5). The system supports both authenticated users and anonymous sessions.
 
 ## Files Created
 
 ### 1. Model
+
 - **`backend/src/models/rating.model.ts`**
   - Mongoose schema for ratings
   - Supports both meter (-100 to 100) and star (1-5) rating types
@@ -13,6 +15,7 @@ A flexible rating system has been implemented to allow users to rate articles wi
   - Tracks user/session, article, value, type, and optional comments
 
 ### 2. Controller
+
 - **`backend/src/controllers/rating.controller.ts`**
   - `createOrUpdateRating` - Create or update a rating
   - `getUserRating` - Get a user's/session's rating for an article
@@ -22,6 +25,7 @@ A flexible rating system has been implemented to allow users to rate articles wi
   - `getBulkArticleRatings` - Get ratings for multiple articles at once
 
 ### 3. Routes
+
 - **`backend/src/routes/rating.routes.ts`**
   - `POST /api/ratings` - Create/update rating
   - `GET /api/ratings/article/:articleId/user` - Get user's rating
@@ -31,16 +35,20 @@ A flexible rating system has been implemented to allow users to rate articles wi
   - `DELETE /api/ratings/:ratingId` - Delete a rating
 
 ### 4. Test Files
+
 - **`backend/src/scripts/test-rating-system.ts`** - Unit test script for the rating model
 - **`backend/test-rating-api.md`** - API endpoint documentation and test examples
 
 ### 5. Modified Files
+
 - **`backend/src/app.ts`** - Added rating routes registration
 
 ## Key Features
 
 ### Rating Types
+
 1. **Meter Rating**
+
    - Range: -100 to 100
    - Use case: Sentiment analysis, approval ratings, bias detection
    - Can represent: Very Negative (-100) to Very Positive (100)
@@ -51,7 +59,9 @@ A flexible rating system has been implemented to allow users to rate articles wi
    - Familiar user interface pattern
 
 ### Data Structure
+
 Each rating document contains:
+
 - `articleId` - Reference to the article being rated
 - `userId` - Reference to authenticated user (optional)
 - `sessionId` - Session identifier for anonymous users (optional)
@@ -61,6 +71,7 @@ Each rating document contains:
 - `createdAt/updatedAt` - Timestamps
 
 ### Constraints
+
 - One rating per user/session per article (enforced by unique indexes)
 - Either userId or sessionId must be present
 - Value validation based on rating type
@@ -73,26 +84,26 @@ Each rating document contains:
 ```javascript
 // Generate or retrieve session ID for anonymous users
 const getSessionId = () => {
-  let sessionId = localStorage.getItem('ratingSessionId');
+  let sessionId = localStorage.getItem("ratingSessionId");
   if (!sessionId) {
     sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem('ratingSessionId', sessionId);
+    localStorage.setItem("ratingSessionId", sessionId);
   }
   return sessionId;
 };
 
 // Submit a rating
-const submitRating = async (articleId, value, ratingType = 'meter') => {
-  const response = await fetch('/api/ratings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+const submitRating = async (articleId, value, ratingType = "meter") => {
+  const response = await fetch("/api/ratings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       articleId,
       value,
       ratingType,
       sessionId: getSessionId(),
-      comment: userComment // optional
-    })
+      comment: userComment, // optional
+    }),
   });
   return response.json();
 };
@@ -108,6 +119,7 @@ const getArticleStats = async (articleId) => {
 ### UI Component Ideas
 
 #### Meter Rating Component
+
 ```javascript
 // Slider from -100 (far left) to 100 (far right)
 <input
@@ -121,13 +133,16 @@ const getArticleStats = async (articleId) => {
 ```
 
 #### Star Rating Component
+
 ```javascript
 // Traditional 5-star rating
 [⭐][⭐][⭐][⭐][⭐]
 ```
 
 ## Database Indexes
+
 The following indexes are automatically created for optimal performance:
+
 - `articleId` - For querying ratings by article
 - `userId` - For querying user's ratings (sparse index)
 - `sessionId` - For querying session's ratings (sparse index)
@@ -136,6 +151,7 @@ The following indexes are automatically created for optimal performance:
 ## API Response Examples
 
 ### Rating Statistics Response
+
 ```json
 {
   "success": true,
@@ -169,19 +185,24 @@ The following indexes are automatically created for optimal performance:
 ```
 
 ## Environment Setup
+
 Ensure MongoDB connection is configured in your environment:
+
 ```bash
 # .env file
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
 ```
 
 ## Testing
+
 To test the rating system:
+
 1. Ensure MongoDB is accessible
 2. Run: `cd backend && npx ts-node src/scripts/test-rating-system.ts`
 3. Or start the server and use the API endpoints documented in `backend/test-rating-api.md`
 
 ## Next Steps for Frontend
+
 1. Create rating UI components (meter slider and star ratings)
 2. Add rating display to article cards/lists
 3. Implement session management for anonymous users

@@ -117,7 +117,7 @@ const ratingSchema = new Schema<IRating>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Compound index to ensure one rating per user/session per article
@@ -125,16 +125,16 @@ ratingSchema.index(
   { articleId: 1, userId: 1 },
   {
     unique: true,
-    partialFilterExpression: { userId: { $exists: true } }
-  }
+    partialFilterExpression: { userId: { $exists: true } },
+  },
 );
 
 ratingSchema.index(
   { articleId: 1, sessionId: 1 },
   {
     unique: true,
-    partialFilterExpression: { sessionId: { $exists: true } }
-  }
+    partialFilterExpression: { sessionId: { $exists: true } },
+  },
 );
 
 // Custom toJSON transform

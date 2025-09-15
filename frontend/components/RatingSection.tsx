@@ -85,12 +85,14 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
         articleId,
         value,
         ratingType,
-        comment || undefined
+        comment || undefined,
       );
 
       if (result.success) {
         toast.success(
-          userRating ? "Rating updated successfully!" : "Rating submitted successfully!"
+          userRating
+            ? "Rating updated successfully!"
+            : "Rating submitted successfully!",
         );
         setUserRating(result.data || null);
         setIsEditing(false);
@@ -156,7 +158,7 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
 
   const renderStars = (interactive: boolean = true) => {
     const stars = [];
-    const value = interactive ? (hoveredStar || starValue) : starValue;
+    const value = interactive ? hoveredStar || starValue : starValue;
 
     for (let i = 1; i <= 5; i++) {
       stars.push(
@@ -173,12 +175,16 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
         >
           {i <= value ? (
             // @ts-ignore
-            <MdStar size={32} color="var(--accent-color)" style={{ color: "var(--accent-color)" }} />
+            <MdStar
+              size={32}
+              color="var(--accent-color)"
+              style={{ color: "var(--accent-color)" }}
+            />
           ) : (
             // @ts-ignore
             <MdStarBorder size={32} style={{ color: "var(--loading-text)" }} />
           )}
-        </motion.button>
+        </motion.button>,
       );
     }
     return stars;
@@ -192,13 +198,30 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
         // @ts-ignore
-        stars.push(<MdStar key={i} size={20} style={{ color: "var(--accent-color)" }} />);
+        stars.push(
+          // @ts-ignore
+          <MdStar key={i} size={20} style={{ color: "var(--accent-color)" }} />,
+        );
       } else if (i === fullStars + 1 && hasHalfStar) {
         // @ts-ignore
-        stars.push(<MdStarHalf key={i} size={20} style={{ color: "var(--accent-color)" }} />);
+        stars.push(
+          // @ts-ignore
+          <MdStarHalf
+            key={i}
+            size={20}
+            style={{ color: "var(--accent-color)" }}
+          />,
+        );
       } else {
         // @ts-ignore
-        stars.push(<MdStarBorder key={i} size={20} style={{ color: "var(--loading-text)" }} />);
+        stars.push(
+          // @ts-ignore
+          <MdStarBorder
+            key={i}
+            size={20}
+            style={{ color: "var(--loading-text)" }}
+          />,
+        );
       }
     }
     return stars;
@@ -263,7 +286,9 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
               <div className="stat-divider"></div>
               <div className="stat-item">
                 <span className="stat-label">Total Ratings</span>
-                <span className="stat-value big-number">{stats.totalRatings}</span>
+                <span className="stat-value big-number">
+                  {stats.totalRatings}
+                </span>
               </div>
             </div>
           </div>
@@ -306,7 +331,8 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
                 >
                   {userRating.value}
                   <span className="meter-label">
-                    {" "}({getMeterLabel(userRating.value)})
+                    {" "}
+                    ({getMeterLabel(userRating.value)})
                   </span>
                 </div>
               </div>
@@ -426,7 +452,9 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
             <motion.button
               className="submit-btn"
               onClick={handleSubmitRating}
-              disabled={isSubmitting || (ratingType === "stars" && starValue === 0)}
+              disabled={
+                isSubmitting || (ratingType === "stars" && starValue === 0)
+              }
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >

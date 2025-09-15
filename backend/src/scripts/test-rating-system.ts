@@ -13,7 +13,8 @@ dotenv.config();
 async function testRatingSystem() {
   try {
     // Connect to MongoDB
-    const MONGO_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/mydb";
+    const MONGO_URI =
+      process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/mydb";
     await mongoose.connect(MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
@@ -134,18 +135,21 @@ async function testRatingSystem() {
       console.log("❌ Unique constraint failed - duplicate rating was saved");
     } catch (error: any) {
       console.log("✅ Unique constraint worked - duplicate rating rejected");
-      console.log(`   Error: ${error.code === 11000 ? "Duplicate key error" : error.message}`);
+      console.log(
+        `   Error: ${error.code === 11000 ? "Duplicate key error" : error.message}`,
+      );
     }
 
     // Clean up test data
     console.log("\n🧹 Cleaning up test data...");
     await Rating.deleteMany({
-      sessionId: { $in: ["test-session-123", "test-session-456", "test-session-789"] },
+      sessionId: {
+        $in: ["test-session-123", "test-session-456", "test-session-789"],
+      },
     });
     console.log("✅ Test data cleaned up");
 
     console.log("\n✨ All tests completed successfully!");
-
   } catch (error) {
     console.error("❌ Test failed:", error);
   } finally {
