@@ -431,6 +431,12 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   Authenticated users can mark articles as favorites for quick access.
 - **Newsletter Subscription:**  
   Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
+- **Bias Detection:**  
+  The backend includes a bias detection feature, powered by Google Generative AI, to analyze articles for potential bias and provide insights to users.
+- **User Ratings:**  
+  Users can rate articles, allowing for feedback and quality assessment.
+- **Dark Mode:**  
+  The frontend offers a dark mode option for improved readability and user experience.
 - **Discussions & Comments:**  
   Users can also discuss and comment on articles, fostering engagement and collaboration.
 - **Upvote/Downvote Comments:**  

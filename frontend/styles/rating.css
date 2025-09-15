@@ -1,0 +1,567 @@
+/* Rating Section Styles */
+.rating-section {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.rating-section.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.rating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--card-border);
+}
+
+.rating-title-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rating-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+.be-first-text {
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  font-style: italic;
+  font-family: "Inter", sans-serif;
+}
+
+.rating-stats {
+  display: flex;
+  align-items: center;
+}
+
+.stat-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background-color: var(--card-border);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.stat-item.main-stat {
+  align-items: flex-start;
+}
+
+.stat-label {
+  color: var(--text-color);
+  opacity: 0.6;
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+.big-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.big-rating {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.meter-stat-display,
+.star-stat-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.star-stat-display .average-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.average-stars {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.average-number {
+  margin-left: 0.25rem;
+  color: var(--text-color);
+  opacity: 0.8;
+  font-size: 0.85rem;
+  font-family: "Inter", sans-serif;
+}
+
+/* User Rating Display */
+.user-rating-display {
+  background-color: var(--hover-bg);
+  border-radius: 6px;
+  padding: 1rem;
+  border: 1px solid var(--card-border);
+}
+
+.rating-display-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.rating-display-header h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+.rating-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 0.4rem;
+  border: none;
+  background-color: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+}
+
+.delete-btn:hover {
+  background-color: #dc2626;
+  color: var(--bg-color);
+}
+
+.rating-display-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.meter-display,
+.stars-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meter-value-display {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: "Inter", sans-serif;
+}
+
+.meter-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-weight: 400;
+  font-family: "Inter", sans-serif;
+}
+
+.rating-comment {
+  font-style: italic;
+  color: var(--text-color);
+  opacity: 0.9;
+  padding: 0.75rem;
+  background-color: var(--hover-bg);
+  border-left: 3px solid var(--accent-color);
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-family: "Inter", sans-serif;
+}
+
+/* Rating Input Container */
+.rating-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rating-type-selector {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.type-btn {
+  padding: 0.5rem 1.5rem;
+  border: 2px solid var(--card-border);
+  background-color: transparent;
+  color: var(--text-color);
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.type-btn:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.type-btn.active {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  border-color: var(--accent-color);
+}
+
+/* Meter Container */
+.meter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.meter-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  padding: 0 0.5rem;
+  font-family: "Inter", sans-serif;
+}
+
+.meter-slider {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  background: linear-gradient(
+    to right,
+    #dc2626 0%,
+    #f97316 25%,
+    var(--loading-text) 50%,
+    #22c55e 75%,
+    #10b981 100%
+  );
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.meter-slider:hover {
+  opacity: 1;
+}
+
+.meter-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-color);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--accent-color);
+  transition: transform 0.2s;
+}
+
+.meter-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.meter-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-color);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--accent-color);
+  transition: transform 0.2s;
+}
+
+.meter-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+.meter-value {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: "Inter", sans-serif;
+}
+
+/* Stars Container */
+.stars-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stars-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.star-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.star-button:disabled {
+  cursor: default;
+}
+
+.star-button:not(:disabled):hover {
+  transform: scale(1.1);
+}
+
+.star-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-top: 0.5rem;
+  font-family: "Inter", sans-serif;
+}
+
+/* Comment Section */
+.comment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.add-comment-btn {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.add-comment-btn:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+}
+
+.comment-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.comment-char-count {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.6;
+  font-family: "Inter", sans-serif;
+}
+
+/* Submit Container */
+.rating-submit-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.submit-btn,
+.cancel-btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "Inter", sans-serif;
+}
+
+.submit-btn {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--card-border);
+}
+
+.cancel-btn:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--text-color);
+}
+
+.submitting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.small-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .rating-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .rating-stats {
+    width: 100%;
+  }
+
+  .stat-group {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .stat-item {
+    flex: 1;
+  }
+
+  .big-number {
+    font-size: 1.5rem;
+  }
+
+  .big-rating {
+    font-size: 1.6rem;
+  }
+
+  .rating-type-selector {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .type-btn {
+    width: 100%;
+  }
+
+  .meter-labels {
+    font-size: 0.75rem;
+  }
+
+  .stars-input {
+    gap: 0.25rem;
+  }
+
+  .star-button svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .rating-submit-container {
+    flex-direction: column;
+  }
+
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Ensure all text uses Inter font */
+.rating-section * {
+  font-family: "Inter", sans-serif;
+}
+
+/* Additional font family reinforcement */
+.rating-section input,
+.rating-section textarea,
+.rating-section button,
+.rating-section select {
+  font-family: "Inter", sans-serif;
+}

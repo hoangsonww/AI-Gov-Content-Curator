@@ -10,6 +10,8 @@ import Comments from "../../components/Comments";
 import { Article } from "../home";
 import ArticleDetail from "../../components/ArticleDetail";
 import Chatbot from "../../components/Chatbot";
+import RatingSection from "../../components/RatingSection";
+import BiasAnalysisSection from "../../components/BiasAnalysis";
 import { getArticleById } from "../../services/api";
 
 interface ArticlePageProps {
@@ -126,6 +128,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
               title="Copy all article info"
               variants={buttonItem}
             >
+              {/* @ts-ignore */}
               {copied ? <MdCheck size={20} /> : <MdContentCopy size={20} />}
             </motion.button>
             <motion.button
@@ -134,6 +137,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
               title="Share via Email"
               variants={buttonItem}
             >
+              {/* @ts-ignore */}
               <MdEmail size={20} />
             </motion.button>
             <motion.button
@@ -142,6 +146,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
               title="Share on Twitter"
               variants={buttonItem}
             >
+              {/* @ts-ignore */}
               <AiOutlineTwitter size={20} />
             </motion.button>
             <motion.button
@@ -150,6 +155,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
               title="Share on LinkedIn"
               variants={buttonItem}
             >
+              {/* @ts-ignore */}
               <AiFillLinkedin size={20} />
             </motion.button>
             <motion.button
@@ -158,6 +164,7 @@ export default function ArticlePage({ article }: ArticlePageProps) {
               title="Share on Facebook"
               variants={buttonItem}
             >
+              {/* @ts-ignore */}
               <FaFacebookF size={20} />
             </motion.button>
           </div>
@@ -173,10 +180,15 @@ export default function ArticlePage({ article }: ArticlePageProps) {
                 justifyContent: "center",
               }}
             >
+              {/* @ts-ignore */}
               <MdHome size={20} />
             </motion.a>
           </Link>
         </motion.div>
+
+        <BiasAnalysisSection article={article} />
+
+        <RatingSection articleId={article._id} />
 
         <Comments articleId={article._id} />
 

@@ -220,8 +220,10 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           {loading ? (
             <div className="fav-spinner" />
           ) : isFavorited ? (
+            // @ts-ignore
             <MdFavorite size={20} color="#e74c3c" />
           ) : (
+            // @ts-ignore
             <MdFavoriteBorder size={20} />
           )}
         </button>
