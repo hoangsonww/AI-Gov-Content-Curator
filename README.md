@@ -350,6 +350,18 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/articles-qa.png" alt="Article Q&A Feature" width="100%">
 </p>
 
+### 6.1. Article Comments & Ratings
+
+<p align="center">
+  <img src="frontend/img/article-comments.png" alt="Article Comments & Ratings" width="100%">
+</p>
+
+### 6.2. AI-Powered Article Bias Analysis
+
+<p align="center">
+  <img src="frontend/img/article-bias.png" alt="AI-Powered Article Bias Analysis" width="100%">
+</p>
+
 ### 7. Favorite Articles Page
 
 <p align="center">
@@ -431,8 +443,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   Authenticated users can mark articles as favorites for quick access.
 - **Newsletter Subscription:**  
   Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
-- **Bias Detection:**  
-  The backend includes a bias detection feature, powered by Google Generative AI, to analyze articles for potential bias and provide insights to users.
+- **Bias Detection & Analysis:**  
+  The app also includes a bias detection & analysis feature, powered by Google Generative AI, to analyze articles for potential bias and provide deep article insights to users.
 - **User Ratings:**  
   Users can rate articles, allowing for feedback and quality assessment.
 - **Dark Mode:**  
@@ -464,6 +476,9 @@ The **Backend** is responsible for storing articles and serving them via RESTful
    ```bash
    git clone https://github.com/hoangsonww/AI-Gov-Content-Curator.git
    cd AI-Gov-Content-Curator/backend
+
+   # then, fill in the environment variables as described in .env.example file
+   # approved team members, please contact me for the actual .env file and API keys!
    ```
 
 3. **Install Dependencies (inside `backend/`):**
