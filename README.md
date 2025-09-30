@@ -56,7 +56,7 @@ This monorepo, multi-services project is organized into four main components:
 ![Makefile](https://img.shields.io/badge/Makefile-000?style=flat&logo=make&logoColor=white)
 ![Winston](https://img.shields.io/badge/Winston-350?style=flat&logo=prometheus&logoColor=white)
 ![Husky](https://img.shields.io/badge/Husky-456?style=flat&logo=haskell&logoColor=white)
-![Jira](https://img.shields.io/badge/Jira-0052CC?style=flat&logo=jira&logoColor=white)
+![Jira & Confluence](https://img.shields.io/badge/Jira_&_Confluence-0052CC?style=flat&logo=jira&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
 > [!IMPORTANT]
@@ -143,6 +143,9 @@ The **SynthoraAI - AI-Powered Article Content Curator** system is designed to pr
   Authenticated users can mark articles as favorites for quick access and reference.
 - **Dark Mode:**  
   The frontend offers a dark mode option for improved readability and user experience.
+
+> [!IMPORTANT]
+> Live Web App: [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/).
 
 ---
 
@@ -244,6 +247,9 @@ This monorepo, microservices architecture is designed to be modular and scalable
 This project is currently using Jira for task management and collaboration. The project's Kanban board is organized into six main columns: **Backlog**, **To Do**, **In Progress**, **Testing**, **Code Review**, and **Done**.
 Each task is assigned to a specific team member and includes detailed descriptions, acceptance criteria, and due dates.
 
+> [!TIP]
+> Before getting started, please make sure to read through the entire section to understand the workflow and how to effectively use Jira for this project.
+
 ### Agile Approach
 
 We are following an AGILE approach to development, which emphasizes iterative progress, collaboration, and flexibility. This allows us to adapt to changes quickly and deliver value to users in a timely manner.
@@ -299,8 +305,24 @@ The workflow for this project is as follows: As soon as you receive a task (verb
 This workflow ensures that tasks are tracked, code is reviewed, and the project progresses smoothly. It also allows for easy collaboration and communication among team members, and for our pursuit of an AGILE approach to development.
 
 <p align="center">
+  <img src="frontend/img/jira-general.png" alt="Jira Workflow" width="100%">
+</p>
+
+<p align="center">
   <img src="frontend/img/jira-board.png" alt="Jira Board" width="100%">
 </p>
+
+### Confluence
+
+We are also using Confluence for documentation and knowledge sharing. The Confluence space is organized into different sections, including project overview, architecture, API documentation, and user guides.
+
+**You can view the Confluence space at [https://ai-content-curator.atlassian.net/wiki/spaces/ACC/](https://ai-content-curator.atlassian.net/wiki/spaces/ACC/).**
+
+<p align="center">
+  <img src="frontend/img/confluence.png" alt="Confluence Space" width="100%">
+</p>
+
+To gain access to the Confluence space, please contact me directly at [sonnguyenhoang.com](https://sonnguyenhoang.com) or via email at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com).
 
 ---
 
