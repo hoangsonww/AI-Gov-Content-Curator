@@ -153,58 +153,48 @@ The **SynthoraAI - AI-Powered Article Content Curator** system is designed to pr
 
 Below is a high-level diagram outlining the system architecture:
 
+```mermaid
+flowchart LR
+    subgraph Sources[Trusted Sources]
+        GovSites[Government Websites]
+        NewsAPIs[Public News APIs]
+    end
+
+    Sources -->|URLs & Metadata| Crawler
+    Crawler[[Crawler Service<br/>Next.js API Routes]] -->|Summaries & Topics| MongoDB[(MongoDB Atlas)]
+    Crawler -->|AI Prompts| GoogleAI[(Google Generative AI)]
+    MongoDB --> Backend[[Backend API<br/>Next.js + Express]]
+    Backend -->|Cached Responses| Redis[(Redis)]
+    Backend -->|REST/JSON| Frontend[[Frontend Web App<br/>Next.js + React]]
+    Backend -->|Digest Payload| Newsletter[[Newsletter Service<br/>Next.js Serverless]]
+    Newsletter -->|Emails| Subscribers[(Subscribers)]
+    Frontend -->|Browse & Manage| Users[(Staff & Public Users)]
+    Backend -.->|AI-Assisted Features| GoogleAI
+    Crawler -.->|Cron & Shell Scripts| Automation[Shell / Make CLI]
+    Backend -.->|Operational Scripts| Automation
 ```
-      +----------------+       +--------------------------+
-      |                |       |                          |
-      |  Data Sources  |       |   Public API Sources     |
-      |                |       |   (e.g., NewsAPI)        |
-      +--------+-------+       +-------------+------------+
-               |                              |
-               |                              |
-               v                              v
-      +-----------------+       +--------------------------+
-      |                 |       |                          |
-      | Custom Crawlers |       |   API Fetcher Service    |
-      | (Articles       |       |                          |
-      |  Crawling)      |       +-------------+------------+
-      |                 |                     |
-      +--------+--------+                     |
-               |                              |
-               +------------+-----------------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Data Processing  |
-                  | (Summarization via |
-                  | Google Generative  |
-                  |        AI)         |
-                  |                    |
-                  +---------+----------+
-                            |
-                            v
-                  +--------------------+              +-------------------+
-                  |                    |              |                   |
-                  |   MongoDB Storage  |              |   Redis Cache     |
-                  |   (via Mongoose)   |<------------>| (Article Caching) |
-                  |                    |              |                   |
-                  +---------+----------+              +-------------------+
-                            |                                   |
-                            v                                   v
-                  +--------------------+             +--------------------+
-                  |                    |             |                    |
-                  |   Express.js API   |             | Newsletter Service |
-                  |  (REST Endpoints)  |             |  (Resend API with  |
-                  |                    |             |     CRON Jobs)     |
-                  +---------+----------+             +--------------------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |  Next.js Frontend  |
-                  | (Consumer of API)  |
-                  |                    |
-                  +--------------------+
+
+To illustrate how articles move through the platform, the following sequence captures the typical daily refresh:
+
+```mermaid
+sequenceDiagram
+    participant Cron as Vercel Cron / Shell
+    participant Crawl as Crawler Service
+    participant Back as Backend API
+    participant AI as Google Generative AI
+    participant DB as MongoDB
+    participant UI as Frontend
+    participant Mail as Newsletter Service
+
+    Cron->>Crawl: Trigger fetchAndSummarize job
+    Crawl->>AI: Request summaries & topics
+    AI-->>Crawl: Return condensed insights
+    Crawl->>DB: Upsert articles & analytics
+    Back->>DB: Query latest curated data
+    UI->>Back: Fetch paginated articles
+    Mail->>Back: Request latest articles
+    Back-->>Mail: Deliver curated digest data
+    Mail->>Subscribers: Send newsletter email
 ```
 
 This project consists of 4 primary microservices that interact with each other:
