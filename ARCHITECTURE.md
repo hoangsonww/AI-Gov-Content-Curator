@@ -74,28 +74,28 @@ sequenceDiagram
 
 ```mermaid
 flowchart TB
-    subgraph Entry[API Entry Points]
-        Routes[API Routes (`src/routes`)]
-        Pages[Next.js API pages (`src/pages/api/*`)]
+    subgraph Entry["API Entry Points"]
+        Routes["API Routes (src/routes)"]
+        Pages["Next.js API pages (src/pages/api/*)"]
     end
     Routes --> Controllers
     Pages --> Controllers
 
-    subgraph App[Application Layer]
-        Controllers[Controllers (`src/controllers`)] --> Middleware[Middleware (`src/middleware`)]
-        Middleware --> Services[Domain Services (`src/services`)]
-        Services --> Utils[Utilities (`src/utils`)]
+    subgraph App["Application Layer"]
+        Controllers["Controllers (src/controllers)"] --> Middleware["Middleware (src/middleware)"]
+        Middleware --> Services["Domain Services (src/services)"]
+        Services --> Utils["Utilities (src/utils)"]
     end
 
-    subgraph Data[Persistence]
-        Utils --> Models[Mongoose Models (`src/models`)]
-        Models --> MongoDB[(MongoDB Atlas)]
-        Utils --> Redis[(Redis Cache)]
+    subgraph Data["Persistence"]
+        Utils --> Models["Mongoose Models (src/models)"]
+        Models --> MongoDB["MongoDB Atlas"]
+        Utils --> Redis["Redis Cache"]
     end
 
-    Services --> External[External APIs]
-    External -->|Gemini Summaries & Bias Analysis| GoogleAI
-    External -->|3rd-party data| NewsAPI
+    Services --> External["External APIs"]
+    External -->|Gemini Summaries & Bias Analysis| GoogleAI["Google AI"]
+    External -->|3rd-party data| NewsAPI["News API"]
 ```
 
 * **Controllers:** Thin orchestration layer mapping HTTP routes to service operations (`article.controller.ts`, `auth.controller.ts`, `biasAnalysis.controller.ts`, etc.).
@@ -109,17 +109,17 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    Start[Homepage & API Seeds] --> FanOut{Batch & Concurrency Control}
-    FanOut --> CrawlHome[Crawl homepages (`services/crawler.service.ts`)]
-    FanOut --> FetchAPI[Fetch NewsAPI (`services/apiFetcher.service.ts`)]
-    CrawlHome --> Dedupe[Deduplicate URLs]
+    Start["Homepage & API Seeds"] --> FanOut{"Batch & Concurrency Control"}
+    FanOut --> CrawlHome["Crawl homepages (services/crawler.service.ts)"]
+    FanOut --> FetchAPI["Fetch NewsAPI (services/apiFetcher.service.ts)"]
+    CrawlHome --> Dedupe["Deduplicate URLs"]
     FetchAPI --> Dedupe
-    Dedupe --> FetchPage[Fetch article page (Axios → Puppeteer fallback)]
-    FetchPage --> Summarize[Summarise content (`services/summarization.service.ts`)]
-    Summarize --> Topics[Extract topics (`services/topicExtractor.service.ts`)]
-    Topics --> Upsert[Upsert via Mongoose (`models/article.model.ts`)]
-    Upsert --> Cleanup[Clean & prune old data (`scripts/cleanData.ts`)]
-    Cleanup --> Monitor[Log / Next.js status UI]
+    Dedupe --> FetchPage["Fetch article page (Axios → Puppeteer fallback)"]
+    FetchPage --> Summarize["Summarize content (services/summarization.service.ts)"]
+    Summarize --> Topics["Extract topics (services/topicExtractor.service.ts)"]
+    Topics --> Upsert["Upsert via Mongoose (models/article.model.ts)"]
+    Upsert --> Cleanup["Clean & prune old data (scripts/cleanData.ts)"]
+    Cleanup --> Monitor["Log / Next.js status UI"]
 ```
 
 * **Resilience:** Retries, Puppeteer fallbacks, and timeout guards keep ingestion resilient to flaky endpoints.
@@ -131,14 +131,14 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    App[_app.tsx / _document.tsx] --> Layout[Global Layout & Providers]
-    Layout --> Pages[Page Routes (`pages/`)]
-    Pages --> Components[Feature Components (`components/`)]
-    Components --> Services[Data Fetching Utilities (`services/`)]
-    Services --> BackendAPI[(Backend REST API)]
-    Components --> UIState[State & Hooks]
-    UIState --> Styling[Tailwind / CSS Modules (`styles/`)]
-    Components --> Tests[Playwright & unit tests (`tests/`)]
+    App["_app.tsx / _document.tsx"] --> Layout["Global Layout & Providers"]
+    Layout --> Pages["Page Routes (pages/)"]
+    Pages --> Components["Feature Components (components/)"]
+    Components --> Services["Data Fetching Utilities (services/)"]
+    Services --> BackendAPI["Backend REST API"]
+    Components --> UIState["State & Hooks"]
+    UIState --> Styling["Tailwind / CSS Modules (styles/)"]
+    Components --> Tests["Playwright & Unit Tests (tests/)"]
 ```
 
 * **Home experience:** Hero slider, latest articles, filters, and quick links built from modular components.
@@ -150,18 +150,18 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    subgraph API[Next.js API Routes]
-        Subscribe[/api/newsletter/subscribe]
-        Unsubscribe[/api/newsletter/unsubscribe]
-        Cron[/api/scheduled/sendNewsletter]
+    subgraph API["Next.js API Routes"]
+        Subscribe["/api/newsletter/subscribe"]
+        Unsubscribe["/api/newsletter/unsubscribe"]
+        Cron["/api/scheduled/sendNewsletter"]
     end
 
-    API --> Logic[Newsletter Logic (`schedule/sendNewsletter.ts`)]
-    Logic --> BackendAPI[(Backend REST API)]
-    Logic --> Mongo[(MongoDB Subscribers)]
-    Logic --> Resend[(Resend Email API)]
-    Resend --> Subscribers[Recipients]
-    Pages[Minimal UI (`pages/index.tsx`)] --> Users
+    API --> Logic["Newsletter Logic (schedule/sendNewsletter.ts)"]
+    Logic --> BackendAPI["Backend REST API"]
+    Logic --> Mongo["MongoDB Subscribers"]
+    Logic --> Resend["Resend Email API"]
+    Resend --> Subscribers["Recipients"]
+    Pages["Minimal UI (pages/index.tsx)"] --> Users["Users"]
 ```
 
 * **Digest creation:** Aggregates the most recent curated articles (via backend API) and truncates to digest-friendly snippets.
@@ -172,13 +172,13 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Devs[Developers] --> Make[Makefile Targets]
-    Devs --> Shell[Shell Scripts (`shell/*.sh`)]
-    Make -->|`make dev-*`| ServicesCluster[Local Docker / pnpm dev servers]
-    Shell -->|`daily.sh`| CronLocal[Local Cron Jobs]
-    Shell -->|`run-*-tests.sh`| CI[CI Pipelines]
+    Devs["Developers"] --> Make["Makefile Targets"]
+    Devs --> Shell["Shell Scripts (shell/*.sh)"]
+    Make -->|"make dev-*"| ServicesCluster["Local Docker / pnpm dev servers"]
+    Shell -->|"daily.sh"| CronLocal["Local Cron Jobs"]
+    Shell -->|"run-*-tests.sh"| CI["CI Pipelines"]
     CronLocal --> ServicesCluster
-    VercelCron[Vercel Cron] -->|Trigger serverless routes| CloudServices[(Crawler / Backend / Newsletter)]
+    VercelCron["Vercel Cron"] -->|"Trigger serverless routes"| CloudServices["Crawler / Backend / Newsletter"]
 ```
 
 * **Unified entrypoints:** `bootstrap.sh`, `dev-*.sh`, `build-*.sh`, and `start-*.sh` scripts standardise local setup and deployment chores.
