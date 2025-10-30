@@ -93,12 +93,18 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   };
 
   const title = article.title?.trim() || "Article Title Unavailable";
+  const topTopics = article.topics?.slice(0, 3) || [];
+
+  const handleCardClick = () => {
+    window.location.href = `/articles/${article._id}`;
+  };
 
   return (
     <>
       <div
         className="article-card hover-animate"
         style={{ position: "relative" }}
+        onClick={handleCardClick}
       >
         <h2 className="article-title">{title}</h2>
 
@@ -185,6 +191,16 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           </div>
         )}
 
+        {topTopics.length > 0 && (
+          <div className="article-topics">
+            {topTopics.map((topic, idx) => (
+              <span key={idx} className="topic-badge">
+                {topic}
+              </span>
+            ))}
+          </div>
+        )}
+
         <p className="article-source">
           Source:{" "}
           {article.url ? (
@@ -210,7 +226,10 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         {isLoggedIn && (
           <button
             className="favorite-btn"
-            onClick={handleFavorite}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleFavorite();
+            }}
             aria-label="Favorite Article"
             disabled={favLoading}
             style={{

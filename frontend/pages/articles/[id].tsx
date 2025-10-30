@@ -12,6 +12,7 @@ import ArticleDetail from "../../components/ArticleDetail";
 import Chatbot from "../../components/Chatbot";
 import RatingSection from "../../components/RatingSection";
 import BiasAnalysisSection from "../../components/BiasAnalysis";
+import RelatedArticles from "../../components/RelatedArticles";
 import { getArticleById } from "../../services/api";
 
 interface ArticlePageProps {
@@ -191,6 +192,8 @@ export default function ArticlePage({ article }: ArticlePageProps) {
         <RatingSection articleId={article._id} />
 
         <Comments articleId={article._id} />
+
+        <RelatedArticles articleId={article._id} />
 
         <Chatbot article={article} />
       </div>

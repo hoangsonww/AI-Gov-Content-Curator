@@ -14,6 +14,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
+import { upsertArticleVector } from "../services/pinecone.service";
 
 /* ─────────── Mongo schema ─────────── */
 const ArticleSchema = new Schema({
@@ -295,7 +296,7 @@ async function ingest(url: string, browser: Browser) {
       (await summarizeAI(art.content)) || art.content.slice(0, 400) + "…";
     const topics = await topicsAI(summary);
 
-    await Article.updateOne(
+    const result = await Article.updateOne(
       { url },
       {
         $setOnInsert: {
@@ -309,6 +310,22 @@ async function ingest(url: string, browser: Browser) {
       { upsert: true },
     );
     console.log("✓", url);
+
+    if (result.upsertedCount > 0 && result.upsertedId) {
+      setImmediate(() => {
+        upsertArticleVector({
+          id: result.upsertedId._id.toString(),
+          url,
+          title: art.title,
+          summary,
+          topics,
+          source: new URL(url).hostname,
+          fetchedAt: new Date(),
+        }).catch((err) =>
+          console.warn("⚠ Pinecone vectorization failed:", url, err.message),
+        );
+      });
+    }
   } catch (e: any) {
     console.warn("⚠", url, e.message);
   } finally {

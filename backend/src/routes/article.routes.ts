@@ -6,6 +6,7 @@ import {
   searchArticles,
   getAllTopics,
   getArticlesByTopic,
+  getSimilarArticles,
 } from "../controllers/article.controller";
 
 const router = Router();
@@ -291,6 +292,46 @@ router.get("/topics", getAllTopics);
  *         description: Failed to fetch articles by topic.
  */
 router.get("/topic/:topic", getArticlesByTopic);
+
+/**
+ * @swagger
+ * /api/articles/{id}/similar:
+ *   get:
+ *     tags: [Articles]
+ *     summary: Get similar articles based on vector similarity
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The article ID to find similar articles for.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 6
+ *         description: Number of similar articles to return.
+ *     responses:
+ *       200:
+ *         description: A list of similar articles.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       404:
+ *         description: Article not found.
+ *       500:
+ *         description: Failed to fetch similar articles.
+ */
+router.get("/:id/similar", getSimilarArticles);
 
 /**
  * @swagger
