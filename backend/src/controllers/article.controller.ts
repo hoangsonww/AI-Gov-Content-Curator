@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Article from "../models/article.model";
 import { PipelineStage } from "mongoose";
+import { findSimilarArticles } from "../services/pinecone.service";
 
 /**
  * @swagger
@@ -257,5 +258,32 @@ export const getArticlesByTopic = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching articles by topic:", error);
     res.status(500).json({ error: "Failed to fetch articles by topic" });
+  }
+};
+
+/**
+ * Get similar articles based on vector similarity using Pinecone.
+ *
+ * @param req The request object containing the article ID parameter.
+ * @param res The response object to send similar articles or an error message.
+ */
+export const getSimilarArticles = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const limit = parseInt(req.query.limit as string) || 6;
+
+    const article = await Article.findById(id);
+    if (!article) {
+      return res.status(404).json({ error: "Article not found" });
+    }
+
+    const similarArticles = await findSimilarArticles(id, limit);
+
+    res.json({ data: similarArticles });
+  } catch (error: any) {
+    console.error("Error fetching similar articles:", error);
+    res
+      .status(500)
+      .json({ error: error.message || "Failed to fetch similar articles" });
   }
 };

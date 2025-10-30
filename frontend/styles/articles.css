@@ -37,6 +37,13 @@
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.article-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .article-title {
@@ -49,28 +56,35 @@
 }
 
 .article-source {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  white-space: normal;
-}
-
-.article-source a {
-  color: var(--accent-color);
-  text-decoration: underline;
-  transition: color 0.2s ease;
-}
-
-.article-source a:hover {
-  color: var(--navbar-text);
+  display: none;
 }
 
 .article-summary {
   margin: 0.5rem 0;
   overflow-wrap: break-word;
   word-break: break-word;
+}
+
+/* ---------- Article Topics ---------- */
+.article-topics {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.topic-badge {
+  background: var(--accent-color);
+  color: white;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.dark .topic-badge {
+  background: var(--accent-color);
+  opacity: 0.9;
 }
 
 /* ---------- Latest Articles Styles ---------- */

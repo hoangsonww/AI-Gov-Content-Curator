@@ -200,12 +200,3 @@ To test the rating system:
 1. Ensure MongoDB is accessible
 2. Run: `cd backend && npx ts-node src/scripts/test-rating-system.ts`
 3. Or start the server and use the API endpoints documented in `backend/test-rating-api.md`
-
-## Next Steps for Frontend
-
-1. Create rating UI components (meter slider and star ratings)
-2. Add rating display to article cards/lists
-3. Implement session management for anonymous users
-4. Add visual statistics (charts/graphs) for rating distributions
-5. Consider adding user feedback for successful rating submission
-6. Cache ratings locally to reduce API calls

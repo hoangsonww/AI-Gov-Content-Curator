@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@pinecone-database/pinecone": "^6.1.2",
     "@sparticuz/chromium": "^133.0.0",
     "@vercel/node": "^5.1.11",
     "axios": "^1.2.0",
@@ -26,6 +27,7 @@
     "mongoose": "^6.8.0",
     "next": "^15.2.1",
     "nodemailer": "^7.0.3",
+    "openai": "^6.7.0",
     "prettier": "^3.5.3",
     "puppeteer": "^24.8.2",
     "puppeteer-core": "^24.4.0",

@@ -2,3 +2,4 @@
 frontend/test-results
 frontend/playwright-report
 backend/dist
+/daily.log
