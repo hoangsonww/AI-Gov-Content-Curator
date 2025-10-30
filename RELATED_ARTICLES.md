@@ -33,8 +33,8 @@ This feature adds a related articles carousel to article detail pages using Pine
 
 Add to `backend/.env` and `crawler/.env`:
 ```env
-PINECONE_API_KEY=pcsk_7VesMQ_FUzJiesFgakyVdqi68oL1ch88XD3zN8NYY15v53RyTjuUrbePRx2AeBvVARXKxf
-PINECONE_INDEX=estatewise-index
+PINECONE_API_KEY=
+PINECONE_INDEX=
 ```
 
 ### 2. One-Time Vectorization of Existing Articles
