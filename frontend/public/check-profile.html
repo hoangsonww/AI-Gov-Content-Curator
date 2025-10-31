@@ -1,523 +1,565 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>Personalization Control Panel</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      color: white;
-      margin-bottom: 30px;
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      transition: transform 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-    }
-
-    .card h2 {
-      color: #333;
-      margin-bottom: 15px;
-      font-size: 1.3rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .icon {
-      font-size: 1.5rem;
-    }
-
-    .stat-value {
-      font-size: 2.5rem;
-      font-weight: bold;
-      color: #667eea;
-      margin: 10px 0;
-    }
-
-    .stat-label {
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    .topic-list, .source-list, .interaction-list {
-      list-style: none;
-      margin-top: 15px;
-    }
-
-    .topic-item, .source-item, .interaction-item {
-      padding: 10px;
-      margin-bottom: 8px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .topic-name {
-      font-weight: 500;
-      color: #333;
-    }
-
-    .topic-score {
-      background: #667eea;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .interaction-item {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 5px;
-    }
-
-    .interaction-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .article-title {
-      font-weight: 600;
-      color: #333;
-      font-size: 0.95rem;
-      margin: 5px 0;
-      cursor: pointer;
-      flex: 1;
-    }
-
-    .article-title:hover {
-      color: #667eea;
-    }
-
-    .article-meta {
-      font-size: 0.8rem;
-      color: #888;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .article-topics {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-top: 5px;
-    }
-
-    .mini-topic {
-      background: #f1f5f9;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      color: #555;
-    }
-
-    .loading-dots {
-      display: inline-block;
-      animation: blink 1.4s infinite;
-    }
-
-    @keyframes blink {
-      0%, 80%, 100% { opacity: 1; }
-      40% { opacity: 0.3; }
-    }
-
-    .article-link {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .article-link:hover .article-title {
-      color: #667eea;
-      text-decoration: underline;
-    }
-
-    .interaction-action {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .action-view { background: #e3f2fd; color: #1976d2; }
-    .action-favorite { background: #fce4ec; color: #c2185b; }
-    .action-rate { background: #fff3e0; color: #f57c00; }
-    .action-click_topic { background: #f3e5f5; color: #7b1fa2; }
-
-    .interaction-time {
-      font-size: 0.8rem;
-      color: #999;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
-
-    button {
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 500;
-      transition: all 0.2s;
-      flex: 1;
-      min-width: 150px;
-    }
-
-    button:hover {
-      background: #5568d3;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-
-    button.danger {
-      background: #ef4444;
-    }
-
-    button.danger:hover {
-      background: #dc2626;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-    }
-
-    button.secondary {
-      background: #6b7280;
-    }
-
-    button.secondary:hover {
-      background: #4b5563;
-    }
-
-    .wide-card {
-      grid-column: 1 / -1;
-    }
-
-    .json-view {
-      background: #1e293b;
-      color: #e2e8f0;
-      padding: 20px;
-      border-radius: 8px;
-      overflow-x: auto;
-      font-family: 'Monaco', 'Courier New', monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .empty-state {
-      text-align: center;
-      color: #999;
-      padding: 30px;
-      font-style: italic;
-    }
-
-    .tag {
-      display: inline-block;
-      padding: 4px 10px;
-      background: #f1f5f9;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      margin-right: 5px;
-      margin-bottom: 5px;
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 8px;
-      background: #e5e7eb;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #667eea, #764ba2);
-      transition: width 0.3s;
-    }
-
-    @media (max-width: 768px) {
-      .grid {
-        grid-template-columns: 1fr;
+  <head>
+    <title>Personalization Control Panel</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+      }
+
       .header h1 {
-        font-size: 1.8rem;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
       }
-      
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+      }
+
+      .card h2 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .icon {
+        font-size: 1.5rem;
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        margin: 10px 0;
+      }
+
+      .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      .topic-list,
+      .source-list,
+      .interaction-list {
+        list-style: none;
+        margin-top: 15px;
+      }
+
+      .topic-item,
+      .source-item,
+      .interaction-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .topic-name {
+        font-weight: 500;
+        color: #333;
+      }
+
+      .topic-score {
+        background: #667eea;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .interaction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+
+      .interaction-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .article-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+        margin: 5px 0;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      .article-title:hover {
+        color: #667eea;
+      }
+
+      .article-meta {
+        font-size: 0.8rem;
+        color: #888;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .article-topics {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        margin-top: 5px;
+      }
+
+      .mini-topic {
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        color: #555;
+      }
+
+      .loading-dots {
+        display: inline-block;
+        animation: blink 1.4s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        80%,
+        100% {
+          opacity: 1;
+        }
+        40% {
+          opacity: 0.3;
+        }
+      }
+
+      .article-link {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .article-link:hover .article-title {
+        color: #667eea;
+        text-decoration: underline;
+      }
+
+      .interaction-action {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .action-view {
+        background: #e3f2fd;
+        color: #1976d2;
+      }
+      .action-favorite {
+        background: #fce4ec;
+        color: #c2185b;
+      }
+      .action-rate {
+        background: #fff3e0;
+        color: #f57c00;
+      }
+      .action-click_topic {
+        background: #f3e5f5;
+        color: #7b1fa2;
+      }
+
+      .interaction-time {
+        font-size: 0.8rem;
+        color: #999;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+
       button {
-        min-width: 100%;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        flex: 1;
+        min-width: 150px;
       }
-    }
 
-    .badge {
-      display: inline-block;
-      padding: 6px 12px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-left: 10px;
-    }
+      button:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
 
-    .chart-container {
-      margin-top: 15px;
-    }
+      button.danger {
+        background: #ef4444;
+      }
 
-    .bar-chart {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+      button.danger:hover {
+        background: #dc2626;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      }
 
-    .bar-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+      button.secondary {
+        background: #6b7280;
+      }
 
-    .bar-label {
-      min-width: 120px;
-      font-size: 0.9rem;
-      color: #555;
-    }
+      button.secondary:hover {
+        background: #4b5563;
+      }
 
-    .bar {
-      flex: 1;
-      height: 24px;
-      background: linear-gradient(90deg, #667eea, #764ba2);
-      border-radius: 4px;
-      position: relative;
-      overflow: hidden;
-    }
+      .wide-card {
+        grid-column: 1 / -1;
+      }
 
-    .bar-value {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: white;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>🎯 Personalization Control Panel</h1>
-      <p>Manage your article recommendations and preferences</p>
+      .json-view {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 20px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-family: "Monaco", "Courier New", monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .empty-state {
+        text-align: center;
+        color: #999;
+        padding: 30px;
+        font-style: italic;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 4px 10px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 8px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s;
+      }
+
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+          font-size: 1.8rem;
+        }
+
+        button {
+          min-width: 100%;
+        }
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 10px;
+      }
+
+      .chart-container {
+        margin-top: 15px;
+      }
+
+      .bar-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .bar-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .bar-label {
+        min-width: 120px;
+        font-size: 0.9rem;
+        color: #555;
+      }
+
+      .bar {
+        flex: 1;
+        height: 24px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .bar-value {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎯 Personalization Control Panel</h1>
+        <p>Manage your article recommendations and preferences</p>
+      </div>
+
+      <div class="grid">
+        <!-- Overview Stats -->
+        <div class="card">
+          <h2><span class="icon">📊</span> Overview</h2>
+          <div class="stat-value" id="totalInteractions">0</div>
+          <div class="stat-label">Total Interactions</div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              id="progressFill"
+              style="width: 0%"
+            ></div>
+          </div>
+          <p style="margin-top: 10px; font-size: 0.85rem; color: #666">
+            <span id="progressText">No interactions yet</span>
+          </p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <h2><span class="icon">⚡</span> Quick Actions</h2>
+          <div class="button-group" style="flex-direction: column">
+            <button onclick="window.location.href='/home'">
+              🏠 Back to Home
+            </button>
+            <button class="secondary" onclick="exportProfile()">
+              📥 Export Profile
+            </button>
+            <button class="danger" onclick="clearProfile()">
+              🗑️ Clear All Data
+            </button>
+          </div>
+        </div>
+
+        <!-- Top Topics -->
+        <div class="card">
+          <h2>
+            <span class="icon">🏷️</span>
+            Top Topics
+            <span class="badge" id="topicBadge">0</span>
+          </h2>
+          <div id="topicsList" class="chart-container">
+            <div class="empty-state">No topic preferences yet</div>
+          </div>
+        </div>
+
+        <!-- Top Sources -->
+        <div class="card">
+          <h2>
+            <span class="icon">📰</span>
+            Favorite Sources
+            <span class="badge" id="sourceBadge">0</span>
+          </h2>
+          <ul id="sourcesList" class="source-list">
+            <li class="empty-state">No source preferences yet</li>
+          </ul>
+        </div>
+
+        <!-- Recent Interactions -->
+        <div class="card wide-card">
+          <h2>
+            <span class="icon">📝</span>
+            Recent Activity
+            <span class="badge" id="activityBadge">0</span>
+          </h2>
+          <ul id="interactionsList" class="interaction-list">
+            <li class="empty-state">No recent activity</li>
+          </ul>
+        </div>
+
+        <!-- Raw JSON -->
+        <div class="card wide-card">
+          <h2><span class="icon">💾</span> Raw Data (JSON)</h2>
+          <div class="json-view" id="jsonOutput">
+            Click "Refresh Data" to load profile
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px">
+        <button onclick="refreshData()" style="min-width: 200px">
+          🔄 Refresh Data
+        </button>
+      </div>
     </div>
 
-    <div class="grid">
-      <!-- Overview Stats -->
-      <div class="card">
-        <h2><span class="icon">📊</span> Overview</h2>
-        <div class="stat-value" id="totalInteractions">0</div>
-        <div class="stat-label">Total Interactions</div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-        </div>
-        <p style="margin-top: 10px; font-size: 0.85rem; color: #666;">
-          <span id="progressText">No interactions yet</span>
-        </p>
-      </div>
+    <script>
+      function refreshData() {
+        const profile = localStorage.getItem("user_profile");
 
-      <!-- Quick Actions -->
-      <div class="card">
-        <h2><span class="icon">⚡</span> Quick Actions</h2>
-        <div class="button-group" style="flex-direction: column;">
-          <button onclick="window.location.href='/home'">
-            🏠 Back to Home
-          </button>
-          <button class="secondary" onclick="exportProfile()">
-            📥 Export Profile
-          </button>
-          <button class="danger" onclick="clearProfile()">
-            🗑️ Clear All Data
-          </button>
-        </div>
-      </div>
+        if (!profile) {
+          showEmptyState();
+          return;
+        }
 
-      <!-- Top Topics -->
-      <div class="card">
-        <h2>
-          <span class="icon">🏷️</span> 
-          Top Topics
-          <span class="badge" id="topicBadge">0</span>
-        </h2>
-        <div id="topicsList" class="chart-container">
-          <div class="empty-state">No topic preferences yet</div>
-        </div>
-      </div>
-
-      <!-- Top Sources -->
-      <div class="card">
-        <h2>
-          <span class="icon">📰</span> 
-          Favorite Sources
-          <span class="badge" id="sourceBadge">0</span>
-        </h2>
-        <ul id="sourcesList" class="source-list">
-          <li class="empty-state">No source preferences yet</li>
-        </ul>
-      </div>
-
-      <!-- Recent Interactions -->
-      <div class="card wide-card">
-        <h2>
-          <span class="icon">📝</span> 
-          Recent Activity
-          <span class="badge" id="activityBadge">0</span>
-        </h2>
-        <ul id="interactionsList" class="interaction-list">
-          <li class="empty-state">No recent activity</li>
-        </ul>
-      </div>
-
-      <!-- Raw JSON -->
-      <div class="card wide-card">
-        <h2><span class="icon">💾</span> Raw Data (JSON)</h2>
-        <div class="json-view" id="jsonOutput">
-          Click "Refresh Data" to load profile
-        </div>
-      </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 20px;">
-      <button onclick="refreshData()" style="min-width: 200px;">
-        🔄 Refresh Data
-      </button>
-    </div>
-  </div>
-
-  <script>
-    function refreshData() {
-      const profile = localStorage.getItem('user_profile');
-      
-      if (!profile) {
-        showEmptyState();
-        return;
+        try {
+          const data = JSON.parse(profile);
+          updateOverview(data);
+          updateTopics(data);
+          updateSources(data);
+          updateInteractions(data);
+          updateJSON(data);
+        } catch (e) {
+          console.error("Error parsing profile:", e);
+          alert("Error loading profile data");
+        }
       }
 
-      try {
-        const data = JSON.parse(profile);
-        updateOverview(data);
-        updateTopics(data);
-        updateSources(data);
-        updateInteractions(data);
-        updateJSON(data);
-      } catch (e) {
-        console.error('Error parsing profile:', e);
-        alert('Error loading profile data');
-      }
-    }
-
-    function showEmptyState() {
-      document.getElementById('totalInteractions').textContent = '0';
-      document.getElementById('progressFill').style.width = '0%';
-      document.getElementById('progressText').textContent = 'No interactions yet';
-      document.getElementById('topicBadge').textContent = '0';
-      document.getElementById('sourceBadge').textContent = '0';
-      document.getElementById('activityBadge').textContent = '0';
-      document.getElementById('topicsList').innerHTML = '<div class="empty-state">No topic preferences yet</div>';
-      document.getElementById('sourcesList').innerHTML = '<li class="empty-state">No source preferences yet</li>';
-      document.getElementById('interactionsList').innerHTML = '<li class="empty-state">No recent activity</li>';
-      document.getElementById('jsonOutput').textContent = 'No profile data found';
-    }
-
-    function updateOverview(data) {
-      const count = data.interactionHistory?.length || 0;
-      const percentage = Math.min((count / 100) * 100, 100);
-      
-      document.getElementById('totalInteractions').textContent = count;
-      document.getElementById('progressFill').style.width = percentage + '%';
-      
-      let message = '';
-      if (count === 0) message = 'Start interacting with articles to build your profile';
-      else if (count < 10) message = 'Getting started - ' + (10 - count) + ' more to unlock better recommendations';
-      else if (count < 50) message = 'Building your preferences - keep it up!';
-      else message = 'Well-established profile - excellent recommendations!';
-      
-      document.getElementById('progressText').textContent = message;
-    }
-
-    function updateTopics(data) {
-      const topics = data.topicPreferences || {};
-      const topicEntries = Object.entries(topics)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-
-      document.getElementById('topicBadge').textContent = topicEntries.length;
-
-      if (topicEntries.length === 0) {
-        document.getElementById('topicsList').innerHTML = '<div class="empty-state">No topic preferences yet</div>';
-        return;
+      function showEmptyState() {
+        document.getElementById("totalInteractions").textContent = "0";
+        document.getElementById("progressFill").style.width = "0%";
+        document.getElementById("progressText").textContent =
+          "No interactions yet";
+        document.getElementById("topicBadge").textContent = "0";
+        document.getElementById("sourceBadge").textContent = "0";
+        document.getElementById("activityBadge").textContent = "0";
+        document.getElementById("topicsList").innerHTML =
+          '<div class="empty-state">No topic preferences yet</div>';
+        document.getElementById("sourcesList").innerHTML =
+          '<li class="empty-state">No source preferences yet</li>';
+        document.getElementById("interactionsList").innerHTML =
+          '<li class="empty-state">No recent activity</li>';
+        document.getElementById("jsonOutput").textContent =
+          "No profile data found";
       }
 
-      const maxScore = topicEntries[0][1];
-      const html = '<div class="bar-chart">' + topicEntries.map(([topic, score]) => {
-        const width = (score / maxScore) * 100;
-        return `
+      function updateOverview(data) {
+        const count = data.interactionHistory?.length || 0;
+        const percentage = Math.min((count / 100) * 100, 100);
+
+        document.getElementById("totalInteractions").textContent = count;
+        document.getElementById("progressFill").style.width = percentage + "%";
+
+        let message = "";
+        if (count === 0)
+          message = "Start interacting with articles to build your profile";
+        else if (count < 10)
+          message =
+            "Getting started - " +
+            (10 - count) +
+            " more to unlock better recommendations";
+        else if (count < 50)
+          message = "Building your preferences - keep it up!";
+        else message = "Well-established profile - excellent recommendations!";
+
+        document.getElementById("progressText").textContent = message;
+      }
+
+      function updateTopics(data) {
+        const topics = data.topicPreferences || {};
+        const topicEntries = Object.entries(topics)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+
+        document.getElementById("topicBadge").textContent = topicEntries.length;
+
+        if (topicEntries.length === 0) {
+          document.getElementById("topicsList").innerHTML =
+            '<div class="empty-state">No topic preferences yet</div>';
+          return;
+        }
+
+        const maxScore = topicEntries[0][1];
+        const html =
+          '<div class="bar-chart">' +
+          topicEntries
+            .map(([topic, score]) => {
+              const width = (score / maxScore) * 100;
+              return `
           <div class="bar-item">
             <div class="bar-label">${topic}</div>
             <div class="bar" style="width: ${width}%">
@@ -525,108 +567,140 @@
             </div>
           </div>
         `;
-      }).join('') + '</div>';
+            })
+            .join("") +
+          "</div>";
 
-      document.getElementById('topicsList').innerHTML = html;
-    }
-
-    function updateSources(data) {
-      const sources = data.sourcePreferences || {};
-      const sourceEntries = Object.entries(sources)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8);
-
-      document.getElementById('sourceBadge').textContent = sourceEntries.length;
-
-      if (sourceEntries.length === 0) {
-        document.getElementById('sourcesList').innerHTML = '<li class="empty-state">No source preferences yet</li>';
-        return;
+        document.getElementById("topicsList").innerHTML = html;
       }
 
-      const html = sourceEntries.map(([source, score]) => `
+      function updateSources(data) {
+        const sources = data.sourcePreferences || {};
+        const sourceEntries = Object.entries(sources)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 8);
+
+        document.getElementById("sourceBadge").textContent =
+          sourceEntries.length;
+
+        if (sourceEntries.length === 0) {
+          document.getElementById("sourcesList").innerHTML =
+            '<li class="empty-state">No source preferences yet</li>';
+          return;
+        }
+
+        const html = sourceEntries
+          .map(
+            ([source, score]) => `
         <li class="source-item">
           <span class="topic-name">${source}</span>
           <span class="topic-score">${score.toFixed(1)}</span>
         </li>
-      `).join('');
+      `,
+          )
+          .join("");
 
-      document.getElementById('sourcesList').innerHTML = html;
-    }
-
-    function updateInteractions(data) {
-      const interactions = data.interactionHistory || [];
-      const recent = interactions.slice(-20).reverse();
-
-      document.getElementById('activityBadge').textContent = interactions.length;
-
-      if (recent.length === 0) {
-        document.getElementById('interactionsList').innerHTML = '<li class="empty-state">No recent activity</li>';
-        return;
+        document.getElementById("sourcesList").innerHTML = html;
       }
 
-      // Show loading state
-      document.getElementById('interactionsList').innerHTML = '<li class="empty-state"><span class="loading-dots">Loading article details...</span></li>';
+      function updateInteractions(data) {
+        const interactions = data.interactionHistory || [];
+        const recent = interactions.slice(-20).reverse();
 
-      // Fetch article details from API
-      fetchArticleDetails(recent).then(articlesMap => {
-        const html = recent.map(interaction => {
-          const date = new Date(interaction.timestamp);
-          const timeAgo = getTimeAgo(date);
-          const actionClass = 'action-' + interaction.action;
-          
-          let detail = '';
-          if (interaction.rating) detail = ` ⭐ ${interaction.rating}/5`;
-          if (interaction.topic) detail = ` 🏷️ ${interaction.topic}`;
+        document.getElementById("activityBadge").textContent =
+          interactions.length;
 
-          const article = articlesMap.get(interaction.articleId);
-          const articleTitle = article?.title || `Article ${interaction.articleId.substring(0, 8)}... (unavailable)`;
-          const articleSource = article?.source || 'Unknown';
-          const articleTopics = article?.topics || [];
-          const articleUrl = article ? `/articles/${interaction.articleId}` : '#';
+        if (recent.length === 0) {
+          document.getElementById("interactionsList").innerHTML =
+            '<li class="empty-state">No recent activity</li>';
+          return;
+        }
 
-          return `
+        // Show loading state
+        document.getElementById("interactionsList").innerHTML =
+          '<li class="empty-state"><span class="loading-dots">Loading article details...</span></li>';
+
+        // Fetch article details from API
+        fetchArticleDetails(recent)
+          .then((articlesMap) => {
+            const html = recent
+              .map((interaction) => {
+                const date = new Date(interaction.timestamp);
+                const timeAgo = getTimeAgo(date);
+                const actionClass = "action-" + interaction.action;
+
+                let detail = "";
+                if (interaction.rating) detail = ` ⭐ ${interaction.rating}/5`;
+                if (interaction.topic) detail = ` 🏷️ ${interaction.topic}`;
+
+                const article = articlesMap.get(interaction.articleId);
+                const articleTitle =
+                  article?.title ||
+                  `Article ${interaction.articleId.substring(0, 8)}... (unavailable)`;
+                const articleSource = article?.source || "Unknown";
+                const articleTopics = article?.topics || [];
+                const articleUrl = article
+                  ? `/articles/${interaction.articleId}`
+                  : "#";
+
+                return `
             <li class="interaction-item">
               <div class="interaction-header">
                 <span class="interaction-action ${actionClass}">${interaction.action}</span>
-                ${detail ? `<span style="font-size: 0.75rem; color: #666;">${detail}</span>` : ''}
+                ${detail ? `<span style="font-size: 0.75rem; color: #666;">${detail}</span>` : ""}
                 <span class="interaction-time" style="margin-left: auto;">${timeAgo}</span>
               </div>
-              ${article ? `
+              ${
+                article
+                  ? `
                 <a href="${articleUrl}" class="article-link">
-                  <div class="article-title">${articleTitle.length > 90 ? articleTitle.substring(0, 90) + '...' : articleTitle}</div>
+                  <div class="article-title">${articleTitle.length > 90 ? articleTitle.substring(0, 90) + "..." : articleTitle}</div>
                 </a>
-              ` : `
+              `
+                  : `
                 <div class="article-title" style="color: #999; cursor: default;">${articleTitle}</div>
-              `}
+              `
+              }
               <div class="article-meta">
                 <span>📰 ${articleSource}</span>
-                ${article?.fetchedAt ? `<span>📅 ${new Date(article.fetchedAt).toLocaleDateString()}</span>` : ''}
+                ${article?.fetchedAt ? `<span>📅 ${new Date(article.fetchedAt).toLocaleDateString()}</span>` : ""}
                 <span style="color: #ccc;">ID: ${interaction.articleId.substring(0, 12)}...</span>
               </div>
-              ${articleTopics.length > 0 ? `
+              ${
+                articleTopics.length > 0
+                  ? `
                 <div class="article-topics">
-                  ${articleTopics.slice(0, 6).map(topic => `<span class="mini-topic">${topic}</span>`).join('')}
-                  ${articleTopics.length > 6 ? `<span class="mini-topic" style="background: #667eea; color: white;">+${articleTopics.length - 6}</span>` : ''}
+                  ${articleTopics
+                    .slice(0, 6)
+                    .map((topic) => `<span class="mini-topic">${topic}</span>`)
+                    .join("")}
+                  ${articleTopics.length > 6 ? `<span class="mini-topic" style="background: #667eea; color: white;">+${articleTopics.length - 6}</span>` : ""}
                 </div>
-              ` : ''}
+              `
+                  : ""
+              }
             </li>
           `;
-        }).join('');
+              })
+              .join("");
 
-        document.getElementById('interactionsList').innerHTML = html;
-      }).catch(error => {
-        console.error('Error fetching article details:', error);
-        // Fallback to basic display
-        const html = recent.map(interaction => {
-          const date = new Date(interaction.timestamp);
-          const timeAgo = getTimeAgo(date);
-          const actionClass = 'action-' + interaction.action;
-          
-          let detail = '';
-          if (interaction.rating) detail = ` - ⭐ ${interaction.rating}/5`;
-          if (interaction.topic) detail = ` - 🏷️ ${interaction.topic}`;
+            document.getElementById("interactionsList").innerHTML = html;
+          })
+          .catch((error) => {
+            console.error("Error fetching article details:", error);
+            // Fallback to basic display
+            const html = recent
+              .map((interaction) => {
+                const date = new Date(interaction.timestamp);
+                const timeAgo = getTimeAgo(date);
+                const actionClass = "action-" + interaction.action;
 
-          return `
+                let detail = "";
+                if (interaction.rating)
+                  detail = ` - ⭐ ${interaction.rating}/5`;
+                if (interaction.topic) detail = ` - 🏷️ ${interaction.topic}`;
+
+                return `
             <li class="interaction-item">
               <div>
                 <span class="interaction-action ${actionClass}">${interaction.action}</span>
@@ -635,87 +709,99 @@
               <div class="interaction-time">${timeAgo}</div>
             </li>
           `;
-        }).join('');
+              })
+              .join("");
 
-        document.getElementById('interactionsList').innerHTML = html;
-      });
-    }
+            document.getElementById("interactionsList").innerHTML = html;
+          });
+      }
 
-    async function fetchArticleDetails(interactions) {
-      const articlesMap = new Map();
-      const articleIds = [...new Set(interactions.map(i => i.articleId))];
+      async function fetchArticleDetails(interactions) {
+        const articlesMap = new Map();
+        const articleIds = [...new Set(interactions.map((i) => i.articleId))];
 
-      // Fetch articles in parallel (max 5 at a time to avoid overloading)
-      const batchSize = 5;
-      for (let i = 0; i < articleIds.length; i += batchSize) {
-        const batch = articleIds.slice(i, i + batchSize);
-        await Promise.all(
-          batch.map(async (id) => {
-            try {
-              const response = await fetch(`http://localhost:4000/api/articles/${id}`);
-              if (response.ok) {
-                const article = await response.json();
-                articlesMap.set(id, article);
+        // Fetch articles in parallel (max 5 at a time to avoid overloading)
+        const batchSize = 5;
+        for (let i = 0; i < articleIds.length; i += batchSize) {
+          const batch = articleIds.slice(i, i + batchSize);
+          await Promise.all(
+            batch.map(async (id) => {
+              try {
+                const response = await fetch(
+                  `http://localhost:4000/api/articles/${id}`,
+                );
+                if (response.ok) {
+                  const article = await response.json();
+                  articlesMap.set(id, article);
+                }
+              } catch (e) {
+                console.warn("Failed to fetch article:", id);
               }
-            } catch (e) {
-              console.warn('Failed to fetch article:', id);
-            }
-          })
+            }),
+          );
+        }
+
+        return articlesMap;
+      }
+
+      function updateJSON(data) {
+        document.getElementById("jsonOutput").textContent = JSON.stringify(
+          data,
+          null,
+          2,
         );
       }
 
-      return articlesMap;
-    }
+      function getTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
 
-    function updateJSON(data) {
-      document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
-    }
-
-    function getTimeAgo(date) {
-      const seconds = Math.floor((new Date() - date) / 1000);
-      
-      if (seconds < 60) return 'Just now';
-      if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
-      if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
-      if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
-      return date.toLocaleDateString();
-    }
-
-    function clearProfile() {
-      if (!confirm('⚠️ This will delete all your personalization data. Are you sure?')) {
-        return;
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) return Math.floor(seconds / 60) + " minutes ago";
+        if (seconds < 86400) return Math.floor(seconds / 3600) + " hours ago";
+        if (seconds < 604800) return Math.floor(seconds / 86400) + " days ago";
+        return date.toLocaleDateString();
       }
 
-      localStorage.removeItem('user_profile');
-      alert('✅ Profile cleared! Your recommendations will reset.');
-      refreshData();
-    }
+      function clearProfile() {
+        if (
+          !confirm(
+            "⚠️ This will delete all your personalization data. Are you sure?",
+          )
+        ) {
+          return;
+        }
 
-    function exportProfile() {
-      const profile = localStorage.getItem('user_profile');
-      if (!profile) {
-        alert('No profile data to export');
-        return;
-      }
-
-      const blob = new Blob([profile], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'user-profile-' + new Date().toISOString().split('T')[0] + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // Auto-load on page load
-    refreshData();
-
-    // Auto-refresh every 5 seconds if page is visible
-    setInterval(() => {
-      if (!document.hidden) {
+        localStorage.removeItem("user_profile");
+        alert("✅ Profile cleared! Your recommendations will reset.");
         refreshData();
       }
-    }, 5000);
-  </script>
-</body>
+
+      function exportProfile() {
+        const profile = localStorage.getItem("user_profile");
+        if (!profile) {
+          alert("No profile data to export");
+          return;
+        }
+
+        const blob = new Blob([profile], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download =
+          "user-profile-" + new Date().toISOString().split("T")[0] + ".json";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // Auto-load on page load
+      refreshData();
+
+      // Auto-refresh every 5 seconds if page is visible
+      setInterval(() => {
+        if (!document.hidden) {
+          refreshData();
+        }
+      }, 5000);
+    </script>
+  </body>
 </html>

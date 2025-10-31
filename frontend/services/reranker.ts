@@ -71,7 +71,7 @@ function saveUserProfile(profile: UserProfile) {
 export function trackInteraction(
   articleId: string,
   action: UserInteraction["action"],
-  metadata?: { rating?: number; topic?: string }
+  metadata?: { rating?: number; topic?: string },
 ) {
   const profile = getUserProfile();
 
@@ -171,7 +171,7 @@ function calculateArticleScore(article: Article, profile: UserProfile): number {
   // Topic relevance
   if (article.topics && article.topics.length > 0) {
     const topicScores = article.topics.map(
-      (topic) => profile.topicPreferences[topic] || 0
+      (topic) => profile.topicPreferences[topic] || 0,
     );
     score += Math.max(...topicScores, 0);
   }

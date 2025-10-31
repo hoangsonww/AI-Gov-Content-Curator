@@ -24,6 +24,7 @@ import {
 import { fetchArticlesFromNewsAPI } from "../services/apiFetcher.service";
 import { summarizeContent } from "../services/summarization.service";
 import { extractTopics } from "../services/topicExtractor.service";
+import { upsertArticleVector } from "../services/pinecone.service";
 import logger from "../utils/logger";
 import { cleanupArticles } from "../scripts/cleanData";
 
@@ -82,6 +83,23 @@ async function upsertArticle(data: {
 
   if (res.upsertedCount) {
     logger.info(`✅ Saved: ${data.title || data.url}`);
+
+    // Sync to Pinecone asynchronously (non-blocking)
+    const insertedArticle = await Article.findOne({ url: data.url });
+    if (insertedArticle) {
+      // Fire and forget - don't await to avoid timeout
+      upsertArticleVector({
+        id: insertedArticle._id.toString(),
+        url: data.url,
+        title: data.title,
+        summary: data.summary,
+        topics: data.topics,
+        source: data.source,
+        fetchedAt: insertedArticle.fetchedAt,
+      }).catch((err) =>
+        logger.warn(`⚠ Pinecone sync failed for ${data.url}:`, err.message),
+      );
+    }
   } else {
     logger.debug(`🔄 Skipped duplicate: ${data.url}`);
   }

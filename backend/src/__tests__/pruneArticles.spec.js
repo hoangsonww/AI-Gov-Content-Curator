@@ -77,9 +77,9 @@ describe("pruneArticles", () => {
     it("should not delete any articles in dry run mode", async () => {
       mockCountDocuments
         .mockResolvedValueOnce(1000) // Total articles
-        .mockResolvedValueOnce(100)  // Old articles
-        .mockResolvedValueOnce(50)   // Low quality
-        .mockResolvedValueOnce(25);  // Orphaned
+        .mockResolvedValueOnce(100) // Old articles
+        .mockResolvedValueOnce(50) // Low quality
+        .mockResolvedValueOnce(25); // Orphaned
 
       mockAggregate.mockResolvedValue([
         {
@@ -87,9 +87,9 @@ describe("pruneArticles", () => {
           count: 2,
           docs: [
             { id: "id1", fetchedAt: new Date("2024-01-01") },
-            { id: "id2", fetchedAt: new Date("2024-01-02") }
-          ]
-        }
+            { id: "id2", fetchedAt: new Date("2024-01-02") },
+          ],
+        },
       ]);
 
       const stats = await pruneArticles(true);
@@ -106,8 +106,8 @@ describe("pruneArticles", () => {
     it("should count documents for each phase in dry run", async () => {
       mockCountDocuments
         .mockResolvedValueOnce(500) // Total articles
-        .mockResolvedValueOnce(75)  // Old articles
-        .mockResolvedValueOnce(30)  // Low quality
+        .mockResolvedValueOnce(75) // Old articles
+        .mockResolvedValueOnce(30) // Low quality
         .mockResolvedValueOnce(10); // Orphaned
 
       mockAggregate.mockResolvedValue([]); // No duplicates
@@ -126,7 +126,7 @@ describe("pruneArticles", () => {
       mockDeleteMany
         .mockResolvedValueOnce({ deletedCount: 60 }) // Old articles
         .mockResolvedValueOnce({ deletedCount: 25 }) // Low quality
-        .mockResolvedValueOnce({ deletedCount: 8 });  // Orphaned
+        .mockResolvedValueOnce({ deletedCount: 8 }); // Orphaned
 
       const stats = await pruneArticles(false);
 
@@ -148,17 +148,17 @@ describe("pruneArticles", () => {
           docs: [
             { id: "newest", fetchedAt: new Date("2024-03-01") },
             { id: "middle", fetchedAt: new Date("2024-02-01") },
-            { id: "oldest", fetchedAt: new Date("2024-01-01") }
-          ]
+            { id: "oldest", fetchedAt: new Date("2024-01-01") },
+          ],
         },
         {
           _id: "http://duplicate2.com",
           count: 2,
           docs: [
             { id: "newer", fetchedAt: new Date("2024-02-15") },
-            { id: "older", fetchedAt: new Date("2024-01-15") }
-          ]
-        }
+            { id: "older", fetchedAt: new Date("2024-01-15") },
+          ],
+        },
       ]);
 
       mockDeleteMany
@@ -173,10 +173,10 @@ describe("pruneArticles", () => {
 
       // Should delete the older duplicates, keeping the newest
       expect(mockDeleteMany).toHaveBeenNthCalledWith(1, {
-        _id: { $in: ["middle", "oldest"] }
+        _id: { $in: ["middle", "oldest"] },
       });
       expect(mockDeleteMany).toHaveBeenNthCalledWith(2, {
-        _id: { $in: ["older"] }
+        _id: { $in: ["older"] },
       });
     });
   });
@@ -189,8 +189,8 @@ describe("pruneArticles", () => {
       await pruneArticles(false);
 
       // Check that deleteMany was called with correct old articles criteria
-      const oldArticlesCriteria = mockDeleteMany.mock.calls.find(call =>
-        call[0].fetchedAt && call[0].$or
+      const oldArticlesCriteria = mockDeleteMany.mock.calls.find(
+        (call) => call[0].fetchedAt && call[0].$or,
       );
 
       expect(oldArticlesCriteria).toBeTruthy();
@@ -200,8 +200,8 @@ describe("pruneArticles", () => {
           { summary: { $exists: false } },
           { summary: "" },
           { topics: { $size: 0 } },
-          { content: { $regex: /^.{0,500}$/s } }
-        ]
+          { content: { $regex: /^.{0,500}$/s } },
+        ],
       });
     });
 
@@ -216,12 +216,20 @@ describe("pruneArticles", () => {
       const lowQualityCall = mockDeleteMany.mock.calls[1];
 
       expect(lowQualityCall).toBeTruthy();
-      expect(lowQualityCall[0].$or).toContainEqual({ content: { $exists: false } });
+      expect(lowQualityCall[0].$or).toContainEqual({
+        content: { $exists: false },
+      });
       expect(lowQualityCall[0].$or).toContainEqual({ content: "" });
-      expect(lowQualityCall[0].$or).toContainEqual({ content: { $regex: /^.{0,299}$/s } });
-      expect(lowQualityCall[0].$or).toContainEqual({ title: { $exists: false } });
+      expect(lowQualityCall[0].$or).toContainEqual({
+        content: { $regex: /^.{0,299}$/s },
+      });
+      expect(lowQualityCall[0].$or).toContainEqual({
+        title: { $exists: false },
+      });
       expect(lowQualityCall[0].$or).toContainEqual({ title: "" });
-      expect(lowQualityCall[0].$or).toContainEqual({ title: { $regex: /^.{0,9}$/s } });
+      expect(lowQualityCall[0].$or).toContainEqual({
+        title: { $regex: /^.{0,9}$/s },
+      });
     });
 
     it("should use correct criteria for orphaned articles", async () => {
@@ -237,13 +245,18 @@ describe("pruneArticles", () => {
       expect(orphanedCall).toBeTruthy();
       expect(orphanedCall[0].$or).toContainEqual({ url: { $exists: false } });
       expect(orphanedCall[0].$or).toContainEqual({ url: "" });
-      expect(orphanedCall[0].$or).toContainEqual({ source: { $exists: false } });
+      expect(orphanedCall[0].$or).toContainEqual({
+        source: { $exists: false },
+      });
       expect(orphanedCall[0].$or).toContainEqual({ source: "" });
-      expect(orphanedCall[0].$or).toContainEqual({ fetchedAt: { $exists: false } });
+      expect(orphanedCall[0].$or).toContainEqual({
+        fetchedAt: { $exists: false },
+      });
       expect(orphanedCall[0].$or).toContainEqual({
         url: {
-          $regex: /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot|json|xml|webmanifest|pdf|zip|gz)$/i
-        }
+          $regex:
+            /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot|json|xml|webmanifest|pdf|zip|gz)$/i,
+        },
       });
     });
   });
@@ -252,9 +265,9 @@ describe("pruneArticles", () => {
     it("should calculate correct statistics", async () => {
       mockCountDocuments
         .mockResolvedValueOnce(1500) // Total
-        .mockResolvedValueOnce(200)  // Old
-        .mockResolvedValueOnce(100)  // Low quality
-        .mockResolvedValueOnce(50);  // Orphaned
+        .mockResolvedValueOnce(200) // Old
+        .mockResolvedValueOnce(100) // Low quality
+        .mockResolvedValueOnce(50); // Orphaned
 
       mockAggregate.mockResolvedValue([
         {
@@ -262,9 +275,9 @@ describe("pruneArticles", () => {
           count: 2,
           docs: [
             { id: "id1", fetchedAt: new Date("2024-02-01") },
-            { id: "id2", fetchedAt: new Date("2024-01-01") }
-          ]
-        }
+            { id: "id2", fetchedAt: new Date("2024-01-01") },
+          ],
+        },
       ]);
 
       const stats = await pruneArticles(true);
@@ -280,9 +293,9 @@ describe("pruneArticles", () => {
     it("should handle zero results correctly", async () => {
       mockCountDocuments
         .mockResolvedValueOnce(100) // Total
-        .mockResolvedValueOnce(0)   // Old
-        .mockResolvedValueOnce(0)   // Low quality
-        .mockResolvedValueOnce(0);  // Orphaned
+        .mockResolvedValueOnce(0) // Old
+        .mockResolvedValueOnce(0) // Low quality
+        .mockResolvedValueOnce(0); // Orphaned
 
       mockAggregate.mockResolvedValue([]); // No duplicates
 
@@ -333,12 +346,21 @@ describe("pruneArticles", () => {
 
       // Check that the cutoff dates are calculated correctly
       // 90 days ago from mock date should be around Dec 15, 2023
-      const expectedDate90 = new Date(mockDate.getTime() - (90 * 24 * 60 * 60 * 1000));
-      const expectedDate30 = new Date(mockDate.getTime() - (30 * 24 * 60 * 60 * 1000));
+      const expectedDate90 = new Date(
+        mockDate.getTime() - 90 * 24 * 60 * 60 * 1000,
+      );
+      const expectedDate30 = new Date(
+        mockDate.getTime() - 30 * 24 * 60 * 60 * 1000,
+      );
 
       // Verify old articles criteria uses 90-day cutoff
-      const oldCall = mockDeleteMany.mock.calls.find(call => call[0].fetchedAt);
-      expect(oldCall[0].fetchedAt.$lt.getTime()).toBeCloseTo(expectedDate90.getTime(), -1000);
+      const oldCall = mockDeleteMany.mock.calls.find(
+        (call) => call[0].fetchedAt,
+      );
+      expect(oldCall[0].fetchedAt.$lt.getTime()).toBeCloseTo(
+        expectedDate90.getTime(),
+        -1000,
+      );
 
       Date.now = originalDateNow;
     });

@@ -11,7 +11,9 @@
     "test:watch": "jest --config jest.config.js --watch",
     "test:coverage": "jest --config jest.config.js --coverage",
     "prune-articles": "ts-node src/scripts/pruneArticles.ts",
-    "prune-articles:live": "ts-node src/scripts/pruneArticles.ts --live --force"
+    "prune-articles:live": "ts-node src/scripts/pruneArticles.ts --live --force",
+    "sync-pinecone": "ts-node src/scripts/vectorizeArticles.ts",
+    "sync-missing-vectors": "ts-node src/scripts/syncMissingVectors.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

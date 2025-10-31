@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Article } from "../pages/home";
-import ArticleList from "./ArticleList";
+import ArticleCarousel from "./ArticleCarousel";
 import { getArticles, getTotalArticles } from "../services/api";
+import { MdExpandMore } from "react-icons/md";
 
 export default function AllArticles() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -34,7 +35,7 @@ export default function AllArticles() {
   };
 
   const fetchTotalArticles = async () => {
-    const total = await getTotalArticles(); // Calling helper from api.ts
+    const total = await getTotalArticles();
     console.log(total);
     setTotalArticles(total);
   };
@@ -45,14 +46,24 @@ export default function AllArticles() {
     await fetchArticles(nextPage);
   };
 
+  const splitIntoCarousels = (items: Article[]) => {
+    const carousels: Article[][] = [];
+    const itemsPerCarousel = 6;
+
+    for (let i = 0; i < items.length; i += itemsPerCarousel) {
+      carousels.push(items.slice(i, i + itemsPerCarousel));
+    }
+
+    return carousels;
+  };
+
+  const carouselGroups = splitIntoCarousels(articles);
+
   return (
-    <div style={{ marginTop: "2rem" }}>
+    <div className="all-articles-section">
       <h1
         className="page-title"
-        style={{
-          fontSize: "2rem",
-          textAlign: "center",
-        }}
+        style={{ fontSize: "2rem", textAlign: "center" }}
       >
         All Articles 📚
       </h1>
@@ -62,13 +73,17 @@ export default function AllArticles() {
       >
         Browse everything we've collected, summarized, and saved for you.
       </p>
-      <ArticleList articles={articles} loading={loading} />
 
-      {hasMore && !loading && (
-        <button className="load-more-btn" onClick={handleLoadMore}>
-          Load More
-        </button>
-      )}
+      <div className="all-articles-carousels">
+        {carouselGroups.map((group, index) => (
+          <ArticleCarousel
+            key={`carousel-${index}`}
+            articles={group}
+            autoRotateInterval={3000}
+            direction={index % 2 === 0 ? "left" : "right"}
+          />
+        ))}
+      </div>
 
       {loading && (
         <div style={{ textAlign: "center", padding: "1rem 0" }}>
@@ -76,13 +91,18 @@ export default function AllArticles() {
         </div>
       )}
 
-      {!hasMore && (
+      {hasMore && !loading && (
+        <button className="load-more-btn" onClick={handleLoadMore}>
+          Load More <MdExpandMore size={20} />
+        </button>
+      )}
+
+      {!hasMore && articles.length > 0 && (
         <p className="fade-down" style={{ textAlign: "center" }}>
           No more articles to load. More articles coming soon! 🚀
         </p>
       )}
 
-      {/* Displaying article range */}
       {totalArticles !== null && articles.length > 0 && (
         <p
           style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}
@@ -94,6 +114,45 @@ export default function AllArticles() {
           of <strong>{totalArticles}</strong>
         </p>
       )}
+
+      <style>{`
+        .all-articles-section {
+          margin-top: 2rem;
+        }
+
+        .all-articles-carousels {
+          margin-bottom: 2rem;
+        }
+
+        .load-more-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin: 2rem auto;
+          padding: 0.75rem 2rem;
+          background: var(--accent-color);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 1rem;
+          font-weight: 600;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .load-more-btn:hover {
+          background: color-mix(in srgb, var(--accent-color) 80%, black);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .load-more-btn:active {
+          transform: translateY(0);
+        }
+      `}</style>
     </div>
   );
 }

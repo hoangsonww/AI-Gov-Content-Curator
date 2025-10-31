@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import { MdArticle } from "react-icons/md";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { BASE_URL } from "../services/api";
@@ -67,22 +71,27 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
     return text.substring(0, maxLength).trim() + "...";
   };
 
+  const handleTopicClick = (e: React.MouseEvent, topic: string) => {
+    e.stopPropagation();
+    window.location.href = `/home?topic=${encodeURIComponent(topic)}`;
+  };
+
+  const getVisibleTopics = (topics: string[]) => {
+    if (!topics || topics.length === 0) return [];
+    const maxTopics = 5;
+    return topics.slice(0, maxTopics);
+  };
+
   if (loading) {
     return (
       <div className="related-articles-section">
-        <div className="loading-skeleton">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton-card">
-              <div className="skeleton-title"></div>
-              <div className="skeleton-text"></div>
-              <div className="skeleton-text"></div>
-              <div className="skeleton-text short"></div>
-              <div className="skeleton-badges">
-                <div className="skeleton-badge"></div>
-                <div className="skeleton-badge"></div>
-              </div>
-            </div>
-          ))}
+        <h2 className="related-articles-title">
+          <MdArticle className="title-icon" />
+          Related Articles
+        </h2>
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Finding related articles...</p>
         </div>
       </div>
     );
@@ -132,29 +141,43 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
               <div key={article._id} className="carousel-slide">
                 <div
                   className="related-card"
-                  onClick={() => (window.location.href = `/articles/${article._id}`)}
+                  onClick={() =>
+                    (window.location.href = `/articles/${article._id}`)
+                  }
                 >
                   <h3 className="related-card-title">{article.title}</h3>
 
                   {article.summary && (
                     <div className="related-card-summary">
-                      <p>{truncateSummary(article.summary)}</p>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeKatex]}
+                      >
+                        {truncateSummary(article.summary)}
+                      </ReactMarkdown>
                     </div>
                   )}
 
                   {article.topics && article.topics.length > 0 && (
                     <div className="related-card-topics">
-                      {article.topics.slice(0, 3).map((topic, idx) => (
-                        <span key={idx} className="related-topic-badge">
+                      {getVisibleTopics(article.topics).map((topic, idx) => (
+                        <span
+                          key={idx}
+                          className="related-topic-badge related-topic-badge-clickable"
+                          onClick={(e) => handleTopicClick(e, topic)}
+                        >
                           {topic}
                         </span>
                       ))}
+                      {article.topics.length > 5 && (
+                        <span className="related-topic-badge related-topic-more">
+                          +{article.topics.length - 5}
+                        </span>
+                      )}
                     </div>
                   )}
 
-                  <div className="related-card-readmore">
-                    Read More →
-                  </div>
+                  <div className="related-card-readmore">Read More →</div>
                 </div>
               </div>
             ))}
@@ -232,13 +255,14 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
         }
 
         .related-card-summary {
-          flex: 1;
+          flex: 1 1 auto;
           margin: 0 0 0.75rem 0;
           overflow: hidden;
           display: -webkit-box;
           -webkit-line-clamp: 4;
           -webkit-box-orient: vertical;
           text-overflow: ellipsis;
+          min-height: 0;
         }
 
         .related-card-summary p {
@@ -249,6 +273,28 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           margin: 0;
         }
 
+        .related-card-summary ul,
+        .related-card-summary ol {
+          padding-left: 1.2em;
+          margin: 0.3em 0;
+          font-size: 0.9rem;
+        }
+
+        .related-card-summary li {
+          margin: 0.2em 0;
+        }
+
+        .related-card-summary code {
+          background: var(--card-border);
+          padding: 0.1em 0.3em;
+          border-radius: 3px;
+          font-size: 0.85em;
+        }
+
+        .related-card-summary strong {
+          font-weight: 600;
+        }
+
         .related-card-topics {
           display: flex;
           gap: 0.4rem;
@@ -256,9 +302,9 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           margin: 0;
           margin-top: auto;
           padding-top: 0.5rem;
-          min-height: 32px;
-          max-height: 64px;
           overflow: hidden;
+          flex-shrink: 0;
+          max-height: 64px;
         }
 
         .related-topic-badge {
@@ -268,6 +314,31 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           border-radius: 4px;
           font-size: 0.75rem;
           font-weight: 500;
+          white-space: nowrap;
+          flex-shrink: 0;
+          max-width: 200px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .related-topic-badge-clickable {
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .related-topic-more {
+          cursor: default;
+          opacity: 0.8;
+        }
+
+        .related-topic-badge-clickable:hover {
+          background: var(--navbar-text);
+          opacity: 1;
+        }
+
+        .related-topic-more:hover {
+          background: var(--accent-color);
+          opacity: 0.8;
         }
 
         .dark .related-topic-badge {
@@ -285,6 +356,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           color: var(--accent-color);
           font-size: 0.9rem;
           font-weight: 500;
+          flex-shrink: 0;
         }
 
         .loading-skeleton {

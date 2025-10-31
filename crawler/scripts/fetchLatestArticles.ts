@@ -311,20 +311,25 @@ async function ingest(url: string, browser: Browser) {
     );
     console.log("✓", url);
 
-    if (result.upsertedCount > 0 && result.upsertedId) {
-      setImmediate(() => {
-        upsertArticleVector({
-          id: result.upsertedId._id.toString(),
-          url,
-          title: art.title,
-          summary,
-          topics,
-          source: new URL(url).hostname,
-          fetchedAt: new Date(),
-        }).catch((err) =>
-          console.warn("⚠ Pinecone vectorization failed:", url, err.message),
-        );
-      });
+    // Sync to Pinecone - check if new article was inserted
+    if (result.upsertedCount > 0) {
+      // Fetch the newly created article to get its ID
+      const insertedArticle = await Article.findOne({ url });
+      if (insertedArticle) {
+        setImmediate(() => {
+          upsertArticleVector({
+            id: insertedArticle._id.toString(),
+            url,
+            title: art.title,
+            summary,
+            topics,
+            source: new URL(url).hostname,
+            fetchedAt: new Date(),
+          }).catch((err) =>
+            console.warn("⚠ Pinecone vectorization failed:", url, err.message),
+          );
+        });
+      }
     }
   } catch (e: any) {
     console.warn("⚠", url, e.message);
