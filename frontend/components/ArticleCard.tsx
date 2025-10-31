@@ -99,6 +99,11 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     window.location.href = `/articles/${article._id}`;
   };
 
+  const handleTopicClick = (e: React.MouseEvent, topic: string) => {
+    e.stopPropagation();
+    window.location.href = `/home?topic=${encodeURIComponent(topic)}`;
+  };
+
   return (
     <>
       <div
@@ -122,7 +127,11 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         {topTopics.length > 0 && (
           <div className="article-topics">
             {topTopics.map((topic, idx) => (
-              <span key={idx} className="topic-badge">
+              <span
+                key={idx}
+                className="topic-badge topic-badge-clickable"
+                onClick={(e) => handleTopicClick(e, topic)}
+              >
                 {topic}
               </span>
             ))}

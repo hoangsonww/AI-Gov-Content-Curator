@@ -1,6 +1,6 @@
 import React from "react";
 import { Article } from "../pages/home";
-import ArticleList from "./ArticleList";
+import ArticleCarousel from "./ArticleCarousel";
 
 interface LatestArticlesProps {
   articles: Article[];
@@ -25,6 +25,26 @@ export default function LatestArticles({
     return <div className="error-message">No latest articles found.</div>;
   }
 
-  // 3) Otherwise render the list
-  return <ArticleList articles={articles} />;
+  // 3) Split articles into two groups for two carousels
+  const midPoint = Math.ceil(articles.length / 2);
+  const firstHalf = articles.slice(0, midPoint);
+  const secondHalf = articles.slice(midPoint);
+
+  // 4) Render two carousels rotating in different directions
+  return (
+    <div className="latest-articles-carousels">
+      <ArticleCarousel
+        articles={firstHalf}
+        autoRotateInterval={3000}
+        direction="left"
+      />
+      {secondHalf.length > 0 && (
+        <ArticleCarousel
+          articles={secondHalf}
+          autoRotateInterval={3000}
+          direction="right"
+        />
+      )}
+    </div>
+  );
 }

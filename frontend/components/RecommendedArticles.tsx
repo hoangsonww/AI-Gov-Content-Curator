@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Article } from "../pages/home";
-import ArticleList from "./ArticleList";
+import ArticleCarousel from "./ArticleCarousel";
 import { rerankArticles, getTopTopics } from "../services/reranker";
 
 interface RecommendedArticlesProps {
   allArticles: Article[];
 }
 
-export default function RecommendedArticles({ allArticles }: RecommendedArticlesProps) {
+export default function RecommendedArticles({
+  allArticles,
+}: RecommendedArticlesProps) {
   const [recommendedArticles, setRecommendedArticles] = useState<Article[]>([]);
   const [topTopics, setTopTopics] = useState<string[]>([]);
   const [hasInteractions, setHasInteractions] = useState(false);
@@ -23,7 +25,8 @@ export default function RecommendedArticles({ allArticles }: RecommendedArticles
     if (profile) {
       try {
         const parsed = JSON.parse(profile);
-        hasHistory = parsed.interactionHistory && parsed.interactionHistory.length > 0;
+        hasHistory =
+          parsed.interactionHistory && parsed.interactionHistory.length > 0;
       } catch (e) {
         hasHistory = false;
       }
@@ -76,7 +79,11 @@ export default function RecommendedArticles({ allArticles }: RecommendedArticles
         )}
       </div>
 
-      <ArticleList articles={recommendedArticles} />
+      <ArticleCarousel
+        articles={recommendedArticles}
+        autoRotateInterval={3000}
+        direction="left"
+      />
 
       <style>{`
         .recommended-articles-section {

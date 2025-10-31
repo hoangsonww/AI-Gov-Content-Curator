@@ -38,7 +38,9 @@
   padding: 1rem;
   margin-bottom: 1rem;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .article-card:hover {
@@ -80,6 +82,16 @@
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+.topic-badge-clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.topic-badge-clickable:hover {
+  background: var(--navbar-text);
+  opacity: 1;
 }
 
 .dark .topic-badge {

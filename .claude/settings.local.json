@@ -1,10 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(npx ts-node:*)",
-      "Bash(npm run:*)",
-      "Bash(npm test:*)"
-    ],
+    "allow": ["Bash(npx ts-node:*)", "Bash(npm run:*)", "Bash(npm test:*)"],
     "deny": [],
     "ask": []
   }

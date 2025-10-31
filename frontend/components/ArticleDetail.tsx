@@ -54,12 +54,12 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       await toggleFavoriteArticle(token, article._id);
       const newFavStatus = !isFavorited;
       setIsFavorited(newFavStatus);
-      
+
       // Track favorite interaction
       if (newFavStatus) {
         trackInteraction(article._id, "favorite");
       }
-      
+
       toast(`Article ${isFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
     } catch (error) {
       console.error("Error toggling favorite", error);
