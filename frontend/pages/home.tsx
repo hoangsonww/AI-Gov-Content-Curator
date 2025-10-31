@@ -6,6 +6,7 @@ import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 import ArticleSearch from "../components/ArticleSearch";
 import TopicDropdown from "../components/TopicDropdown";
+import RecommendedArticles from "../components/RecommendedArticles";
 import { getTopArticles, getLatestArticles } from "../services/api";
 
 export interface Article {
@@ -83,6 +84,7 @@ export default function HomePage({
             }}
             className="search-input"
           />
+          {/* @ts-ignore */}
           <TopicDropdown
             selectedTopic={selectedTopic}
             onChange={(topic) => {
@@ -98,6 +100,7 @@ export default function HomePage({
           />
         </div>
         {isSearchActive ? (
+          // @ts-ignore
           <ArticleSearch
             query={searchQuery}
             topic={selectedTopic}
@@ -114,6 +117,10 @@ export default function HomePage({
             </p>
             <div className="latest-articles-container">
               <LatestArticles articles={latestArticles} />
+            </div>
+            <hr style={{ margin: "2rem 0" }} />
+            <div className="recommended-articles-container">
+              <RecommendedArticles allArticles={topArticles} />
             </div>
             <hr style={{ margin: "2rem 0" }} />
             <div className="all-articles-container">

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import RatingSection from "../../components/RatingSection";
 import BiasAnalysisSection from "../../components/BiasAnalysis";
 import RelatedArticles from "../../components/RelatedArticles";
 import { getArticleById } from "../../services/api";
+import { trackInteraction } from "../../services/reranker";
 
 interface ArticlePageProps {
   article: Article;
@@ -35,6 +36,13 @@ const buttonItem: Variants = {
 
 export default function ArticlePage({ article }: ArticlePageProps) {
   const [copied, setCopied] = useState(false);
+
+  // Track article view
+  useEffect(() => {
+    if (article?._id) {
+      trackInteraction(article._id, "view");
+    }
+  }, [article?._id]);
 
   const copyAll = useCallback(() => {
     const parts = [

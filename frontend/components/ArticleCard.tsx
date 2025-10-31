@@ -181,7 +181,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       </div>
 
       {/* Spinner styles */}
-      <style jsx>{`
+      <style>{`
         .fav-spinner {
           width: 20px;
           height: 20px;

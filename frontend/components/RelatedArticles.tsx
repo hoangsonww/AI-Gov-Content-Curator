@@ -149,10 +149,11 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
         </div>
       </div>
 
-      <style jsx global>{`
+      <style>{`
         .related-articles-section {
           margin: 2.5rem 0;
           padding: 0;
+          padding-top: 15px;
         }
 
         .related-articles-title {
@@ -164,6 +165,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
 
         .carousel-wrapper {
           margin: 0 -0.5rem;
+          padding-top: 10px;
         }
 
         .carousel-slide {
@@ -177,22 +179,22 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           border: 1px solid var(--card-border);
           border-radius: 6px;
           padding: 1rem;
-          height: 320px;
+          height: 380px;
           display: flex;
           flex-direction: column;
           cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          transition: box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
         .related-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          border-color: var(--accent-color);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
         .related-card-title {
           font-size: 1.1rem;
           font-weight: 600;
-          margin: 0 0 0.75rem 0;
+          margin: 0 0 0.5rem 0;
           color: var(--text-color);
           line-height: 1.4;
           height: 3em;
@@ -204,8 +206,11 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
 
         .related-card-summary {
           flex: 1;
-          margin: 0.5rem 0;
+          margin: 0 0 0.75rem 0;
           overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
         }
 
         .related-card-summary p {
@@ -220,8 +225,12 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           display: flex;
           gap: 0.4rem;
           flex-wrap: wrap;
-          margin: 0.75rem 0;
-          min-height: 28px;
+          margin: 0;
+          margin-top: auto;
+          padding-top: 0.5rem;
+          min-height: 32px;
+          max-height: 64px;
+          overflow: hidden;
         }
 
         .related-topic-badge {
@@ -242,8 +251,9 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           display: inline-flex;
           align-items: center;
           gap: 0.3rem;
-          margin-top: auto;
+          margin-top: 0.5rem;
           padding-top: 0.5rem;
+          border-top: 1px solid var(--card-border);
           color: var(--accent-color);
           font-size: 0.9rem;
           font-weight: 500;
@@ -280,80 +290,165 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
         /* Carousel Navigation Arrows */
         .related-articles-section :global(.slick-prev),
         .related-articles-section :global(.slick-next) {
-          width: 40px;
-          height: 40px;
+          width: 48px;
+          height: 48px;
           z-index: 10;
+          background: var(--card-bg);
+          border: 2px solid var(--accent-color);
+          border-radius: 50%;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+        }
+
+        .related-articles-section :global(.slick-prev:hover),
+        .related-articles-section :global(.slick-next:hover) {
+          background: var(--accent-color);
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
         .related-articles-section :global(.slick-prev) {
-          left: -45px;
+          left: -55px;
         }
 
         .related-articles-section :global(.slick-next) {
-          right: -45px;
+          right: -55px;
         }
 
         .related-articles-section :global(.slick-prev:before),
         .related-articles-section :global(.slick-next:before) {
-          font-size: 40px;
+          font-size: 20px;
           color: var(--accent-color);
-          opacity: 0.8;
+          opacity: 1;
+          font-weight: bold;
         }
 
         .related-articles-section :global(.slick-prev:hover:before),
         .related-articles-section :global(.slick-next:hover:before) {
-          opacity: 1;
+          color: white;
+        }
+
+        .related-articles-section :global(.slick-disabled) {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+
+        .related-articles-section :global(.slick-disabled:hover) {
+          background: var(--card-bg);
+          transform: none;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         /* Carousel Dots */
         .related-articles-section :global(.slick-dots) {
-          bottom: -40px;
+          bottom: -45px;
+          display: flex !important;
+          justify-content: center;
+          align-items: center;
+          gap: 8px;
+          padding: 0;
+          margin: 0;
+          list-style: none;
+        }
+
+        .related-articles-section :global(.slick-dots li) {
+          width: auto;
+          height: auto;
+          margin: 0;
+        }
+
+        .related-articles-section :global(.slick-dots li button) {
+          width: 12px;
+          height: 12px;
+          padding: 0;
+          background: var(--card-border);
+          border-radius: 50%;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
         }
 
         .related-articles-section :global(.slick-dots li button:before) {
-          font-size: 10px;
-          color: var(--accent-color);
-          opacity: 0.5;
+          content: '';
+          display: none;
         }
 
-        .related-articles-section :global(.slick-dots li.slick-active button:before) {
+        .related-articles-section :global(.slick-dots li button:hover) {
+          background: var(--accent-color);
+          opacity: 0.7;
+          transform: scale(1.2);
+        }
+
+        .related-articles-section :global(.slick-dots li.slick-active button) {
+          width: 32px;
+          border-radius: 6px;
+          background: var(--accent-color);
           opacity: 1;
+        }
+
+        .related-articles-section :global(.slick-dots li.slick-active button:hover) {
+          transform: scale(1.05);
         }
 
         /* Mobile adjustments */
         @media (max-width: 1024px) {
           .related-articles-section :global(.slick-prev) {
-            left: -30px;
+            left: -40px;
           }
 
           .related-articles-section :global(.slick-next) {
-            right: -30px;
+            right: -40px;
+          }
+
+          .related-articles-section :global(.slick-prev),
+          .related-articles-section :global(.slick-next) {
+            width: 40px;
+            height: 40px;
           }
         }
 
         @media (max-width: 640px) {
           .related-card {
             height: auto;
-            min-height: 280px;
+            min-height: 320px;
+          }
+
+          .related-card-summary {
+            -webkit-line-clamp: 3;
           }
 
           .related-articles-section :global(.slick-prev) {
-            left: -10px;
+            left: 5px;
           }
 
           .related-articles-section :global(.slick-next) {
-            right: -10px;
+            right: 5px;
           }
 
           .related-articles-section :global(.slick-prev),
           .related-articles-section :global(.slick-next) {
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
           }
 
           .related-articles-section :global(.slick-prev:before),
           .related-articles-section :global(.slick-next:before) {
-            font-size: 30px;
+            font-size: 18px;
+          }
+
+          .related-articles-section :global(.slick-dots) {
+            bottom: -35px;
+          }
+
+          .related-articles-section :global(.slick-dots li button) {
+            width: 8px;
+            height: 8px;
+          }
+
+          .related-articles-section :global(.slick-dots li.slick-active button) {
+            width: 24px;
           }
         }
       `}</style>

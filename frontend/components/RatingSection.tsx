@@ -18,6 +18,7 @@ import {
   Rating,
   RatingStats,
 } from "../services/ratings";
+import { trackInteraction } from "../services/reranker";
 
 interface RatingSectionProps {
   articleId: string;
@@ -97,6 +98,9 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
         setUserRating(result.data || null);
         setIsEditing(false);
         setShowComment(false);
+
+        // Track rating interaction
+        trackInteraction(articleId, "rate", { rating: value });
 
         // Refresh stats
         const newStats = await getArticleRatingStats(articleId);

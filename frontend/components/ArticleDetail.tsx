@@ -12,6 +12,7 @@ import {
 } from "../services/api";
 import { Article } from "../pages/home";
 import { toast } from "react-toastify";
+import { trackInteraction } from "../services/reranker";
 
 interface ArticleDetailProps {
   article: Article;
@@ -51,7 +52,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     setLoading(true);
     try {
       await toggleFavoriteArticle(token, article._id);
-      setIsFavorited((prev) => !prev);
+      const newFavStatus = !isFavorited;
+      setIsFavorited(newFavStatus);
+      
+      // Track favorite interaction
+      if (newFavStatus) {
+        trackInteraction(article._id, "favorite");
+      }
+      
       toast(`Article ${isFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
     } catch (error) {
       console.error("Error toggling favorite", error);
@@ -62,6 +70,8 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   };
 
   const handleTopicClick = (topic: string) => {
+    // Track topic click
+    trackInteraction(article._id, "click_topic", { topic });
     router.push(`/home?topic=${encodeURIComponent(topic)}`);
   };
 
@@ -97,9 +107,11 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           rehypePlugins={[rehypeKatex]}
           components={{
             p: ({ node, ...props }) => (
+              // @ts-ignore
               <p style={{ margin: 0, lineHeight: "1.5" }} {...props} />
             ),
             ul: ({ node, ...props }) => (
+              // @ts-ignore
               <ul
                 style={{
                   paddingLeft: "1.5em",
@@ -111,6 +123,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               />
             ),
             ol: ({ node, ...props }) => (
+              // @ts-ignore
               <ol
                 style={{
                   paddingLeft: "1.5em",
@@ -122,10 +135,12 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               />
             ),
             li: ({ node, ...props }) => (
+              // @ts-ignore
               <li style={{ margin: 0, lineHeight: "1.4" }} {...props} />
             ),
             table: ({ node, ...props }) => (
               <div style={{ overflowX: "auto" }}>
+                {/* @ts-ignore */}
                 <table
                   style={{ width: "100%", borderCollapse: "collapse" }}
                   {...props}
@@ -133,6 +148,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               </div>
             ),
             th: ({ node, ...props }) => (
+              // @ts-ignore
               <th
                 style={{
                   border: "1px solid #ccc",
@@ -143,12 +159,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               />
             ),
             td: ({ node, ...props }) => (
+              // @ts-ignore
               <td
                 style={{ border: "1px solid #ccc", padding: "0.5em" }}
                 {...props}
               />
             ),
             pre: ({ node, ...props }) => (
+              // @ts-ignore
               <pre
                 style={{
                   background: "#f6f8fa",
@@ -229,7 +247,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         </button>
       )}
 
-      <style jsx>{`
+      <style>{`
         .fav-spinner {
           width: 20px;
           height: 20px;

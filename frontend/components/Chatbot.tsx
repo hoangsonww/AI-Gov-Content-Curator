@@ -280,6 +280,7 @@ export default function Chatbot({ article }: { article: Article }) {
                               rehypePlugins={[rehypeKatex]}
                               components={{
                                 a: (props) => (
+                                  // @ts-ignore
                                   <a
                                     {...props}
                                     target="_blank"
@@ -287,12 +288,14 @@ export default function Chatbot({ article }: { article: Article }) {
                                   />
                                 ),
                                 p: ({ node, ...props }) => (
+                                  // @ts-ignore
                                   <p
                                     style={{ margin: "0", lineHeight: "1.5" }}
                                     {...props}
                                   />
                                 ),
                                 ul: ({ node, ...props }) => (
+                                  // @ts-ignore
                                   <ul
                                     style={{
                                       paddingLeft: "1.5em",
@@ -306,6 +309,7 @@ export default function Chatbot({ article }: { article: Article }) {
                                   />
                                 ),
                                 ol: ({ node, ...props }) => (
+                                  // @ts-ignore
                                   <ol
                                     style={{
                                       paddingLeft: "1.5em",
@@ -319,6 +323,7 @@ export default function Chatbot({ article }: { article: Article }) {
                                   />
                                 ),
                                 li: ({ node, ...props }) => (
+                                  // @ts-ignore
                                   <li
                                     style={{
                                       margin: 0,
@@ -330,6 +335,7 @@ export default function Chatbot({ article }: { article: Article }) {
                                 ),
                                 table: ({ node, ...props }) => (
                                   <div style={{ overflowX: "auto", margin: 0 }}>
+                                    {/* @ts-ignore */}
                                     <table
                                       style={{
                                         width: "100%",
@@ -340,6 +346,7 @@ export default function Chatbot({ article }: { article: Article }) {
                                   </div>
                                 ),
                                 th: ({ node, ...props }) => (
+                                  // @ts-ignore
                                   <th
                                     style={{
                                       border: "1px solid #ccc",
@@ -350,6 +357,7 @@ export default function Chatbot({ article }: { article: Article }) {
                                   />
                                 ),
                                 td: ({ node, ...props }) => (
+                                  // @ts-ignore
                                   <td
                                     style={{
                                       border: "1px solid #ccc",
@@ -359,6 +367,7 @@ export default function Chatbot({ article }: { article: Article }) {
                                   />
                                 ),
                                 pre: ({ node, ...props }) => (
+                                  // @ts-ignore
                                   <pre
                                     style={{
                                       background: "#f6f8fa",
