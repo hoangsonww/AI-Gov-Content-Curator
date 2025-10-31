@@ -25,7 +25,22 @@ export default function LatestArticles({
     return <div className="error-message">No latest articles found.</div>;
   }
 
-  // 3) Split articles into two groups for two carousels
+  // 3) Split articles into two groups for two carousels, ensuring min 3 per carousel
+  const minItemsPerCarousel = 3;
+  
+  // If total articles is less than min*2, show all in one carousel
+  if (articles.length < minItemsPerCarousel * 2) {
+    return (
+      <div className="latest-articles-carousels">
+        <ArticleCarousel
+          articles={articles}
+          autoRotateInterval={3000}
+          direction="left"
+        />
+      </div>
+    );
+  }
+  
   const midPoint = Math.ceil(articles.length / 2);
   const firstHalf = articles.slice(0, midPoint);
   const secondHalf = articles.slice(midPoint);
@@ -38,13 +53,11 @@ export default function LatestArticles({
         autoRotateInterval={3000}
         direction="left"
       />
-      {secondHalf.length > 0 && (
-        <ArticleCarousel
-          articles={secondHalf}
-          autoRotateInterval={3000}
-          direction="right"
-        />
-      )}
+      <ArticleCarousel
+        articles={secondHalf}
+        autoRotateInterval={3000}
+        direction="right"
+      />
     </div>
   );
 }

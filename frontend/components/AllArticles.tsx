@@ -49,9 +49,17 @@ export default function AllArticles() {
   const splitIntoCarousels = (items: Article[]) => {
     const carousels: Article[][] = [];
     const itemsPerCarousel = 6;
+    const minItemsPerCarousel = 3;
 
     for (let i = 0; i < items.length; i += itemsPerCarousel) {
-      carousels.push(items.slice(i, i + itemsPerCarousel));
+      const chunk = items.slice(i, i + itemsPerCarousel);
+      
+      // If this is the last chunk and has less than min items, merge with previous
+      if (chunk.length < minItemsPerCarousel && carousels.length > 0) {
+        carousels[carousels.length - 1].push(...chunk);
+      } else {
+        carousels.push(chunk);
+      }
     }
 
     return carousels;

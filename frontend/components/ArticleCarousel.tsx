@@ -72,7 +72,7 @@ export default function ArticleCarousel({
     setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
   };
 
-  const truncateSummary = (text: string, maxLength: number = 150) => {
+  const truncateSummary = (text: string, maxLength: number = 250) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + "...";
   };
@@ -224,7 +224,7 @@ export default function ArticleCarousel({
           border: 1px solid var(--card-border);
           border-radius: 6px;
           padding: 1rem;
-          height: 380px;
+          height: 450px;
           display: flex;
           flex-direction: column;
           cursor: pointer;
@@ -259,7 +259,7 @@ export default function ArticleCarousel({
           margin: 0 0 0.75rem 0;
           overflow: hidden;
           display: -webkit-box;
-          -webkit-line-clamp: 4;
+          -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           text-overflow: ellipsis;
           min-height: 0;
