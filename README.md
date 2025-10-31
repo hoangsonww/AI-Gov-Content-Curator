@@ -31,6 +31,7 @@ This monorepo, multi-services project is organized into four main components:
 ![Next.js](https://img.shields.io/badge/Next.js-000?style=flat&logo=next.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)
 ![Mongoose](https://img.shields.io/badge/Mongoose-8D99AE?style=flat&logo=mongoose&logoColor=white)
+![Pinecone](https://img.shields.io/badge/Pinecone-000000?style=flat&logo=pinecone&logoColor=white)
 ![Axios](https://img.shields.io/badge/Axios-%23007ACC.svg?style=flat&logo=axios&logoColor=white)
 ![Cheerio](https://img.shields.io/badge/Cheerio-%23E34F26.svg?style=flat&logo=cheerio&logoColor=white)
 ![Puppeteer](https://img.shields.io/badge/Puppeteer-%23FF5722.svg?style=flat&logo=puppeteer&logoColor=white)
@@ -98,6 +99,9 @@ This monorepo, multi-services project is organized into four main components:
 - [Article Q&A Feature](#article-qa-feature)
   - [Features (Article Q&A)](#features-article-qa)
   - [Prerequisites & Installation (Article Q&A)](#prerequisites--installation-article-qa)
+- [Intelligent Recommendation System](#intelligent-recommendation-system)
+  - [Related Articles (Vector Similarity Search)](#related-articles-vector-similarity-search)
+  - [Recommended Articles (Client-Side ML)](#recommended-articles-client-side-ml)
 - [Command Line Interface (CLI)](#command-line-interface-cli)
   - [Installation](#installation)
   - [Usage](#usage)
@@ -107,7 +111,6 @@ This monorepo, multi-services project is organized into four main components:
 - [Shell Scripts & Makefile](#shell-scripts--makefile)
   - [Shell Scripts](#shell-scripts)
   - [Makefile](#makefile)
-- [Contributing](#contributing)
 - [Testing](#testing)
   - [Backend](#backend-1)
   - [Frontend](#frontend-1)
@@ -848,6 +851,35 @@ To use the article Q&A feature, simply navigate to the article detail page of an
 
 Feel free to ask any questions related to the article, and the AI will do its best to provide accurate and relevant answers. This feature is designed to enhance user engagement and provide quick access to information without having
 to read through the entire article.
+
+---
+
+## Intelligent Recommendation System
+
+SynthoraAI employs a sophisticated, multi-layered recommendation engine to deliver personalized and contextually relevant content to users.
+
+### Related Articles (Vector Similarity Search)
+
+The Related Articles feature leverages **Pinecone**, a high-performance vector database, to find semantically similar articles:
+
+- **Embedding Generation:** Article content is transformed into high-dimensional vector embeddings using state-of-the-art NLP models
+- **Vector Storage:** Embeddings are indexed in Pinecone for lightning-fast similarity searches
+- **Semantic Matching:** When viewing an article, the system queries Pinecone to retrieve the most semantically similar articles based on cosine similarity
+- **Real-time Results:** Users see up to 6 related articles displayed in an interactive carousel on each article detail page
+
+This approach goes beyond simple keyword matching, understanding the deeper semantic relationships between articles to surface truly relevant content.
+
+### Recommended Articles (Client-Side ML)
+
+The Recommended Articles section uses a **lightweight machine learning model** running directly in the browser:
+
+- **Privacy-First:** All computation happens client-side—no user data is sent to external servers
+- **Behavioral Analysis:** The model analyzes user interactions (views, time spent, favorites, ratings) to build a personalized preference profile
+- **Real-Time Adaptation:** Recommendations dynamically update based on current session behavior and historical patterns
+- **Hybrid Approach:** Combines collaborative filtering with content-based signals for optimal accuracy
+- **Performance Optimized:** Uses WebAssembly and quantized model weights to ensure fast inference without impacting page load times
+
+Together, these systems ensure users discover relevant content through both semantic similarity and personalized behavioral patterns.
 
 ---
 

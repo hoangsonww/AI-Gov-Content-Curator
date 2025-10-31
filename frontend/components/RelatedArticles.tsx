@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
+import { MdArticle } from "react-icons/md";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { BASE_URL } from "../services/api";
@@ -69,10 +70,19 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
   if (loading) {
     return (
       <div className="related-articles-section">
-        <h2 className="related-articles-title">Related Articles</h2>
-        <div className="loading-state">
-          <div className="spinner" />
-          <p>Finding similar articles...</p>
+        <div className="loading-skeleton">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton-card">
+              <div className="skeleton-title"></div>
+              <div className="skeleton-text"></div>
+              <div className="skeleton-text"></div>
+              <div className="skeleton-text short"></div>
+              <div className="skeleton-badges">
+                <div className="skeleton-badge"></div>
+                <div className="skeleton-badge"></div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -112,7 +122,10 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
   return (
     <>
       <div className="related-articles-section">
-        <h2 className="related-articles-title">Related Articles</h2>
+        <h2 className="related-articles-title">
+          <MdArticle className="title-icon" />
+          Related Articles
+        </h2>
         <div className="carousel-wrapper">
           <Slider {...sliderSettings}>
             {articles.map((article) => (
@@ -154,6 +167,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           margin: 2.5rem 0;
           padding: 0;
           padding-top: 15px;
+          padding-bottom: 2rem;
         }
 
         .related-articles-title {
@@ -161,6 +175,14 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           font-weight: 700;
           margin-bottom: 1.5rem;
           color: var(--text-color);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .title-icon {
+          font-size: 1.75rem;
+          color: var(--accent-color);
         }
 
         .carousel-wrapper {
@@ -171,6 +193,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
         .carousel-slide {
           padding: 0 0.5rem;
           outline: none;
+          overflow: hidden;
         }
 
         /* Related Card - Fixed dimensions */
@@ -184,6 +207,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           flex-direction: column;
           cursor: pointer;
           transition: box-shadow 0.2s ease, border-color 0.2s ease;
+          overflow: hidden;
         }
 
         .related-card:hover {
@@ -197,11 +221,14 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           margin: 0 0 0.5rem 0;
           color: var(--text-color);
           line-height: 1.4;
-          height: 3em;
+          max-height: 3em;
           overflow: hidden;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
+          text-overflow: ellipsis;
+          word-wrap: break-word;
+          word-break: break-word;
         }
 
         .related-card-summary {
@@ -211,6 +238,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           display: -webkit-box;
           -webkit-line-clamp: 4;
           -webkit-box-orient: vertical;
+          text-overflow: ellipsis;
         }
 
         .related-card-summary p {
@@ -259,6 +287,68 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           font-weight: 500;
         }
 
+        .loading-skeleton {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          margin: 0 -0.5rem;
+        }
+
+        .skeleton-card {
+          background: var(--card-bg);
+          border: 1px solid var(--card-border);
+          border-radius: 6px;
+          padding: 1rem;
+          height: 380px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .skeleton-title {
+          height: 2.5rem;
+          background: linear-gradient(90deg, var(--card-border) 25%, rgba(128, 128, 128, 0.1) 50%, var(--card-border) 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 4px;
+        }
+
+        .skeleton-text {
+          height: 1rem;
+          background: linear-gradient(90deg, var(--card-border) 25%, rgba(128, 128, 128, 0.1) 50%, var(--card-border) 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 4px;
+        }
+
+        .skeleton-text.short {
+          width: 70%;
+        }
+
+        .skeleton-badges {
+          display: flex;
+          gap: 0.5rem;
+          margin-top: auto;
+        }
+
+        .skeleton-badge {
+          width: 60px;
+          height: 24px;
+          background: linear-gradient(90deg, var(--card-border) 25%, rgba(128, 128, 128, 0.1) 50%, var(--card-border) 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 4px;
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+
         .loading-state {
           display: flex;
           flex-direction: column;
@@ -297,14 +387,15 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           border: 2px solid var(--accent-color);
           border-radius: 50%;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
+          transition: background 0.3s ease, box-shadow 0.3s ease;
+          transform: none !important;
         }
 
         .related-articles-section :global(.slick-prev:hover),
         .related-articles-section :global(.slick-next:hover) {
           background: var(--accent-color);
-          transform: scale(1.1);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          transform: none !important;
         }
 
         .related-articles-section :global(.slick-prev) {
@@ -335,7 +426,6 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
 
         .related-articles-section :global(.slick-disabled:hover) {
           background: var(--card-bg);
-          transform: none;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
@@ -392,6 +482,10 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
 
         /* Mobile adjustments */
         @media (max-width: 1024px) {
+          .loading-skeleton {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
           .related-articles-section :global(.slick-prev) {
             left: -40px;
           }
@@ -408,6 +502,15 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
         }
 
         @media (max-width: 640px) {
+          .loading-skeleton {
+            grid-template-columns: 1fr;
+          }
+
+          .skeleton-card {
+            height: auto;
+            min-height: 320px;
+          }
+
           .related-card {
             height: auto;
             min-height: 320px;
