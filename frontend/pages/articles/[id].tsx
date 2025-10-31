@@ -199,9 +199,9 @@ export default function ArticlePage({ article }: ArticlePageProps) {
 
         <RatingSection articleId={article._id} />
 
-        <Comments articleId={article._id} />
-
         <RelatedArticles articleId={article._id} />
+
+        <Comments articleId={article._id} />
 
         <Chatbot article={article} />
       </div>
