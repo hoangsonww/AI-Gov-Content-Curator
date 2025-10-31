@@ -122,3 +122,62 @@
     opacity: 1;
   }
 }
+
+/* ---------- Markdown Styling in Article Cards ---------- */
+.article-summary ul,
+.article-summary ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.article-summary li {
+  margin: 0.25em 0;
+}
+
+.article-summary table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  overflow-x: auto;
+  display: block;
+}
+
+.article-summary th {
+  border: 1px solid var(--card-border);
+  padding: 0.5em;
+  text-align: left;
+  background: var(--card-bg);
+}
+
+.article-summary td {
+  border: 1px solid var(--card-border);
+  padding: 0.5em;
+}
+
+.article-summary pre {
+  background: #f6f8fa;
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.dark .article-summary pre {
+  background: #1e1e1e;
+}
+
+.article-summary code {
+  background: #f6f8fa;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.95em;
+}
+
+.dark .article-summary code {
+  background: #1e1e1e;
+}
+
+.article-summary pre code {
+  background: transparent;
+  padding: 0;
+}

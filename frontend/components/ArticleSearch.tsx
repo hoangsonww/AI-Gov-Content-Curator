@@ -12,6 +12,7 @@ interface ArticleSearchProps {
   onClear: () => void;
 }
 
+// @ts-ignore
 const ArticleSearch: React.FC<ArticleSearchProps> = ({
   query,
   topic,

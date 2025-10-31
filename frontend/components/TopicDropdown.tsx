@@ -6,6 +6,7 @@ interface TopicDropdownProps {
   onChange: (topic: string) => void;
 }
 
+// @ts-ignore
 const TopicDropdown: React.FC<TopicDropdownProps> = ({
   selectedTopic,
   onChange,

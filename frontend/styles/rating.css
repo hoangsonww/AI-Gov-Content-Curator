@@ -239,6 +239,7 @@
   border-radius: 25px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 1rem;
   transition: all 0.3s ease;
   font-family: "Inter", sans-serif;
 }

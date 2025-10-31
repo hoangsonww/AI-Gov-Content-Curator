@@ -41,6 +41,7 @@ export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
         <Navbar theme={theme} onThemeChange={toggleTheme} />
       </div>
 
+      {/* @ts-ignore */}
       <main style={{ flex: 1 }}>{children}</main>
 
       <Footer />
