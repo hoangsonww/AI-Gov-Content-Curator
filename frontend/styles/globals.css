@@ -25,7 +25,8 @@ body {
 main {
   min-height: calc(100vh - 120px); /* account for navbar + footer */
   padding: 1rem;
-  max-width: 900px;
+  width: 95%;
+  max-width: 95%;
   margin: 0 auto;
 }
 

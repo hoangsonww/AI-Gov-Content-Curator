@@ -27,7 +27,7 @@ export default function LatestArticles({
 
   // 3) Split articles into two groups for two carousels, ensuring min 3 per carousel
   const minItemsPerCarousel = 3;
-  
+
   // If total articles is less than min*2, show all in one carousel
   if (articles.length < minItemsPerCarousel * 2) {
     return (
@@ -40,7 +40,7 @@ export default function LatestArticles({
       </div>
     );
   }
-  
+
   const midPoint = Math.ceil(articles.length / 2);
   const firstHalf = articles.slice(0, midPoint);
   const secondHalf = articles.slice(midPoint);
