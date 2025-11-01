@@ -84,16 +84,63 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
 
   if (loading) {
     return (
-      <div className="related-articles-section">
-        <h2 className="related-articles-title">
-          <MdArticle className="title-icon" />
-          Related Articles
-        </h2>
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Finding related articles...</p>
+      <>
+        <div className="related-articles-section">
+          <h2 className="related-articles-title">
+            <MdArticle className="title-icon" />
+            Related Articles
+          </h2>
+          <div className="loading-state">
+            <div className="spinner"></div>
+          </div>
         </div>
-      </div>
+        <style>{`
+          .related-articles-title {
+            font-size: 1.5rem !important;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-color) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+          
+          .title-icon {
+            font-size: 1.75rem;
+            color: var(--accent-color);
+          }
+          
+          .related-articles-section {
+            margin: 2.5rem 0;
+            padding: 0;
+            padding-top: 15px;
+            padding-bottom: 2rem;
+          }
+          
+          .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 3rem 0;
+          }
+          
+          .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--card-border);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+          }
+          
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
+      </>
     );
   }
 
@@ -194,10 +241,10 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
         }
 
         .related-articles-title {
-          font-size: 1.5rem;
+          font-size: 1.5rem !important;
           font-weight: 700;
           margin-bottom: 1.5rem;
-          color: var(--text-color);
+          color: var(--text-color) !important;
           display: flex;
           align-items: center;
           gap: 0.5rem;
@@ -449,58 +496,6 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           }
         }
 
-        /* Carousel Navigation Arrows */
-        .related-articles-section :global(.slick-prev),
-        .related-articles-section :global(.slick-next) {
-          width: 48px;
-          height: 48px;
-          z-index: 10;
-          background: var(--card-bg);
-          border: 2px solid var(--accent-color);
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          transition: background 0.3s ease, box-shadow 0.3s ease;
-          transform: none !important;
-        }
-
-        .related-articles-section :global(.slick-prev:hover),
-        .related-articles-section :global(.slick-next:hover) {
-          background: var(--accent-color);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-          transform: none !important;
-        }
-
-        .related-articles-section :global(.slick-prev) {
-          left: -55px;
-        }
-
-        .related-articles-section :global(.slick-next) {
-          right: -55px;
-        }
-
-        .related-articles-section :global(.slick-prev:before),
-        .related-articles-section :global(.slick-next:before) {
-          font-size: 20px;
-          color: var(--accent-color);
-          opacity: 1;
-          font-weight: bold;
-        }
-
-        .related-articles-section :global(.slick-prev:hover:before),
-        .related-articles-section :global(.slick-next:hover:before) {
-          color: white;
-        }
-
-        .related-articles-section :global(.slick-disabled) {
-          opacity: 0.3;
-          cursor: not-allowed;
-        }
-
-        .related-articles-section :global(.slick-disabled:hover) {
-          background: var(--card-bg);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
         /* Carousel Dots */
         .related-articles-section :global(.slick-dots) {
           bottom: -45px;
@@ -557,20 +552,6 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           .loading-skeleton {
             grid-template-columns: repeat(2, 1fr);
           }
-
-          .related-articles-section :global(.slick-prev) {
-            left: -40px;
-          }
-
-          .related-articles-section :global(.slick-next) {
-            right: -40px;
-          }
-
-          .related-articles-section :global(.slick-prev),
-          .related-articles-section :global(.slick-next) {
-            width: 40px;
-            height: 40px;
-          }
         }
 
         @media (max-width: 640px) {
@@ -591,18 +572,6 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           .related-card-summary {
             -webkit-line-clamp: 3;
           }
-
-          .related-articles-section :global(.slick-prev) {
-            left: 5px;
-          }
-
-          .related-articles-section :global(.slick-next) {
-            right: 5px;
-          }
-
-          .related-articles-section :global(.slick-prev),
-          .related-articles-section :global(.slick-next) {
-            width: 36px;
             height: 36px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(4px);

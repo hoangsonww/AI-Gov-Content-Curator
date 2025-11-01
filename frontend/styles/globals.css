@@ -66,11 +66,11 @@ main {
 }
 
 .related-articles-section .slick-prev {
-  left: -60px !important;
+  left: -15px !important;
 }
 
 .related-articles-section .slick-next {
-  right: -60px !important;
+  right: -15px !important;
 }
 
 .related-articles-section .slick-prev:before,
@@ -149,15 +149,15 @@ main {
   .related-articles-section .slick-next {
     width: 40px !important;
     height: 40px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: transparent !important;
   }
 
   .related-articles-section .slick-prev {
-    left: 10px !important;
+    left: -15px !important;
   }
 
   .related-articles-section .slick-next {
-    right: 10px !important;
+    right: -15px !important;
   }
 
   .related-articles-section .slick-dots li button {

@@ -65,7 +65,7 @@ h2 {
   background: linear-gradient(135deg, var(--accent-color) 0%, #005bb5 100%);
   color: #fff;
   overflow: hidden;
-  min-height: calc(100vh - var(--navbar-height));
+  min-height: 100vh;
 }
 /* Ball 1 */
 .hero::before {
@@ -230,6 +230,7 @@ h2 {
   color: #fff;
 }
 .scroll-text {
+  font-family: "Inter", sans-serif;
   font-size: 0.875rem;
   color: #fff;
   font-weight: 600;
