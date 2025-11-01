@@ -14,7 +14,8 @@ header.navbar-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1200px;
+  width: 95%;
+  max-width: 95%;
   margin: 0 auto;
   padding: 0.75rem 1rem;
   position: relative;

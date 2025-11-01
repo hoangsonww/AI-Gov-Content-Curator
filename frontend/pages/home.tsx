@@ -2,6 +2,7 @@ import { GetStaticProps } from "next";
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { MdSearch } from "react-icons/md";
 import LatestArticles from "../components/LatestArticles";
 import AllArticles from "../components/AllArticles";
 import ArticleSearch from "../components/ArticleSearch";
@@ -68,22 +69,25 @@ export default function HomePage({
       </Head>
       <div style={{ marginBottom: "2rem", marginTop: "2rem" }}>
         <div className="search-container fade-down">
-          <input
-            type="text"
-            placeholder="Search articles..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              router.push(
-                `/home?q=${encodeURIComponent(
-                  e.target.value,
-                )}&topic=${encodeURIComponent(selectedTopic)}`,
-                undefined,
-                { shallow: true },
-              );
-            }}
-            className="search-input"
-          />
+          <div className="search-input-wrapper">
+            <MdSearch className="search-icon" size={24} />
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                router.push(
+                  `/home?q=${encodeURIComponent(
+                    e.target.value,
+                  )}&topic=${encodeURIComponent(selectedTopic)}`,
+                  undefined,
+                  { shallow: true },
+                );
+              }}
+              className="search-input"
+            />
+          </div>
           {/* @ts-ignore */}
           <TopicDropdown
             selectedTopic={selectedTopic}

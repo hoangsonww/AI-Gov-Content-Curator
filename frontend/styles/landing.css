@@ -294,13 +294,16 @@ h2 {
 
 /* Features */
 .features {
-  padding: 4rem 2rem;
+  padding: 4rem 1rem;
   background: var(--bg-color);
 }
 .feature-grid {
   display: grid;
   gap: 2rem;
-  padding: 0 2rem;
+  padding: 0 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   justify-content: center;
 }
@@ -337,7 +340,7 @@ h2 {
 
 /* Stats */
 .stats {
-  padding: 4rem 2rem;
+  padding: 4rem 1rem;
   background: var(--hover-bg);
 }
 .stats-grid {
@@ -345,6 +348,9 @@ h2 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 2rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
 }
 .stat-card {
   background: var(--card-bg);
@@ -391,6 +397,9 @@ h2 {
   display: grid;
   gap: 2rem;
   padding: 0 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   justify-content: center;
 }
@@ -440,10 +449,12 @@ h2 {
 
 /* FAQ */
 .faq {
-  padding: 4rem 2rem;
+  padding: 4rem 1rem;
   background: var(--hover-bg);
 }
 .faq-list {
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -490,7 +501,8 @@ details p {
 
 /* Partners */
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -506,6 +518,9 @@ details p {
   align-items: center;
   justify-items: center;
   padding: 0 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
 }
 .partner-logo {
   width: 100%;
@@ -535,7 +550,7 @@ details p {
 
 /* Contact */
 .contact {
-  padding: 4rem 2rem;
+  padding: 4rem 1rem;
   background: var(--hover-bg);
   text-align: center;
   margin-bottom: 2rem;
@@ -553,7 +568,10 @@ details p {
 .contact-grid {
   display: grid;
   gap: 2rem;
-  padding: 0 2rem;
+  padding: 0 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   justify-items: center;
 }
@@ -610,7 +628,7 @@ details p {
 
 /* Final CTA */
 .final-cta {
-  padding: 4rem 2rem;
+  padding: 4rem 1rem;
   background: linear-gradient(90deg, var(--accent-color), #45a1ff);
   color: #fff;
   text-align: center;
@@ -630,6 +648,10 @@ details p {
   justify-content: center;
   gap: 1rem;
   margin-top: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 .final-cta .btn.outline {
   border-color: #fff;
