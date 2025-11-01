@@ -31,21 +31,21 @@ export default function HomePage({
   latestArticles,
 }: HomePageProps) {
   const router = useRouter();
-  const initialTopic =
-    typeof router.query.topic === "string" ? router.query.topic : "";
-  const initialSearch =
-    typeof router.query.q === "string" ? router.query.q : "";
-  const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const [selectedTopic, setSelectedTopic] = useState(initialTopic);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState("");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (typeof router.query.topic === "string") {
-      setSelectedTopic(router.query.topic);
-    }
-    if (typeof router.query.q === "string") {
-      setSearchQuery(router.query.q);
-    }
-  }, [router.query]);
+    if (!router.isReady) return;
+
+    const topic =
+      typeof router.query.topic === "string" ? router.query.topic : "";
+    const search = typeof router.query.q === "string" ? router.query.q : "";
+
+    setSelectedTopic(topic);
+    setSearchQuery(search);
+    setIsInitialized(true);
+  }, [router.isReady, router.query]);
 
   useEffect(() => {
     if (router.asPath === "/home") {
@@ -53,6 +53,10 @@ export default function HomePage({
       setSelectedTopic("");
     }
   }, [router.asPath]);
+
+  if (!isInitialized) {
+    return null;
+  }
 
   const isSearchActive =
     searchQuery.trim() !== "" || selectedTopic.trim() !== "";

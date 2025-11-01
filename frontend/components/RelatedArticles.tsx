@@ -28,6 +28,8 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
   const [articles, setArticles] = useState<SimilarArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartPos = React.useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const fetchSimilarArticles = async () => {
@@ -73,7 +75,33 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
 
   const handleTopicClick = (e: React.MouseEvent, topic: string) => {
     e.stopPropagation();
-    window.location.href = `/home?topic=${encodeURIComponent(topic)}`;
+    if (!isDragging) {
+      window.location.href = `/home?topic=${encodeURIComponent(topic)}`;
+    }
+  };
+
+  const handleCardMouseDown = (e: React.MouseEvent) => {
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    setIsDragging(false);
+  };
+
+  const handleCardMouseMove = (e: React.MouseEvent) => {
+    const deltaX = Math.abs(e.clientX - dragStartPos.current.x);
+    const deltaY = Math.abs(e.clientY - dragStartPos.current.y);
+    if (deltaX > 5 || deltaY > 5) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleCardMouseUp = () => {
+    setTimeout(() => setIsDragging(false), 100);
+  };
+
+  const handleCardClick = (e: React.MouseEvent, articleId: string) => {
+    e.preventDefault();
+    if (!isDragging) {
+      window.location.href = `/articles/${articleId}`;
+    }
   };
 
   const getVisibleTopics = (topics: string[]) => {
@@ -155,7 +183,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
     slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 4000,
+    autoplaySpeed: 3000,
     pauseOnHover: true,
     responsive: [
       {
@@ -188,9 +216,10 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
               <div key={article._id} className="carousel-slide">
                 <div
                   className="related-card"
-                  onClick={() =>
-                    (window.location.href = `/articles/${article._id}`)
-                  }
+                  onMouseDown={handleCardMouseDown}
+                  onMouseMove={handleCardMouseMove}
+                  onMouseUp={handleCardMouseUp}
+                  onClick={(e) => handleCardClick(e, article._id)}
                 >
                   <h3 className="related-card-title">{article.title}</h3>
 
@@ -379,7 +408,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
         }
 
         .related-topic-badge-clickable:hover {
-          background: var(--navbar-text);
+          filter: brightness(0.85);
           opacity: 1;
         }
 
@@ -494,6 +523,20 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
           to {
             transform: rotate(360deg);
           }
+        }
+
+        /* Arrow Buttons */
+        .related-articles-section :global(.slick-prev),
+        .related-articles-section :global(.slick-next) {
+          width: 40px;
+          height: 40px;
+          z-index: 10;
+        }
+
+        .related-articles-section :global(.slick-prev):before,
+        .related-articles-section :global(.slick-next):before {
+          opacity: 1;
+          color: var(--text-color);
         }
 
         /* Carousel Dots */

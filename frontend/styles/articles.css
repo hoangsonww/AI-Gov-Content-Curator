@@ -90,8 +90,7 @@
 }
 
 .topic-badge-clickable:hover {
-  background: var(--navbar-text);
-  opacity: 1;
+  filter: brightness(0.8);
 }
 
 .dark .topic-badge {
