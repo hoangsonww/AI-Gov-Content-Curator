@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
@@ -11,6 +12,8 @@ interface LayoutProps {
 }
 
 export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
+  const router = useRouter();
+  const isLandingPage = router.pathname === "/";
   // measure navbar height and set it as a CSS variable
   const navbarWrapper = useRef<HTMLDivElement>(null);
 
@@ -37,9 +40,11 @@ export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
         minHeight: "100vh",
       }}
     >
-      <div ref={navbarWrapper}>
-        <Navbar theme={theme} onThemeChange={toggleTheme} />
-      </div>
+      {!isLandingPage && (
+        <div ref={navbarWrapper}>
+          <Navbar theme={theme} onThemeChange={toggleTheme} />
+        </div>
+      )}
 
       {/* @ts-ignore */}
       <main style={{ flex: 1 }}>{children}</main>
