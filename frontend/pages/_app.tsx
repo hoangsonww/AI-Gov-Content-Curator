@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import "../styles/globals.css";
 import "../styles/theme.css";
+import "../styles/carousel.css";
+import "../styles/article-carousel.css";
 import "../styles/auth-dropdown.css";
 import "../styles/login.css";
 import "../styles/register.css";

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   searchArticles as searchArticlesHelper,
   getArticlesByTopic,
@@ -20,6 +20,7 @@ const ArticleSearch: React.FC<ArticleSearchProps> = ({
 }) => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     // If no query and no topic, clear results.
@@ -30,7 +31,8 @@ const ArticleSearch: React.FC<ArticleSearchProps> = ({
     }
 
     setIsSearching(true);
-    const handler = setTimeout(() => {
+
+    const fetchArticles = () => {
       if (query.trim() === "" && topic.trim() !== "") {
         // Use dedicated helper when only topic is provided.
         getArticlesByTopic(topic, 1, 10)
@@ -54,8 +56,17 @@ const ArticleSearch: React.FC<ArticleSearchProps> = ({
             setIsSearching(false);
           });
       }
-    }, 500); // debounce delay
+    };
 
+    // No debounce on initial mount (page load with URL params)
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      fetchArticles();
+      return;
+    }
+
+    // Apply debounce for subsequent changes (user typing)
+    const handler = setTimeout(fetchArticles, 500);
     return () => clearTimeout(handler);
   }, [query, topic]);
 

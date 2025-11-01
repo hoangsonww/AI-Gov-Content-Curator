@@ -1,0 +1,98 @@
+/* Carousel Dots - FORCED STYLES */
+.article-carousel-section .slick-dots {
+  bottom: -45px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+.article-carousel-section .slick-dots li {
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+}
+
+.article-carousel-section .slick-dots li button {
+  width: 12px !important;
+  height: 12px !important;
+  padding: 0 !important;
+  background: var(--card-border) !important;
+  border-radius: 50% !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-size: 0 !important;
+}
+
+.article-carousel-section .slick-dots li button:before {
+  content: "" !important;
+  display: none !important;
+}
+
+.article-carousel-section .slick-dots li button:hover {
+  background: var(--accent-color) !important;
+  opacity: 0.7 !important;
+  transform: scale(1.2) !important;
+}
+
+.article-carousel-section .slick-dots li.slick-active button {
+  width: 32px !important;
+  border-radius: 6px !important;
+  background: var(--accent-color) !important;
+  opacity: 1 !important;
+}
+
+.article-carousel-section .slick-dots li.slick-active button:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Arrow buttons - FORCED STYLES */
+.article-carousel-section .slick-prev,
+.article-carousel-section .slick-next,
+.related-articles-section .slick-prev,
+.related-articles-section .slick-next {
+  z-index: 10 !important;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.article-carousel-section .slick-prev:before,
+.article-carousel-section .slick-next:before,
+.related-articles-section .slick-prev:before,
+.related-articles-section .slick-next:before {
+  color: var(--text-color) !important;
+  opacity: 1 !important;
+  font-size: 28px !important;
+}
+
+.article-carousel-section .slick-prev:hover:before,
+.article-carousel-section .slick-next:hover:before,
+.related-articles-section .slick-prev:hover:before,
+.related-articles-section .slick-next:hover:before {
+  opacity: 1 !important;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .article-carousel-section .slick-prev:before,
+  .article-carousel-section .slick-next:before {
+    font-size: 18px !important;
+  }
+
+  .article-carousel-section .slick-dots {
+    bottom: -35px !important;
+  }
+
+  .article-carousel-section .slick-dots li button {
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  .article-carousel-section .slick-dots li.slick-active button {
+    width: 24px !important;
+  }
+}

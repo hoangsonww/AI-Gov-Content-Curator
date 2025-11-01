@@ -29,7 +29,7 @@ export default function HeroSlider({ articles }: HeroSliderProps) {
     slidesToScroll: 1,
     fade: true,
     autoplay: true,
-    autoplaySpeed: 4000,
+    autoplaySpeed: 3000,
     arrows: true,
   };
 

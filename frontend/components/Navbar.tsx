@@ -95,7 +95,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
     <header className="navbar-container fade-down">
       <nav className="navbar-content">
         {/* Brand */}
-        <Link href="/" className="brand-link">
+        <Link href="/home" className="brand-link">
           <div className="navbar-brand">
             <ArticleIcon size={26} />
             <span className="brand-text">SynthoraAI</span>
