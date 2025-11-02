@@ -4,3 +4,4 @@ node_modules
 .env
 .vercel
 daily.log
+sync_vectors.log
