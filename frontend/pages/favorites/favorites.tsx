@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import { Article } from "../home";
-import ArticleCard from "../../components/ArticleCard";
+import ArticleCarousel from "../../components/ArticleCarousel";
 import { fetchFavoriteArticles } from "../../services/api";
 
 export default function FavoritesPage() {
@@ -73,11 +73,11 @@ export default function FavoritesPage() {
               Here are all the articles you’ve favorited.
             </p>
 
-            <div className="article-grid">
-              {favoriteArticles.map((article) => (
-                <ArticleCard key={article._id} article={article} />
-              ))}
-            </div>
+            <ArticleCarousel
+              articles={favoriteArticles}
+              autoRotateInterval={3000}
+              direction="left"
+            />
           </>
         )}
 

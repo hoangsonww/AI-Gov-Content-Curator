@@ -37,24 +37,37 @@
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1rem;
+  height: 450px;
+  display: flex;
+  flex-direction: column;
   cursor: pointer;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  overflow: hidden;
 }
 
 .article-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-color);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .article-title {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
   color: var(--text-color);
+  line-height: 1.4;
+  max-height: 3em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  word-break: break-word;
+  flex-shrink: 0;
+  text-align: left;
 }
 
 .article-source {
@@ -62,9 +75,22 @@
 }
 
 .article-summary {
-  margin: 0.5rem 0;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  flex: 1 1 auto;
+  margin: 0 0 0.75rem 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  min-height: 0;
+}
+
+.article-summary p {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.8;
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* ---------- Article Topics ---------- */
@@ -72,7 +98,12 @@
   display: flex;
   gap: 0.4rem;
   flex-wrap: wrap;
-  margin: 0.5rem 0;
+  margin: 0;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  max-height: 32px;
 }
 
 .topic-badge {

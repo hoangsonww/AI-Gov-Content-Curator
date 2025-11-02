@@ -155,8 +155,6 @@
   align-items: center;
   gap: 0.3rem;
   margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--card-border);
   color: var(--accent-color);
   font-size: 0.9rem;
   font-weight: 500;

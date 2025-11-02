@@ -104,14 +104,14 @@ export const getArticleCount = async (req: Request, res: Response) => {
 };
 
 /**
- * Search for articles by title or summary with optional pagination.
+ * Search for articles by title or summary with optional topic filter and pagination.
  *
- * @param req The request object containing the search query and pagination parameters.
+ * @param req The request object containing the search query, topic filter, and pagination parameters.
  * @param res The response object to send the search results or an error message.
  */
 export const searchArticles = async (req: Request, res: Response) => {
   try {
-    const { q, page = 1, limit = 10 } = req.query;
+    const { q, topic, page = 1, limit = 10 } = req.query;
     const filter: any = {};
 
     if (q) {
@@ -121,6 +121,15 @@ export const searchArticles = async (req: Request, res: Response) => {
         // Optionally, search in topics as well
         { topics: { $regex: q, $options: "i" } },
       ];
+    }
+
+    if (topic) {
+      // Support comma-separated list of topics
+      const topicsArray =
+        typeof topic === "string"
+          ? topic.split(",").map((t) => t.trim())
+          : topic;
+      filter.topics = { $in: topicsArray };
     }
 
     const articles = await Article.find(filter)
