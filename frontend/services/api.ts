@@ -725,3 +725,141 @@ export async function analyzeArticleBias(
     return null;
   }
 }
+
+/**
+ * Filter Preset Interfaces
+ */
+export interface FilterPreset {
+  _id: string;
+  userId: string;
+  name: string;
+  filters: {
+    source?: string;
+    topic?: string;
+    dateRange?: {
+      from?: string;
+      to?: string;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Get all filter presets for the authenticated user
+ */
+export const getFilterPresets = async (
+  token: string,
+): Promise<FilterPreset[]> => {
+  try {
+    const res = await fetch(`${BASE_URL}/filters`, {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    if (!res.ok) {
+      console.error("Error fetching filter presets:", res.statusText);
+      return [];
+    }
+
+    const { data } = await res.json();
+    return data || [];
+  } catch (error) {
+    console.error("Network error while fetching filter presets:", error);
+    return [];
+  }
+};
+
+/**
+ * Create a new filter preset
+ */
+export const createFilterPreset = async (
+  token: string,
+  name: string,
+  filters: FilterPreset["filters"],
+): Promise<FilterPreset | null> => {
+  try {
+    const res = await fetch(`${BASE_URL}/filters`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+      body: JSON.stringify({ name, filters }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to create filter preset");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error creating filter preset:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing filter preset
+ */
+export const updateFilterPreset = async (
+  token: string,
+  id: string,
+  name?: string,
+  filters?: FilterPreset["filters"],
+): Promise<FilterPreset | null> => {
+  try {
+    const body: any = {};
+    if (name) body.name = name;
+    if (filters) body.filters = filters;
+
+    const res = await fetch(`${BASE_URL}/filters/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to update filter preset");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error updating filter preset:", error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a filter preset
+ */
+export const deleteFilterPreset = async (
+  token: string,
+  id: string,
+): Promise<boolean> => {
+  try {
+    const res = await fetch(`${BASE_URL}/filters/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to delete filter preset");
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting filter preset:", error);
+    throw error;
+  }
+};
+
