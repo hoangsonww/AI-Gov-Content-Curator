@@ -9,7 +9,11 @@ import ArticleSearch from "../components/ArticleSearch";
 import TopicDropdown from "../components/TopicDropdown";
 import RecommendedArticles from "../components/RecommendedArticles";
 import SavedFilters from "../components/SavedFilters";
-import { getTopArticles, getLatestArticles, FilterPreset } from "../services/api";
+import {
+  getTopArticles,
+  getLatestArticles,
+  FilterPreset,
+} from "../services/api";
 
 export interface Article {
   _id: string;
