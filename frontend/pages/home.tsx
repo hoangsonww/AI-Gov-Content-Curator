@@ -129,7 +129,6 @@ export default function HomePage({
               );
             }}
           />
-          {/* @ts-ignore */}
           <SavedFilters
             currentFilters={{
               topic: selectedTopic,
