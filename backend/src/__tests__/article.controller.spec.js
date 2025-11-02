@@ -225,17 +225,22 @@ describe("Article Controller", () => {
       const topics = ["tech", "health"];
       Article.distinct.mockResolvedValue(topics);
 
-      req = {};
+      req = { query: {} };
       await getAllTopics(req, res);
 
       expect(Article.distinct).toHaveBeenCalledWith("topics");
-      expect(res.json).toHaveBeenCalledWith({ data: topics });
+      expect(res.json).toHaveBeenCalledWith({
+        data: topics,
+        total: 2,
+        page: 1,
+        limit: 20,
+      });
     });
 
     it("500 on error", async () => {
       Article.distinct.mockRejectedValue(new Error("fail"));
 
-      req = {};
+      req = { query: {} };
       await getAllTopics(req, res);
 
       expect(statusMock).toHaveBeenCalledWith(500);

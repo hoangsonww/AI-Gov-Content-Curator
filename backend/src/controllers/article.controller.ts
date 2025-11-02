@@ -144,9 +144,35 @@ export const searchArticles = async (req: Request, res: Response) => {
  */
 export const getAllTopics = async (req: Request, res: Response) => {
   try {
+    const { q = "", page = 1, limit = 20 } = req.query;
+
     // Fetch distinct topics from the Article collection.
-    const topics = await Article.distinct("topics");
-    res.json({ data: topics });
+    const allTopics = await Article.distinct("topics");
+
+    // Filter topics by search query if provided
+    const filteredTopics = q
+      ? allTopics.filter((topic: string) =>
+          topic.toLowerCase().includes((q as string).toLowerCase()),
+        )
+      : allTopics;
+
+    // Sort topics alphabetically
+    filteredTopics.sort((a: string, b: string) => a.localeCompare(b));
+
+    // Apply pagination
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+
+    const paginatedTopics = filteredTopics.slice(startIndex, endIndex);
+
+    res.json({
+      data: paginatedTopics,
+      total: filteredTopics.length,
+      page: pageNum,
+      limit: limitNum,
+    });
   } catch (error) {
     console.error("Error fetching topics:", error);
     res.status(500).json({ error: "Failed to fetch topics" });
