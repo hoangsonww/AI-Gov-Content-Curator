@@ -68,6 +68,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     const token = localStorage.getItem("token");
     if (!token) return;
     setFavLoading(true);
+    const wasFavorited = isFavorited;
     try {
       await toggleFavoriteArticle(token, article._id);
       setIsFavorited((prev) => {
@@ -83,7 +84,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         }
         return next;
       });
-      toast(`Article ${isFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
+      toast(`Article ${wasFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
     } catch (err) {
       console.error("Error toggling favorite", err);
       toast.error("Error toggling favorite");
@@ -154,43 +155,57 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           )}
         </p>
 
-        <Link href={`/articles/${article._id}`}>
-          <span className="article-readmore">
-            Read More <ArrowIcon size={14} />
-          </span>
-        </Link>
+        <div className="article-footer">
+          <Link href={`/articles/${article._id}`}>
+            <span className="article-readmore">
+              Read More <ArrowIcon size={14} />
+            </span>
+          </Link>
 
-        {isLoggedIn && (
-          <button
-            className="favorite-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleFavorite();
-            }}
-            aria-label="Favorite Article"
-            disabled={favLoading}
-            style={{
-              background: "none",
-              border: "none",
-              position: "absolute",
-              top: "8px",
-              right: "8px",
-              cursor: favLoading ? "default" : "pointer",
-            }}
-          >
-            {favLoading ? (
-              <div className="fav-spinner" />
-            ) : isFavorited ? (
-              <MdFavorite size={20} color="#e74c3c" />
-            ) : (
-              <MdFavoriteBorder size={20} />
-            )}
-          </button>
-        )}
+          {isLoggedIn && (
+            <button
+              className="favorite-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFavorite();
+              }}
+              aria-label="Favorite Article"
+              disabled={favLoading}
+              style={{ position: "static" }}
+            >
+              {favLoading ? (
+                <div className="fav-spinner" />
+              ) : isFavorited ? (
+                <MdFavorite size={20} color="#e74c3c" />
+              ) : (
+                <MdFavoriteBorder size={20} className="fav-icon-outline" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Spinner styles */}
       <style>{`
+        .article-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 1rem;
+          padding-top: 0.5rem;
+          border-top: 1px solid var(--card-border);
+        }
+        
+        .fav-icon-outline {
+          color: var(--text-color);
+          opacity: 0.7;
+        }
+        
+        [data-theme="dark"] .fav-icon-outline {
+          color: #ffffff;
+          opacity: 0.9;
+        }
+        
         .fav-spinner {
           width: 20px;
           height: 20px;
@@ -199,6 +214,12 @@ export default function ArticleCard({ article }: ArticleCardProps) {
           border-radius: 50%;
           animation: fav-spin 0.6s linear infinite;
         }
+        
+        [data-theme="dark"] .fav-spinner {
+          border-color: #555;
+          border-top-color: #fff;
+        }
+        
         @keyframes fav-spin {
           to {
             transform: rotate(360deg);

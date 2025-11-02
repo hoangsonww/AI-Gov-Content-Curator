@@ -60,6 +60,22 @@
   height: 40px !important;
 }
 
+.article-carousel-section .slick-prev {
+  left: -10px !important;
+}
+
+.article-carousel-section .slick-next {
+  right: -10px !important;
+}
+
+.related-articles-section .slick-prev {
+  left: -10px !important;
+}
+
+.related-articles-section .slick-next {
+  right: -10px !important;
+}
+
 .article-carousel-section .slick-prev:before,
 .article-carousel-section .slick-next:before,
 .related-articles-section .slick-prev:before,

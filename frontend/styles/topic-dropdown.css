@@ -20,15 +20,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   font-size: 1rem;
   transition:
     border-color 0.3s ease,
     transform 0.3s ease;
   color: var(--text-color);
+  user-select: none;
+}
+
+.dropdown-text {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  user-select: none;
 }
 
 @media (max-width: 640px) {
@@ -45,7 +51,7 @@
 }
 
 .dropdown-arrow {
-  margin-left: 8px;
+  flex-shrink: 0;
   cursor: pointer;
   user-select: none;
 }

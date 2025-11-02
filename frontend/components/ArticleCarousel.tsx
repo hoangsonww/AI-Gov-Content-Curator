@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import { Article } from "../pages/home";
 import ReactMarkdown from "react-markdown";
@@ -8,12 +8,35 @@ import "katex/dist/katex.min.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ArticleCard from "./ArticleCard";
+import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import {
+  fetchFavoriteArticleIds,
+  toggleFavoriteArticle,
+} from "../services/api";
+import { toast } from "react-toastify";
 
 interface ArticleCarouselProps {
   articles: Article[];
   autoRotateInterval?: number;
   direction?: "left" | "right";
   initialIndex?: number;
+}
+
+// Cache for favorite article IDs
+let cachedFavIds: string[] | null = null;
+async function loadFavCache(token: string): Promise<string[]> {
+  if (cachedFavIds) return cachedFavIds;
+  const fromStorage = localStorage.getItem("favIds");
+  if (fromStorage) {
+    try {
+      cachedFavIds = JSON.parse(fromStorage) as string[];
+      return cachedFavIds!;
+    } catch {}
+  }
+  const fetched = await fetchFavoriteArticleIds(token);
+  cachedFavIds = fetched;
+  localStorage.setItem("favIds", JSON.stringify(fetched));
+  return fetched;
 }
 
 export default function ArticleCarousel({
@@ -24,6 +47,26 @@ export default function ArticleCarousel({
 }: ArticleCarouselProps) {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = React.useRef({ x: 0, y: 0 });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [favLoading, setFavLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLoggedIn(false);
+      return;
+    }
+    setIsLoggedIn(true);
+
+    loadFavCache(token)
+      .then((ids) => {
+        setFavoriteIds(new Set(ids));
+      })
+      .catch((err) => {
+        console.error("Error loading favorites", err);
+      });
+  }, []);
 
   const truncateSummary = (text: string, maxLength: number = 250) => {
     if (text.length <= maxLength) return text;
@@ -58,6 +101,48 @@ export default function ArticleCarousel({
     e.preventDefault();
     if (!isDragging) {
       window.location.href = `/articles/${articleId}`;
+    }
+  };
+
+  const handleFavorite = async (e: React.MouseEvent, articleId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const wasFavorited = favoriteIds.has(articleId);
+    setFavLoading(articleId);
+    try {
+      await toggleFavoriteArticle(token, articleId);
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(articleId)) {
+          next.delete(articleId);
+        } else {
+          next.add(articleId);
+        }
+
+        // Update cache
+        if (cachedFavIds) {
+          if (next.has(articleId)) {
+            if (!cachedFavIds.includes(articleId)) {
+              cachedFavIds.push(articleId);
+            }
+          } else {
+            cachedFavIds = cachedFavIds.filter((id) => id !== articleId);
+          }
+          localStorage.setItem("favIds", JSON.stringify(cachedFavIds));
+        }
+
+        return next;
+      });
+      toast(`Article ${wasFavorited ? "unfavorited 💔" : "favorited ❤️"}`);
+    } catch (err) {
+      console.error("Error toggling favorite", err);
+      toast.error("Error toggling favorite");
+    } finally {
+      setFavLoading(null);
     }
   };
 
@@ -122,6 +207,7 @@ export default function ArticleCarousel({
                   onMouseMove={handleCardMouseMove}
                   onMouseUp={handleCardMouseUp}
                   onClick={(e) => handleCardClick(e, article._id)}
+                  style={{ position: "relative" }}
                 >
                   <h3 className="carousel-card-title">{article.title}</h3>
 
@@ -155,13 +241,94 @@ export default function ArticleCarousel({
                     </div>
                   )}
 
-                  <div className="carousel-card-readmore">Read More →</div>
+                  <div className="carousel-card-footer">
+                    <div className="carousel-card-readmore">Read More →</div>
+
+                    {isLoggedIn && (
+                      <button
+                        className="carousel-favorite-btn"
+                        onClick={(e) => handleFavorite(e, article._id)}
+                        aria-label="Favorite Article"
+                        disabled={favLoading === article._id}
+                        style={{ position: "static" }}
+                      >
+                        {favLoading === article._id ? (
+                          <div className="carousel-fav-spinner" />
+                        ) : favoriteIds.has(article._id) ? (
+                          <MdFavorite size={20} color="#e74c3c" />
+                        ) : (
+                          <MdFavoriteBorder
+                            size={20}
+                            className="carousel-fav-icon-outline"
+                          />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </Slider>
         </div>
       </div>
+
+      <style>{`
+        .carousel-card-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 1rem;
+          padding-top: 0.5rem;
+          border-top: 1px solid var(--card-border);
+        }
+        
+        .carousel-favorite-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          transition: transform 0.2s ease;
+          border-radius: 8px;
+          padding: 0;
+        }
+        
+        .carousel-favorite-btn:disabled {
+          cursor: default;
+        }
+        
+        .carousel-favorite-btn:hover:not(:disabled) {
+          transform: scale(1.1);
+        }
+        
+        .carousel-fav-icon-outline {
+          color: var(--text-color);
+          opacity: 0.7;
+        }
+        
+        [data-theme="dark"] .carousel-fav-icon-outline {
+          color: #ffffff;
+          opacity: 0.9;
+        }
+        
+        .carousel-fav-spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid #ccc;
+          border-top-color: #333;
+          border-radius: 50%;
+          animation: carousel-fav-spin 0.6s linear infinite;
+        }
+        
+        [data-theme="dark"] .carousel-fav-spinner {
+          border-color: #555;
+          border-top-color: #fff;
+        }
+        
+        @keyframes carousel-fav-spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </>
   );
 }

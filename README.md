@@ -336,97 +336,85 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/home.png" alt="Home Page" width="100%">
 </p>
 
-### 2. Home Page (Dark Mode)
-
-<p align="center">
-  <img src="frontend/img/home-dark.png" alt="Home Page (Dark Mode)" width="100%">
-</p>
-
-### 3. Home Page (Guest User)
-
-<p align="center">
-  <img src="frontend/img/home-unauth.png" alt="Home Page (Guest User)" width="100%">
-</p>
-
-### 4. Article Details Page
+### 2. Article Details Page
 
 <p align="center">
   <img src="frontend/img/article-details.png" alt="Article Detail Page" width="100%">
 </p>
 
-### 5. Article Details Page (Guest User)
-
-<p align="center">
-  <img src="frontend/img/article-details-unauth.png" alt="Article Detail Page (Guest User)" width="100%">
-</p>
-
-### 6. Article Q&A Feature
+### 2.1. Article Q&A Feature
 
 <p align="center">
   <img src="frontend/img/articles-qa.png" alt="Article Q&A Feature" width="100%">
 </p>
 
-### 6.1. Article Comments & Ratings
+### 2.2. Related Articles (Vector Similarity Search)
+
+<p align="center">
+  <img src="frontend/img/related-articles.png" alt="Related Articles (Vector Similarity Search)" width="100%">
+</p>
+
+### 2.3. AI-Powered Article Bias Analysis
+
+<p align="center">
+  <img src="frontend/img/article-bias-analysis.png" alt="Article Bias Analysis" width="100%">
+</p>
+
+### 2.4. Article Ratings
+
+<p align="center">
+  <img src="frontend/img/article-ratings.png" alt="Article Ratings" width="100%">
+</p>
+
+### 2.5. Article Comments
 
 <p align="center">
   <img src="frontend/img/article-comments.png" alt="Article Comments & Ratings" width="100%">
 </p>
 
-### 6.2. AI-Powered Article Bias Analysis
-
-<p align="center">
-  <img src="frontend/img/article-bias.png" alt="AI-Powered Article Bias Analysis" width="100%">
-</p>
-
-### 7. Favorite Articles Page
+### 3. Favorite Articles Page (Only for Authenticated Users)
 
 <p align="center">
   <img src="frontend/img/favorites.png" alt="Favorite Articles Page" width="100%">
 </p>
 
-### 8. Favorite Articles Page (Unauthenticated User)
-
-<p align="center">
-  <img src="frontend/img/favorites-unauth.png" alt="Favorite Articles Page (Unauthenticated User)" width="100%">
-</p>
-
-### 9. Newsletter Subscription Page
+### 4. Newsletter Subscription Page
 
 <p align="center">
   <img src="frontend/img/newsletter.png" alt="Newsletter Subscription Page" width="100%">
 </p>
 
-### 10. User Authentication
+### 5. User Authentication
 
 <p align="center">
   <img src="frontend/img/login.png" alt="User Authentication" width="100%">
 </p>
 
-### 11. User Registration
+### 6. User Registration
 
 <p align="center">
   <img src="frontend/img/register.png" alt="User Registration" width="100%">
 </p>
 
-### 12. Reset Password
+### 7. Reset Password
 
 <p align="center">
   <img src="frontend/img/reset-password.png" alt="Reset Password" width="100%">
 </p>
 
-### 13. Search Results
+### 8. Search Results
 
 <p align="center">
   <img src="frontend/img/search-results.png" alt="User Profile Page" width="100%">
 </p>
 
-### 14. 404 Not Found Page
+### 9. 404 Not Found Page
 
 <p align="center">
   <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
 </p>
 
-### 15. Daily Newsletter Email Example
+### 10. Daily Newsletter Email Example
 
 <p align="center">
   <img src="frontend/img/newsletter-example.png" alt="Daily Newsletter Example" width="100%">

@@ -119,7 +119,7 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
         className="dropdown-header"
         onClick={() => setShowDropdown((prev) => !prev)}
       >
-        {selectedTopic || "All Topics"}
+        <span className="dropdown-text">{selectedTopic || "All Topics"}</span>
         <span className="dropdown-arrow">{showDropdown ? "▲" : "▼"}</span>
       </div>
       {showDropdown && (
