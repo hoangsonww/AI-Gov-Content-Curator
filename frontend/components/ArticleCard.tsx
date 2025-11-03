@@ -46,6 +46,11 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [favLoading, setFavLoading] = useState<boolean>(false);
 
+  const truncateSummary = (text: string, maxLength: number = 250) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + "...";
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -62,6 +67,35 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       .catch((err) => {
         console.error("Error loading favorites", err);
       });
+  }, [article._id]);
+
+  // Listen for cache updates from other components
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "favIds" && e.newValue) {
+        try {
+          const newIds = JSON.parse(e.newValue) as string[];
+          cachedFavIds = newIds;
+          setIsFavorited(newIds.includes(article._id));
+        } catch {}
+      }
+    };
+
+    const handleCustomEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.favIds) {
+        cachedFavIds = customEvent.detail.favIds;
+        setIsFavorited(customEvent.detail.favIds.includes(article._id));
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("favCacheUpdated", handleCustomEvent);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("favCacheUpdated", handleCustomEvent);
+    };
   }, [article._id]);
 
   const handleFavorite = async () => {
@@ -81,6 +115,13 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             cachedFavIds = cachedFavIds.filter((id) => id !== article._id);
           }
           localStorage.setItem("favIds", JSON.stringify(cachedFavIds));
+
+          // Dispatch custom event to notify other components
+          window.dispatchEvent(
+            new CustomEvent("favCacheUpdated", {
+              detail: { favIds: cachedFavIds },
+            }),
+          );
         }
         return next;
       });
@@ -120,7 +161,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeKatex]}
             >
-              {article.summary}
+              {truncateSummary(article.summary)}
             </ReactMarkdown>
           </div>
         )}

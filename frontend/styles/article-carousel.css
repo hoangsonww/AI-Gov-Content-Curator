@@ -179,6 +179,21 @@
   .article-carousel-section {
     display: none;
   }
+
+  .mobile-grid .article-summary {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .mobile-grid .article-summary * {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 }
 
 @media (max-width: 640px) {

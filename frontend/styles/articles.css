@@ -83,6 +83,17 @@
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
   min-height: 0;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.article-summary * {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.8;
+  line-height: 1.5;
+  margin: 0;
+  overflow-wrap: break-word;
 }
 
 .article-summary p {
@@ -91,6 +102,7 @@
   opacity: 0.8;
   line-height: 1.5;
   margin: 0;
+  overflow-wrap: break-word;
 }
 
 /* ---------- Article Topics ---------- */
@@ -166,6 +178,18 @@
 }
 
 /* ---------- Markdown Styling in Article Cards ---------- */
+.article-summary h1,
+.article-summary h2,
+.article-summary h3,
+.article-summary h4,
+.article-summary h5,
+.article-summary h6 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
 .article-summary ul,
 .article-summary ol {
   padding-left: 1.5em;
