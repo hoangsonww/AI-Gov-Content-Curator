@@ -66,6 +66,21 @@ export default function ArticleCarousel({
       .catch((err) => {
         console.error("Error loading favorites", err);
       });
+
+    // Listen for cache updates from other components
+    const handleCustomEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.favIds) {
+        cachedFavIds = customEvent.detail.favIds;
+        setFavoriteIds(new Set(customEvent.detail.favIds));
+      }
+    };
+
+    window.addEventListener("favCacheUpdated", handleCustomEvent);
+
+    return () => {
+      window.removeEventListener("favCacheUpdated", handleCustomEvent);
+    };
   }, []);
 
   const truncateSummary = (text: string, maxLength: number = 250) => {
@@ -133,6 +148,13 @@ export default function ArticleCarousel({
             cachedFavIds = cachedFavIds.filter((id) => id !== articleId);
           }
           localStorage.setItem("favIds", JSON.stringify(cachedFavIds));
+
+          // Dispatch custom event to notify other components
+          window.dispatchEvent(
+            new CustomEvent("favCacheUpdated", {
+              detail: { favIds: cachedFavIds },
+            }),
+          );
         }
 
         return next;

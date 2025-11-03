@@ -24,6 +24,17 @@ export default function FavoritesPage() {
       try {
         const data = await fetchFavoriteArticles(token);
         setFavoriteArticles(data);
+
+        // Update the cache with the fresh list of favorite IDs
+        const favIds = data.map((article: Article) => article._id);
+        localStorage.setItem("favIds", JSON.stringify(favIds));
+
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(
+          new CustomEvent("favCacheUpdated", {
+            detail: { favIds },
+          }),
+        );
       } catch (error) {
         console.error(
           error instanceof Error ? error.message : "An error occurred.",

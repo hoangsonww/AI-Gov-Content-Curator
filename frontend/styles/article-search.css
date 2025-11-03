@@ -144,6 +144,34 @@
   animation: slideIn 0.5s ease-out;
 }
 
+/* ---------- Fix Summary Overflow in Search Results ---------- */
+.article-search-results .article-summary {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.article-search-results .article-summary * {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.article-search-results .article-summary p,
+.article-search-results .article-summary h1,
+.article-search-results .article-summary h2,
+.article-search-results .article-summary h3,
+.article-search-results .article-summary h4,
+.article-search-results .article-summary h5,
+.article-search-results .article-summary h6 {
+  margin: 0 !important;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 /* ---------- Dropdown Styles (Topic Dropdown) ---------- */
 .topic-dropdown-container {
   position: relative;
