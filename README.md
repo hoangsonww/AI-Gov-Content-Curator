@@ -831,13 +831,6 @@ graph LR
     G -->|Yes| H[Output]
     G -->|No & Retry| B
     G -->|Max Retries| H
-
-    style B fill:#e1f5ff
-    style C fill:#e1f5ff
-    style D fill:#e1f5ff
-    style E fill:#e1f5ff
-    style F fill:#ffe1e1
-    style G fill:#fff4e1
 ```
 
 ### Key Features
