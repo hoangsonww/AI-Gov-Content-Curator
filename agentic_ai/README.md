@@ -50,13 +50,6 @@ graph TB
         J --> M[Sentiment]
         J --> N[Quality Score]
     end
-
-    style C fill:#e1f5ff
-    style D fill:#e1f5ff
-    style E fill:#e1f5ff
-    style F fill:#e1f5ff
-    style G fill:#ffe1e1
-    style H fill:#fff4e1
 ```
 
 ### Assembly Line Flow
@@ -132,12 +125,6 @@ graph LR
         Q3[Assess Coherence]
         Q4[Generate Score]
     end
-
-    style CA1 fill:#e3f2fd
-    style S1 fill:#f3e5f5
-    style C1 fill:#e8f5e9
-    style SA1 fill:#fff3e0
-    style Q1 fill:#ffebee
 ```
 
 ---
@@ -260,9 +247,6 @@ graph LR
     D -->|Results| C
     C -->|Response| B
     B -->|Result| A
-
-    style B fill:#e1f5ff
-    style C fill:#ffe1e1
 ```
 
 ---
@@ -303,11 +287,6 @@ graph TB
     A --> L
     L --> B
     L --> M
-
-    style B fill:#ff9900
-    style I fill:#569a31
-    style J fill:#dd344c
-    style L fill:#945df2
 ```
 
 **AWS Services:**
@@ -352,11 +331,6 @@ graph TB
     A --> L
     L --> B
     L --> M
-
-    style B fill:#0078d4
-    style I fill:#00a4ef
-    style J fill:#fcd116
-    style L fill:#7fba00
 ```
 
 **Azure Services:**
