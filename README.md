@@ -104,10 +104,10 @@ This monorepo, multi-services project is organized into five main components:
   - [Features (Newsletter)](#features-newsletter)
   - [Prerequisites & Installation (Newsletter)](#prerequisites--installation-newsletter)
 - [Agentic AI Pipeline](#agentic-ai-pipeline)
-  - [Overview](#agentic-ai-overview)
-  - [Key Features](#agentic-ai-features)
-  - [Architecture](#agentic-ai-architecture)
-  - [Getting Started](#agentic-ai-getting-started)
+  - [Overview](#overview)
+  - [Key Features](#key-features)
+  - [Architecture](#architecture)
+  - [Getting Started](#getting-started)
 - [Article Q&A Feature](#article-qa-feature)
   - [Features (Article Q&A)](#features-article-qa)
   - [Prerequisites & Installation (Article Q&A)](#prerequisites--installation-article-qa)
@@ -820,7 +820,7 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 
 The **Agentic AI Pipeline** is a sophisticated, production-ready multi-agent system built with **LangGraph** and **LangChain** that processes articles through a series of specialized AI agents. This advanced system provides enhanced content analysis, summarization, classification, sentiment analysis, and quality assurance beyond the basic AI features.
 
-### Overview {#agentic-ai-overview}
+### Overview
 
 The Agentic AI Pipeline implements an **assembly line architecture** where each specialized agent performs a specific task in sequence. Built on LangGraph's state machine framework, the pipeline ensures reliable, scalable, and sophisticated multi-agent orchestration.
 
@@ -844,7 +844,7 @@ graph LR
     style G fill:#fff4e1
 ```
 
-### Key Features {#agentic-ai-features}
+### Key Features
 
 - **🤖 Multi-Agent Architecture**: Five specialized agents working in concert
   - **Content Analyzer**: Extracts structure, entities, and key information
@@ -860,7 +860,7 @@ graph LR
 - **⚡ Production-Ready**: Comprehensive logging, monitoring, and error handling
 - **🔐 Secure**: Secrets management via AWS Secrets Manager and Azure Key Vault
 
-### Architecture {#agentic-ai-architecture}
+### Architecture
 
 The pipeline uses an **assembly line architecture** where articles flow through multiple specialized agents:
 
@@ -885,7 +885,7 @@ The pipeline uses an **assembly line architecture** where articles flow through 
 - **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch
 - **Azure**: Functions, Storage Queues, Blob Storage, Key Vault, Application Insights
 
-### Getting Started {#agentic-ai-getting-started}
+### Getting Started
 
 **Quick Start:**
 
