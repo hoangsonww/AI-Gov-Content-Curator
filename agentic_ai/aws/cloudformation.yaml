@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'SynthoraAI Agentic Pipeline - CloudFormation Template'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Deployment environment
+
+  MongoDBURI:
+    Type: String
+    NoEcho: true
+    Description: MongoDB connection URI
+
+  GoogleAIAPIKey:
+    Type: String
+    NoEcho: true
+    Description: Google AI API Key
+
+  PineconeAPIKey:
+    Type: String
+    NoEcho: true
+    Description: Pinecone API Key
+
+  RedisHost:
+    Type: String
+    Description: Redis host endpoint
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 1024
+    Runtime: python3.11
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        MONGODB_URI: !Ref MongoDBURI
+        GOOGLE_AI_API_KEY: !Ref GoogleAIAPIKey
+        PINECONE_API_KEY: !Ref PineconeAPIKey
+        REDIS_HOST: !Ref RedisHost
+
+Resources:
+  # Lambda Function for Article Processing
+  ArticleProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'synthora-ai-processor-${Environment}'
+      CodeUri: ../
+      Handler: aws.lambda_function.lambda_handler
+      Description: Processes articles through the Agentic AI Pipeline
+      Timeout: 300
+      MemorySize: 2048
+      EphemeralStorage:
+        Size: 1024
+      Layers:
+        - !Ref PythonDependenciesLayer
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: !Sub '${ProcessingBucket.Arn}/*'
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref APIKeysSecret
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /process
+            Method: post
+            RestApiId: !Ref AgenticAPI
+
+  # API Gateway
+  AgenticAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub 'synthora-ai-api-${Environment}'
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'POST, GET, OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+        AllowOrigin: "'*'"
+      Auth:
+        ApiKeyRequired: true
+
+  # Lambda Layer for Python Dependencies
+  PythonDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub 'synthora-ai-dependencies-${Environment}'
+      Description: Python dependencies for Agentic AI Pipeline
+      ContentUri: ./lambda-layer/
+      CompatibleRuntimes:
+        - python3.11
+      RetentionPolicy: Retain
+
+  # S3 Bucket for Processing Artifacts
+  ProcessingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'synthora-ai-processing-${AWS::AccountId}-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+
+  # Secrets Manager for API Keys
+  APIKeysSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub 'synthora-ai-keys-${Environment}'
+      Description: API keys for Agentic AI Pipeline
+      SecretString: !Sub |
+        {
+          "google_ai_api_key": "${GoogleAIAPIKey}",
+          "pinecone_api_key": "${PineconeAPIKey}",
+          "mongodb_uri": "${MongoDBURI}"
+        }
+
+  # CloudWatch Log Group
+  ProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/synthora-ai-processor-${Environment}'
+      RetentionInDays: 30
+
+  # SQS Queue for Async Processing
+  ProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'synthora-ai-queue-${Environment}'
+      VisibilityTimeout: 360
+      MessageRetentionPeriod: 86400
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  # Dead Letter Queue
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'synthora-ai-dlq-${Environment}'
+      MessageRetentionPeriod: 1209600  # 14 days
+
+  # CloudWatch Alarms
+  ProcessorErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'synthora-ai-errors-${Environment}'
+      AlarmDescription: Alert on Lambda errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ArticleProcessorFunction
+
+  # IAM Role for Step Functions (Optional)
+  StepFunctionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaRole
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${AgenticAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+
+  ProcessorFunctionArn:
+    Description: Article Processor Lambda Function ARN
+    Value: !GetAtt ArticleProcessorFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ProcessorArn'
+
+  ProcessingBucketName:
+    Description: S3 bucket for processing artifacts
+    Value: !Ref ProcessingBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+
+  QueueUrl:
+    Description: SQS Queue URL for async processing
+    Value: !Ref ProcessingQueue
+    Export:
+      Name: !Sub '${AWS::StackName}-QueueUrl'

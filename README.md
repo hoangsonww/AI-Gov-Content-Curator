@@ -4,12 +4,13 @@
 > **SynthoraAI - Synthesizing the world’s news & information through AI.** 🚀✨
 
 The **SynthoraAI - AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles.
-This monorepo, multi-services project is organized into four main components:
+This monorepo, multi-services project is organized into five main components:
 
 - **Backend:** Provides a robust RESTful API to store and serve curated articles.
 - **Crawler:** Automatically crawls and extracts article URLs and metadata from government homepages and public API sources.
 - **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
+- **Agentic AI Pipeline:** Sophisticated multi-agent system for advanced content processing using LangGraph and LangChain.
 
 <p align="center">
   <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator Logo" width="30%">
@@ -25,6 +26,8 @@ This monorepo, multi-services project is organized into four main components:
   - Live: [https://ai-content-curator-crawler.vercel.app/](https://ai-content-curator-crawler.vercel.app/)
 - **Newsletter:** `newsletters/`
   - Live: [https://ai-content-curator-newsletters.vercel.app/](https://ai-content-curator-newsletters.vercel.app/)
+- **Agentic AI Pipeline:** `agentic_ai/`
+  - Documentation: [agentic_ai/README.md](agentic_ai/README.md)
 
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-268?style=flat&logo=express&logoColor=white)
@@ -59,6 +62,10 @@ This monorepo, multi-services project is organized into four main components:
 ![Husky](https://img.shields.io/badge/Husky-456?style=flat&logo=haskell&logoColor=white)
 ![Jira & Confluence](https://img.shields.io/badge/Jira_&_Confluence-0052CC?style=flat&logo=jira&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-121212?style=flat&logo=chainlink&logoColor=white)
+![LangGraph](https://img.shields.io/badge/LangGraph-FF4785?style=flat&logo=graphql&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazon-aws&logoColor=white)
+![Azure](https://img.shields.io/badge/Azure-0078D4?style=flat&logo=microsoft-azure&logoColor=white)
 
 > [!IMPORTANT]
 > This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
@@ -96,6 +103,7 @@ This monorepo, multi-services project is organized into four main components:
 - [Newsletter Subscription](#newsletter-subscription)
   - [Features (Newsletter)](#features-newsletter)
   - [Prerequisites & Installation (Newsletter)](#prerequisites--installation-newsletter)
+- [Agentic AI Pipeline](#agentic-ai-pipeline)
 - [Article Q&A Feature](#article-qa-feature)
   - [Features (Article Q&A)](#features-article-qa)
   - [Prerequisites & Installation (Article Q&A)](#prerequisites--installation-article-qa)
@@ -801,6 +809,142 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 > - The daily updates are sent via email, ensuring that subscribers receive the most relevant information without having to check the app constantly.
 > - The newsletter feature is built using the Resend API, which provides a reliable and scalable solution for managing subscriptions and sending emails.
 > - Sometimes, the emails may end up in the spam folder, so users should check their spam folder if they don't see the emails in their inbox.
+
+---
+
+## Agentic AI Pipeline
+
+The **Agentic AI Pipeline** is a sophisticated, production-ready multi-agent system built with **LangGraph** and **LangChain** that processes articles through a series of specialized AI agents. This advanced system provides enhanced content analysis, summarization, classification, sentiment analysis, and quality assurance beyond the basic AI features.
+
+### Overview
+
+The Agentic AI Pipeline implements an **assembly line architecture** where each specialized agent performs a specific task in sequence. Built on LangGraph's state machine framework, the pipeline ensures reliable, scalable, and sophisticated multi-agent orchestration.
+
+```mermaid
+graph LR
+    A[Article Input] --> B[Content Analyzer]
+    B --> C[Summarizer]
+    C --> D[Classifier]
+    D --> E[Sentiment Analyzer]
+    E --> F[Quality Checker]
+    F --> G{Quality Pass?}
+    G -->|Yes| H[Output]
+    G -->|No & Retry| B
+    G -->|Max Retries| H
+```
+
+### Key Features
+
+- **🤖 Multi-Agent Architecture**: Five specialized agents working in concert
+  - **Content Analyzer**: Extracts structure, entities, and key information
+  - **Summarizer**: Generates concise, accurate summaries
+  - **Classifier**: Categorizes content into 15+ topic categories
+  - **Sentiment Analyzer**: Analyzes emotional tone and objectivity
+  - **Quality Checker**: Validates outputs with automatic retry logic
+
+- **🔄 Assembly Line Processing**: LangGraph-based state machine with conditional routing
+- **🔌 MCP Server**: Model Context Protocol server for standardized AI interactions
+- **☁️ Cloud-Ready**: Production configs for AWS Lambda and Azure Functions
+- **📊 Quality Assurance**: Built-in quality checking with automatic retry mechanisms
+- **⚡ Production-Ready**: Comprehensive logging, monitoring, and error handling
+- **🔐 Secure**: Secrets management via AWS Secrets Manager and Azure Key Vault
+
+### Architecture
+
+The pipeline uses an **assembly line architecture** where articles flow through multiple specialized agents:
+
+1. **Intake Node**: Validates input and initializes state
+2. **Content Analysis**: Extracts structure, entities, dates, and style
+3. **Summarization**: Generates 150-200 word summaries
+4. **Classification**: Categorizes into relevant topics
+5. **Sentiment Analysis**: Analyzes tone, objectivity, urgency, and controversy
+6. **Quality Check**: Validates outputs and determines if retry is needed
+7. **Output Node**: Returns final results
+
+**Technology Stack:**
+- **LangChain**: Framework for LLM-powered applications
+- **LangGraph**: State machine orchestration for multi-agent systems
+- **Python 3.11+**: Modern Python with async/await support
+- **Redis**: State management and caching
+- **MongoDB**: Data persistence
+- **Prometheus**: Metrics and monitoring
+- **FastMCP**: Model Context Protocol server implementation
+
+**Cloud Deployment:**
+- **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch
+- **Azure**: Functions, Storage Queues, Blob Storage, Key Vault, Application Insights
+
+### Getting Started
+
+**Quick Start:**
+
+```bash
+# Navigate to the agentic_ai directory
+cd agentic_ai
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# Run the MCP server
+python -m agentic_ai.mcp_server.server
+```
+
+**Use Programmatically:**
+
+```python
+from agentic_ai.core.pipeline import AgenticPipeline
+import asyncio
+
+# Initialize pipeline
+pipeline = AgenticPipeline()
+
+# Process an article
+result = asyncio.run(pipeline.process_article({
+    "id": "article-123",
+    "content": "Your article content...",
+    "url": "https://example.com/article",
+    "source": "government"
+}))
+
+print(f"Summary: {result['summary']}")
+print(f"Topics: {result['topics']}")
+print(f"Quality Score: {result['quality_score']}")
+```
+
+**Deploy to Cloud:**
+
+```bash
+# Deploy to AWS
+cd agentic_ai/aws
+./deploy.sh production
+
+# Deploy to Azure
+cd agentic_ai/azure
+./deploy.sh production
+```
+
+**Docker Deployment:**
+
+```bash
+cd agentic_ai
+docker-compose up -d
+```
+
+### Detailed Documentation
+
+For comprehensive documentation including:
+- Detailed agent specifications
+- MCP server API reference
+- Cloud deployment guides
+- Performance optimization tips
+- Monitoring and observability setup
+- Integration examples
+
+**Please see the complete documentation: [agentic_ai/README.md](agentic_ai/README.md)**
 
 ---
 
