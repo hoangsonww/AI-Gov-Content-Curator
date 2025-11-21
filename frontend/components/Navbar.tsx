@@ -9,6 +9,7 @@ import {
   MdHome,
   MdMenu,
   MdClose,
+  MdSmartToy,
 } from "react-icons/md";
 import { validateToken } from "../services/api";
 import { ToastContainer, toast } from "react-toastify";
@@ -130,6 +131,16 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
               <MdFavorite size={24} />
             </a>
           </Link>
+          <Link href="/ai_chat" legacyBehavior>
+            <a
+              className={`nav-link${
+                router.pathname === "/ai_chat" ? " active-link" : ""
+              }`}
+              title="Ask AI"
+            >
+              <MdSmartToy size={24} />
+            </a>
+          </Link>
 
           <ThemeToggle
             theme={theme}
@@ -199,7 +210,6 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
                   <span>Newsletter</span>
                 </a>
               </Link>
-
               <Link href="/favorites/favorites" legacyBehavior>
                 <a
                   className={`mobile-link${
@@ -210,6 +220,18 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
                 >
                   <MdFavorite size={20} />
                   <span>Favorites</span>
+                </a>
+              </Link>
+              <Link href="/ai_chat" legacyBehavior>
+                <a
+                  className={`mobile-link${
+                    router.pathname === "/ai_chat"
+                      ? " active-link"
+                      : ""
+                  }`}
+                >
+                  <MdSmartToy size={20} />
+                  <span>Ask AI</span>
                 </a>
               </Link>
 
