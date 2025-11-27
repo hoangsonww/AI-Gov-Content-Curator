@@ -26,6 +26,8 @@ This monorepo, multi-services project is organized into four main components:
 - **Newsletter:** `newsletters/`
   - Live: [https://ai-content-curator-newsletters.vercel.app/](https://ai-content-curator-newsletters.vercel.app/)
 
+Additionally, the project includes a set of shell scripts and a Makefile for automating common tasks, as well as a CLI tool for managing crawling and article operations. It also fully supports AWS, Terraform, & Kubernetes deployments with blue/green deployments, canary releases, and rolling updates via GitHub Actions.
+
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-268?style=flat&logo=express&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-000?style=flat&logo=next.js&logoColor=white)
@@ -58,6 +60,9 @@ This monorepo, multi-services project is organized into four main components:
 ![Winston](https://img.shields.io/badge/Winston-350?style=flat&logo=prometheus&logoColor=white)
 ![Husky](https://img.shields.io/badge/Husky-456?style=flat&logo=haskell&logoColor=white)
 ![Jira & Confluence](https://img.shields.io/badge/Jira_&_Confluence-0052CC?style=flat&logo=jira&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=task&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=flat&logo=terraform&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=kubernetes&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 
 > [!IMPORTANT]
@@ -116,6 +121,7 @@ This monorepo, multi-services project is organized into four main components:
   - [Frontend](#frontend-1)
   - [Crawler](#crawler-1)
 - [Continuous Integration / Continuous Deployment (CI/CD)](#continuous-integration--continuous-deployment-cicd)
+- [Deployment](#deployment)
 - [License](#license)
 - [Contact](#contact)
 - [Conclusion](#conclusion)
@@ -1166,6 +1172,14 @@ The project uses **GitHub Actions** for CI/CD. The workflow is defined in `.gith
 </p>
 
 Additional `.yml` files are also available for specific tasks, such as `backend-ci.yml`, `crawler-ci.yml`, and `frontend-ci.yml`.
+
+---
+
+## Deployment
+
+The project fully supports deployment with **AWS**, **Kubernetes**, and **Terraform** for infrastructure as code (IaC). It utilizes blue/green and canary deployment strategies for zero-downtime releases.
+
+For detailed deployment instructions, refer to the [`infrastructure/`](./infrastructure/README.md) directory, which contains Terraform scripts and Kubernetes manifests.
 
 ---
 

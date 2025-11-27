@@ -119,6 +119,24 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 //   next();
 // });
 
+/* ───────────── Health check endpoint ───────────── */
+
+app.get("/health", (_req: Request, res: Response) => {
+  const healthCheck = {
+    uptime: process.uptime(),
+    message: "OK",
+    timestamp: Date.now(),
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+  };
+
+  try {
+    res.status(200).json(healthCheck);
+  } catch (error) {
+    healthCheck.message = "Error";
+    res.status(503).json(healthCheck);
+  }
+});
+
 /* ───────────── API routes ───────────── */
 
 app.use("/api/comments", commentRoutes);

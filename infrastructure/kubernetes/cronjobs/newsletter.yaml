@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: newsletter
+  namespace: ai-curator
+  labels:
+    app: newsletter
+spec:
+  # Run daily at 9:00 AM UTC
+  schedule: "0 9 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    metadata:
+      labels:
+        app: newsletter
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: newsletter
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: newsletter
+              image: ghcr.io/hoangsonww/ai-curator-newsletters:latest
+              imagePullPolicy: Always
+              command: ["npm", "run", "send"]
+              env:
+                - name: NODE_ENV
+                  value: "production"
+              envFrom:
+                - secretRef:
+                    name: newsletter-secrets
+                - configMapRef:
+                    name: newsletter-config
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+          imagePullSecrets:
+            - name: ghcr-secret
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: newsletter-config
+  namespace: ai-curator
+data:
+  NODE_ENV: "production"
+  RESEND_FROM: "AI Curator <news@sonnguyenhoang.com>"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: newsletter-secrets
+  namespace: ai-curator
+type: Opaque
+stringData:
+  MONGODB_URI: "REPLACE_ME"
+  RESEND_API_KEY: "REPLACE_ME"

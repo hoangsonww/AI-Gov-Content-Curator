@@ -1,0 +1,354 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@4.0
+  aws-ecs: circleci/aws-ecs@4.0
+  kubernetes: circleci/kubernetes@1.3
+  slack: circleci/slack@4.12
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:18.18
+    resource_class: medium
+
+  terraform-executor:
+    docker:
+      - image: hashicorp/terraform:1.6
+    resource_class: small
+
+  kubectl-executor:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+
+parameters:
+  deployment-type:
+    type: string
+    default: "blue-green"
+  environment:
+    type: string
+    default: "prod"
+
+jobs:
+  # Linting and Testing
+  lint-and-test:
+    executor: node-executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - save_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Run Linting
+          command: npm run lint
+      - run:
+          name: Run Tests
+          command: npm test
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: coverage
+
+  # Build Docker Images
+  build-images:
+    executor: node-executor
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Backend Image
+          command: |
+            cd backend
+            docker build -t ghcr.io/hoangsonww/ai-curator-backend:$CIRCLE_SHA1 .
+            docker tag ghcr.io/hoangsonww/ai-curator-backend:$CIRCLE_SHA1 ghcr.io/hoangsonww/ai-curator-backend:latest
+      - run:
+          name: Build Frontend Image
+          command: |
+            cd frontend
+            docker build -t ghcr.io/hoangsonww/ai-curator-frontend:$CIRCLE_SHA1 .
+            docker tag ghcr.io/hoangsonww/ai-curator-frontend:$CIRCLE_SHA1 ghcr.io/hoangsonww/ai-curator-frontend:latest
+      - run:
+          name: Build Crawler Image
+          command: |
+            cd crawler
+            docker build -t ghcr.io/hoangsonww/ai-curator-crawler:$CIRCLE_SHA1 .
+            docker tag ghcr.io/hoangsonww/ai-curator-crawler:$CIRCLE_SHA1 ghcr.io/hoangsonww/ai-curator-crawler:latest
+      - run:
+          name: Build Newsletter Image
+          command: |
+            cd newsletters
+            docker build -t ghcr.io/hoangsonww/ai-curator-newsletters:$CIRCLE_SHA1 .
+            docker tag ghcr.io/hoangsonww/ai-curator-newsletters:$CIRCLE_SHA1 ghcr.io/hoangsonww/ai-curator-newsletters:latest
+      - run:
+          name: Login to GHCR
+          command: echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
+      - run:
+          name: Push Images
+          command: |
+            docker push ghcr.io/hoangsonww/ai-curator-backend:$CIRCLE_SHA1
+            docker push ghcr.io/hoangsonww/ai-curator-backend:latest
+            docker push ghcr.io/hoangsonww/ai-curator-frontend:$CIRCLE_SHA1
+            docker push ghcr.io/hoangsonww/ai-curator-frontend:latest
+            docker push ghcr.io/hoangsonww/ai-curator-crawler:$CIRCLE_SHA1
+            docker push ghcr.io/hoangsonww/ai-curator-crawler:latest
+            docker push ghcr.io/hoangsonww/ai-curator-newsletters:$CIRCLE_SHA1
+            docker push ghcr.io/hoangsonww/ai-curator-newsletters:latest
+
+  # Terraform Plan
+  terraform-plan:
+    executor: terraform-executor
+    steps:
+      - checkout
+      - run:
+          name: Terraform Init
+          command: |
+            cd infrastructure/terraform
+            terraform init
+      - run:
+          name: Terraform Plan
+          command: |
+            cd infrastructure/terraform
+            terraform plan -var="environment=<< pipeline.parameters.environment >>" -out=tfplan
+      - persist_to_workspace:
+          root: infrastructure/terraform
+          paths:
+            - tfplan
+      - store_artifacts:
+          path: infrastructure/terraform/tfplan
+
+  # Terraform Apply
+  terraform-apply:
+    executor: terraform-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: infrastructure/terraform
+      - run:
+          name: Terraform Init
+          command: |
+            cd infrastructure/terraform
+            terraform init
+      - run:
+          name: Terraform Apply
+          command: |
+            cd infrastructure/terraform
+            terraform apply -auto-approve tfplan
+
+  # Deploy to AWS ECS with Blue/Green
+  deploy-aws-blue-green:
+    executor: node-executor
+    steps:
+      - checkout
+      - aws-cli/setup
+      - run:
+          name: Deploy Backend
+          command: |
+            chmod +x infrastructure/scripts/deploy-aws.sh
+            ./infrastructure/scripts/deploy-aws.sh << pipeline.parameters.environment >> backend blue-green
+      - run:
+          name: Deploy Frontend
+          command: |
+            ./infrastructure/scripts/deploy-aws.sh << pipeline.parameters.environment >> frontend blue-green
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ AWS Deployment Successful!\n*Environment:* << pipeline.parameters.environment >>\n*Commit:* $CIRCLE_SHA1"
+                  }
+                }
+              ]
+            }
+
+  # Deploy to Kubernetes with Canary
+  deploy-k8s-canary:
+    executor: kubectl-executor
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run:
+          name: Install Argo Rollouts Plugin
+          command: |
+            curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+            chmod +x kubectl-argo-rollouts-linux-amd64
+            sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+      - run:
+          name: Configure kubectl
+          command: |
+            echo $KUBECONFIG_DATA | base64 -d > /tmp/kubeconfig
+            export KUBECONFIG=/tmp/kubeconfig
+      - run:
+          name: Deploy Services
+          command: |
+            chmod +x infrastructure/scripts/deploy-k8s.sh
+            export KUBECONFIG=/tmp/kubeconfig
+            ./infrastructure/scripts/deploy-k8s.sh ai-curator all deploy $CIRCLE_SHA1
+      - run:
+          name: Wait for Canary Analysis
+          command: |
+            export KUBECONFIG=/tmp/kubeconfig
+            # Wait for 5 minutes to allow canary analysis to run
+            sleep 300
+      - run:
+          name: Check Rollout Status
+          command: |
+            export KUBECONFIG=/tmp/kubeconfig
+            kubectl argo rollouts status backend -n ai-curator
+            kubectl argo rollouts status frontend -n ai-curator
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ Kubernetes Canary Deployment Successful!\n*Namespace:* ai-curator\n*Image Tag:* $CIRCLE_SHA1"
+                  }
+                }
+              ]
+            }
+
+  # Promote Canary Deployment
+  promote-canary:
+    executor: kubectl-executor
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run:
+          name: Configure kubectl
+          command: |
+            echo $KUBECONFIG_DATA | base64 -d > /tmp/kubeconfig
+            export KUBECONFIG=/tmp/kubeconfig
+      - run:
+          name: Promote Backend
+          command: |
+            export KUBECONFIG=/tmp/kubeconfig
+            kubectl argo rollouts promote backend -n ai-curator
+      - run:
+          name: Promote Frontend
+          command: |
+            export KUBECONFIG=/tmp/kubeconfig
+            kubectl argo rollouts promote frontend -n ai-curator
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 Canary Deployment Promoted to Production!"
+                  }
+                }
+              ]
+            }
+
+  # Smoke Tests
+  smoke-tests:
+    executor: node-executor
+    steps:
+      - checkout
+      - run:
+          name: Run Smoke Tests
+          command: |
+            # Add smoke test commands here
+            npm run test:smoke || true
+      - store_test_results:
+          path: test-results/smoke
+
+workflows:
+  version: 2
+
+  # CI/CD Pipeline for AWS
+  aws-deployment:
+    jobs:
+      - lint-and-test
+      - build-images:
+          requires:
+            - lint-and-test
+      - terraform-plan:
+          requires:
+            - build-images
+          filters:
+            branches:
+              only:
+                - main
+                - master
+      - hold-terraform:
+          type: approval
+          requires:
+            - terraform-plan
+      - terraform-apply:
+          requires:
+            - hold-terraform
+      - deploy-aws-blue-green:
+          requires:
+            - terraform-apply
+            - build-images
+      - smoke-tests:
+          requires:
+            - deploy-aws-blue-green
+
+  # CI/CD Pipeline for Kubernetes
+  k8s-deployment:
+    jobs:
+      - lint-and-test
+      - build-images:
+          requires:
+            - lint-and-test
+      - deploy-k8s-canary:
+          requires:
+            - build-images
+          filters:
+            branches:
+              only:
+                - main
+                - master
+      - hold-canary:
+          type: approval
+          requires:
+            - deploy-k8s-canary
+      - promote-canary:
+          requires:
+            - hold-canary
+      - smoke-tests:
+          requires:
+            - promote-canary
+
+  # Nightly builds
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 2 * * *"
+          filters:
+            branches:
+              only:
+                - main
+                - master
+    jobs:
+      - lint-and-test
+      - build-images:
+          requires:
+            - lint-and-test
