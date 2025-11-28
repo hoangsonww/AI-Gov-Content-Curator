@@ -14,7 +14,7 @@ const STATIC_URLS = [
   `${SITE_URL}/auth/reset-password`,
   `${SITE_URL}/favorites/favorites`,
   `${SITE_URL}/newsletter`,
-  `${SITE_URL}/ai_chat`
+  `${SITE_URL}/ai_chat`,
 ];
 
 /**

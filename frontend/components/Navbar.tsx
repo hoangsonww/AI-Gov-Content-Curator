@@ -225,9 +225,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
               <Link href="/ai_chat" legacyBehavior>
                 <a
                   className={`mobile-link${
-                    router.pathname === "/ai_chat"
-                      ? " active-link"
-                      : ""
+                    router.pathname === "/ai_chat" ? " active-link" : ""
                   }`}
                 >
                   <MdSmartToy size={20} />

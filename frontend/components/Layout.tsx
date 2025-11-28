@@ -16,21 +16,28 @@ export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
   const isLandingPage = router.pathname === "/";
   // measure navbar height and set it as a CSS variable
   const navbarWrapper = useRef<HTMLDivElement>(null);
+  const footerWrapper = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const updateNavHeight = () => {
-      if (navbarWrapper.current) {
-        const h = navbarWrapper.current.offsetHeight;
-        document.documentElement.style.setProperty("--navbar-height", `${h}px`);
-      }
+    const updateChromeHeights = () => {
+      const navHeight = navbarWrapper.current?.offsetHeight ?? 0;
+      const footerHeight = footerWrapper.current?.offsetHeight ?? 0;
+      document.documentElement.style.setProperty(
+        "--navbar-height",
+        `${navHeight}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--footer-height",
+        `${footerHeight}px`,
+      );
     };
 
-    updateNavHeight();
-    window.addEventListener("resize", updateNavHeight);
+    updateChromeHeights();
+    window.addEventListener("resize", updateChromeHeights);
     return () => {
-      window.removeEventListener("resize", updateNavHeight);
+      window.removeEventListener("resize", updateChromeHeights);
     };
-  }, []);
+  }, [isLandingPage]);
 
   return (
     <div
@@ -49,7 +56,9 @@ export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
       {/* @ts-ignore */}
       <main style={{ flex: 1 }}>{children}</main>
 
-      <Footer />
+      <div ref={footerWrapper}>
+        <Footer />
+      </div>
     </div>
   );
 }
