@@ -28,6 +28,7 @@ import "../styles/landing.css";
 import "../styles/comments.css";
 import "../styles/rating.css";
 import "../styles/biasAnalysis.css";
+import "../styles/saved-filters.css";
 import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";
 import { Analytics } from "@vercel/analytics/react";
