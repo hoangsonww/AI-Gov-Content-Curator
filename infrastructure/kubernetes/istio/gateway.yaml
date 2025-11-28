@@ -1,0 +1,165 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: ai-curator-gateway
+  namespace: ai-curator
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      hosts:
+        - "*"
+      tls:
+        mode: SIMPLE
+        credentialName: ai-curator-tls
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: backend
+  namespace: ai-curator
+spec:
+  hosts:
+    - backend
+  gateways:
+    - ai-curator-gateway
+    - mesh
+  http:
+    - name: primary
+      match:
+        - uri:
+            prefix: /api/
+      route:
+        - destination:
+            host: backend
+            port:
+              number: 80
+          weight: 100
+        - destination:
+            host: backend-canary
+            port:
+              number: 80
+          weight: 0
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+        retryOn: 5xx,reset,connect-failure,refused-stream
+      timeout: 10s
+      fault:
+        delay:
+          percentage:
+            value: 0.0
+          fixedDelay: 0s
+        abort:
+          percentage:
+            value: 0.0
+          httpStatus: 500
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: frontend
+  namespace: ai-curator
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - ai-curator-gateway
+    - mesh
+  http:
+    - name: primary
+      match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: frontend
+            port:
+              number: 80
+          weight: 100
+        - destination:
+            host: frontend-canary
+            port:
+              number: 80
+          weight: 0
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+        retryOn: 5xx,reset,connect-failure,refused-stream
+      timeout: 30s
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: backend
+  namespace: ai-curator
+spec:
+  host: backend
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+    loadBalancer:
+      simple: LEAST_REQUEST
+    outlierDetection:
+      consecutiveErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 40
+  subsets:
+    - name: stable
+      labels:
+        app: backend
+    - name: canary
+      labels:
+        app: backend
+        rollouts-pod-template-hash: canary
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: frontend
+  namespace: ai-curator
+spec:
+  host: frontend
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 200
+      http:
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 200
+        maxRequestsPerConnection: 2
+    loadBalancer:
+      simple: ROUND_ROBIN
+    outlierDetection:
+      consecutiveErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 40
+  subsets:
+    - name: stable
+      labels:
+        app: frontend
+    - name: canary
+      labels:
+        app: frontend
+        rollouts-pod-template-hash: canary

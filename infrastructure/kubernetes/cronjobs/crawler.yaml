@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crawler
+  namespace: ai-curator
+  labels:
+    app: crawler
+spec:
+  # Run daily at 6:00 AM UTC
+  schedule: "0 6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    metadata:
+      labels:
+        app: crawler
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: crawler
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: crawler
+              image: ghcr.io/hoangsonww/ai-curator-crawler:latest
+              imagePullPolicy: Always
+              command: ["npm", "run", "crawl"]
+              env:
+                - name: NODE_ENV
+                  value: "production"
+              envFrom:
+                - secretRef:
+                    name: crawler-secrets
+                - configMapRef:
+                    name: crawler-config
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+          imagePullSecrets:
+            - name: ghcr-secret
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crawler-config
+  namespace: ai-curator
+data:
+  NODE_ENV: "production"
+  CRAWL_URLS: "https://www.whitehouse.gov/briefing-room/,https://www.usa.gov/news"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crawler-secrets
+  namespace: ai-curator
+type: Opaque
+stringData:
+  MONGODB_URI: "REPLACE_ME"
+  NEWS_API_KEY: "REPLACE_ME"
+  GOOGLE_AI_API_KEY: "REPLACE_ME"
