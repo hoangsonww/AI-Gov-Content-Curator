@@ -9,6 +9,7 @@ import {
   MdHome,
   MdMenu,
   MdClose,
+  MdDashboard,
 } from "react-icons/md";
 import { validateToken } from "../services/api";
 import { ToastContainer, toast } from "react-toastify";
@@ -112,6 +113,14 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
               <MdHome size={24} />
             </a>
           </Link>
+          <Link href="/dashboard" legacyBehavior>
+            <a
+              className={`nav-link${router.pathname === "/dashboard" ? " active-link" : ""}`}
+              title="Dashboard"
+            >
+              <MdDashboard size={24} />
+            </a>
+          </Link>
           <Link href="/newsletter" legacyBehavior>
             <a
               className={`nav-link${router.pathname === "/newsletter" ? " active-link" : ""}`}
@@ -186,6 +195,17 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
                 >
                   <MdHome size={20} />
                   <span>Home</span>
+                </a>
+              </Link>
+
+              <Link href="/dashboard" legacyBehavior>
+                <a
+                  className={`mobile-link${
+                    router.pathname === "/dashboard" ? " active-link" : ""
+                  }`}
+                >
+                  <MdDashboard size={20} />
+                  <span>Dashboard</span>
                 </a>
               </Link>
 

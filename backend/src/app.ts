@@ -13,6 +13,7 @@ import chatRoutes from "./routes/chat.routes";
 import commentRoutes from "./routes/comment.routes";
 import ratingRoutes from "./routes/rating.routes";
 import biasRoutes from "./routes/bias.routes";
+import analyticsRoutes from "./routes/analytics.routes";
 
 import swaggerDocs from "./swagger/swagger";
 
@@ -147,6 +148,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/bias", biasRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 /* ───────────── 404 & error handling ───────────── */
 
