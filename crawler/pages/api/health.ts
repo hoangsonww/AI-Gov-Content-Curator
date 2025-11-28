@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
 interface HealthCheckResponse {
   status: string;
@@ -10,14 +10,14 @@ interface HealthCheckResponse {
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<HealthCheckResponse>
+  res: NextApiResponse<HealthCheckResponse>,
 ) {
   const healthCheck: HealthCheckResponse = {
-    status: 'OK',
+    status: "OK",
     uptime: process.uptime(),
     timestamp: Date.now(),
-    service: 'crawler',
-    environment: process.env.NODE_ENV || 'development',
+    service: "crawler",
+    environment: process.env.NODE_ENV || "development",
   };
 
   res.status(200).json(healthCheck);

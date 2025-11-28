@@ -35,6 +35,6 @@
     "healthCheckInterval": "00:00:10",
     "healthCheckWindow": "00:02:00",
     "healthCheckThreshold": 6,
-    "counterThreshold": 0.80
+    "counterThreshold": 0.8
   }
 }

@@ -201,6 +201,7 @@ class MyDocument extends Document {
                       `${siteUrl}/auth/register`,
                       `${siteUrl}/auth/reset-password`,
                       `${siteUrl}/favorites/favorites`,
+                      `${siteUrl}/ai_chat`,
                     ],
                   },
                 ],

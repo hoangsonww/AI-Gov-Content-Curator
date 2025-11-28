@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { handleChat } from "../controllers/chat.controller";
+import { handleChat, handleSitewideChat } from "../controllers/chat.controller";
 
 const router = Router();
 
@@ -65,5 +65,48 @@ const router = Router();
  *         description: Server error
  */
 router.post("/", handleChat);
+
+/**
+ * @swagger
+ * /api/chat/sitewide:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Sitewide chat with streaming responses using Pinecone search and Gemini AI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userMessage]
+ *             properties:
+ *               userMessage:
+ *                 type: string
+ *                 description: User's question
+ *               history:
+ *                 type: array
+ *                 description: Chat history (max 10 messages)
+ *                 items:
+ *                   type: object
+ *                   required: [role, text]
+ *                   properties:
+ *                     role:
+ *                       type: string
+ *                       enum: [user, assistant]
+ *                     text:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Server-Sent Events stream with AI response
+ *         content:
+ *           text/event-stream:
+ *             schema:
+ *               type: string
+ *       400:
+ *         description: Missing or invalid fields
+ *       500:
+ *         description: Server error
+ */
+router.post("/sitewide", handleSitewideChat);
 
 export default router;

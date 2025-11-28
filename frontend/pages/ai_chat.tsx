@@ -1,0 +1,1483 @@
+import React, { useState, useEffect, useRef, memo } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import Head from "next/head";
+import { Send } from "lucide-react";
+
+type Citation = {
+  number: number;
+  id: string;
+  title: string;
+  source: string;
+  url: string;
+  fetchedAt: string;
+  score: number;
+};
+
+type Message = {
+  id: string;
+  role: "user" | "ai";
+  text: string;
+  time?: string;
+  citations?: Citation[];
+  warnings?: string[];
+};
+
+type Conversation = {
+  id: string;
+  title: string;
+  messages: Message[];
+};
+
+const nowTime = () =>
+  new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+const MessageContent = memo(({ message }: { message: Message }) => {
+  const [hoveredCitation, setHoveredCitation] = useState<number | null>(null);
+
+  // Convert [Source N] citations to clickable links
+  const processTextWithCitations = (text: string) => {
+    return text.replace(/\[Source (\d+(?:,\s*\d+)*)\]/gi, (match, nums) => {
+      return `<sup class="citation-sup" data-nums="${nums}">[${nums}]</sup>`;
+    });
+  };
+
+  const handleCitationClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains("citation-sup")) {
+      const nums = target.getAttribute("data-nums");
+      if (nums) {
+        const firstNum = nums.split(",")[0].trim();
+        const citationEl = document.getElementById(
+          `citation-${message.id}-${firstNum}`,
+        );
+        if (citationEl) {
+          citationEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          citationEl.classList.add("highlight-citation");
+          setTimeout(
+            () => citationEl.classList.remove("highlight-citation"),
+            2000,
+          );
+        }
+      }
+    }
+  };
+
+  return (
+    <div className="msg-content">
+      <div
+        className="msg-text"
+        onClick={handleCitationClick}
+        dangerouslySetInnerHTML={{
+          __html: processTextWithCitations(message.text)
+            .replace(/\n/g, "<br/>")
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\*(.*?)\*/g, "<em>$1</em>"),
+        }}
+      />
+
+      {message.warnings && message.warnings.length > 0 && (
+        <div className="msg-warning">
+          <span className="warn-icon">⚠️</span>
+          <span className="warn-text">
+            Quality check detected potential issues. Please verify
+            independently.
+          </span>
+        </div>
+      )}
+
+      {message.citations && message.citations.length > 0 && (
+        <>
+          <div className="msg-divider" />
+          <div className="msg-sources">
+            <div className="sources-title">SOURCES</div>
+            {message.citations.map((citation) => (
+              <div
+                key={citation.number}
+                id={`citation-${message.id}-${citation.number}`}
+                className={`source-item ${hoveredCitation === citation.number ? "source-hovered" : ""}`}
+              >
+                <span className="source-num">[{citation.number}]</span>
+                <div className="source-body">
+                  <div className="source-top">
+                    <span className="source-title">{citation.title}</span>
+                    <span className="source-score">
+                      {Math.round(citation.score * 100)}%
+                    </span>
+                  </div>
+                  <div className="source-bottom">
+                    <span className="source-domain">
+                      {(() => {
+                        try {
+                          return new URL(
+                            citation.url || citation.source,
+                          ).hostname.replace("www.", "");
+                        } catch {
+                          return citation.source;
+                        }
+                      })()}
+                    </span>
+                    {citation.url && (
+                      <a
+                        href={citation.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="source-link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="msg-time">{message.time}</div>
+    </div>
+  );
+});
+
+MessageContent.displayName = "MessageContent";
+
+export default function ChatPage() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConvId, setActiveConvId] = useState("");
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [renameConvId, setRenameConvId] = useState("");
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Load conversations from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("chat-conversations");
+    const storedActiveId = localStorage.getItem("chat-active-id");
+
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.length > 0) {
+          setConversations(parsed);
+          if (
+            storedActiveId &&
+            parsed.find((c: Conversation) => c.id === storedActiveId)
+          ) {
+            setActiveConvId(storedActiveId);
+          } else {
+            setActiveConvId(parsed[0].id);
+          }
+        }
+      } catch (e) {
+        // If parsing fails, start with empty
+        setConversations([]);
+        setActiveConvId("");
+      }
+    }
+  }, []);
+
+  // Save conversations to localStorage whenever they change
+  useEffect(() => {
+    if (conversations.length > 0) {
+      localStorage.setItem("chat-conversations", JSON.stringify(conversations));
+    } else {
+      localStorage.removeItem("chat-conversations");
+    }
+  }, [conversations]);
+
+  // Save active conversation ID
+  useEffect(() => {
+    if (activeConvId) {
+      localStorage.setItem("chat-active-id", activeConvId);
+    } else {
+      localStorage.removeItem("chat-active-id");
+    }
+  }, [activeConvId]);
+
+  const activeConversation = conversations.find((c) => c.id === activeConvId);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeConversation?.messages.length, isTyping]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(
+        240,
+        textareaRef.current.scrollHeight,
+      )}px`;
+    }
+  }, [input]);
+
+  async function sendMessage(text: string) {
+    if (!text.trim()) return;
+
+    const msg: Message = {
+      id: `m-${Date.now()}`,
+      role: "user",
+      text,
+      time: nowTime(),
+    };
+
+    let currentConvId = activeConvId;
+    let historyMessages: Message[] = [];
+
+    // If no conversations exist, create one
+    if (conversations.length === 0) {
+      const newConvId = `c-${Date.now()}`;
+      const welcomeMsg: Message = {
+        id: `m-welcome-${Date.now()}`,
+        role: "ai",
+        text: "Hello! I'm ArticleIQ, your AI assistant for exploring government and news articles. Ask me anything about the articles in our database, and I'll search through them to provide you with relevant information.",
+        time: nowTime(),
+      };
+      const newConv: Conversation = {
+        id: newConvId,
+        title: "New Chat",
+        messages: [welcomeMsg, msg],
+      };
+      setConversations([newConv]);
+      setActiveConvId(newConvId);
+      currentConvId = newConvId;
+      historyMessages = [welcomeMsg];
+    } else {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeConvId ? { ...c, messages: [...c.messages, msg] } : c,
+        ),
+      );
+      const currentConversation = conversations.find(
+        (c) => c.id === activeConvId,
+      );
+      historyMessages = currentConversation?.messages || [];
+    }
+
+    setInput("");
+    setIsTyping(true);
+
+    try {
+      // Get conversation history for context (last 10 messages)
+      // Gemini requires the first turn to be from the user, so trim leading assistant messages (e.g., welcome message)
+      const mappedHistory = historyMessages.slice(-10).map((m) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        text: m.text,
+      }));
+      const firstUserIdx = mappedHistory.findIndex((m) => m.role === "user");
+      const history =
+        firstUserIdx === -1 ? [] : mappedHistory.slice(firstUserIdx);
+
+      // Call backend streaming API
+      const API_URL = (
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://ai-content-curator-backend.vercel.app"
+      ).replace(/\/$/, "");
+      const response = await fetch(`${API_URL}/api/chat/sitewide`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          userMessage: text,
+          history: history,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Create a placeholder message immediately for streaming
+      const aiMsgId = `m-ai-${Date.now()}`;
+      let streamedText = "";
+      let citations: Citation[] = [];
+      let warnings: string[] = [];
+
+      // Create the message bubble immediately
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === currentConvId
+            ? {
+                ...c,
+                messages: [
+                  ...c.messages,
+                  {
+                    id: aiMsgId,
+                    role: "ai" as const,
+                    text: "",
+                    time: nowTime(),
+                    citations: [],
+                    warnings: [],
+                  },
+                ],
+              }
+            : c,
+        ),
+      );
+      setIsTyping(false);
+
+      // Handle Server-Sent Events stream (robust multi-line parser)
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("Response body is not readable");
+      }
+
+      let buffer = "";
+      let currentEvent = "";
+      let dataLines: string[] = [];
+
+      const flushEvent = () => {
+        if (dataLines.length === 0) return;
+        const payload = dataLines.join("\n").trim();
+        dataLines = [];
+        if (!payload) return;
+
+        try {
+          const data = JSON.parse(payload);
+
+          if (data.sources) {
+            citations = data.sources;
+            console.log("Received citations:", citations.length);
+          }
+
+          if (data.warnings) {
+            warnings = data.warnings;
+            console.log("Received warnings:", warnings);
+          }
+
+          if (typeof data.text === "string" || currentEvent === "chunk") {
+            if (typeof data.text === "string") {
+              streamedText += data.text;
+            }
+
+            setConversations((prevConvs) => {
+              const targetConv = prevConvs.find((c) => c.id === currentConvId);
+              if (!targetConv) {
+                console.error(
+                  "Conversation not found for ID:",
+                  currentConvId,
+                  "Available:",
+                  prevConvs.map((c) => c.id),
+                );
+                return prevConvs;
+              }
+
+              const newConvs = prevConvs.map((c) => {
+                if (c.id !== currentConvId) return c;
+
+                const aiMsgExists = c.messages.some((m) => m.id === aiMsgId);
+
+                if (aiMsgExists) {
+                  return {
+                    ...c,
+                    messages: c.messages.map((m) =>
+                      m.id === aiMsgId
+                        ? {
+                            ...m,
+                            text: streamedText,
+                            citations: [...citations],
+                            warnings: [...warnings],
+                          }
+                        : m,
+                    ),
+                  };
+                }
+
+                return {
+                  ...c,
+                  messages: [
+                    ...c.messages,
+                    {
+                      id: aiMsgId,
+                      role: "ai" as const,
+                      text: streamedText,
+                      time: nowTime(),
+                      citations: [...citations],
+                      warnings: [...warnings],
+                    },
+                  ],
+                };
+              });
+              return [...newConvs];
+            });
+          } else if (currentEvent === "error" && data.message) {
+            console.error("Streaming error:", data);
+            if (streamedText.trim().length === 0) {
+              streamedText =
+                data.message || "An error occurred. Please try again.";
+              setConversations((prev) =>
+                prev.map((c) =>
+                  c.id === currentConvId
+                    ? {
+                        ...c,
+                        messages: c.messages.map((m) =>
+                          m.id === aiMsgId ? { ...m, text: streamedText } : m,
+                        ),
+                      }
+                    : c,
+                ),
+              );
+            } else {
+              // Preserve partial response and surface the error as a warning
+              warnings = [...warnings, data.message];
+              setConversations((prev) =>
+                prev.map((c) =>
+                  c.id === currentConvId
+                    ? {
+                        ...c,
+                        messages: c.messages.map((m) =>
+                          m.id === aiMsgId
+                            ? {
+                                ...m,
+                                text: streamedText,
+                                citations: [...citations],
+                                warnings: [...warnings],
+                              }
+                            : m,
+                        ),
+                      }
+                    : c,
+                ),
+              );
+            }
+          }
+        } catch (err) {
+          console.error("Failed to parse SSE payload", {
+            currentEvent,
+            payload,
+            err,
+          });
+        }
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex = buffer.indexOf("\n");
+        while (newlineIndex !== -1) {
+          const line = buffer.slice(0, newlineIndex).trimEnd();
+          buffer = buffer.slice(newlineIndex + 1);
+
+          if (line.startsWith("event:")) {
+            flushEvent();
+            currentEvent = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
+            dataLines.push(line.slice(5).trim());
+          } else if (line === "") {
+            flushEvent();
+            currentEvent = "";
+          }
+
+          newlineIndex = buffer.indexOf("\n");
+        }
+      }
+
+      flushEvent();
+
+      // Final update with all citations and warnings
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === currentConvId
+            ? {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === aiMsgId
+                    ? {
+                        ...m,
+                        text:
+                          streamedText ||
+                          "Sorry, I couldn't generate a response. Please try again.",
+                        citations,
+                        warnings,
+                      }
+                    : m,
+                ),
+              }
+            : c,
+        ),
+      );
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setIsTyping(false);
+
+      // Add error message
+      const errorMsg: Message = {
+        id: `m-ai-${Date.now()}`,
+        role: "ai",
+        text: "Sorry, there was an error processing your request. Please check your connection and try again.",
+        time: nowTime(),
+      };
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeConvId
+            ? { ...c, messages: [...c.messages, errorMsg] }
+            : c,
+        ),
+      );
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      void sendMessage(input);
+    }
+  }
+
+  function createNewConversation() {
+    const id = `c-${Date.now()}`;
+    const welcomeMsg: Message = {
+      id: `m-welcome-${Date.now()}`,
+      role: "ai",
+      text: "Hello! I'm ArticleIQ, your AI assistant for exploring government and news articles. Ask me anything about the articles in our database, and I'll search through them to provide you with relevant information.",
+      time: nowTime(),
+    };
+    const conv: Conversation = {
+      id,
+      title: "New Chat",
+      messages: [welcomeMsg],
+    };
+    setConversations([conv, ...conversations]);
+    setActiveConvId(id);
+  }
+
+  function openRenameModal(conv: Conversation) {
+    setRenameConvId(conv.id);
+    setRenameValue(conv.title);
+    setRenameModalOpen(true);
+  }
+
+  function handleRename() {
+    if (renameValue.trim()) {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === renameConvId ? { ...c, title: renameValue.trim() } : c,
+        ),
+      );
+      setRenameModalOpen(false);
+      setRenameValue("");
+      setRenameConvId("");
+    }
+  }
+
+  function deleteConversation(convId: string) {
+    setConversations((prev) => {
+      const filtered = prev.filter((c) => c.id !== convId);
+
+      // If we deleted the active conversation, switch to another one
+      if (convId === activeConvId) {
+        if (filtered.length > 0) {
+          setActiveConvId(filtered[0].id);
+        } else {
+          // No conversations left, clear everything
+          setActiveConvId("");
+          return [];
+        }
+      }
+
+      return filtered;
+    });
+    setDeleteConfirmId(null);
+  }
+
+  function clearConversation(convId: string) {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === convId ? { ...c, messages: [] } : c)),
+    );
+  }
+
+  return (
+    <>
+      <Head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
+      <div className="chat-root">
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div className="sidebar-header">
+            <div className="brand">Conversations</div>
+            <button className="btn-new" onClick={createNewConversation}>
+              +
+            </button>
+          </div>
+
+          <div className="conversation-list">
+            {conversations.map((conv) => (
+              <div
+                key={conv.id}
+                className={`conv-item ${conv.id === activeConvId ? "active" : ""}`}
+                onClick={() => setActiveConvId(conv.id)}
+              >
+                <span className="conv-title">{conv.title}</span>
+                <div className="conv-actions">
+                  <button
+                    className="conv-action-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openRenameModal(conv);
+                    }}
+                    title="Rename"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    className="conv-action-btn conv-action-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteConfirmId(conv.id);
+                    }}
+                    title="Delete"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Chat Main */}
+        <main className="chat-main">
+          <div className="messages-container">
+            {conversations.length === 0 && (
+              <div className="empty-state-main">
+                <div className="empty-icon">💬</div>
+                <h2 className="empty-title">Welcome to ArticleIQ</h2>
+                <p className="empty-desc">
+                  Send a message below to start your first conversation
+                </p>
+              </div>
+            )}
+
+            {conversations.length > 0 &&
+              activeConversation?.messages.length === 0 &&
+              !isTyping && (
+                <div className="empty-state">Start the conversation</div>
+              )}
+
+            {activeConversation?.messages.map((m) => (
+              <div key={m.id} className={`message-row ${m.role}`}>
+                <div className={`message-bubble ${m.role}`}>
+                  <MessageContent message={m} />
+                </div>
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="message-row ai">
+                <div className="typing-bubble">
+                  <span>.</span>
+                  <span>.</span>
+                  <span>.</span>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Composer */}
+          <form
+            className="composer"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void sendMessage(input);
+            }}
+          >
+            <textarea
+              ref={textareaRef}
+              className="composer-input"
+              placeholder="Your message here...."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={2}
+            />
+            <button
+              className="btn-send"
+              type="submit"
+              aria-label="Send message"
+            >
+              <Send className="send-icon" size={18} strokeWidth={2.4} />
+            </button>
+          </form>
+        </main>
+
+        {/* Rename Modal */}
+        {renameModalOpen && (
+          <div
+            className="modal-overlay"
+            onClick={() => setRenameModalOpen(false)}
+          >
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Rename Conversation</h3>
+                <button
+                  className="modal-close"
+                  onClick={() => setRenameModalOpen(false)}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M18 6L6 18M6 6l12 12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="modal-body">
+                <input
+                  type="text"
+                  className="modal-input"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleRename();
+                    if (e.key === "Escape") setRenameModalOpen(false);
+                  }}
+                  autoFocus
+                  placeholder="Enter conversation name"
+                />
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="modal-btn modal-btn-cancel"
+                  onClick={() => setRenameModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="modal-btn modal-btn-primary"
+                  onClick={handleRename}
+                >
+                  Rename
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmId && (
+          <div
+            className="modal-overlay"
+            onClick={() => setDeleteConfirmId(null)}
+          >
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Delete Conversation</h3>
+                <button
+                  className="modal-close"
+                  onClick={() => setDeleteConfirmId(null)}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M18 6L6 18M6 6l12 12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="modal-body">
+                <p className="modal-text">
+                  Are you sure you want to delete this conversation? This action
+                  cannot be undone.
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="modal-btn modal-btn-cancel"
+                  onClick={() => setDeleteConfirmId(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="modal-btn modal-btn-danger"
+                  onClick={() => deleteConversation(deleteConfirmId)}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <style jsx>{`
+          .chat-root {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: calc(
+              100vh - var(--navbar-height, 0px) - var(--footer-height, 0px)
+            );
+            max-height: calc(
+              100vh - var(--navbar-height, 0px) - var(--footer-height, 0px)
+            );
+            min-height: 0;
+            background: #0f0f0f;
+            color: #fff;
+            gap: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: "Inter", sans-serif;
+          }
+
+          :global(main) {
+            padding: 0;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            min-height: 0;
+          }
+
+          /* Sidebar */
+          .sidebar {
+            background: #1b1b1b;
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            min-height: 0;
+          }
+
+          .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+          }
+
+          .btn-new {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease-in-out;
+          }
+          .btn-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+          }
+
+          .conversation-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+          }
+
+          .conv-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+          .conv-item:hover {
+            background: #2a2a2a;
+            transform: translateX(2px);
+          }
+          .conv-item.active {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+          }
+
+          .conv-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+          }
+
+          .conv-item:hover .conv-actions {
+            opacity: 1;
+          }
+
+          .conv-action-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .conv-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+          }
+
+          .conv-action-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+          }
+
+          /* Chat main */
+          .chat-main {
+            display: flex;
+            flex-direction: column;
+            background: #161616;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            min-height: 0;
+          }
+
+          .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 0;
+          }
+
+          .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 32px;
+            font-size: 14px;
+          }
+
+          .empty-state-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 48px 24px;
+            text-align: center;
+          }
+
+          .empty-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+          }
+
+          .empty-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0 0 12px 0;
+          }
+
+          .empty-desc {
+            font-size: 16px;
+            color: #9ca3af;
+            margin: 0;
+            max-width: 400px;
+          }
+
+          .message-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+          }
+          .message-row.user {
+            justify-content: flex-end;
+          }
+          .message-row.ai {
+            justify-content: flex-start;
+          }
+
+          .message-bubble {
+            padding: 14px 20px;
+            border-radius: 22px;
+            max-width: 65%;
+            word-break: break-word;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: transform 0.1s;
+          }
+          .message-bubble.user {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            color: white;
+          }
+          .message-bubble.ai {
+            background: #2a2a2a;
+            color: #fff;
+          }
+
+          .message-bubble:hover {
+            transform: translateY(-1px);
+          }
+
+          :global(.msg-content) {
+            width: 100%;
+          }
+
+          :global(.msg-text) {
+            line-height: 1.6;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+          }
+
+          :global(.msg-text strong) {
+            font-weight: 700;
+          }
+
+          :global(.msg-text em) {
+            font-style: italic;
+          }
+
+          :global(.msg-text .citation-sup) {
+            color: #60a5fa;
+            cursor: pointer;
+            font-weight: 700;
+            margin: 0 2px;
+            transition: color 0.15s;
+          }
+
+          :global(.msg-text .citation-sup:hover) {
+            color: #3b82f6;
+          }
+
+          :global(.msg-warning) {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(251, 191, 36, 0.08);
+            border-left: 3px solid #fbbf24;
+            border-radius: 4px;
+            margin: 16px 0;
+          }
+
+          :global(.warn-icon) {
+            font-size: 16px;
+            flex-shrink: 0;
+          }
+
+          :global(.warn-text) {
+            font-size: 12px;
+            color: #fbbf24;
+            line-height: 1.4;
+          }
+
+          :global(.msg-divider) {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(59, 130, 246, 0.3) 20%,
+              rgba(59, 130, 246, 0.3) 80%,
+              transparent
+            );
+            margin: 20px 0 16px 0;
+          }
+
+          :global(.msg-sources) {
+            margin-top: 12px;
+          }
+
+          :global(.sources-title) {
+            font-size: 10px;
+            font-weight: 700;
+            color: #6b7280;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+          }
+
+          :global(.source-item) {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+          }
+
+          :global(.source-item:hover),
+          :global(.source-item.source-hovered),
+          :global(.source-item.highlight-citation) {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.25);
+          }
+
+          :global(.source-num) {
+            color: #60a5fa;
+            font-weight: 700;
+            font-size: 12px;
+            flex-shrink: 0;
+            line-height: 1.4;
+          }
+
+          :global(.source-body) {
+            flex: 1;
+            min-width: 0;
+          }
+
+          :global(.source-top) {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 8px;
+          }
+
+          :global(.source-title) {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            color: #e5e7eb;
+            line-height: 1.4;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+          }
+
+          :global(.source-score) {
+            font-size: 11px;
+            font-weight: 700;
+            color: #60a5fa;
+            flex-shrink: 0;
+          }
+
+          :global(.source-bottom) {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          :global(.source-domain) {
+            font-size: 11px;
+            color: #9ca3af;
+          }
+
+          :global(.source-link) {
+            font-size: 11px;
+            font-weight: 600;
+            color: #60a5fa;
+            text-decoration: none;
+            transition: color 0.15s;
+          }
+
+          :global(.source-link:hover) {
+            color: #3b82f6;
+          }
+
+          :global(.msg-time) {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 12px;
+            text-align: right;
+          }
+
+          .message-row.user :global(.msg-time) {
+            color: #ffffff;
+          }
+
+          .message-time {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 12px;
+            text-align: right;
+          }
+
+          .typing-bubble {
+            display: flex;
+            gap: 4px;
+            background: #2a2a2a;
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: #3b82f6;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+          }
+
+          @keyframes pulse {
+            0%,
+            100% {
+              opacity: 0.5;
+            }
+            50% {
+              opacity: 1;
+            }
+          }
+
+          /* Composer */
+          .composer {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            padding: 18px 24px;
+            border-top: 1px solid #2c2c2c;
+            gap: 12px;
+          }
+
+          .composer-input {
+            flex: 1;
+            border: none;
+            border-radius: 22px;
+            padding: 14px 18px;
+            background: #121212;
+            color: white;
+            resize: none;
+            font-size: 14px;
+            font-family: "Inter", sans-serif;
+            outline: none;
+            transition: box-shadow 0.2s ease-in-out;
+          }
+
+          .composer-input:focus {
+            box-shadow: 0 0 0 2px #3b82f6;
+          }
+
+          .btn-send {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 22px;
+            height: 44px;
+            width: 44px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            gap: 0;
+            font-weight: 700;
+            font-size: 13px;
+          }
+          .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+          }
+
+          .send-icon {
+            width: 18px;
+            height: 18px;
+            display: block;
+            color: #fff;
+          }
+
+          /* Modal Styles */
+          .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.15s ease;
+          }
+
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+
+          .modal-content {
+            background: #1f1f1f;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.2s ease;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+          }
+
+          @keyframes slideUp {
+            from {
+              transform: translateY(20px);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+
+          .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          }
+
+          .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+          }
+
+          .modal-close {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+          }
+
+          .modal-body {
+            padding: 24px;
+          }
+
+          .modal-input {
+            width: 100%;
+            background: #121212;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+          }
+
+          .modal-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          }
+
+          .modal-text {
+            margin: 0;
+            color: #d1d5db;
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
+          .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            justify-content: flex-end;
+          }
+
+          .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+          }
+
+          .modal-btn-cancel {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+
+          .modal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+          }
+
+          .modal-btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+          }
+
+          .modal-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+          }
+
+          .modal-btn-danger {
+            background: #ef4444;
+            color: white;
+          }
+
+          .modal-btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+          }
+        `}</style>
+      </div>
+    </>
+  );
+}

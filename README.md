@@ -115,6 +115,9 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 - [Intelligent Recommendation System](#intelligent-recommendation-system)
   - [Related Articles (Vector Similarity Search)](#related-articles-vector-similarity-search)
   - [Recommended Articles (Client-Side ML)](#recommended-articles-client-side-ml)
+- [Sitewide AI Chat](#sitewide-ai-chat)
+  - [How It Works](#how-it-works)
+  - [Streaming Contract](#streaming-contract)
 - [Command Line Interface (CLI)](#command-line-interface-cli)
   - [Installation](#installation)
   - [Usage](#usage)
@@ -989,6 +992,44 @@ To use the article Q&A feature, simply navigate to the article detail page of an
 
 Feel free to ask any questions related to the article, and the AI will do its best to provide accurate and relevant answers. This feature is designed to enhance user engagement and provide quick access to information without having
 to read through the entire article.
+
+---
+
+## Sitewide AI Chat
+
+The sitewide chat lets users ask open-ended questions across the full corpus—not just a single article—while keeping every claim cited.
+
+- **RAG over the whole library:** The backend (`/api/chat/sitewide`) converts queries to text-embedding-004 vectors, searches Pinecone for top matches, and builds a context block with `[Source N]` slots.
+- **Streaming Gemini replies:** Gemini 2.0 Flash / Flash Lite streams text via Server-Sent Events (SSE) with automatic API-key/model failover and history compaction to stay within token budgets.
+- **Inline citations & warnings:** Responses carry citation metadata plus hallucination checks (missing citations, invalid refs, overconfident claims, uncited numbers). The frontend renders clickable superscripts and yellow warnings if issues are detected.
+- **Rich client UX:** `frontend/pages/ai_chat.tsx` provides multiple conversations, local storage persistence, typing indicators, and interactive source cards.
+
+### How It Works
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Frontend (ai_chat.tsx)
+    participant API as Backend /api/chat/sitewide
+    participant Vec as Pinecone (ai-gov-articles)
+    participant LLM as Gemini 2.0 Flash
+
+    User->>UI: Ask question
+    UI->>API: POST userMessage + trimmed history
+    API->>Vec: Embed query (text-embedding-004) & semantic search
+    Vec-->>API: Top K articles + metadata
+    API->>LLM: Stream request with context + citations + guardrails
+    LLM-->>API: SSE chunks (text)
+    API-->>UI: SSE events (status/context/citations/chunk/warnings/done)
+    UI-->>User: Live updates, clickable citations, warnings if any
+```
+
+### Streaming Contract
+
+- **Endpoint:** `POST /api/chat/sitewide`
+- **Events:** `status`, `context`, `citations`, `chunk`, `warnings`, `done`
+- **Payloads:** JSON per event (e.g., `{"message":"Generating response..."}`, `{"sources":[{number,title,url,score}]}`, `{"text":"partial reply"}`)
+- **Frontend handling:** Streams append text into the active message bubble; citations hydrate source cards; warnings show a yellow banner above the AI reply.
 
 ---
 

@@ -126,7 +126,8 @@ app.get("/health", (_req: Request, res: Response) => {
     uptime: process.uptime(),
     message: "OK",
     timestamp: Date.now(),
-    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    database:
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected",
   };
 
   try {

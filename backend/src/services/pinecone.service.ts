@@ -132,3 +132,42 @@ export async function deleteArticleVector(articleId: string) {
     throw error;
   }
 }
+
+/**
+ * Search for articles relevant to a text query using semantic search.
+ *
+ * @param query The text query to search for
+ * @param limit The maximum number of results to return
+ * @returns Array of relevant articles with metadata and similarity scores
+ */
+export async function searchArticles(
+  query: string,
+  limit: number = 5,
+): Promise<any[]> {
+  try {
+    const client = getPineconeClient();
+    const index = client.index(indexName);
+
+    // Generate embedding for the query
+    const queryEmbedding = await getEmbedding(query);
+
+    // Query Pinecone for similar articles
+    const queryResponse = await index.query({
+      vector: queryEmbedding,
+      topK: limit,
+      includeMetadata: true,
+    });
+
+    // Transform results
+    const results = queryResponse.matches.map((match) => ({
+      id: match.id,
+      score: match.score,
+      ...match.metadata,
+    }));
+
+    return results;
+  } catch (error) {
+    console.error(`Error searching articles for query "${query}":`, error);
+    throw error;
+  }
+}
