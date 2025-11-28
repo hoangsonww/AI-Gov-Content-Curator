@@ -1992,6 +1992,7 @@ flowchart LR
 - **Istio:** https://istio.io/latest/docs/
 - **AWS ECS Best Practices:** https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/
 - **Kubernetes Best Practices:** https://kubernetes.io/docs/concepts/configuration/overview/
+- **License:** MIT License (see [LICENSE](LICENSE) file)
 
 ---
 

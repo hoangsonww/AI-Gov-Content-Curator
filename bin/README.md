@@ -147,4 +147,4 @@ aicc article delete 64a1f2d3e4b5c6a7d8e9f0
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](../LICENSE).
