@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { MdLanguage, MdTranslate } from "react-icons/md";
 
+// Type-safe icon wrappers
+const LanguageIcon = MdLanguage as React.FC<{ size?: number }>;
+const TranslateIcon = MdTranslate as React.FC<{ size?: number }>;
+
 interface LanguageToggleProps {
   /** Summary in the original language */
   summaryOriginal?: string;
@@ -49,8 +53,7 @@ export default function LanguageToggle({
     <>
       <div className="language-toggle-container">
         <div className="language-indicator">
-          {/* @ts-ignore */}
-          <MdLanguage size={16} />
+          <LanguageIcon size={16} />
           <span className="language-name">
             Original: {languageName || language}
           </span>
@@ -62,8 +65,7 @@ export default function LanguageToggle({
           aria-label={`Switch to ${showOriginal ? "English" : "original"} summary`}
           title={`View ${showOriginal ? "English" : `original (${languageName})`} summary`}
         >
-          {/* @ts-ignore */}
-          <MdTranslate size={16} />
+          <TranslateIcon size={16} />
           <span>{showOriginal ? "View English" : "View Original"}</span>
         </button>
 

@@ -1,5 +1,4 @@
 import React from "react";
-import { MdLanguage } from "react-icons/md";
 
 interface LanguageIndicatorProps {
   /** ISO 639-3 language code */
