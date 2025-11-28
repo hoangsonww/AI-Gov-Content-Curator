@@ -21,7 +21,19 @@ import { Schema, model, Document } from "mongoose";
  *           description: The full content of the article.
  *         summary:
  *           type: string
- *           description: A short summary of the article content.
+ *           description: A short summary of the article content (English translation for non-English articles).
+ *         summaryOriginal:
+ *           type: string
+ *           description: Summary in the original language of the article.
+ *         summaryTranslated:
+ *           type: string
+ *           description: Summary translated to English.
+ *         language:
+ *           type: string
+ *           description: ISO 639-3 language code of the original article (e.g., 'eng', 'spa', 'fra').
+ *         languageName:
+ *           type: string
+ *           description: Human-readable language name (e.g., 'English', 'Spanish', 'French').
  *         topics:
  *           type: array
  *           items:
@@ -51,6 +63,14 @@ export interface IArticle extends Document {
   title: string;
   content: string;
   summary: string;
+  /** Summary in the original language of the article */
+  summaryOriginal: string;
+  /** Summary translated to English */
+  summaryTranslated: string;
+  /** ISO 639-3 language code of the original article (e.g., 'eng', 'spa', 'fra') */
+  language: string;
+  /** Human-readable language name (e.g., 'English', 'Spanish', 'French') */
+  languageName: string;
   topics: string[];
   source: string;
   fetchedAt: Date;
@@ -61,6 +81,10 @@ const articleSchema = new Schema<IArticle>({
   title: { type: String, required: true },
   content: { type: String, required: true },
   summary: { type: String },
+  summaryOriginal: { type: String },
+  summaryTranslated: { type: String },
+  language: { type: String, default: "eng" },
+  languageName: { type: String, default: "English" },
   topics: { type: [String], default: [] },
   source: { type: String, required: true },
   fetchedAt: { type: Date, default: Date.now },
@@ -75,6 +99,10 @@ articleSchema.set("toJSON", {
       title: ret.title,
       content: ret.content,
       summary: ret.summary,
+      summaryOriginal: ret.summaryOriginal,
+      summaryTranslated: ret.summaryTranslated,
+      language: ret.language,
+      languageName: ret.languageName,
       topics: ret.topics,
       source: ret.source,
       fetchedAt: ret.fetchedAt,

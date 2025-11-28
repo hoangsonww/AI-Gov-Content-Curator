@@ -16,6 +16,14 @@ export interface Article {
   title: string;
   content: string;
   summary: string;
+  /** Summary in the original language of the article */
+  summaryOriginal?: string;
+  /** Summary translated to English */
+  summaryTranslated?: string;
+  /** ISO 639-3 language code of the original article (e.g., 'eng', 'spa', 'fra') */
+  language?: string;
+  /** Human-readable language name (e.g., 'English', 'Spanish', 'French') */
+  languageName?: string;
   topics: string[];
   source: string;
   fetchedAt: string;

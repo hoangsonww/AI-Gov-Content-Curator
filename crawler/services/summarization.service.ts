@@ -73,15 +73,15 @@ const isRateOrQuota = (e: any) =>
 const isOverloaded = (e: any) =>
   e?.status === 503 || /overload|unavailable/i.test(e?.message || "");
 
-/* ─────────────────────────────  EXPORT  ───────────────────────────── */
+/* ─────────────────────────────  CORE GENERATION  ───────────────────────────── */
 
 /**
- * Summarize the content of an article using Google Generative AI.
+ * Generate content using Google Generative AI with key/model rotation and retry logic.
  *
- * @param article - The article content to summarize.
- * @returns The summarized text.
+ * @param prompt - The prompt to send to the AI model.
+ * @returns The generated text.
  */
-export async function summarizeContent(article: string): Promise<string> {
+async function generateContent(prompt: string): Promise<string> {
   for (const key of API_KEYS) {
     for (const model of MODELS) {
       const genAI = new GoogleGenerativeAI(key).getGenerativeModel({
@@ -95,7 +95,7 @@ export async function summarizeContent(article: string): Promise<string> {
             contents: [
               {
                 role: "user",
-                parts: [{ text: `Summarize briefly:\n\n${article}` }],
+                parts: [{ text: prompt }],
               },
             ],
             generationConfig,
@@ -116,5 +116,65 @@ export async function summarizeContent(article: string): Promise<string> {
       }
     }
   }
-  throw new Error("All keys/models exhausted while summarizing");
+  throw new Error("All keys/models exhausted while generating content");
+}
+
+/* ─────────────────────────────  EXPORT  ───────────────────────────── */
+
+/**
+ * Summarize the content of an article using Google Generative AI.
+ *
+ * @param article - The article content to summarize.
+ * @returns The summarized text.
+ */
+export async function summarizeContent(article: string): Promise<string> {
+  return generateContent(`Summarize briefly:\n\n${article}`);
+}
+
+/**
+ * Result interface for multi-language summarization
+ */
+export interface MultiLanguageSummaryResult {
+  /** Summary in the original language of the article */
+  summaryOriginal: string;
+  /** Summary translated to English (if original is not English, otherwise same as summaryOriginal) */
+  summaryTranslated: string;
+}
+
+/**
+ * Summarize the content of an article in its original language and provide an English translation.
+ * Uses Google Generative AI for both summarization and translation.
+ *
+ * @param article - The article content to summarize.
+ * @param languageCode - The detected ISO 639-3 language code (e.g., 'eng', 'spa', 'fra').
+ * @param languageName - The human-readable language name (e.g., 'English', 'Spanish', 'French').
+ * @returns An object containing both the original language summary and the English translation.
+ */
+export async function summarizeContentMultiLanguage(
+  article: string,
+  languageCode: string,
+  languageName: string,
+): Promise<MultiLanguageSummaryResult> {
+  const isEnglish = languageCode === "eng";
+
+  // Step 1: Generate summary in the original language
+  const originalPrompt = isEnglish
+    ? `Summarize briefly:\n\n${article}`
+    : `Summarize the following text briefly in ${languageName}. Keep the summary in ${languageName}, do not translate:\n\n${article}`;
+
+  const summaryOriginal = await generateContent(originalPrompt);
+
+  // Step 2: If not English, translate the summary to English
+  let summaryTranslated: string;
+  if (isEnglish) {
+    summaryTranslated = summaryOriginal;
+  } else {
+    const translationPrompt = `Translate the following ${languageName} text to English. Provide only the translation, no additional commentary:\n\n${summaryOriginal}`;
+    summaryTranslated = await generateContent(translationPrompt);
+  }
+
+  return {
+    summaryOriginal,
+    summaryTranslated,
+  };
 }

@@ -20,6 +20,18 @@ import { findSimilarArticles } from "../services/pinecone.service";
  *           type: string
  *         summary:
  *           type: string
+ *         summaryOriginal:
+ *           type: string
+ *           description: Summary in the original language of the article.
+ *         summaryTranslated:
+ *           type: string
+ *           description: Summary translated to English.
+ *         language:
+ *           type: string
+ *           description: ISO 639-3 language code of the original article.
+ *         languageName:
+ *           type: string
+ *           description: Human-readable language name.
  *         topics:
  *           type: array
  *           items:
@@ -32,14 +44,14 @@ import { findSimilarArticles } from "../services/pinecone.service";
  */
 
 /**
- * Get a list of articles with optional pagination and filtering by source and topic.
+ * Get a list of articles with optional pagination and filtering by source, topic, and language.
  *
  * @param req The request object containing query parameters for pagination and filtering.
  * @param res The response object to send the list of articles or an error message.
  */
 export const getArticles = async (req: Request, res: Response) => {
   try {
-    const { page = 1, limit = 10, source, topic } = req.query;
+    const { page = 1, limit = 10, source, topic, lang } = req.query;
     const filter: any = {};
 
     if (source) {
@@ -53,6 +65,11 @@ export const getArticles = async (req: Request, res: Response) => {
           ? topic.split(",").map((t) => t.trim())
           : topic;
       filter.topics = { $in: topicsArray };
+    }
+
+    // Filter by language code (e.g., 'eng', 'spa', 'fra')
+    if (lang) {
+      filter.language = lang;
     }
 
     const articles = await Article.find(filter)
@@ -104,20 +121,22 @@ export const getArticleCount = async (req: Request, res: Response) => {
 };
 
 /**
- * Search for articles by title or summary with optional topic filter and pagination.
+ * Search for articles by title or summary with optional topic and language filters and pagination.
  *
- * @param req The request object containing the search query, topic filter, and pagination parameters.
+ * @param req The request object containing the search query, topic filter, language filter, and pagination parameters.
  * @param res The response object to send the search results or an error message.
  */
 export const searchArticles = async (req: Request, res: Response) => {
   try {
-    const { q, topic, page = 1, limit = 10 } = req.query;
+    const { q, topic, lang, page = 1, limit = 10 } = req.query;
     const filter: any = {};
 
     if (q) {
       filter.$or = [
         { title: { $regex: q, $options: "i" } },
         { summary: { $regex: q, $options: "i" } },
+        { summaryOriginal: { $regex: q, $options: "i" } },
+        { summaryTranslated: { $regex: q, $options: "i" } },
         // Optionally, search in topics as well
         { topics: { $regex: q, $options: "i" } },
       ];
@@ -130,6 +149,11 @@ export const searchArticles = async (req: Request, res: Response) => {
           ? topic.split(",").map((t) => t.trim())
           : topic;
       filter.topics = { $in: topicsArray };
+    }
+
+    // Filter by language code (e.g., 'eng', 'spa', 'fra')
+    if (lang) {
+      filter.language = lang;
     }
 
     const articles = await Article.find(filter)
@@ -185,6 +209,45 @@ export const getAllTopics = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching topics:", error);
     res.status(500).json({ error: "Failed to fetch topics" });
+  }
+};
+
+/**
+ * Get a list of all distinct languages across all articles.
+ *
+ * @param req The request object.
+ * @param res The response object to send the distinct languages.
+ */
+export const getAllLanguages = async (req: Request, res: Response) => {
+  try {
+    // Aggregate to get unique language codes and names with counts
+    const languages = await Article.aggregate([
+      {
+        $group: {
+          _id: { code: "$language", name: "$languageName" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          code: "$_id.code",
+          name: "$_id.name",
+          count: 1,
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
+    ]);
+
+    res.json({
+      data: languages,
+      total: languages.length,
+    });
+  } catch (error) {
+    console.error("Error fetching languages:", error);
+    res.status(500).json({ error: "Failed to fetch languages" });
   }
 };
 
