@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { MdDarkMode, MdLightMode, MdSettingsBrightness } from "react-icons/md";
 import { toast } from "react-toastify";
+import Tooltip from "./Tooltip";
 
 const DarkModeIcon = MdDarkMode as React.FC<{ size?: number }>;
 const LightModeIcon = MdLightMode as React.FC<{ size?: number }>;
@@ -121,13 +122,15 @@ export default function ThemeToggle({
 
   return (
     <div style={{ position: "relative" }} ref={containerRef}>
-      <button
-        className="theme-toggle-btn"
-        onClick={handleToggle}
-        aria-label="Toggle theme"
-      >
-        {displayedTheme}
-      </button>
+      <Tooltip text="Theme">
+        <button
+          className="theme-toggle-btn"
+          onClick={handleToggle}
+          aria-label="Toggle theme"
+        >
+          {displayedTheme}
+        </button>
+      </Tooltip>
 
       {open && (
         <div className="theme-dropdown">
