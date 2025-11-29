@@ -17,6 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import ThemeToggle from "./ThemeToggle";
 import AuthDropdown from "./AuthDropdown";
+import Tooltip from "./Tooltip";
 
 const ArticleIcon = MdArticle as React.FC<{ size?: number }>;
 const MailIcon = MdMailOutline as React.FC<{ size?: number }>;
@@ -105,42 +106,48 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
 
         {/* Desktop Nav */}
         <div className="navbar-right">
-          <Link href="/home" legacyBehavior>
-            <a
-              className={`nav-link${router.pathname === "/home" ? " active-link" : ""}`}
-              title="Home"
-            >
-              <MdHome size={24} />
-            </a>
-          </Link>
-          <Link href="/newsletter" legacyBehavior>
-            <a
-              className={`nav-link${router.pathname === "/newsletter" ? " active-link" : ""}`}
-              title="Newsletter"
-            >
-              <MailIcon size={24} />
-            </a>
-          </Link>
-          <Link href="/favorites/favorites" legacyBehavior>
-            <a
-              className={`nav-link${
-                router.pathname === "/favorites/favorites" ? " active-link" : ""
-              }`}
-              title="Favorites"
-            >
-              <MdFavorite size={24} />
-            </a>
-          </Link>
-          <Link href="/ai_chat" legacyBehavior>
-            <a
-              className={`nav-link${
-                router.pathname === "/ai_chat" ? " active-link" : ""
-              }`}
-              title="Ask AI"
-            >
-              <MdSmartToy size={24} />
-            </a>
-          </Link>
+          <Tooltip text="Home">
+            <Link href="/home" legacyBehavior>
+              <a
+                className={`nav-link${router.pathname === "/home" ? " active-link" : ""}`}
+              >
+                <MdHome size={24} />
+              </a>
+            </Link>
+          </Tooltip>
+          <Tooltip text="Newsletter">
+            <Link href="/newsletter" legacyBehavior>
+              <a
+                className={`nav-link${router.pathname === "/newsletter" ? " active-link" : ""}`}
+              >
+                <MailIcon size={24} />
+              </a>
+            </Link>
+          </Tooltip>
+          <Tooltip text="Favorites">
+            <Link href="/favorites/favorites" legacyBehavior>
+              <a
+                className={`nav-link${
+                  router.pathname === "/favorites/favorites"
+                    ? " active-link"
+                    : ""
+                }`}
+              >
+                <MdFavorite size={24} />
+              </a>
+            </Link>
+          </Tooltip>
+          <Tooltip text="Ask AI">
+            <Link href="/ai_chat" legacyBehavior>
+              <a
+                className={`nav-link${
+                  router.pathname === "/ai_chat" ? " active-link" : ""
+                }`}
+              >
+                <MdSmartToy size={24} />
+              </a>
+            </Link>
+          </Tooltip>
 
           <ThemeToggle
             theme={theme}

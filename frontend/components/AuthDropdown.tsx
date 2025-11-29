@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { MdPerson } from "react-icons/md";
 import { validateToken } from "../services/api";
 import { toast } from "react-toastify";
+import Tooltip from "./Tooltip";
 
 interface AuthDropdownProps {
   theme: "light" | "dark" | "system";
@@ -105,13 +106,15 @@ export default function AuthDropdown({
 
   return (
     <div className="auth-dropdown-container" ref={containerRef}>
-      <button
-        className={`auth-toggle-btn${isAuthRoute ? " active-icon" : ""}`}
-        onClick={handleClick}
-        aria-label="User menu"
-      >
-        <MdPerson size={24} />
-      </button>
+      <Tooltip text="Account">
+        <button
+          className={`auth-toggle-btn${isAuthRoute ? " active-icon" : ""}`}
+          onClick={handleClick}
+          aria-label="User menu"
+        >
+          <MdPerson size={24} />
+        </button>
+      </Tooltip>
 
       {open && (
         <div className="auth-dropdown">
