@@ -5,6 +5,7 @@ import {
   getArticleCount,
   searchArticles,
   getAllTopics,
+  getAllLanguages,
   getArticlesByTopic,
   getSimilarArticles,
 } from "../controllers/article.controller";
@@ -26,7 +27,7 @@ const router = Router();
  *     summary: Retrieve a list of articles
  *     security:
  *       - ApiKeyAuth: []
- *     description: Retrieve articles with optional pagination.
+ *     description: Retrieve articles with optional pagination and filtering.
  *     parameters:
  *       - in: query
  *         name: page
@@ -48,6 +49,11 @@ const router = Router();
  *         schema:
  *           type: string
  *         description: Filter articles by a topic (comma-separated values allowed).
+ *       - in: query
+ *         name: lang
+ *         schema:
+ *           type: string
+ *         description: Filter articles by language code (e.g., 'eng', 'spa', 'fra').
  *     responses:
  *       200:
  *         description: A list of articles.
@@ -80,7 +86,19 @@ const router = Router();
  *                         description: List of topics associated with the article.
  *                       summary:
  *                         type: string
- *                         description: A short summary of the article.
+ *                         description: A short summary of the article (English translation for non-English articles).
+ *                       summaryOriginal:
+ *                         type: string
+ *                         description: Summary in the original language of the article.
+ *                       summaryTranslated:
+ *                         type: string
+ *                         description: Summary translated to English.
+ *                       language:
+ *                         type: string
+ *                         description: ISO 639-3 language code of the original article.
+ *                       languageName:
+ *                         type: string
+ *                         description: Human-readable language name.
  *                       source:
  *                         type: string
  *                         description: The source or publisher of the article.
@@ -145,6 +163,11 @@ router.get("/count", getArticleCount);
  *         schema:
  *           type: integer
  *         description: Number of articles per page.
+ *       - in: query
+ *         name: lang
+ *         schema:
+ *           type: string
+ *         description: Filter articles by language code (e.g., 'eng', 'spa', 'fra').
  *     responses:
  *       200:
  *         description: A list of articles matching the search criteria.
@@ -178,6 +201,18 @@ router.get("/count", getArticleCount);
  *                       summary:
  *                         type: string
  *                         description: A short summary of the article.
+ *                       summaryOriginal:
+ *                         type: string
+ *                         description: Summary in the original language.
+ *                       summaryTranslated:
+ *                         type: string
+ *                         description: Summary translated to English.
+ *                       language:
+ *                         type: string
+ *                         description: ISO 639-3 language code.
+ *                       languageName:
+ *                         type: string
+ *                         description: Human-readable language name.
  *                       source:
  *                         type: string
  *                         description: The source or publisher of the article.
@@ -245,6 +280,45 @@ router.get("/search", searchArticles);
  *         description: Failed to fetch topics.
  */
 router.get("/topics", getAllTopics);
+
+/**
+ * @swagger
+ * /api/articles/languages:
+ *   get:
+ *     tags: [Articles]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     summary: Retrieve a list of distinct languages across all articles
+ *     description: Returns a list of unique languages with article counts.
+ *     responses:
+ *       200:
+ *         description: A list of distinct languages with counts.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       code:
+ *                         type: string
+ *                         description: ISO 639-3 language code.
+ *                       name:
+ *                         type: string
+ *                         description: Human-readable language name.
+ *                       count:
+ *                         type: integer
+ *                         description: Number of articles in this language.
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of distinct languages.
+ *       500:
+ *         description: Failed to fetch languages.
+ */
+router.get("/languages", getAllLanguages);
 
 /**
  * @swagger

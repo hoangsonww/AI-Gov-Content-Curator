@@ -17,6 +17,7 @@ const {
   getArticleCount,
   searchArticles,
   getAllTopics,
+  getAllLanguages,
   getArticlesByTopic,
 } = require("../controllers/article.controller");
 
@@ -194,11 +195,42 @@ describe("Article Controller", () => {
         $or: [
           { title: { $regex: "foo", $options: "i" } },
           { summary: { $regex: "foo", $options: "i" } },
+          { summaryOriginal: { $regex: "foo", $options: "i" } },
+          { summaryTranslated: { $regex: "foo", $options: "i" } },
           { topics: { $regex: "foo", $options: "i" } },
         ],
       });
       expect(chain.skip).toHaveBeenCalledWith((2 - 1) * 4);
       expect(chain.limit).toHaveBeenCalledWith(4);
+      expect(res.json).toHaveBeenCalledWith({
+        data: mockArticles,
+        total: mockCount,
+      });
+    });
+
+    it("200 with language filter", async () => {
+      const chain = {
+        select: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockResolvedValue(mockArticles),
+      };
+      Article.find.mockReturnValue(chain);
+      Article.countDocuments.mockResolvedValue(mockCount);
+
+      req = { query: { q: "foo", lang: "spa", page: "1", limit: "10" } };
+      await searchArticles(req, res);
+
+      expect(Article.find).toHaveBeenCalledWith({
+        $or: [
+          { title: { $regex: "foo", $options: "i" } },
+          { summary: { $regex: "foo", $options: "i" } },
+          { summaryOriginal: { $regex: "foo", $options: "i" } },
+          { summaryTranslated: { $regex: "foo", $options: "i" } },
+          { topics: { $regex: "foo", $options: "i" } },
+        ],
+        language: "spa",
+      });
       expect(res.json).toHaveBeenCalledWith({
         data: mockArticles,
         total: mockCount,
@@ -246,6 +278,37 @@ describe("Article Controller", () => {
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({
         error: "Failed to fetch topics",
+      });
+    });
+  });
+
+  describe("getAllLanguages()", () => {
+    it("200 returns language counts", async () => {
+      const mockLanguages = [
+        { code: "eng", name: "English", count: 100 },
+        { code: "spa", name: "Spanish", count: 50 },
+      ];
+      Article.aggregate.mockResolvedValue(mockLanguages);
+
+      req = { query: {} };
+      await getAllLanguages(req, res);
+
+      expect(Article.aggregate).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({
+        data: mockLanguages,
+        total: 2,
+      });
+    });
+
+    it("500 on error", async () => {
+      Article.aggregate.mockRejectedValue(new Error("fail"));
+
+      req = { query: {} };
+      await getAllLanguages(req, res);
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({
+        error: "Failed to fetch languages",
       });
     });
   });

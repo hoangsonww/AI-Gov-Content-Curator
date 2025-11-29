@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
@@ -13,6 +13,8 @@ import {
 import { Article } from "../pages/home";
 import { toast } from "react-toastify";
 import { trackInteraction } from "../services/reranker";
+import LanguageToggle from "./LanguageToggle";
+import LanguageIndicator from "./LanguageIndicator";
 
 interface ArticleDetailProps {
   article: Article;
@@ -22,6 +24,9 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [displayedSummary, setDisplayedSummary] = useState(
+    article.summaryTranslated || article.summary || "",
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -45,6 +50,11 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       }
     })();
   }, [article._id]);
+
+  // Handle summary change from language toggle
+  const handleSummaryChange = useCallback((summary: string) => {
+    setDisplayedSummary(summary);
+  }, []);
 
   const handleFavorite = async () => {
     const token = localStorage.getItem("token");
@@ -82,7 +92,13 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       className="article-detail hover-animate"
       style={{ position: "relative" }}
     >
-      <h1 className="detail-title">{title}</h1>
+      <div className="detail-header">
+        <h1 className="detail-title">{title}</h1>
+        <LanguageIndicator
+          language={article.language}
+          languageName={article.languageName}
+        />
+      </div>
       <p className="detail-meta">
         Source:{" "}
         {article.url ? (
@@ -101,6 +117,16 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       <p className="detail-meta">
         Fetched at: {new Date(article.fetchedAt).toLocaleString()}
       </p>
+
+      {/* Language toggle for multi-language articles */}
+      <LanguageToggle
+        summaryOriginal={article.summaryOriginal}
+        summaryTranslated={article.summaryTranslated}
+        language={article.language}
+        languageName={article.languageName}
+        onSummaryChange={handleSummaryChange}
+      />
+
       <div className="detail-content">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
@@ -200,7 +226,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               ),
           }}
         >
-          {article.summary}
+          {displayedSummary}
         </ReactMarkdown>
       </div>
       {article.topics?.length > 0 && (
@@ -248,6 +274,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       )}
 
       <style>{`
+        .detail-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 1rem;
+          margin-bottom: 0.5rem;
+        }
+        
         .fav-spinner {
           width: 20px;
           height: 20px;

@@ -3,3 +3,4 @@
 .vercel
 /.next/
 coverage
+/dist/

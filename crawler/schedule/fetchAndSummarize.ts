@@ -8,7 +8,7 @@
  *  2. Pull headlines from NewsAPI
  *  3. De‑dupe (DB + in‑process)
  *  4. Fetch full article (static → dynamic)
- *  5. Summarize + topic‑tag (key/model rotation)
+ *  5. Detect language + Summarize (original + translated) + topic‑tag (key/model rotation)
  *  6. Upsert into Mongo
  */
 
@@ -22,8 +22,12 @@ import {
   fetchDynamicArticle,
 } from "../services/crawler.service";
 import { fetchArticlesFromNewsAPI } from "../services/apiFetcher.service";
-import { summarizeContent } from "../services/summarization.service";
+import {
+  summarizeContent,
+  summarizeContentMultiLanguage,
+} from "../services/summarization.service";
 import { extractTopics } from "../services/topicExtractor.service";
+import { detectLanguage } from "../services/languageDetection.service";
 import { upsertArticleVector } from "../services/pinecone.service";
 import logger from "../utils/logger";
 import { cleanupArticles } from "../scripts/cleanData";
@@ -72,6 +76,10 @@ async function upsertArticle(data: {
   title: string;
   content: string;
   summary: string;
+  summaryOriginal: string;
+  summaryTranslated: string;
+  language: string;
+  languageName: string;
   topics: string[];
   source: string;
 }) {
@@ -82,7 +90,9 @@ async function upsertArticle(data: {
   );
 
   if (res.upsertedCount) {
-    logger.info(`✅ Saved: ${data.title || data.url}`);
+    logger.info(
+      `✅ Saved: ${data.title || data.url} [${data.languageName}]`,
+    );
 
     // Sync to Pinecone asynchronously (non-blocking)
     const insertedArticle = await Article.findOne({ url: data.url });
@@ -158,7 +168,22 @@ async function processApiArticle(api: {
       return;
     }
 
-    const summary = await summarizeContent(text);
+    // Detect language of the article content
+    const langResult = detectLanguage(text);
+    logger.debug(
+      `🌐 Detected language for ${api.url}: ${langResult.name} (${langResult.code})`,
+    );
+
+    // Generate multi-language summaries
+    const { summaryOriginal, summaryTranslated } =
+      await summarizeContentMultiLanguage(
+        text,
+        langResult.code,
+        langResult.name,
+      );
+
+    // Use the translated summary as the main summary (for backward compatibility)
+    const summary = summaryTranslated;
     const topics = await extractTopics(summary);
 
     await upsertArticle({
@@ -166,6 +191,10 @@ async function processApiArticle(api: {
       title: api.title ?? "(no title)",
       content: text,
       summary,
+      summaryOriginal,
+      summaryTranslated,
+      language: langResult.code,
+      languageName: langResult.name,
       topics,
       source: api.source?.name ?? "newsapi",
     });
@@ -207,16 +236,34 @@ async function processUrl(url: string): Promise<void> {
       return;
     }
 
-    // 2) Summarize + topics
-    const summary = await summarizeContent(art.content);
+    // 2) Detect language
+    const langResult = detectLanguage(art.content);
+    logger.debug(
+      `🌐 Detected language for ${url}: ${langResult.name} (${langResult.code})`,
+    );
+
+    // 3) Generate multi-language summaries
+    const { summaryOriginal, summaryTranslated } =
+      await summarizeContentMultiLanguage(
+        art.content,
+        langResult.code,
+        langResult.name,
+      );
+
+    // Use the translated summary as the main summary (for backward compatibility)
+    const summary = summaryTranslated;
     const topics = await extractTopics(summary);
 
-    // 3) Upsert
+    // 4) Upsert
     await upsertArticle({
       url: art.url,
       title: art.title,
       content: art.content,
       summary,
+      summaryOriginal,
+      summaryTranslated,
+      language: langResult.code,
+      languageName: langResult.name,
       topics,
       source: art.source,
     });
