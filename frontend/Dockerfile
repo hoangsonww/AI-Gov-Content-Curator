@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files and install dependencies
@@ -13,7 +13,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production image
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 
 # Copy only production dependencies
