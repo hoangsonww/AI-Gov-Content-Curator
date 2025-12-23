@@ -15,6 +15,7 @@ import {
   toggleFavoriteArticle,
 } from "../services/api";
 import { toast } from "react-toastify";
+import LanguageIndicator from "./LanguageIndicator";
 
 const ArrowIcon = MdOutlineArrowForwardIos as React.FC<{ size?: number }>;
 
@@ -153,7 +154,14 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         style={{ position: "relative" }}
         onClick={handleCardClick}
       >
-        <h2 className="article-title">{title}</h2>
+        <div className="article-header">
+          <h2 className="article-title">{title}</h2>
+          <LanguageIndicator
+            language={article.language}
+            languageName={article.languageName}
+            compact={true}
+          />
+        </div>
 
         {article.summary && (
           <div className="article-summary">
@@ -228,6 +236,14 @@ export default function ArticleCard({ article }: ArticleCardProps) {
 
       {/* Spinner styles */}
       <style>{`
+        .article-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+        
         .article-footer {
           display: flex;
           justify-content: space-between;
