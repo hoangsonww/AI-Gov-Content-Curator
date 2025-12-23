@@ -173,7 +173,31 @@ export default function Chatbot({ article }: { article: Article }) {
           body: JSON.stringify({ article, userMessage: txt }),
         },
       );
-      const { reply } = await res.json();
+      const raw = await res.text();
+      let data: any = null;
+      if (raw) {
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          data = null;
+        }
+      }
+
+      const reply = data?.reply;
+      const hasError = data?.error || data?.details || data?.detail;
+      if (!res.ok || hasError || !reply) {
+        const errorMessage =
+          data?.error ||
+          data?.message ||
+          `Request failed (${res.status})${raw ? `: ${raw}` : ""}`;
+        const detailMessage = data?.details || data?.detail;
+        const combined = detailMessage
+          ? `⚠️ ${errorMessage}\n\nDetails: ${detailMessage}`
+          : `⚠️ ${errorMessage}`;
+        setMessages((m) => [...m, { sender: "model", text: combined }]);
+        return;
+      }
+
       setMessages((m) => [...m, { sender: "model", text: reply }]);
     } catch {
       setMessages((m) => [
