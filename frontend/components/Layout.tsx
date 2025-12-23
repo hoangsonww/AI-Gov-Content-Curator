@@ -54,11 +54,18 @@ export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
       )}
 
       {/* @ts-ignore */}
-      <main style={{ flex: 1 }}>{children}</main>
+      <main
+        className={isLandingPage ? "layout-main landing-main" : "layout-main"}
+        style={{ flex: 1 }}
+      >
+        {children}
+      </main>
 
-      <div ref={footerWrapper}>
-        <Footer />
-      </div>
+      {!isLandingPage && (
+        <div ref={footerWrapper}>
+          <Footer />
+        </div>
+      )}
     </div>
   );
 }

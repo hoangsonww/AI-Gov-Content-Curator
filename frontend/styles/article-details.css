@@ -149,7 +149,7 @@
   color: #4bb543;
 }
 
-.action-btn.copied :global(svg) {
+.action-btn.copied svg {
   color: #4bb543;
 }
 
