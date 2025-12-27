@@ -14,6 +14,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
+import { getGeminiModels } from "../services/geminiModels.service";
 
 /* ─────────── Mongo schema ─────────── */
 const ArticleSchema = new Schema({
@@ -108,11 +109,6 @@ const AI_KEYS = [
   GOOGLE_AI_API_KEY2,
   GOOGLE_AI_API_KEY3,
 ].filter(Boolean) as string[];
-const AI_MODELS = [
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
-  "gemini-1.5-flash",
-];
 const AI_RETRIES = 2;
 
 /**
@@ -127,8 +123,9 @@ async function gemini(
   system: string,
   maxOut: number,
 ): Promise<string> {
+  const models = await getGeminiModels(AI_KEYS);
   for (const key of AI_KEYS)
-    for (const model of AI_MODELS) {
+    for (const model of models) {
       const g = new GoogleGenerativeAI(key).getGenerativeModel({
         model,
         systemInstruction: system,

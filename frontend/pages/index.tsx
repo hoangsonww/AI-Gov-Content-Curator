@@ -64,13 +64,7 @@ const heroBadges = {
     "Entity extraction",
     "Bias analysis",
   ],
-  deploy: [
-    "AWS",
-    "Terraform",
-    "Kubernetes",
-    "Blue/green deploys",
-    "CI/CD",
-  ],
+  deploy: ["AWS", "Terraform", "Kubernetes", "Blue/green deploys", "CI/CD"],
 };
 
 const heroMetrics = [
@@ -421,10 +415,10 @@ export default function LandingPage() {
           </div>
           <div className="landing-container hero-layout">
             <div className="hero-copy reveal">
-              <span className="eyebrow">Government AI intelligence platform</span>
-              <h1 className="hero-title reveal">
-                SynthoraAI
-              </h1>
+              <span className="eyebrow">
+                Government AI intelligence platform
+              </span>
+              <h1 className="hero-title reveal">SynthoraAI</h1>
               <p className="hero-subtitle reveal">
                 Aggregate agency releases, legislative updates, and trusted news
                 into a single source of truth. Summaries, Q&A, and bias signals
@@ -483,7 +477,10 @@ export default function LandingPage() {
               <div className="hero-ticker reveal">
                 <div className="ticker-track">
                   {tickerItems.concat(tickerItems).map((item, index) => (
-                    <span key={`${item}-${index}`} className="ticker-item reveal">
+                    <span
+                      key={`${item}-${index}`}
+                      className="ticker-item reveal"
+                    >
                       {item}
                     </span>
                   ))}
@@ -548,9 +545,11 @@ export default function LandingPage() {
                 <div
                   key={item.title}
                   className="highlight-card reveal"
-                  style={{
-                    "--delay": `${index * 120}ms`,
-                  } as CSSProperties}
+                  style={
+                    {
+                      "--delay": `${index * 120}ms`,
+                    } as CSSProperties
+                  }
                 >
                   {/* @ts-ignore */}
                   <item.icon size={32} />
@@ -576,9 +575,11 @@ export default function LandingPage() {
                 <div
                   key={useCase.title}
                   className="use-case-card reveal"
-                  style={{
-                    "--delay": `${index * 120}ms`,
-                  } as CSSProperties}
+                  style={
+                    {
+                      "--delay": `${index * 120}ms`,
+                    } as CSSProperties
+                  }
                 >
                   <div className="use-case-header">
                     {/* @ts-ignore */}
@@ -614,9 +615,11 @@ export default function LandingPage() {
                 <div
                   key={capability.title}
                   className="capability-card reveal"
-                  style={{
-                    "--delay": `${index * 80}ms`,
-                  } as CSSProperties}
+                  style={
+                    {
+                      "--delay": `${index * 80}ms`,
+                    } as CSSProperties
+                  }
                 >
                   {/* @ts-ignore */}
                   <capability.icon size={28} />
@@ -643,9 +646,11 @@ export default function LandingPage() {
                 <div
                   key={capability.title}
                   className="ai-card reveal"
-                  style={{
-                    "--delay": `${index * 100}ms`,
-                  } as CSSProperties}
+                  style={
+                    {
+                      "--delay": `${index * 100}ms`,
+                    } as CSSProperties
+                  }
                 >
                   {/* @ts-ignore */}
                   <capability.icon size={28} />
@@ -672,9 +677,11 @@ export default function LandingPage() {
                 <div
                   key={step.title}
                   className="workflow-card reveal"
-                  style={{
-                    "--delay": `${index * 120}ms`,
-                  } as CSSProperties}
+                  style={
+                    {
+                      "--delay": `${index * 120}ms`,
+                    } as CSSProperties
+                  }
                 >
                   <div className="workflow-index reveal">0{index + 1}</div>
                   {/* @ts-ignore */}
@@ -702,9 +709,11 @@ export default function LandingPage() {
                 <div
                   key={stack.title}
                   className="stack-card reveal"
-                  style={{
-                    "--delay": `${index * 80}ms`,
-                  } as CSSProperties}
+                  style={
+                    {
+                      "--delay": `${index * 80}ms`,
+                    } as CSSProperties
+                  }
                 >
                   {/* @ts-ignore */}
                   <stack.icon size={28} />
@@ -722,9 +731,11 @@ export default function LandingPage() {
                   <div
                     key={trust.title}
                     className="trust-card reveal"
-                    style={{
-                      "--delay": `${index * 120}ms`,
-                    } as CSSProperties}
+                    style={
+                      {
+                        "--delay": `${index * 120}ms`,
+                      } as CSSProperties
+                    }
                   >
                     {/* @ts-ignore */}
                     <trust.icon size={26} />
@@ -776,8 +787,8 @@ export default function LandingPage() {
               <div className="testimonial-card reveal">
                 <p className="reveal">
                   “As a city councilor, I need to stay on top of local and
-                  national developments. The topic filters and daily digests keep
-                  me informed and ready for any council session.”
+                  national developments. The topic filters and daily digests
+                  keep me informed and ready for any council session.”
                 </p>
                 <h4 className="reveal"> - Councilor David Kim</h4>
               </div>
@@ -792,16 +803,16 @@ export default function LandingPage() {
               <div className="testimonial-card reveal">
                 <p className="reveal">
                   “I rely on the Article Q&A feature to get quick clarifications
-                  on complex government reports. It’s like having an assistant who
-                  never sleeps.”
+                  on complex government reports. It’s like having an assistant
+                  who never sleeps.”
                 </p>
                 <h4 className="reveal"> - Policy Advisor Laura Martínez</h4>
               </div>
               <div className="testimonial-card reveal">
                 <p className="reveal">
                   “The ‘Top Articles’ showcase gives me a quick snapshot of what
-                  my colleagues are discussing. It’s helped me prioritize my daily
-                  reading efficiently.”
+                  my colleagues are discussing. It’s helped me prioritize my
+                  daily reading efficiently.”
                 </p>
                 <h4 className="reveal"> - Congressman David Chen</h4>
               </div>
@@ -811,13 +822,16 @@ export default function LandingPage() {
                   Curator to monitor emerging bills. Its real-time alerts have
                   saved our office countless hours in legislative prep.”
                 </p>
-                <h4 className="reveal"> - Legislative Director Maria Sánchez</h4>
+                <h4 className="reveal">
+                  {" "}
+                  - Legislative Director Maria Sánchez
+                </h4>
               </div>
               <div className="testimonial-card reveal">
                 <p className="reveal">
                   “I manage communications for a governor’s office, and the
-                  newsletter feature keeps our press team on the same page. We’ve
-                  never been more aligned.”
+                  newsletter feature keeps our press team on the same page.
+                  We’ve never been more aligned.”
                 </p>
                 <h4 className="reveal"> - Public Affairs Officer Robert Lee</h4>
               </div>
@@ -864,8 +878,8 @@ export default function LandingPage() {
                 <summary className="reveal">Is it free to use?</summary>
                 <p className="reveal">
                   Yes - core features (search, summaries, favorites) are
-                  completely free. Premium newsletter scheduling is available for
-                  registered users.
+                  completely free. Premium newsletter scheduling is available
+                  for registered users.
                 </p>
               </details>
               <details className="reveal">
@@ -877,7 +891,9 @@ export default function LandingPage() {
                 </p>
               </details>
               <details className="reveal">
-                <summary className="reveal">How often is content updated?</summary>
+                <summary className="reveal">
+                  How often is content updated?
+                </summary>
                 <p className="reveal">
                   New content appears every 10 seconds via static page
                   regeneration, and our crawler fetches fresh articles daily at
@@ -892,7 +908,9 @@ export default function LandingPage() {
                 </p>
               </details>
               <details className="reveal">
-                <summary className="reveal">How do I save articles for later?</summary>
+                <summary className="reveal">
+                  How do I save articles for later?
+                </summary>
                 <p className="reveal">
                   Register and log in, then click the “★” on any summary to add
                   it to your favorites list.

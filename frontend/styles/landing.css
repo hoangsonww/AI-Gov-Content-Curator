@@ -24,7 +24,6 @@
   min-height: 0;
 }
 
-
 .layout-main.landing-main {
   width: 100%;
   max-width: 100%;
@@ -130,7 +129,8 @@
   content: "";
   position: absolute;
   inset: -20% 0 0;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       circle at 15% 20%,
       rgba(244, 184, 96, 0.3),
       transparent 45%
@@ -149,10 +149,8 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.08) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
   background-size: 60px 60px;
   opacity: 0.2;
@@ -860,10 +858,8 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(
-      rgba(11, 26, 43, 0.06) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(rgba(11, 26, 43, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(11, 26, 43, 0.06) 1px, transparent 1px);
   background-size: 80px 80px;
   opacity: 0.4;
@@ -1217,10 +1213,14 @@
 
 @keyframes gridMove {
   0% {
-    background-position: 0 0, 0 0;
+    background-position:
+      0 0,
+      0 0;
   }
   100% {
-    background-position: 120px 120px, -120px -120px;
+    background-position:
+      120px 120px,
+      -120px -120px;
   }
 }
 

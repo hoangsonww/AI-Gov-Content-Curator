@@ -4,6 +4,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
+import { getGeminiModels } from "./geminiModels.service";
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -14,12 +15,6 @@ const API_KEYS = [
   process.env.GOOGLE_AI_API_KEY2,
   process.env.GOOGLE_AI_API_KEY3,
 ].filter(Boolean) as string[];
-
-const MODELS = [
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
-  "gemini-1.5-flash",
-];
 
 const MAX_RETRIES_PER_PAIR = 2;
 const BACKOFF_MS = 1500;
@@ -109,8 +104,9 @@ export async function extractTopics(raw: string): Promise<string[]> {
       ? raw.slice(0, MAX_CONTENT_CHARS) + "…"
       : raw;
 
+  const models = await getGeminiModels(API_KEYS);
   for (const key of API_KEYS) {
-    for (const model of MODELS) {
+    for (const model of models) {
       const genAI = new GoogleGenerativeAI(key).getGenerativeModel({
         model,
         systemInstruction: SYSTEM,
