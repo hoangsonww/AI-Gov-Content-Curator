@@ -1853,7 +1853,7 @@ flowchart LR
 
 **Rate Limiting & Quota Protection:**
 - **Multiple Gemini API keys:** Rotation on 429 errors
-- **Model failover:** gemini-2.0-flash-exp → gemini-2.0-flash-lite → gemini-1.5-flash
+- **Model failover:** gemini-2.0-flash-exp → gemini-2.0-flash-lite → gemini-2.5-flash (and more models fetched dynamically)
 - **History compaction:** `MAX_HISTORY_MESSAGES`, `MAX_PROMPT_CHARS`
 - **Retry with backoff:** Exponential backoff for transient failures
 

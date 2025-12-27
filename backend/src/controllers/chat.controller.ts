@@ -7,6 +7,7 @@ import {
 } from "@google/generative-ai";
 import * as dotenv from "dotenv";
 import { searchArticles } from "../services/pinecone.service";
+import { getGeminiModels } from "../services/geminiModels.service";
 dotenv.config();
 
 /* ───────── CONFIG ───────── */
@@ -19,8 +20,6 @@ const API_KEYS = [
 
 if (!API_KEYS.length)
   throw new Error("No GOOGLE_AI_API_KEY* values provided in env");
-
-const MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash"];
 // Hard ceiling for prompt size (rough char-based proxy for tokens)
 const MAX_PROMPT_CHARS = 12000;
 const MAX_HISTORY_MESSAGES = 4;
@@ -242,6 +241,7 @@ async function askGemini(
   history: { role: "user" | "assistant"; text: string }[],
   userMessage: string,
 ): Promise<string> {
+  const models = await getGeminiModels(API_KEYS);
   const systemInstruction = `
     You are ArticleIQ - a helpful Q&A assistant, trained on a wide range of topics.
     You are built by the SynthoraAI - AI Article Content Curator team to assist users in understanding and
@@ -267,7 +267,7 @@ async function askGemini(
     ${article.content}`.trim();
 
   for (const key of API_KEYS) {
-    for (const modelName of MODELS) {
+    for (const modelName of models) {
       const model = new GoogleGenerativeAI(key).getGenerativeModel({
         model: modelName,
         systemInstruction,
@@ -392,6 +392,7 @@ export async function handleSitewideChat(
     };
 
     try {
+      const models = await getGeminiModels(API_KEYS);
       // 1. Search for relevant articles using Pinecone
       sendEvent("status", { message: "Searching relevant articles..." });
 
@@ -504,7 +505,7 @@ Remember: It's better to say "I don't have information about that in the availab
       for (const apiKey of API_KEYS) {
         if (streamSuccessful) break;
 
-        for (const modelName of MODELS) {
+        for (const modelName of models) {
           if (streamSuccessful) break;
 
           try {
@@ -583,7 +584,7 @@ Use [Source N] notation.`.trim();
         let fallbackStreamed = false;
         for (const apiKey of API_KEYS) {
           if (fallbackStreamed) break;
-          for (const modelName of MODELS) {
+          for (const modelName of models) {
             if (fallbackStreamed) break;
             try {
               const model = new GoogleGenerativeAI(apiKey).getGenerativeModel({

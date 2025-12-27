@@ -4,6 +4,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
+import { getGeminiModels } from "./geminiModels.service";
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -17,12 +18,6 @@ const API_KEYS = [
 ].filter(Boolean) as string[];
 
 if (!API_KEYS.length) throw new Error("No GOOGLE_AI_API_KEY* values found");
-
-const MODELS = [
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
-  "gemini-1.5-flash",
-];
 
 const MAX_RETRIES_PER_PAIR = 2;
 const BACKOFF_MS = 1500;
@@ -129,9 +124,10 @@ export async function analyzeArticleBias(
   content: string,
 ): Promise<BiasAnalysisResult> {
   const prompt = createPrompt(title, content);
+  const models = await getGeminiModels(API_KEYS);
 
   for (const key of API_KEYS) {
-    for (const model of MODELS) {
+    for (const model of models) {
       const genAI = new GoogleGenerativeAI(key).getGenerativeModel({
         model,
         systemInstruction:
