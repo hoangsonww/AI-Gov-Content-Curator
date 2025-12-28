@@ -11,7 +11,7 @@ This document describes the implementation of the sitewide AI chat feature that 
 - 🔗 **Source Links**: One-click access to original articles
 - ✅ **Quality Warnings**: Alerts when response quality may be questionable
 
-**See [CITATION_AND_GUARDRAILS.md](./CITATION_AND_GUARDRAILS.md) for detailed documentation on the citation system and hallucination prevention.**
+**See [CHATBOT_GUARDRAILS](./CHATBOT_GUARDRAILS) for detailed documentation on the citation system and hallucination prevention.**
 
 ## Architecture
 

@@ -1986,7 +1986,7 @@ flowchart LR
 - **Infrastructure README:** [infrastructure/README.md](infrastructure/README.md)
 - **Agentic AI Pipeline:** [agentic_ai/README.md](agentic_ai/README.md)
 - **RAG Chatbot Details:** [RAG_CHATBOT.md](RAG_CHATBOT.md)
-- **Citation & Guardrails:** [CITATION_AND_GUARDRAILS.md](CITATION_AND_GUARDRAILS.md)
+- **Citation & Guardrails:** [CHATBOT_GUARDRAILS](CHATBOT_GUARDRAILS)
 - **Terraform AWS Provider:** https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 - **Argo Rollouts:** https://argoproj.github.io/argo-rollouts/
 - **Istio:** https://istio.io/latest/docs/
