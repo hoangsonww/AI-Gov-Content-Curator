@@ -348,6 +348,17 @@
   box-shadow: 0 20px 40px rgba(240, 143, 79, 0.45);
 }
 
+.landing-page .btn.chat {
+  background: linear-gradient(120deg, #1f8a70, #4ac49a);
+  color: #071923;
+  box-shadow: 0 16px 32px rgba(31, 138, 112, 0.35);
+}
+
+.landing-page .btn.chat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 42px rgba(31, 138, 112, 0.45);
+}
+
 .landing-page .btn.secondary {
   background: #ffffff;
   color: #0b1a2b;

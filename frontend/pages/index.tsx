@@ -29,6 +29,7 @@ import {
   MdSummarize,
   MdDocumentScanner,
   MdBalance,
+  MdSmartToy,
   MdShield,
   MdVerified,
 } from "react-icons/md";
@@ -214,6 +215,11 @@ const aiCapabilities = [
     desc: "RAG answers grounded in your curated sources.",
   },
   {
+    icon: MdSmartToy,
+    title: "AI chatbot",
+    desc: "A conversational assistant that answers across the full archive.",
+  },
+  {
     icon: MdDocumentScanner,
     title: "Entity extraction",
     desc: "Capture agencies, programs, bills, and officials.",
@@ -232,6 +238,11 @@ const aiCapabilities = [
     icon: MdBalance,
     title: "Bias + sentiment",
     desc: "Compare tone and framing across outlets.",
+  },
+  {
+    icon: MdTimeline,
+    title: "Relevance ranking",
+    desc: "Prioritize briefs based on your team’s feedback.",
   },
 ];
 
@@ -433,6 +444,9 @@ export default function LandingPage() {
               <div className="hero-actions reveal">
                 <Link href="/home" className="btn primary">
                   Explore Articles
+                </Link>
+                <Link href="/ai_chat" className="btn chat">
+                  AI Chat
                 </Link>
                 <Link href="/auth/register" className="btn secondary">
                   Get Started
@@ -976,6 +990,14 @@ export default function LandingPage() {
                 "AP News",
                 "USA.gov",
                 "ABC News",
+                "NPR",
+                "Reuters",
+                "The Guardian",
+                "CNN",
+                "Fox News",
+                "C-SPAN",
+                "Politico",
+                "The Hill",
               ].map((org) => (
                 <div key={org} className="partner-logo reveal">
                   {org}
