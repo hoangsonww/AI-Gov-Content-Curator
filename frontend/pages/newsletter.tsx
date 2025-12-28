@@ -55,7 +55,7 @@ export default function NewsletterPage() {
   return (
     <>
       <Head>
-        <title>Newsletter – AI Content Curator</title>
+        <title>SynthoraAI - Newsletter Subscription</title>
         <meta
           name="description"
           content="Subscribe or unsubscribe to our daily AI-summarised newsletter."
@@ -64,6 +64,8 @@ export default function NewsletterPage() {
 
       <div className="container">
         <header>
+          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+          {/* @ts-ignore */}
           <MdMailOutline className="header-icon" size={35} />
           <h1>Newsletter Subscription</h1>
         </header>

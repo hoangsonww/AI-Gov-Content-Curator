@@ -638,7 +638,7 @@ export default function ChatPage() {
   return (
     <>
       <Head>
-        <title>ArticleIQ Chat</title>
+        <title>SynthoraAI - ArticleIQ Chat</title>
         <meta name="description" content="Chat with ArticleIQ AI assistant" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
