@@ -35,46 +35,83 @@ const nowTime = () =>
 const MessageContent = memo(({ message }: { message: Message }) => {
   const [hoveredCitation, setHoveredCitation] = useState<number | null>(null);
 
-  // Convert [Source N] citations to clickable links
-  const processTextWithCitations = (text: string) => {
-    return text.replace(/\[Source (\d+(?:,\s*\d+)*)\]/gi, (match, nums) => {
-      return `<sup class="citation-sup" data-nums="${nums}">[${nums}]</sup>`;
+  const linkifyCitations = (text: string) =>
+    text.replace(/\[Source (\d+(?:,\s*\d+)*)\]/gi, (match, nums) => {
+      const ids = nums
+        .split(",")
+        .map((num: string) => num.trim())
+        .filter(Boolean);
+      if (!ids.length) return match;
+      return ids
+        .map(
+          (num: string) => `[[Source ${num}]](#citation-${message.id}-${num})`,
+        )
+        .join(", ");
     });
-  };
 
-  const handleCitationClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains("citation-sup")) {
-      const nums = target.getAttribute("data-nums");
-      if (nums) {
-        const firstNum = nums.split(",")[0].trim();
-        const citationEl = document.getElementById(
-          `citation-${message.id}-${firstNum}`,
-        );
-        if (citationEl) {
-          citationEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          citationEl.classList.add("highlight-citation");
-          setTimeout(
-            () => citationEl.classList.remove("highlight-citation"),
-            2000,
-          );
-        }
-      }
-    }
-  };
+  const markdown = linkifyCitations(message.text).replace(/\r?\n/g, "  \n");
 
   return (
     <div className="msg-content">
-      <div
-        className="msg-text"
-        onClick={handleCitationClick}
-        dangerouslySetInnerHTML={{
-          __html: processTextWithCitations(message.text)
-            .replace(/\n/g, "<br/>")
-            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-            .replace(/\*(.*?)\*/g, "<em>$1</em>"),
-        }}
-      />
+      <div className="msg-text">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+              const href = props.href ?? "";
+              const children = props.children;
+              const isCitation =
+                typeof href === "string" && href.startsWith("#citation-");
+              if (isCitation) {
+                const citationId = href.slice(1);
+                const match = href.match(/-(\d+)$/);
+                const citationNum = match ? Number(match[1]) : null;
+                return (
+                  <a
+                    href={href}
+                    className="citation-link"
+                    onMouseEnter={() => {
+                      if (citationNum) setHoveredCitation(citationNum);
+                    }}
+                    onMouseLeave={() => setHoveredCitation(null)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const citationEl = document.getElementById(citationId);
+                      if (citationEl) {
+                        citationEl.scrollIntoView({
+                          behavior: "smooth",
+                          block: "nearest",
+                        });
+                        citationEl.classList.add("highlight-citation");
+                        setTimeout(
+                          () =>
+                            citationEl.classList.remove("highlight-citation"),
+                          2000,
+                        );
+                      }
+                    }}
+                  >
+                    {children}
+                  </a>
+                );
+              }
+
+              return (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="message-link"
+                >
+                  {children}
+                </a>
+              );
+            },
+          }}
+        >
+          {markdown}
+        </ReactMarkdown>
+      </div>
 
       {message.warnings && message.warnings.length > 0 && (
         <div className="msg-warning">
@@ -601,6 +638,8 @@ export default function ChatPage() {
   return (
     <>
       <Head>
+        <title>ArticleIQ Chat</title>
+        <meta name="description" content="Chat with ArticleIQ AI assistant" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
@@ -1076,6 +1115,14 @@ export default function ChatPage() {
             word-wrap: break-word;
           }
 
+          :global(.msg-text p) {
+            margin: 0 0 12px 0;
+          }
+
+          :global(.msg-text p:last-child) {
+            margin-bottom: 0;
+          }
+
           :global(.msg-text strong) {
             font-weight: 700;
           }
@@ -1084,16 +1131,50 @@ export default function ChatPage() {
             font-style: italic;
           }
 
-          :global(.msg-text .citation-sup) {
+          :global(.msg-text a.citation-link) {
             color: #60a5fa;
-            cursor: pointer;
             font-weight: 700;
             margin: 0 2px;
+            text-decoration: none;
             transition: color 0.15s;
           }
 
-          :global(.msg-text .citation-sup:hover) {
+          :global(.msg-text a.citation-link:hover) {
             color: #3b82f6;
+            text-decoration: underline;
+          }
+
+          :global(.msg-text a.message-link) {
+            color: #93c5fd;
+            text-decoration: underline;
+          }
+
+          :global(.msg-text ul),
+          :global(.msg-text ol) {
+            margin: 0 0 12px 20px;
+          }
+
+          :global(.msg-text li) {
+            margin: 4px 0;
+          }
+
+          :global(.msg-text code) {
+            background: rgba(15, 15, 15, 0.7);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.9em;
+          }
+
+          :global(.msg-text pre) {
+            background: #0f0f0f;
+            padding: 12px;
+            border-radius: 10px;
+            overflow-x: auto;
+          }
+
+          :global(.msg-text pre code) {
+            background: transparent;
+            padding: 0;
           }
 
           :global(.msg-warning) {
