@@ -977,11 +977,20 @@ export default function ChatPage() {
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
           }
 
+          .conv-title {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
           .conv-actions {
             display: flex;
             gap: 4px;
             opacity: 0;
             transition: opacity 0.2s;
+            flex-shrink: 0;
           }
 
           .conv-item:hover .conv-actions {
@@ -1399,6 +1408,119 @@ export default function ChatPage() {
             height: 18px;
             display: block;
             color: #fff;
+          }
+
+          @media (max-width: 900px) {
+            .chat-root {
+              grid-template-columns: 1fr;
+              grid-template-rows: auto minmax(0, 1fr);
+              height: calc(
+                100dvh - var(--navbar-height, 0px) - var(--footer-height, 0px)
+              );
+              max-height: calc(
+                100dvh - var(--navbar-height, 0px) - var(--footer-height, 0px)
+              );
+              gap: 12px;
+              padding: 12px;
+            }
+
+            .sidebar {
+              max-height: 38vh;
+              padding: 16px;
+              border-radius: 20px;
+            }
+
+            .conversation-list {
+              gap: 8px;
+            }
+
+            .chat-main {
+              border-radius: 20px;
+            }
+
+            .messages-container {
+              padding: 18px;
+            }
+
+            .message-bubble {
+              max-width: 92%;
+            }
+          }
+
+          @media (max-width: 600px) {
+            .chat-root {
+              padding: 10px;
+              gap: 10px;
+            }
+
+            .sidebar {
+              padding: 12px;
+              border-radius: 16px;
+              max-height: 40vh;
+            }
+
+            .brand {
+              font-size: 1.1rem;
+            }
+
+            .btn-new {
+              font-size: 16px;
+              padding: 4px 12px;
+            }
+
+            .messages-container {
+              padding: 14px;
+              gap: 12px;
+            }
+
+            .message-bubble {
+              padding: 12px 14px;
+              font-size: 13px;
+              max-width: 100%;
+            }
+
+            .composer {
+              padding: 12px;
+              gap: 10px;
+            }
+
+            .composer-input {
+              padding: 12px 14px;
+              font-size: 13px;
+            }
+
+            .btn-send {
+              height: 40px;
+              width: 40px;
+            }
+
+            .empty-icon {
+              font-size: 48px;
+            }
+
+            .empty-title {
+              font-size: 22px;
+            }
+
+            .empty-desc {
+              font-size: 14px;
+            }
+
+            :global(.source-item) {
+              flex-direction: column;
+            }
+
+            :global(.source-top) {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 6px;
+            }
+
+            :global(.source-bottom) {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 6px;
+            }
           }
 
           /* Modal Styles */
