@@ -1,32 +1,44 @@
 /* ---------- Topic Dropdown Styles (Light Mode) ---------- */
 .topic-dropdown-container {
   position: relative;
-  width: 200px;
+  width: min(240px, 100%);
+  flex: 0 1 240px;
   user-select: none;
 }
 
 @media (max-width: 640px) {
   .topic-dropdown-container {
     width: 100%;
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 960px) {
+  .topic-dropdown-container {
+    width: 100%;
+    flex-basis: 100%;
   }
 }
 
 .dropdown-header {
-  padding: 0.75rem;
+  padding: 0.85rem 1rem;
   border: 1px solid var(--card-border);
-  border-radius: 4px;
-  background-color: var(--card-bg);
+  border-radius: 999px;
+  background-color: var(--bg-color);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
   font-size: 1rem;
+  font-weight: 600;
   transition:
-    border-color 0.3s ease,
-    transform 0.3s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
   color: var(--text-color);
   user-select: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .dropdown-text {
@@ -47,43 +59,48 @@
 .dropdown-header:focus {
   outline: none;
   border-color: var(--accent-color);
-  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.16);
 }
 
 .dropdown-arrow {
   flex-shrink: 0;
   cursor: pointer;
   user-select: none;
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  opacity: 0.9;
 }
 
 .dropdown-menu {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 0.5rem);
   left: 0;
   width: 100%;
-  background: var(--card-bg);
+  background: var(--bg-color);
   border: 1px solid var(--card-border);
-  border-top: none;
-  border-radius: 0 0 4px 4px;
+  border-radius: 16px;
   z-index: 10;
   max-height: 0;
   overflow: hidden;
   opacity: 0;
   transition:
-    max-height 0.3s ease,
-    opacity 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-height 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  transform: translateY(-4px);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.16);
 }
 
 .dropdown-menu.open {
-  max-height: 300px;
+  max-height: 320px;
   opacity: 1;
+  transform: translateY(0);
   overflow-y: auto;
 }
 
 @media (max-width: 640px) {
   .dropdown-menu.open {
-    max-height: 250px;
+    max-height: 260px;
   }
 }
 
@@ -92,14 +109,17 @@
   box-sizing: border-box;
   padding: 0.75rem 1rem;
   border: none;
-  border-bottom: 2px solid var(--card-border);
+  border-bottom: 1px solid var(--card-border);
   outline: none;
   background: var(--card-bg);
   color: var(--text-color);
-  border-radius: 4px 4px 0 0 !important;
+  border-radius: 16px 16px 0 0 !important;
   font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -113,14 +133,14 @@
 
 .dropdown-search::placeholder {
   color: var(--text-color);
-  opacity: 0.6;
+  opacity: 0.55;
   font-weight: 400;
 }
 
 .dropdown-search:focus {
   background: var(--card-bg);
   border-bottom-color: var(--accent-color);
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
+  box-shadow: inset 0 -2px 0 var(--accent-color);
 }
 
 .dropdown-search:focus::placeholder {
@@ -134,10 +154,17 @@
 }
 
 .dropdown-list li {
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   color: var(--text-color);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.dropdown-list li:last-child {
+  border-bottom: none;
 }
 
 .dropdown-list li:hover {
@@ -145,13 +172,14 @@
 }
 
 .no-match {
-  padding: 0.75rem;
+  padding: 0.75rem 0.5rem;
   color: var(--no-result-text);
   text-align: center;
+  cursor: default;
 }
 
 .dropdown-loading {
-  padding: 0.75rem;
+  padding: 0.75rem 0.5rem;
   text-align: center;
   color: var(--text-color);
   opacity: 0.6;
@@ -160,11 +188,13 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  cursor: default;
+  width: 100%;
 }
 
 .spinner {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border: 2px solid var(--card-border);
   border-top-color: var(--accent-color);
   border-radius: 50%;
@@ -179,25 +209,29 @@
 
 /* ---------- Shared Input Styles ---------- */
 .input-control,
-.search-input,
-.dropdown-search {
-  padding: 0.75rem;
+.search-input {
+  padding: 0.85rem 1rem;
   border: 1px solid var(--card-border);
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 1rem;
   transition:
-    border-color 0.3s ease,
-    transform 0.3s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
   background: var(--card-bg);
   color: var(--text-color);
 }
 
 .input-control:focus,
-.search-input:focus,
-.dropdown-search:focus {
+.search-input:focus {
   outline: none;
   border-color: var(--accent-color);
-  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.16);
+}
+
+[data-theme="dark"] .input-control:focus,
+[data-theme="dark"] .search-input:focus {
+  box-shadow: 0 0 0 3px rgba(69, 161, 255, 0.22);
 }
 
 /* ---------- Animations ---------- */
@@ -236,15 +270,21 @@
 
 /* ---------- Dark Mode Overrides ---------- */
 [data-theme="dark"] .dropdown-header {
-  background-color: var(--card-border);
+  background-color: var(--bg-color);
   border-color: var(--card-border);
   color: var(--text-color);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .dropdown-header:hover,
+[data-theme="dark"] .dropdown-header:focus {
+  box-shadow: 0 0 0 3px rgba(69, 161, 255, 0.22);
 }
 
 [data-theme="dark"] .dropdown-menu {
-  background: var(--card-bg);
+  background: var(--bg-color);
   border-color: var(--card-border);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.45);
 }
 
 [data-theme="dark"] .dropdown-search {
@@ -256,7 +296,7 @@
 [data-theme="dark"] .dropdown-search:focus {
   background: var(--card-bg);
   border-bottom-color: var(--accent-color);
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.25);
+  box-shadow: inset 0 -2px 0 var(--accent-color);
 }
 
 [data-theme="dark"] .dropdown-list li:hover {
