@@ -8,7 +8,12 @@ import AllArticles from "../components/AllArticles";
 import ArticleSearch from "../components/ArticleSearch";
 import TopicDropdown from "../components/TopicDropdown";
 import RecommendedArticles from "../components/RecommendedArticles";
-import { getTopArticles, getLatestArticles } from "../services/api";
+import SavedFilters from "../components/SavedFilters";
+import {
+  getTopArticles,
+  getLatestArticles,
+  FilterPreset,
+} from "../services/api";
 
 export interface Article {
   _id: string;
@@ -34,6 +39,14 @@ export default function HomePage({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  // Get auth token on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem("token"));
+    }
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -64,6 +77,16 @@ export default function HomePage({
     setSearchQuery("");
     setSelectedTopic("");
     router.push("/home", undefined, { shallow: true });
+  };
+
+  const handleApplyPreset = (filters: FilterPreset["filters"]) => {
+    setSelectedTopic(filters.topic || "");
+    setSearchQuery("");
+    router.push(
+      `/home?topic=${encodeURIComponent(filters.topic || "")}`,
+      undefined,
+      { shallow: true },
+    );
   };
 
   return (
@@ -105,6 +128,13 @@ export default function HomePage({
                 { shallow: true },
               );
             }}
+          />
+          <SavedFilters
+            currentFilters={{
+              topic: selectedTopic,
+            }}
+            onApplyPreset={handleApplyPreset}
+            token={token}
           />
         </div>
         {isSearchActive ? (
