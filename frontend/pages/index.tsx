@@ -398,7 +398,9 @@ export default function LandingPage() {
   }, []);
 
   const scrollToFeatures = () => {
-    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("purpose-built")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -544,7 +546,7 @@ export default function LandingPage() {
           </button>
         </section>
 
-        <section className="highlights">
+        <section id="purpose-built" className="highlights">
           <div className="landing-container">
             <div className="section-head reveal">
               <span className="eyebrow">Purpose built</span>
