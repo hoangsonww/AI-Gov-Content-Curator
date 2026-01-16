@@ -20,8 +20,9 @@ set -euo pipefail
 # ----------------------------------------------------------------------------
 # Image configuration
 # ----------------------------------------------------------------------------
-# Replace "estatewise-frontend" with your desired image name
-IMAGE="ghcr.io/hoangsonww/estatewise-frontend:latest"
+# Replace "synthoraai-frontend" with your desired image name and
+# "hoangsonww" with your GitHub username.
+IMAGE="ghcr.io/hoangsonww/synthoraai-frontend:latest"
 
 # Ensure required env vars are set
 : "${GITHUB_ACTOR:?Please export GITHUB_ACTOR=<your GitHub username>}"
@@ -31,9 +32,9 @@ echo "🔨 Building Docker image: $IMAGE"
 
 # Build the image (reads Dockerfile in current directory)
 docker build \
-  --label org.opencontainers.image.title="estatewise-frontend" \
+  --label org.opencontainers.image.title="synthoraai-frontend" \
   --label org.opencontainers.image.version="latest" \
-  --label org.opencontainers.image.description="Production build of the EstateWise Next.js frontend" \
+  --label org.opencontainers.image.description="Production build of the SynthoraAI Next.js frontend" \
   -t "$IMAGE" .
 
 echo "🔐 Logging in to GHCR (ghcr.io) as $GITHUB_ACTOR"
