@@ -775,6 +775,8 @@
 .landing-page .capability-card {
   background: #ffffff;
   border-radius: 18px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   padding: 1.75rem;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
@@ -795,7 +797,7 @@
   right: 0;
   height: 4px;
   background: linear-gradient(90deg, var(--accent), var(--accent-warm));
-  border-radius: 18px 18px 0 0;
+  border-radius: 0;
   opacity: 0.7;
 }
 
