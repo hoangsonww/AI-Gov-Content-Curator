@@ -901,6 +901,7 @@ export default function ChatPage() {
             padding: 20px;
             box-sizing: border-box;
             font-family: "Inter", sans-serif;
+            animation: chatFadeIn 0.45s ease-out both;
           }
 
           :global(main) {
@@ -921,6 +922,8 @@ export default function ChatPage() {
             gap: 16px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
             min-height: 0;
+            animation: chatPanelIn 0.55s ease-out both;
+            animation-delay: 0.05s;
           }
 
           .sidebar-header {
@@ -1029,6 +1032,8 @@ export default function ChatPage() {
             overflow: hidden;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
             min-height: 0;
+            animation: chatPanelIn 0.55s ease-out both;
+            animation-delay: 0.12s;
           }
 
           .messages-container {
@@ -1343,6 +1348,26 @@ export default function ChatPage() {
             animation: pulse 1s infinite;
           }
 
+          @keyframes chatFadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+
+          @keyframes chatPanelIn {
+            from {
+              opacity: 0;
+              transform: translateY(16px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
           @keyframes pulse {
             0%,
             100% {
@@ -1520,6 +1545,14 @@ export default function ChatPage() {
               flex-direction: column;
               align-items: flex-start;
               gap: 6px;
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .chat-root,
+            .sidebar,
+            .chat-main {
+              animation: none;
             }
           }
 

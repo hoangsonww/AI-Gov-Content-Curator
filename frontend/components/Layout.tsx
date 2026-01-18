@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { TranslateProvider } from "./TranslateProvider";
 
 interface LayoutProps {
   theme: "light" | "dark" | "system";
@@ -40,32 +41,34 @@ export default function Layout({ theme, toggleTheme, children }: LayoutProps) {
   }, [isLandingPage]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-      }}
-    >
-      {!isLandingPage && (
-        <div ref={navbarWrapper}>
-          <Navbar theme={theme} onThemeChange={toggleTheme} />
-        </div>
-      )}
-
-      {/* @ts-ignore */}
-      <main
-        className={isLandingPage ? "layout-main landing-main" : "layout-main"}
-        style={{ flex: 1 }}
+    <TranslateProvider>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+        }}
       >
-        {children}
-      </main>
+        {!isLandingPage && (
+          <div ref={navbarWrapper}>
+            <Navbar theme={theme} onThemeChange={toggleTheme} />
+          </div>
+        )}
 
-      {!isLandingPage && (
-        <div ref={footerWrapper}>
-          <Footer />
-        </div>
-      )}
-    </div>
+        {/* @ts-ignore */}
+        <main
+          className={isLandingPage ? "layout-main landing-main" : "layout-main"}
+          style={{ flex: 1 }}
+        >
+          {children}
+        </main>
+
+        {!isLandingPage && (
+          <div ref={footerWrapper}>
+            <Footer />
+          </div>
+        )}
+      </div>
+    </TranslateProvider>
   );
 }
