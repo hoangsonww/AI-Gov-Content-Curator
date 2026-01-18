@@ -18,6 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ThemeToggle from "./ThemeToggle";
 import AuthDropdown from "./AuthDropdown";
 import Tooltip from "./Tooltip";
+import TranslateDropdown from "./TranslateDropdown";
 
 const ArticleIcon = MdArticle as React.FC<{ size?: number }>;
 const MailIcon = MdMailOutline as React.FC<{ size?: number }>;
@@ -31,10 +32,10 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   const router = useRouter();
 
   // Desktop popovers
-  const [openDropdown, setOpenDropdown] = useState<"theme" | "auth" | null>(
-    null,
-  );
-  const toggleDesktop = (which: "theme" | "auth") =>
+  const [openDropdown, setOpenDropdown] = useState<
+    "theme" | "auth" | "translate" | null
+  >(null);
+  const toggleDesktop = (which: "theme" | "auth" | "translate") =>
     setOpenDropdown((prev) => (prev === which ? null : which));
   const closeDesktop = () => setOpenDropdown(null);
 
@@ -46,16 +47,28 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   // Mobile-only popovers
   const [mobileThemeOpen, setMobileThemeOpen] = useState(false);
   const [mobileAuthOpen, setMobileAuthOpen] = useState(false);
+  const [mobileTranslateOpen, setMobileTranslateOpen] = useState(false);
   const toggleMobileTheme = () => {
     setMobileAuthOpen(false);
+    setMobileTranslateOpen(false);
     setMobileThemeOpen((o) => !o);
   };
   const closeMobileTheme = () => setMobileThemeOpen(false);
   const toggleMobileAuth = () => {
     setMobileThemeOpen(false);
+    setMobileTranslateOpen(false);
     setMobileAuthOpen((o) => !o);
   };
   const closeMobileAuth = () => setMobileAuthOpen(false);
+  const toggleMobileTranslate = () => {
+    setMobileThemeOpen(false);
+    setMobileAuthOpen(false);
+    setMobileTranslateOpen((o) => !o);
+  };
+  const closeMobileOtherDropdowns = () => {
+    closeMobileTheme();
+    closeMobileAuth();
+  };
 
   // Click outside mobile menu to close it
   useEffect(() => {
@@ -68,6 +81,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
           setIsClosing(false);
           setMobileThemeOpen(false);
           setMobileAuthOpen(false);
+          setMobileTranslateOpen(false);
           closeDesktop();
         }, 300);
       }
@@ -157,6 +171,12 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
             closeOther={closeDesktop}
           />
 
+          <TranslateDropdown
+            open={openDropdown === "translate"}
+            toggle={() => toggleDesktop("translate")}
+            closeOther={closeDesktop}
+          />
+
           <AuthDropdown
             theme={theme}
             onThemeChange={onThemeChange}
@@ -180,6 +200,7 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
                   setIsClosing(false);
                   setMobileThemeOpen(false);
                   setMobileAuthOpen(false);
+                  setMobileTranslateOpen(false);
                   closeDesktop();
                 }, 300);
               } else {
@@ -248,6 +269,12 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
                   open={mobileThemeOpen}
                   toggle={toggleMobileTheme}
                   closeOther={closeMobileAuth}
+                />
+                <TranslateDropdown
+                  variant="mobile"
+                  open={mobileTranslateOpen}
+                  toggle={toggleMobileTranslate}
+                  closeOther={closeMobileOtherDropdowns}
                 />
                 <AuthDropdown
                   theme={theme}

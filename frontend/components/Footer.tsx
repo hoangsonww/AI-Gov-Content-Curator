@@ -4,7 +4,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="footer hover-animate">
+    <footer className="footer hover-animate fade-down">
       <p>
         © {currentYear}{" "}
         <a
