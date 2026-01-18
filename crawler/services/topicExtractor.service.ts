@@ -67,15 +67,22 @@ const makePrompt = (text: string) =>
  *
  * @param s - The input string to clean.
  */
-const clean = (s: string) =>
-  Array.from(
+const clean = (s: string) => {
+  const protectedText = s.replace(/(\d),(?=\d{3}\b)/g, "$1__COMMA__");
+  return Array.from(
     new Set(
-      s
+      protectedText
         .split(/[\n,]+/)
-        .map((t) => t.trim().toLowerCase())
+        .map((t) =>
+          t
+            .replace(/__COMMA__/g, ",")
+            .trim()
+            .toLowerCase(),
+        )
         .filter(Boolean),
     ),
   );
+};
 
 /**
  * Check if the error is a rate limit error.
