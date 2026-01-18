@@ -170,16 +170,22 @@ const topicsAI = async (txt: string) =>
     )}`,
     "",
     256,
-  ).then((o) =>
-    Array.from(
+  ).then((o) => {
+    const protectedText = o.replace(/(\d),(?=\d{3}\b)/g, "$1__COMMA__");
+    return Array.from(
       new Set(
-        o
+        protectedText
           .split(/[,|\n]+/)
-          .map((v) => v.trim().toLowerCase())
+          .map((v) =>
+            v
+              .replace(/__COMMA__/g, ",")
+              .trim()
+              .toLowerCase(),
+          )
           .filter(Boolean),
       ),
-    ),
-  );
+    );
+  });
 
 /* ─────────── Fetch helpers ─────────── */
 

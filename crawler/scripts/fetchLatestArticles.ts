@@ -170,16 +170,22 @@ const topicsAI = async (t: string) =>
     `Give 5‑10 concise topics (comma‑separated, no quotes) for:\n${t.slice(0, 2000)}`,
     "",
     512,
-  ).then((o) =>
-    Array.from(
+  ).then((o) => {
+    const protectedText = o.replace(/(\d),(?=\d{3}\b)/g, "$1__COMMA__");
+    return Array.from(
       new Set(
-        o
+        protectedText
           .split(/[,|\n]+/)
-          .map((v) => v.trim().toLowerCase())
+          .map((v) =>
+            v
+              .replace(/__COMMA__/g, ",")
+              .trim()
+              .toLowerCase(),
+          )
           .filter(Boolean),
       ),
-    ),
-  );
+    );
+  });
 
 /* ─────────── Fetch helpers ─────────── */
 
