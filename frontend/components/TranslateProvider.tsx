@@ -49,6 +49,7 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState(false);
   const [language, setLanguageState] = useState(DEFAULT_LANG);
   const [options, setOptions] = useState<TranslateOption[]>([]);
+  const readyTimeoutRef = useRef<number | null>(null);
   const comboListenerAttached = useRef(false);
   const languageRef = useRef(language);
 
@@ -113,20 +114,41 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const clearReadyTimeout = () => {
+      if (readyTimeoutRef.current) {
+        window.clearTimeout(readyTimeoutRef.current);
+        readyTimeoutRef.current = null;
+      }
+    };
+
+    const startReadyTimeout = () => {
+      clearReadyTimeout();
+      readyTimeoutRef.current = window.setTimeout(() => {
+        if (!window.__googleTranslateInitialized) {
+          setError(true);
+        }
+      }, 10000);
+    };
+
     const initTranslateElement = () => {
       if (window.__googleTranslateInitialized) {
         setReady(true);
+        setError(false);
+        clearReadyTimeout();
         return;
       }
       if (!window.google?.translate?.TranslateElement) return;
       const container = document.getElementById("google_translate_element");
       if (!container) return;
       window.__googleTranslateInitialized = true;
+      container.innerHTML = "";
       new window.google.translate.TranslateElement(
         { pageLanguage: "en", autoDisplay: false },
         "google_translate_element",
       );
       setReady(true);
+      setError(false);
+      clearReadyTimeout();
     };
 
     window.googleTranslateElementInit = initTranslateElement;
@@ -137,23 +159,42 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
     }
 
     const existing = document.getElementById(SCRIPT_ID);
-    if (existing) return;
+    if (existing) {
+      const onLoad = () => initTranslateElement();
+      const onError = () => setError(true);
+      existing.addEventListener("load", onLoad);
+      existing.addEventListener("error", onError);
+      startReadyTimeout();
+      return () => {
+        existing.removeEventListener("load", onLoad);
+        existing.removeEventListener("error", onError);
+        clearReadyTimeout();
+      };
+    }
 
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
     script.src =
       "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
     script.async = true;
+    script.onload = () => initTranslateElement();
     script.onerror = () => setError(true);
     document.body.appendChild(script);
+    startReadyTimeout();
+
+    return () => {
+      clearReadyTimeout();
+    };
   }, []);
 
   useEffect(() => {
     if (!ready || typeof window === "undefined") return;
     let attempts = 0;
+    const maxAttempts = 40;
     const interval = window.setInterval(() => {
-      if (attempts > 20) {
+      if (attempts > maxAttempts) {
         window.clearInterval(interval);
+        setError(true);
         return;
       }
       const combo = document.querySelector(
@@ -180,7 +221,10 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
           label: opt.textContent || opt.value,
         }))
         .filter((opt) => opt.value);
-      if (nextOptions.length > 0) setOptions(nextOptions);
+      if (nextOptions.length > 0) {
+        setOptions(nextOptions);
+        setError(false);
+      }
 
       const stored = languageRef.current;
       if (stored) applyLanguage(stored);
@@ -227,7 +271,9 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
   return (
     <TranslateContext.Provider value={value}>
       {children}
-      <div id="google_translate_element" className="translate-element-host" />
+      <div className="translate-element-stash" aria-hidden="true">
+        <div id="google_translate_element" className="translate-element-host" />
+      </div>
     </TranslateContext.Provider>
   );
 }
