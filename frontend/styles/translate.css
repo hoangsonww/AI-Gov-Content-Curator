@@ -11,6 +11,10 @@
 }
 
 .translate-element-slot {
+  min-height: 0;
+}
+
+.translate-element-slot.ready {
   min-height: 36px;
 }
 
@@ -63,6 +67,10 @@
   gap: 0.6rem;
   z-index: 999;
   min-width: 220px;
+  max-width: min(360px, calc(100vw - 1.5rem));
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
   animation: dropdownFadeSlide 0.3s ease-out forwards;
 }
@@ -87,6 +95,8 @@
   top: auto;
   bottom: 2.8rem;
   min-width: 200px;
+  max-width: calc(100vw - 1.5rem);
+  max-height: calc(100vh - 6rem);
 }
 
 .translate-dropdown-header {

@@ -114,7 +114,10 @@ export default function TranslateDropdown({
           <div className="translate-status error">Translation unavailable.</div>
         )}
 
-        <div className="translate-element-slot" ref={slotRef} />
+        <div
+          className={`translate-element-slot${ready && !error ? " ready" : ""}`}
+          ref={slotRef}
+        />
         <div className="translate-help">
           If the language list is slow to load or translation is unavailable,
           please wait a few seconds or reload the page. Please check your
