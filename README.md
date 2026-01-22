@@ -425,13 +425,19 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/search-results.png" alt="User Profile Page" width="100%">
 </p>
 
-### 9. 404 Not Found Page
+### 9. App-wide Translate Feature
+
+<p align="center">
+  <img src="frontend/img/translate.png" alt="App-wide Translate Feature" width="100%">
+</p>
+
+### 10. 404 Not Found Page
 
 <p align="center">
   <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
 </p>
 
-### 10. Daily Newsletter Email Example
+### 11. Daily Newsletter Email Example
 
 <p align="center">
   <img src="frontend/img/newsletter-example.png" alt="Daily Newsletter Example" width="100%">
