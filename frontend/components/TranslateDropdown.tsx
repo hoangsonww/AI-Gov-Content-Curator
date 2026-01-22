@@ -26,7 +26,9 @@ export default function TranslateDropdown({
   const slotRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = () => {
-    if (open) toggle();
+    if (open) {
+      toggle();
+    }
     else {
       closeOther();
       toggle();
@@ -115,8 +117,8 @@ export default function TranslateDropdown({
 
         <div className="translate-element-slot" ref={slotRef} />
         <div className="translate-help">
-          If the language list is slow to load, wait a few seconds or reload the
-          page.
+          If the language list is slow to load or translation is unavailable,
+          please wait a few seconds or reload the page.
         </div>
       </div>
     </div>
