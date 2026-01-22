@@ -1664,9 +1664,14 @@ export default function ChatPage() {
             border-radius: 12px;
             width: 90%;
             max-width: 450px;
+            max-height: calc(100vh - 2rem);
             box-shadow: var(--chat-shadow-strong);
             animation: slideUp 0.2s ease;
             border: 1px solid var(--chat-accent-soft-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin: 1rem;
           }
 
           @keyframes slideUp {
@@ -1715,6 +1720,9 @@ export default function ChatPage() {
 
           .modal-body {
             padding: 24px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
           }
 
           .modal-input {
