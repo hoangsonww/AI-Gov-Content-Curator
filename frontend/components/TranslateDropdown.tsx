@@ -26,7 +26,9 @@ export default function TranslateDropdown({
   const slotRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = () => {
-    if (open) toggle();
+    if (open) {
+      toggle();
+    }
     else {
       closeOther();
       toggle();
