@@ -96,6 +96,47 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
     }
   };
 
+  const positionDetails: Record<
+    string,
+    { label: string; description: string }
+  > = {
+    "far-left": {
+      label: "Far Left",
+      description:
+        "Strongly progressive framing, emphasizing systemic change, equity, and expansive government action.",
+    },
+    left: {
+      label: "Left",
+      description:
+        "Progressive or liberal framing, favoring regulation, social programs, and collective solutions.",
+    },
+    "center-left": {
+      label: "Center-Left",
+      description:
+        "Moderate progressive framing with a balance of reform and pragmatic policy tradeoffs.",
+    },
+    center: {
+      label: "Center",
+      description:
+        "Centrist framing that presents multiple viewpoints with minimal ideological language.",
+    },
+    "center-right": {
+      label: "Center-Right",
+      description:
+        "Moderate conservative framing, emphasizing market solutions and fiscal restraint.",
+    },
+    right: {
+      label: "Right",
+      description:
+        "Conservative framing, prioritizing limited government, tradition, and individual responsibility.",
+    },
+    "far-right": {
+      label: "Far Right",
+      description:
+        "Strongly conservative framing with emphasis on national identity, security, and institutional skepticism.",
+    },
+  };
+
   const renderPoliticalSpectrum = () => {
     if (!biasData) return null;
 
@@ -112,17 +153,29 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
     return (
       <div className="political-spectrum">
         <div className="spectrum-bar">
-          {positions.map((pos) => (
-            <div
-              key={pos}
-              className={`spectrum-segment ${
-                biasData.politicalLeaning.position === pos ? "active" : ""
-              }`}
-              data-position={pos}
-            >
-              <div className="segment-label">{getPositionLabel(pos)}</div>
-            </div>
-          ))}
+          {positions.map((pos) => {
+            const details = positionDetails[pos] || {
+              label: getPositionLabel(pos),
+              description: "",
+            };
+            const tooltipId = `spectrum-tooltip-${pos}`;
+            return (
+              <div
+                key={pos}
+                className={`spectrum-segment ${
+                  biasData.politicalLeaning.position === pos ? "active" : ""
+                }`}
+                data-position={pos}
+                tabIndex={0}
+                aria-describedby={tooltipId}
+              >
+                <div className="segment-label">{details.label}</div>
+                <div className="segment-tooltip" id={tooltipId} role="tooltip">
+                  {details.description}
+                </div>
+              </div>
+            );
+          })}
         </div>
         <div
           className="spectrum-indicator"

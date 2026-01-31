@@ -1,4 +1,44 @@
-# Sitewide Chat Feature - Implementation Guide
+# Sitewide Chat Feature - SynthoraAI Documentation
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+  - [Streaming Event Lifecycle (Frontend)](#streaming-event-lifecycle-frontend)
+  - [Backend Components](#backend-components)
+  - [Frontend Components](#frontend-components)
+- [API Specification](#api-specification)
+  - [Endpoint: `/api/chat/sitewide`](#endpoint-apichatsitewide)
+- [How It Works](#how-it-works)
+  - [Step 1: User Submits Query](#step-1-user-submits-query)
+  - [Step 2: Semantic Search](#step-2-semantic-search)
+  - [Step 3: Context Building](#step-3-context-building)
+  - [Step 4: AI Response Generation](#step-4-ai-response-generation)
+  - [Step 5: Frontend Display](#step-5-frontend-display)
+- [Error Handling](#error-handling)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+- [Performance Optimizations](#performance-optimizations)
+- [Security Considerations](#security-considerations)
+- [Configuration](#configuration)
+  - [Required Environment Variables (Backend)](#required-environment-variables-backend)
+  - [Required Environment Variables (Frontend)](#required-environment-variables-frontend)
+- [Testing the Feature](#testing-the-feature)
+  - [Local Development](#local-development)
+  - [Test Cases](#test-cases)
+- [Production Deployment](#production-deployment)
+  - [Backend](#backend-1)
+  - [Frontend](#frontend-1)
+- [Monitoring and Maintenance](#monitoring-and-maintenance)
+  - [Logs to Monitor](#logs-to-monitor)
+  - [Metrics to Track](#metrics-to-track)
+- [Future Enhancements](#future-enhancements)
+- [Troubleshooting](#troubleshooting)
+  - ["No relevant articles found"](#no-relevant-articles-found)
+  - ["All API keys exhausted"](#all-api-keys-exhausted)
+  - [Streaming not working](#streaming-not-working)
+  - [Build errors](#build-errors)
+- [Support](#support)
 
 ## Overview
 
