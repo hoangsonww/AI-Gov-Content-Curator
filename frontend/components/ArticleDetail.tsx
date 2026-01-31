@@ -78,10 +78,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   const title = article.title?.trim() || "Article Title Unavailable";
 
   return (
-    <div
-      className="article-detail hover-animate"
-      style={{ position: "relative" }}
-    >
+    <div className="article-detail" style={{ position: "relative" }}>
       <h1 className="detail-title">{title}</h1>
       <p className="detail-meta">
         Source:{" "}
