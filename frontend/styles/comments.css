@@ -13,7 +13,6 @@
   background: var(--card-bg);
   border: var(--cb-border);
   border-radius: var(--cb-radius);
-  box-shadow: var(--cb-shadow);
 }
 
 .comments-header {
