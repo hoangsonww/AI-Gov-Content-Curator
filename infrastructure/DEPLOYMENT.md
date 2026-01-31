@@ -787,6 +787,5 @@ kubectl cp <pod>:/heapdump-*.heapsnapshot ./heapdump.heapsnapshot
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/hoangsonww/AI-Gov-Content-Curator/issues
-- Slack: #ai-curator-deployments
-- Email: support@example.com
+- **Issues**: https://github.com/hoangsonww/AI-Gov-Content-Curator/issues
+- **Email**: hoangson091104@gmail.com

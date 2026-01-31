@@ -2,6 +2,74 @@
 
 A sophisticated, production-ready Agentic AI system built with LangGraph and LangChain, featuring assembly line architecture, MCP server integration, and cloud deployment support for AWS and Azure.
 
+## Table of Contents
+
+- [🌟 Overview](#-overview)
+  - [Key Features](#key-features)
+- [🏗️ Architecture](#-architecture)
+  - [System Overview](#system-overview)
+  - [Assembly Line Flow](#assembly-line-flow)
+  - [Agent Responsibilities](#agent-responsibilities)
+- [🎯 Agent Details](#-agent-details)
+  - [1. Content Analyzer Agent](#1-content-analyzer-agent)
+  - [2. Summarizer Agent](#2-summarizer-agent)
+  - [3. Classifier Agent](#3-classifier-agent)
+  - [4. Sentiment Analyzer Agent](#4-sentiment-analyzer-agent)
+  - [5. Quality Checker Agent](#5-quality-checker-agent)
+- [🔌 MCP Server](#-mcp-server)
+  - [Available Tools](#available-tools)
+    - [`process_article`](#processarticle)
+    - [`analyze_content`](#analyzecontent)
+    - [`generate_summary`](#generatesummary)
+    - [`check_pipeline_health`](#checkpipelinehealth)
+    - [`get_processing_status`](#getprocessingstatus)
+  - [Resources](#resources)
+  - [MCP Integration Flow](#mcp-integration-flow)
+- [☁️ Cloud Deployment](#-cloud-deployment)
+  - [AWS Architecture](#aws-architecture)
+  - [Azure Architecture](#azure-architecture)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running Locally](#running-locally)
+    - [Start the MCP Server](#start-the-mcp-server)
+    - [Use the Pipeline Programmatically](#use-the-pipeline-programmatically)
+- [🌩️ Deployment](#-deployment)
+  - [Deploy to AWS](#deploy-to-aws)
+  - [Deploy to Azure](#deploy-to-azure)
+- [📊 Monitoring & Observability](#-monitoring--observability)
+  - [Structured Logging](#structured-logging)
+  - [Metrics](#metrics)
+  - [Health Checks](#health-checks)
+- [⚙️ Configuration](#-configuration)
+  - [Environment Variables](#environment-variables)
+  - [.env Example](#env-example)
+- [🧪 Testing](#-testing)
+  - [Run Tests](#run-tests)
+  - [Example Test](#example-test)
+- [📈 Performance](#-performance)
+  - [Benchmarks](#benchmarks)
+  - [Optimization Tips](#optimization-tips)
+- [🔐 Security](#-security)
+  - [Best Practices](#best-practices)
+  - [API Key Rotation](#api-key-rotation)
+- [🤝 Integration](#-integration)
+  - [Integrate with Existing Backend](#integrate-with-existing-backend)
+  - [MCP Client Integration](#mcp-client-integration)
+- [📚 API Reference](#-api-reference)
+  - [Pipeline API](#pipeline-api)
+    - [`AgenticPipeline.process_article(article_data: Dict) -> Dict`](#agenticpipelineprocessarticlearticledata-dict---dict)
+    - [`AgenticPipeline.visualize() -> str`](#agenticpipelinevisualize---str)
+- [🛠️ Troubleshooting](#-troubleshooting)
+  - [Common Issues](#common-issues)
+    - [Pipeline Timeout](#pipeline-timeout)
+    - [Low Quality Scores](#low-quality-scores)
+    - [Memory Issues](#memory-issues)
+- [👥 Contributing](#-contributing)
+- [📄 License](#-license)
+- [🙏 Acknowledgments](#-acknowledgments)
+- [📞 Support](#-support)
+
 ## 🌟 Overview
 
 The SynthoraAI Agentic AI Pipeline is an advanced content processing system that leverages multiple specialized AI agents working in concert to analyze, summarize, classify, and quality-check articles. Built on LangGraph's state machine architecture, it provides reliability, scalability, and sophisticated multi-agent orchestration.
@@ -706,31 +774,6 @@ Generate a mermaid diagram of the pipeline.
 - Reduce batch sizes
 - Implement pagination for large datasets
 - Use streaming for long content
-
----
-
-## 📝 Changelog
-
-### Version 1.0.0 (2024)
-
-- Initial release
-- Multi-agent pipeline with LangGraph
-- MCP server implementation
-- AWS and Azure deployment support
-- Production-ready configuration
-- Comprehensive documentation
-
----
-
-## 🎯 Roadmap
-
-- [ ] Support for additional LLM providers (Cohere, Mistral)
-- [ ] Real-time streaming responses
-- [ ] Advanced caching strategies
-- [ ] Multi-language support
-- [ ] Enhanced visualization tools
-- [ ] A/B testing framework for prompts
-- [ ] Auto-tuning for quality thresholds
 
 ---
 

@@ -9,6 +9,20 @@ A comprehensive command‐line interface (CLI) for managing and running the **AI
 
 ---
 
+## Table of Contents
+
+- [📋 Prerequisites](#-prerequisites)
+- [⚙️ Installation](#-installation)
+- [🛠️ Configuration](#-configuration)
+- [🚀 Usage](#-usage)
+  - [CLI Execution Flow](#cli-execution-flow)
+  - [Service Management](#service-management)
+- [📝 Article CRUD Commands](#-article-crud-commands)
+  - [Command Reference](#command-reference)
+    - [Flags for `create` and `update`](#flags-for-create-and-update)
+- [🛠️ Development & Contributing](#-development--contributing)
+- [📄 License](#-license)
+
 ## 📋 Prerequisites
 
 - **Node.js** v18.x (as specified in `package.json`)
@@ -58,6 +72,16 @@ Run `aicc` with no arguments to see the help:
 
 ```bash
 aicc
+```
+
+### CLI Execution Flow
+
+```mermaid
+flowchart LR
+    CLI[aicc CLI] --> Cmd{Command Type}
+    Cmd -->|Workspace| Tasks[Frontend/Backend/Crawler Scripts]
+    Cmd -->|Article CRUD| API[/Backend /api/articles/]
+    API --> DB[(MongoDB)]
 ```
 
 ### Service Management

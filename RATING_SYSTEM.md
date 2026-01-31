@@ -1,8 +1,50 @@
-# Article Rating System Implementation
+# Article Rating System Implementation - SynthoraAI Documentation
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Rating Flow (End-to-End)](#rating-flow-end-to-end)
+- [Files Created](#files-created)
+  - [1. Model](#1-model)
+  - [2. Controller](#2-controller)
+  - [3. Routes](#3-routes)
+  - [4. Test Files](#4-test-files)
+  - [5. Modified Files](#5-modified-files)
+- [Key Features](#key-features)
+  - [Rating Types](#rating-types)
+  - [Data Structure](#data-structure)
+  - [Constraints](#constraints)
+- [Aggregation & Statistics](#aggregation--statistics)
+- [Validation & Abuse Prevention (Recommended)](#validation--abuse-prevention-recommended)
+- [Usage Examples](#usage-examples)
+  - [Frontend Integration (React/Next.js)](#frontend-integration-reactnextjs)
+  - [UI Component Ideas](#ui-component-ideas)
+    - [Meter Rating Component](#meter-rating-component)
+    - [Star Rating Component](#star-rating-component)
+- [Database Indexes](#database-indexes)
+- [API Response Examples](#api-response-examples)
+  - [Rating Statistics Response](#rating-statistics-response)
+- [Environment Setup](#environment-setup)
+- [Testing](#testing)
 
 ## Overview
 
 A flexible rating system has been implemented to allow users to rate articles with either a meter-style rating (-100 to 100) or traditional star ratings (1-5). The system supports both authenticated users and anonymous sessions.
+
+## Rating Flow (End-to-End)
+
+```mermaid
+flowchart LR
+    User[User or Anonymous Session] --> UI[Frontend Rating UI]
+    UI --> Submit[/POST /api/ratings/]
+    Submit --> Ctrl[Rating Controller]
+    Ctrl --> Model[Rating Model]
+    Model --> DB[(MongoDB: ratings)]
+    UI --> Read[/GET /api/ratings/article/:id/stats/]
+    Read --> Agg[Aggregation Pipeline]
+    Agg --> DB
+    Agg --> UI
+```
 
 ## Files Created
 
@@ -76,6 +118,26 @@ Each rating document contains:
 - Either userId or sessionId must be present
 - Value validation based on rating type
 - Automatic timestamp tracking
+
+## Aggregation & Statistics
+
+The stats endpoint aggregates ratings to provide summary insights for the article detail UI:
+
+- **Average rating** for meter-style inputs (e.g., mean of -100..100 values)
+- **Counts by rating type**, so mixed usage is visible (meter vs. stars)
+- **Bucketed distributions** for meter ranges and star levels
+- **Total ratings** for quick popularity signals
+
+When both rating types are present, the API returns per-type distributions so the UI can render the appropriate charts without mixing incompatible scales.
+
+## Validation & Abuse Prevention (Recommended)
+
+To keep ratings trustworthy and consistent, the following safeguards are recommended:
+
+- **Strict server-side validation** of `ratingType` and numeric bounds
+- **Session validation** for anonymous users to reduce duplicate spam
+- **Rate limiting** for rating creation/update endpoints
+- **Optional moderation** for comments (length, profanity filters)
 
 ## Usage Examples
 

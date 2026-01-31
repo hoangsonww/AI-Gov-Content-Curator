@@ -1,8 +1,61 @@
 # Database Article Pruning Script
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Pruning Pipeline Diagram](#pruning-pipeline-diagram)
+- [Current Database Stats](#current-database-stats)
+- [Pruning Strategy](#pruning-strategy)
+  - [Phase 1: Duplicate Removal](#phase-1-duplicate-removal)
+  - [Phase 2: Old Low-Engagement Articles](#phase-2-old-low-engagement-articles)
+  - [Phase 3: Low-Quality Articles](#phase-3-low-quality-articles)
+  - [Phase 4: Orphaned/Malformed Articles](#phase-4-orphanedmalformed-articles)
+- [Safety Features](#safety-features)
+  - [Dry Run by Default](#dry-run-by-default)
+  - [Confirmation Requirements](#confirmation-requirements)
+  - [Comprehensive Logging](#comprehensive-logging)
+  - [Data Preservation](#data-preservation)
+- [Pre-Run Checklist](#pre-run-checklist)
+- [Usage](#usage)
+  - [Method 1: NPM Scripts (Recommended)](#method-1-npm-scripts-recommended)
+  - [Method 2: Direct Execution](#method-2-direct-execution)
+- [Example Output](#example-output)
+- [Thresholds and Constants](#thresholds-and-constants)
+- [Recommended Schedule](#recommended-schedule)
+  - [Manual Execution](#manual-execution)
+  - [Automated Scheduling (Future Enhancement)](#automated-scheduling-future-enhancement)
+- [Monitoring & Maintenance](#monitoring--maintenance)
+  - [Key Metrics to Watch](#key-metrics-to-watch)
+  - [Red Flags](#red-flags)
+- [Post-Run Validation](#post-run-validation)
+- [Database Impact](#database-impact)
+  - [Expected Results](#expected-results)
+  - [What's Preserved](#whats-preserved)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+  - [Recovery](#recovery)
+- [Script Location & Dependencies](#script-location--dependencies)
+
 ## Overview
 
 As the AI Gov Content Curator collects articles continuously, the database can grow rapidly and eventually consume excessive storage space. This pruning script provides a safe and systematic way to remove low-value articles while preserving high-quality content.
+
+## Pruning Pipeline Diagram
+
+```mermaid
+flowchart TD
+    Start[Start Prune Run] --> Mode{Dry Run?}
+    Mode -->|Yes| Scan[Scan & Classify Articles]
+    Mode -->|No| Confirm{--live + --force?}
+    Confirm -->|No| Stop[Abort with Warning]
+    Confirm -->|Yes| Scan
+    Scan --> P1[Phase 1: Duplicates]
+    P1 --> P2[Phase 2: Old Low-Engagement]
+    P2 --> P3[Phase 3: Low-Quality]
+    P3 --> P4[Phase 4: Orphaned/Malformed]
+    P4 --> Report[Summary Report]
+    Report --> End[Exit]
+```
 
 ## Current Database Stats
 
@@ -85,6 +138,15 @@ The script uses a **4-phase approach** to safely identify and remove articles th
 - Keeps newest version when duplicates exist
 - Focuses on clearly problematic content
 - Conservative thresholds to avoid false positives
+
+## Pre-Run Checklist
+
+Before a live prune, validate the following to reduce risk:
+
+- **Recent backup available** (MongoDB snapshot or export)
+- **Dry-run report reviewed** and thresholds make sense
+- **Crawl health** looks normal (no recent upstream outages)
+- **Disk/CPU headroom** for a full scan on production data
 
 ## Usage
 
@@ -186,6 +248,15 @@ Consider adding to cron jobs:
 - Very high pruning percentages (>50%) might indicate crawler issues
 - No articles being pruned might indicate criteria are too strict
 - Many duplicates might indicate crawler URL normalization problems
+
+## Post-Run Validation
+
+After a live run, confirm the system still behaves as expected:
+
+- **Sample article pages** load and render correctly
+- **Daily crawler output** still produces new content
+- **Newsletter and search** are returning results
+- **DB size/collections** align with the pruning report
 
 ## Database Impact
 
