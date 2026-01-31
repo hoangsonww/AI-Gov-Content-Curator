@@ -9,50 +9,58 @@ interface BiasAnalysisProps {
 
 export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
   const [biasData, setBiasData] = useState<BiasAnalysis | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasRequested, setHasRequested] = useState(false);
+  const contentToAnalyze = article.summary || article.content || "";
+  const canAnalyze = Boolean(
+    article._id && article.title && contentToAnalyze.length >= 100,
+  );
 
   useEffect(() => {
-    const fetchBiasAnalysis = async () => {
-      if (!article._id || !article.title) {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Use summary if available, otherwise use content
-        const contentToAnalyze = article.summary || article.content || "";
-
-        if (!contentToAnalyze || contentToAnalyze.length < 100) {
-          setError("Article content too short for analysis");
-          setLoading(false);
-          return;
-        }
-
-        const analysis = await analyzeArticleBias(
-          article._id,
-          article.title,
-          contentToAnalyze,
-        );
-
-        if (analysis) {
-          setBiasData(analysis);
-        } else {
-          setError("Unable to analyze article bias");
-        }
-      } catch (err) {
-        console.error("Error fetching bias analysis:", err);
-        setError("Failed to load bias analysis");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBiasAnalysis();
+    setBiasData(null);
+    setError(null);
+    setLoading(false);
+    setHasRequested(false);
   }, [article._id, article.title, article.summary, article.content]);
+
+  const handleGenerate = async () => {
+    setHasRequested(true);
+    setError(null);
+
+    if (!article._id || !article.title) {
+      setError("Missing article metadata for analysis");
+      return;
+    }
+
+    // Use summary if available, otherwise use content
+    if (!contentToAnalyze || contentToAnalyze.length < 100) {
+      setError("Article content too short for analysis");
+      return;
+    }
+
+    setLoading(true);
+    setBiasData(null);
+
+    try {
+      const analysis = await analyzeArticleBias(
+        article._id,
+        article.title,
+        contentToAnalyze,
+      );
+
+      if (analysis) {
+        setBiasData(analysis);
+      } else {
+        setError("Unable to analyze article bias");
+      }
+    } catch (err) {
+      console.error("Error fetching bias analysis:", err);
+      setError("Failed to load bias analysis");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getPoliticalColorClass = (position: string): string => {
     switch (position) {
@@ -196,21 +204,6 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="bias-analysis-container loading">
-        <div className="bias-loading">
-          <div className="loading-spinner"></div>
-          <p>Analyzing article bias...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !biasData) {
-    return null; // Silently fail if analysis is unavailable
-  }
-
   return (
     <div className="bias-analysis-container">
       <h2>
@@ -219,92 +212,135 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
         Political Bias Analysis
       </h2>
 
-      <div className="bias-content">
-        {renderPoliticalSpectrum()}
+      {!hasRequested && (
+        <div className="bias-cta">
+          <button
+            type="button"
+            className="bias-cta-button"
+            onClick={handleGenerate}
+            disabled={loading || !canAnalyze}
+          >
+            Generate Political Bias Analysis
+          </button>
+          {!canAnalyze && (
+            <p className="bias-cta-hint">
+              Article content is too short for analysis.
+            </p>
+          )}
+        </div>
+      )}
 
-        <div className="bias-metrics">
-          <div className="metric-row">
-            <div className="metric-card">
-              <h3>Political Leaning</h3>
-              <div
-                className={`position-badge ${getPoliticalColorClass(biasData.politicalLeaning.position)}`}
-              >
-                {getPositionLabel(biasData.politicalLeaning.position)}
-              </div>
-              <p className="score">
-                Score: {biasData.politicalLeaning.score > 0 ? "+" : ""}
-                {biasData.politicalLeaning.score}
-              </p>
-              <p className="explanation">
-                {biasData.politicalLeaning.explanation}
-              </p>
-            </div>
+      {hasRequested && loading && (
+        <div className="bias-loading">
+          <div className="loading-spinner"></div>
+          <p>Analyzing article bias...</p>
+        </div>
+      )}
 
-            <div className="metric-card">
-              <h3>Analysis Confidence</h3>
-              <div className="confidence-meter">
+      {hasRequested && error && !loading && (
+        <div className="bias-error">
+          <p>{error}</p>
+          <button
+            type="button"
+            className="bias-cta-button"
+            onClick={handleGenerate}
+            disabled={!canAnalyze}
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {hasRequested && biasData && !loading && !error && (
+        <div className="bias-content">
+          {renderPoliticalSpectrum()}
+
+          <div className="bias-metrics">
+            <div className="metric-row">
+              <div className="metric-card">
+                <h3>Political Leaning</h3>
                 <div
-                  className="confidence-fill"
-                  style={{ width: `${biasData.confidence}%` }}
-                ></div>
+                  className={`position-badge ${getPoliticalColorClass(biasData.politicalLeaning.position)}`}
+                >
+                  {getPositionLabel(biasData.politicalLeaning.position)}
+                </div>
+                <p className="score">
+                  Score: {biasData.politicalLeaning.score > 0 ? "+" : ""}
+                  {biasData.politicalLeaning.score}
+                </p>
+                <p className="explanation">
+                  {biasData.politicalLeaning.explanation}
+                </p>
               </div>
-              <p className="confidence-value">{biasData.confidence}%</p>
+
+              <div className="metric-card">
+                <h3>Analysis Confidence</h3>
+                <div className="confidence-meter">
+                  <div
+                    className="confidence-fill"
+                    style={{ width: `${biasData.confidence}%` }}
+                  ></div>
+                </div>
+                <p className="confidence-value">{biasData.confidence}%</p>
+              </div>
+
+              <div className="metric-card">
+                <h3>Neutrality Score</h3>
+                <div className="neutrality-meter">
+                  <div
+                    className="neutrality-fill"
+                    style={{
+                      width: `${biasData.neutralityScore}%`,
+                      backgroundColor:
+                        biasData.neutralityScore > 70
+                          ? "#27ae60"
+                          : biasData.neutralityScore > 40
+                            ? "#f39c12"
+                            : "#e74c3c",
+                    }}
+                  ></div>
+                </div>
+                <p className="neutrality-value">
+                  {biasData.neutralityScore}/100
+                </p>
+              </div>
             </div>
 
-            <div className="metric-card">
-              <h3>Neutrality Score</h3>
-              <div className="neutrality-meter">
+            <div className="bias-details">
+              <div className="detail-section">
+                <h3>Bias Status</h3>
                 <div
-                  className="neutrality-fill"
-                  style={{
-                    width: `${biasData.neutralityScore}%`,
-                    backgroundColor:
-                      biasData.neutralityScore > 70
-                        ? "#27ae60"
-                        : biasData.neutralityScore > 40
-                          ? "#f39c12"
-                          : "#e74c3c",
-                  }}
-                ></div>
+                  className={`bias-badge ${biasData.isBiased ? "biased" : "unbiased"}`}
+                >
+                  {biasData.isBiased
+                    ? "⚠️ Biased Content Detected"
+                    : "✓ Relatively Unbiased"}
+                </div>
               </div>
-              <p className="neutrality-value">{biasData.neutralityScore}/100</p>
+
+              {biasData.biasIndicators.length > 0 && (
+                <div className="detail-section">
+                  <h3>Bias Indicators</h3>
+                  <ul className="bias-indicators">
+                    {biasData.biasIndicators
+                      .slice(0, 5)
+                      .map((indicator, index) => (
+                        <li key={index}>{indicator}</li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+
+              {biasData.recommendation && (
+                <div className="detail-section">
+                  <h3>Recommendation</h3>
+                  <p className="recommendation">{biasData.recommendation}</p>
+                </div>
+              )}
             </div>
-          </div>
-
-          <div className="bias-details">
-            <div className="detail-section">
-              <h3>Bias Status</h3>
-              <div
-                className={`bias-badge ${biasData.isBiased ? "biased" : "unbiased"}`}
-              >
-                {biasData.isBiased
-                  ? "⚠️ Biased Content Detected"
-                  : "✓ Relatively Unbiased"}
-              </div>
-            </div>
-
-            {biasData.biasIndicators.length > 0 && (
-              <div className="detail-section">
-                <h3>Bias Indicators</h3>
-                <ul className="bias-indicators">
-                  {biasData.biasIndicators
-                    .slice(0, 5)
-                    .map((indicator, index) => (
-                      <li key={index}>{indicator}</li>
-                    ))}
-                </ul>
-              </div>
-            )}
-
-            {biasData.recommendation && (
-              <div className="detail-section">
-                <h3>Recommendation</h3>
-                <p className="recommendation">{biasData.recommendation}</p>
-              </div>
-            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
