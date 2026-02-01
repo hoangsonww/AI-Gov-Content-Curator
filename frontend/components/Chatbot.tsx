@@ -437,16 +437,7 @@ export default function Chatbot({ article }: { article: Article }) {
                         ))}
                         {loading && (
                           <div className="cb-loader">
-                            <motion.span
-                              animate={{ rotate: 360 }}
-                              transition={{
-                                repeat: Infinity,
-                                ease: "linear",
-                                duration: 1,
-                              }}
-                            >
-                              <AiOutlineLoading3Quarters size={22} />
-                            </motion.span>
+                            <span className="cb-spinner" aria-hidden="true" />
                             <span>{loaderText}</span>
                           </div>
                         )}

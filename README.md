@@ -1031,6 +1031,8 @@ The chatbot is given an identity (ArticleIQ) and is designed to answer questions
 - **RAG Integration:** The AI will use RAG (Retrieval-Augmented Generation) to provide accurate and contextually relevant answers based on the article content.
 - **Real-Time Responses:** Users will receive answers in real-time, enhancing the overall user experience and engagement with the content.
 
+In addition to the site-wide chatbot, article-specific chatbots are also available on each article detail page. These chatbots are tailored to the content of the specific article, allowing users to ask questions and receive answers that are directly relevant to the article they are reading.
+
 ### Prerequisites & Installation (Article Q&A)
 
 > [!TIP]

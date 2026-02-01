@@ -311,7 +311,7 @@ export default function RelatedArticles({ articleId }: RelatedArticlesProps) {
 
         .related-card:hover {
           border-color: var(--accent-color);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+          box-shadow: none;
         }
 
         .related-card-title {

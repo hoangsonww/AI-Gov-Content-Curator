@@ -134,6 +134,23 @@
   font-size: 0.9rem;
 }
 
+.cb-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--card-border);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: cb-spinner 0.9s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes cb-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---- footer ---- */
 .cb-footer {
   display: flex;

@@ -38,7 +38,7 @@
 
 .carousel-card:hover {
   border-color: var(--accent-color);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
 }
 
 .carousel-card-title {
@@ -171,28 +171,11 @@
 
 @media (max-width: 768px) {
   .mobile-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-
-  .article-carousel-section {
     display: none;
   }
 
-  .mobile-grid .article-summary {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 6;
-    -webkit-box-orient: vertical;
-    text-overflow: ellipsis;
-    word-wrap: break-word;
-    word-break: break-word;
-  }
-
-  .mobile-grid .article-summary * {
-    overflow-wrap: break-word;
-    word-break: break-word;
+  .article-carousel-section {
+    display: block;
   }
 }
 
