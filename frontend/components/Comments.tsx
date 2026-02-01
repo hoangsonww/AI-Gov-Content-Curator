@@ -505,7 +505,7 @@ export default function Comments({ articleId }: CommentsProps) {
             value={newContent}
             onChange={onNewChange}
             onKeyDown={onKeyDown}
-            placeholder="Write a comment…"
+            placeholder="Write a comment..."
           />
           {mentionMode && mentionTarget === "new" && (
             <ul className="mention-popup show">
@@ -536,7 +536,7 @@ export default function Comments({ articleId }: CommentsProps) {
       {loading ? (
         <div className="comments-loading">
           <span className="comments-spinner" aria-hidden="true" />
-          <span>Loading comments…</span>
+          <span>Loading comments...</span>
         </div>
       ) : pageSlice.length === 0 ? (
         <div className="comments-empty">

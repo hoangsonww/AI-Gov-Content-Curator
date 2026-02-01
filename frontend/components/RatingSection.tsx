@@ -683,7 +683,6 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
           {ratingsLoading ? (
             <div className="ratings-loading">
               <div className="spinner"></div>
-              <span>Loading ratings…</span>
             </div>
           ) : ratingsError ? (
             <div className="ratings-error">{ratingsError}</div>
