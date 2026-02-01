@@ -1,20 +1,20 @@
 import { BASE_URL } from "./api";
 
+export interface RatingUser {
+  name?: string;
+  email?: string;
+}
+
 export interface Rating {
   _id?: string;
   articleId: string;
-  userId?: string;
+  userId?: string | RatingUser;
   value: number;
   ratingType: "meter" | "stars";
   sessionId?: string;
   comment?: string;
   createdAt?: string;
   updatedAt?: string;
-}
-
-export interface RatingUser {
-  name?: string;
-  email?: string;
 }
 
 export interface RatingWithUser extends Rating {
