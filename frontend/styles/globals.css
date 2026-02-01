@@ -148,8 +148,8 @@ main {
 @media (max-width: 768px) {
   .related-articles-section .slick-prev,
   .related-articles-section .slick-next {
-    width: 40px !important;
-    height: 40px !important;
+    width: 48px !important;
+    height: 48px !important;
     background: transparent !important;
   }
 
