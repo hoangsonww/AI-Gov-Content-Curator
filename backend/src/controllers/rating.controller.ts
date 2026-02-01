@@ -175,6 +175,16 @@ export const getArticleRatingStats = async (req: Request, res: Response) => {
         $group: {
           _id: "$articleId",
           averageRating: { $avg: "$value" },
+          averageMeterRating: {
+            $avg: {
+              $cond: [{ $eq: ["$ratingType", "meter"] }, "$value", null],
+            },
+          },
+          averageStarRating: {
+            $avg: {
+              $cond: [{ $eq: ["$ratingType", "stars"] }, "$value", null],
+            },
+          },
           totalRatings: { $sum: 1 },
           meterRatings: {
             $sum: {
@@ -199,6 +209,8 @@ export const getArticleRatingStats = async (req: Request, res: Response) => {
           _id: 0,
           articleId: "$_id",
           averageRating: { $round: ["$averageRating", 2] },
+          averageMeterRating: { $round: ["$averageMeterRating", 2] },
+          averageStarRating: { $round: ["$averageStarRating", 2] },
           totalRatings: 1,
           meterRatings: 1,
           starRatings: 1,
@@ -213,6 +225,8 @@ export const getArticleRatingStats = async (req: Request, res: Response) => {
         data: {
           articleId,
           averageRating: 0,
+          averageMeterRating: 0,
+          averageStarRating: 0,
           totalRatings: 0,
           meterRatings: 0,
           starRatings: 0,
@@ -227,20 +241,40 @@ export const getArticleRatingStats = async (req: Request, res: Response) => {
     const starDistribution: { [key: number]: number } = {};
 
     processedStats.distribution.forEach((rating: any) => {
-      if (rating.type === "meter") {
+      if (rating.type === "stars") {
+        starDistribution[rating.value] =
+          (starDistribution[rating.value] || 0) + 1;
+      } else {
         // Group meter ratings into ranges
         const range = Math.floor(rating.value / 20) * 20;
         const key = `${range} to ${range + 20}`;
         meterDistribution[key] = (meterDistribution[key] || 0) + 1;
-      } else if (rating.type === "stars") {
-        starDistribution[rating.value] =
-          (starDistribution[rating.value] || 0) + 1;
       }
     });
 
     processedStats.meterDistribution = meterDistribution;
     processedStats.starDistribution = starDistribution;
     delete processedStats.distribution;
+
+    if (processedStats.totalRatings > 0) {
+      if (
+        processedStats.starRatings === 0 &&
+        (processedStats.averageMeterRating === null ||
+          typeof processedStats.averageMeterRating === "undefined")
+      ) {
+        processedStats.averageMeterRating = processedStats.averageRating;
+        if (processedStats.meterRatings === 0) {
+          processedStats.meterRatings = processedStats.totalRatings;
+        }
+      }
+      if (
+        processedStats.starRatings > 0 &&
+        (processedStats.averageStarRating === null ||
+          typeof processedStats.averageStarRating === "undefined")
+      ) {
+        processedStats.averageStarRating = processedStats.averageRating;
+      }
+    }
 
     return res.status(200).json({
       success: true,

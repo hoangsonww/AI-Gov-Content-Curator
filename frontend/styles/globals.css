@@ -179,6 +179,115 @@ main {
   padding: 1rem;
 }
 
+/* Info modal */
+.info-icon-btn {
+  border: none;
+  background: var(--hover-bg);
+  color: var(--text-color);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.info-icon-btn:hover {
+  background: var(--accent-color);
+  color: var(--bg-color);
+}
+
+.info-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 2000;
+}
+
+.info-modal {
+  width: min(520px, 100%);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  padding: 1.25rem 1.5rem;
+  color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+.info-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.info-modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.info-modal-close {
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.info-modal-close:hover {
+  background: var(--hover-bg);
+}
+
+.info-modal-body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+
+.info-modal.ratings-modal {
+  width: min(900px, 100%);
+}
+
+.ratings-modal-body {
+  max-height: 65vh;
+  overflow: auto;
+}
+
+.ratings-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ratings-error {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.info-modal-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.info-modal-list li {
+  margin-bottom: 0.35rem;
+}
+
 /* Hover animation helper (scale, shadow) */
 .hover-animate {
   transition:

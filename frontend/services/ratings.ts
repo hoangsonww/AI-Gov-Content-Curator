@@ -12,14 +12,35 @@ export interface Rating {
   updatedAt?: string;
 }
 
+export interface RatingUser {
+  name?: string;
+  email?: string;
+}
+
+export interface RatingWithUser extends Rating {
+  userId?: RatingUser | string;
+}
+
 export interface RatingStats {
   articleId: string;
   averageRating: number;
+  averageMeterRating?: number | null;
+  averageStarRating?: number | null;
   totalRatings: number;
   meterRatings: number;
   starRatings: number;
   meterDistribution?: { [key: string]: number };
   starDistribution?: { [key: number]: number };
+}
+
+export interface RatingsListResponse {
+  ratings: RatingWithUser[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
 }
 
 // Helper function to get or create session ID
@@ -126,6 +147,31 @@ export async function getArticleRatingStats(
     return data.data;
   } catch (error) {
     console.error("Error fetching rating stats:", error);
+    return null;
+  }
+}
+
+/**
+ * Get all ratings for an article (paginated)
+ */
+export async function getArticleRatingsList(
+  articleId: string,
+  page: number = 1,
+  limit: number = 50,
+): Promise<RatingsListResponse | null> {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/ratings/article/${articleId}?page=${page}&limit=${limit}`,
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ratings: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.data || null;
+  } catch (error) {
+    console.error("Error fetching article ratings:", error);
     return null;
   }
 }

@@ -8,8 +8,10 @@ import {
   MdCheck,
   MdClose,
   MdEdit,
+  MdHelpOutline,
 } from "react-icons/md";
 import { toast } from "react-toastify";
+import InfoModal from "./InfoModal";
 import {
   createOrUpdateRating,
   getUserRating,
@@ -17,6 +19,8 @@ import {
   deleteRating,
   Rating,
   RatingStats,
+  getArticleRatingsList,
+  RatingWithUser,
 } from "../services/ratings";
 import { trackInteraction } from "../services/reranker";
 
@@ -36,6 +40,12 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showComment, setShowComment] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showRatingHelp, setShowRatingHelp] = useState(false);
+  const [showRatingsModal, setShowRatingsModal] = useState(false);
+  const [ratingsLoading, setRatingsLoading] = useState(false);
+  const [ratingsError, setRatingsError] = useState<string | null>(null);
+  const [ratingsList, setRatingsList] = useState<RatingWithUser[]>([]);
+  const [ratingsLoadedFor, setRatingsLoadedFor] = useState<string | null>(null);
 
   // Fetch user rating and stats on mount
   useEffect(() => {
@@ -69,6 +79,12 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
     };
 
     fetchData();
+  }, [articleId]);
+
+  useEffect(() => {
+    setShowRatingsModal(false);
+    setRatingsList([]);
+    setRatingsLoadedFor(null);
   }, [articleId]);
 
   const handleSubmitRating = useCallback(async () => {
@@ -231,6 +247,80 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
     return stars;
   };
 
+  const meterAverage =
+    stats?.averageMeterRating !== null &&
+    typeof stats?.averageMeterRating !== "undefined"
+      ? stats.averageMeterRating
+      : stats && stats.meterRatings > 0 && stats.starRatings === 0
+        ? stats.averageRating
+        : null;
+
+  const starAverage =
+    stats?.averageStarRating !== null &&
+    typeof stats?.averageStarRating !== "undefined"
+      ? stats.averageStarRating
+      : stats && stats.starRatings > 0 && stats.meterRatings === 0
+        ? stats.averageRating
+        : null;
+
+  const meterHasRatings = (stats?.meterRatings || 0) > 0;
+  const starHasRatings = (stats?.starRatings || 0) > 0;
+
+  const formatRatingValue = (rating: RatingWithUser): string => {
+    if (rating.ratingType === "stars") {
+      return `${rating.value} / 5`;
+    }
+    return `${rating.value > 0 ? "+" : ""}${rating.value}`;
+  };
+
+  const formatRatingDate = (date?: string): string => {
+    if (!date) return "—";
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) return "—";
+    return parsed.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const loadRatings = useCallback(async () => {
+    setRatingsLoading(true);
+    setRatingsError(null);
+    try {
+      const allRatings: RatingWithUser[] = [];
+      let page = 1;
+      const limit = 50;
+      let pages = 1;
+
+      while (page <= pages) {
+        const response = await getArticleRatingsList(articleId, page, limit);
+        if (!response) {
+          throw new Error("Failed to load ratings");
+        }
+        allRatings.push(...response.ratings);
+        pages = response.pagination.pages || 1;
+        page += 1;
+      }
+
+      setRatingsList(allRatings);
+      setRatingsLoadedFor(articleId);
+    } catch (error) {
+      console.error("Error loading ratings list:", error);
+      setRatingsError("Unable to load ratings. Please try again.");
+    } finally {
+      setRatingsLoading(false);
+    }
+  }, [articleId]);
+
+  const openRatingsModal = () => {
+    setShowRatingsModal(true);
+    if (ratingsLoadedFor !== articleId) {
+      setRatingsList([]);
+      loadRatings();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="rating-section loading">
@@ -248,56 +338,96 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
     >
       <div className="rating-header">
         <div className="rating-title-container">
-          <h3 className="rating-title">
-            {/* @ts-ignore */}
-            <MdThumbsUpDown size={24} />
-            Rate This Article
-          </h3>
+          <div className="rating-title-row">
+            <h3 className="rating-title">
+              {/* @ts-ignore */}
+              <MdThumbsUpDown size={24} />
+              <span>Rate This Article</span>
+            </h3>
+            <button
+              type="button"
+              className="info-icon-btn"
+              onClick={() => setShowRatingHelp(true)}
+              aria-label="Rating help"
+            >
+              {/* @ts-ignore */}
+              <MdHelpOutline size={18} />
+            </button>
+          </div>
           {stats && stats.totalRatings === 0 && (
             <span className="be-first-text">Be the first to rate!</span>
           )}
         </div>
-        {stats && stats.totalRatings > 0 && (
-          <div className="rating-stats">
-            <div className="stat-group">
-              <div className="stat-item main-stat">
-                <span className="stat-label">Average Rating</span>
-                <span className="stat-value">
-                  {(stats.meterRatings || 0) >= (stats.starRatings || 0) ? (
-                    <div className="meter-stat-display">
-                      <span
-                        className="big-rating"
-                        style={{ color: getMeterColor(stats.averageRating) }}
-                      >
-                        {stats.averageRating.toFixed(0)}
-                      </span>
-                      <span className="meter-label">
-                        {getMeterLabel(stats.averageRating)}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="star-stat-display">
-                      <div className="average-stars">
-                        {renderAverageStars(stats.averageRating)}
-                      </div>
-                      <span className="average-number">
-                        {stats.averageRating.toFixed(1)} / 5.0
-                      </span>
-                    </div>
-                  )}
+      </div>
+
+      {stats && stats.totalRatings > 0 && (
+        <div className="rating-stats rating-stats-below">
+          <div className="stat-group stat-group-dual">
+            <div className="stat-item stat-card">
+              <span className="stat-label">Sentiment Meter</span>
+              {meterAverage !== null ? (
+                <div className="meter-stat-display">
+                  <span
+                    className="big-rating"
+                    style={{ color: getMeterColor(meterAverage) }}
+                  >
+                    {meterAverage.toFixed(0)}
+                  </span>
+                  <span className="meter-label">
+                    {getMeterLabel(meterAverage)}
+                  </span>
+                </div>
+              ) : (
+                <span className="stat-empty">
+                  {meterHasRatings
+                    ? "Average unavailable"
+                    : "No sentiment ratings yet"}
                 </span>
-              </div>
-              <div className="stat-divider"></div>
-              <div className="stat-item">
-                <span className="stat-label">Total Ratings</span>
-                <span className="stat-value big-number">
-                  {stats.totalRatings}
+              )}
+              <span className="stat-sub">{stats.meterRatings} ratings</span>
+            </div>
+
+            <div className="stat-item stat-card">
+              <span className="stat-label">Star Rating</span>
+              {starAverage !== null ? (
+                <div className="star-stat-display">
+                  <div className="average-stars">
+                    {renderAverageStars(starAverage)}
+                  </div>
+                  <span className="average-number">
+                    {starAverage.toFixed(1)} / 5.0
+                  </span>
+                </div>
+              ) : (
+                <span className="stat-empty">
+                  {starHasRatings
+                    ? "Average unavailable"
+                    : "No star ratings yet"}
                 </span>
-              </div>
+              )}
+              <span className="stat-sub">{stats.starRatings} ratings</span>
+            </div>
+
+            <div
+              className="stat-item stat-card stat-total clickable"
+              role="button"
+              tabIndex={0}
+              onClick={openRatingsModal}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openRatingsModal();
+                }
+              }}
+            >
+              <span className="stat-label">Total Ratings</span>
+              <span className="stat-value big-number">
+                {stats.totalRatings}
+              </span>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {userRating && !isEditing ? (
         <motion.div
@@ -450,6 +580,17 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
                 </div>
               </motion.div>
             )}
+            {showComment && !userRating && (
+              <div className="comment-actions">
+                <button
+                  type="button"
+                  className="comment-cancel-btn"
+                  onClick={() => setShowComment(false)}
+                >
+                  Cancel Comment
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="rating-submit-container">
@@ -496,6 +637,91 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
             )}
           </div>
         </div>
+      )}
+
+      {showRatingHelp && (
+        <InfoModal
+          title="How ratings work"
+          onClose={() => setShowRatingHelp(false)}
+        >
+          <p>
+            Choose a rating style that fits your feedback. You can rate with
+            stars, or use the sentiment meter. Both are saved independently and
+            help readers understand different kinds of feedback.
+          </p>
+          <ul className="info-modal-list">
+            <li>
+              <strong>Star Rating:</strong> Quick 1–5 score for overall quality.
+            </li>
+            <li>
+              <strong>Sentiment Meter:</strong> Fine‑grained scale from very
+              negative to very positive.
+            </li>
+            <li>
+              <strong>Tip:</strong> If you want nuance, use the meter. If you
+              want a simple score, use stars.
+            </li>
+            <li>
+              <strong>Optional comment:</strong> Add a short note to explain
+              your rating (up to 500 characters).
+            </li>
+          </ul>
+          <p>
+            You can edit or delete your rating later. Changes update the
+            averages shown above.
+          </p>
+        </InfoModal>
+      )}
+
+      {showRatingsModal && (
+        <InfoModal
+          title={`All Ratings (${stats?.totalRatings ?? 0})`}
+          onClose={() => setShowRatingsModal(false)}
+          className="ratings-modal"
+          bodyClassName="ratings-modal-body"
+        >
+          {ratingsLoading ? (
+            <div className="ratings-loading">
+              <div className="spinner"></div>
+              <span>Loading ratings…</span>
+            </div>
+          ) : ratingsError ? (
+            <div className="ratings-error">{ratingsError}</div>
+          ) : ratingsList.length === 0 ? (
+            <p>No ratings yet.</p>
+          ) : (
+            <div className="ratings-table-wrap">
+              <table className="ratings-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Type</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ratingsList.map((rating, index) => (
+                    <tr key={rating._id || `${rating.articleId}-${index}`}>
+                      <td>{index + 1}</td>
+                      <td>
+                        {rating.ratingType === "stars"
+                          ? "Star Rating"
+                          : "Sentiment Meter"}
+                      </td>
+                      <td>{formatRatingValue(rating)}</td>
+                      <td className="ratings-comment">
+                        {rating.comment?.trim() || "—"}
+                      </td>
+                      <td>{formatRatingDate(rating.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </InfoModal>
       )}
     </motion.div>
   );
