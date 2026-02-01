@@ -209,7 +209,6 @@
   white-space: normal;
   max-width: 220px;
   width: max-content;
-  z-index: 20;
   opacity: 0;
   pointer-events: none;
   transition:

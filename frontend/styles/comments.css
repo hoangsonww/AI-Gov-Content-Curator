@@ -370,6 +370,7 @@
 }
 .login-prompt {
   text-align: center;
+  margin-top: 2rem;
   margin-bottom: 1.5rem;
   font-size: 1rem;
 }

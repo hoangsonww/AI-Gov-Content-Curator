@@ -454,6 +454,8 @@
 .submit-btn {
   background-color: var(--accent-color);
   color: var(--bg-color);
+  justify-content: center;
+  text-align: center;
 }
 
 .submit-btn:hover:not(:disabled) {
