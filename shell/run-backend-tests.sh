@@ -6,8 +6,8 @@ set -euo pipefail
 # Ensure NODE_ENV=test so any production logic is skipped
 export NODE_ENV=test
 
-echo "Installing dependencies (if needed)…"
+echo "Installing dependencies (if needed)..."
 npm ci
 
-echo "Running Jest against backend…"
+echo "Running Jest against backend..."
 npx jest --config jest.config.js --runInBand --detectOpenHandles --forceExit "$@"

@@ -239,7 +239,7 @@ export async function fetchAndSummarize(): Promise<void> {
   logger.info("✅ Mongo connected");
 
   /* 1. Crawl homepages */
-  logger.info("🔍 Crawling homepages…");
+  logger.info("🔍 Crawling homepages...");
   const crawlJobs: Promise<string[]>[] = [];
   for (let i = 0; i < HOMEPAGE_URLS.length; i += CRAWL_CONCURRENCY) {
     crawlJobs.push(
@@ -255,7 +255,7 @@ export async function fetchAndSummarize(): Promise<void> {
   logger.info(`🔗 Crawled ${crawled.length} links`);
 
   /* 2. NewsAPI */
-  logger.info("📰 Pulling NewsAPI…");
+  logger.info("📰 Pulling NewsAPI...");
   let apiArticles: any[] = [];
   try {
     apiArticles = await fetchArticlesFromNewsAPI();
@@ -285,7 +285,7 @@ export async function fetchAndSummarize(): Promise<void> {
 
   /* 6. Wait for any stragglers */
   while (processingUrls.size) {
-    logger.debug(`⏳ waiting for ${processingUrls.size} in‑flight jobs…`);
+    logger.debug(`⏳ waiting for ${processingUrls.size} in‑flight jobs...`);
     await wait(1000);
   }
 

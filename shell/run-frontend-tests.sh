@@ -8,25 +8,25 @@ set -euo pipefail
 
 cd frontend
 
-echo "Installing dependencies…"
+echo "Installing dependencies..."
 npm ci
 
-echo "Building the Next.js app…"
+echo "Building the Next.js app..."
 npm run build
 
 MODE=${1:-headless}
 
 case "$MODE" in
   headless)
-    echo "Running Playwright tests (headless)…"
+    echo "Running Playwright tests (headless)..."
     npm run test:e2e
     ;;
   headed)
-    echo "Running Playwright tests (headed)…"
+    echo "Running Playwright tests (headed)..."
     npm run test:e2e:headed
     ;;
   report)
-    echo "Opening Playwright HTML report…"
+    echo "Opening Playwright HTML report..."
     npm run test:e2e:report
     ;;
   *)

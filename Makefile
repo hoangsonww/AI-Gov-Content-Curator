@@ -212,7 +212,7 @@ docker:
 	$(MAKE) docker-newsletter
 
 docker-compute:
-	@echo "→ Entering compute container shell…"
+	@echo "→ Entering compute container shell..."
 	./shell/docker_computer.sh
 
 reboot: clean bootstrap dev
