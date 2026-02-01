@@ -19,7 +19,6 @@ import {
   MdArrowUpward,
   MdArrowDownward,
   MdFilterList,
-  MdRefresh,
 } from "react-icons/md";
 import {
   FaPlane,
@@ -535,24 +534,8 @@ export default function Comments({ articleId }: CommentsProps) {
 
       {/* list (loading / empty / populated) */}
       {loading ? (
-        <div
-          className="comments-loading"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            justifyContent: "center",
-            padding: "2rem 0",
-            opacity: 0.8,
-          }}
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 1 }}
-            style={{ fontSize: "2rem", display: "inline-block" }}
-          >
-            <MdRefresh />
-          </motion.div>
+        <div className="comments-loading">
+          <span className="comments-spinner" aria-hidden="true" />
           <span>Loading comments…</span>
         </div>
       ) : pageSlice.length === 0 ? (

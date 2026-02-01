@@ -281,7 +281,7 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
                         {renderAverageStars(stats.averageRating)}
                       </div>
                       <span className="average-number">
-                        {stats.averageRating.toFixed(1)} / 5
+                        {stats.averageRating.toFixed(1)} / 5.0
                       </span>
                     </div>
                   )}
