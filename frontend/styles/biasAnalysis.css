@@ -48,6 +48,16 @@
   }
 }
 
+.bias-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--card-border);
+}
+
 .bias-analysis-container h2 {
   display: flex;
   align-items: center;
@@ -56,10 +66,7 @@
   font-weight: 600;
   color: var(--text-color);
   font-family: "Inter", sans-serif;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid var(--card-border);
+  margin: 0;
 }
 
 .bias-cta,

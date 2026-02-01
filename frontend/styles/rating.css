@@ -18,18 +18,23 @@
 }
 
 .rating-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid var(--card-border);
 }
 
 .rating-title-container {
   display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.rating-title-row {
+  display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .rating-title {
@@ -52,28 +57,24 @@
 .rating-stats {
   display: flex;
   align-items: center;
+  width: 100%;
+}
+
+.rating-stats-below {
+  margin-bottom: 1.5rem;
 }
 
 .stat-group {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.stat-divider {
-  width: 1px;
-  height: 40px;
-  background-color: var(--card-border);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  width: 100%;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  align-items: center;
-}
-
-.stat-item.main-stat {
   align-items: flex-start;
 }
 
@@ -89,6 +90,38 @@
 .stat-value {
   font-weight: 600;
   color: var(--text-color);
+  font-family: "Inter", sans-serif;
+}
+
+.stat-card {
+  background: var(--bg-color);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  min-height: 94px;
+}
+
+.stat-card.clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.stat-card.clickable:hover {
+  border-color: var(--accent-color);
+  background: var(--hover-bg);
+}
+
+.stat-sub {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  font-family: "Inter", sans-serif;
+}
+
+.stat-empty {
+  font-size: 0.9rem;
+  opacity: 0.6;
   font-family: "Inter", sans-serif;
 }
 
@@ -125,8 +158,27 @@
   margin-left: 0.25rem;
   color: var(--text-color);
   opacity: 0.8;
-  font-size: 0.85rem;
+  font-size: 1.05rem;
+  font-weight: 700;
   font-family: "Inter", sans-serif;
+}
+
+.stat-card .star-stat-display {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.stat-card .star-stat-display .average-stars {
+  background: var(--hover-bg);
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+}
+
+.stat-card .average-number {
+  opacity: 1;
+  letter-spacing: 0.2px;
+  margin-left: 0;
 }
 
 /* User Rating Display */
@@ -213,7 +265,7 @@
   padding: 0.75rem;
   background-color: var(--hover-bg);
   border-left: 3px solid var(--accent-color);
-  border-radius: 4px;
+  border-radius: 0 4px 4px 0;
   margin-top: 0.5rem;
   font-family: "Inter", sans-serif;
 }
@@ -385,7 +437,7 @@
 }
 
 .add-comment-btn {
-  align-self: flex-start;
+  align-self: center;
   padding: 0.5rem 1rem;
   background-color: transparent;
   color: var(--accent-color);
@@ -428,6 +480,70 @@
   font-family: "Inter", sans-serif;
 }
 
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.comment-cancel-btn {
+  border: 1px solid var(--card-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  opacity: 0.85;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.comment-cancel-btn:hover {
+  opacity: 1;
+  background: var(--hover-bg);
+  color: var(--text-color);
+}
+
+.ratings-table-wrap {
+  width: 100%;
+}
+
+.ratings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.ratings-table th,
+.ratings-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--card-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.ratings-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  opacity: 0.7;
+}
+
+.ratings-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ratings-comment {
+  max-width: 320px;
+  white-space: normal;
+  word-break: break-word;
+}
+
 /* Submit Container */
 .rating-submit-container {
   display: flex;
@@ -466,6 +582,10 @@
 .submit-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+[data-theme="dark"] .submit-btn:disabled {
+  color: #ffffff;
 }
 
 .cancel-btn {

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { BiasAnalysis, analyzeArticleBias } from "../services/api";
 import { Article } from "../pages/home";
-import { MdInsights } from "react-icons/md";
+import { MdHelpOutline, MdInsights } from "react-icons/md";
+import { toast } from "react-toastify";
+import InfoModal from "./InfoModal";
 
 interface BiasAnalysisProps {
   article: Article;
@@ -12,6 +14,7 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasRequested, setHasRequested] = useState(false);
+  const [showBiasHelp, setShowBiasHelp] = useState(false);
   const contentToAnalyze = article.summary || article.content || "";
   const canAnalyze = Boolean(
     article._id && article.title && contentToAnalyze.length >= 100,
@@ -29,13 +32,17 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
     setError(null);
 
     if (!article._id || !article.title) {
-      setError("Missing article metadata for analysis");
+      const message = "Missing article metadata for analysis";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     // Use summary if available, otherwise use content
     if (!contentToAnalyze || contentToAnalyze.length < 100) {
-      setError("Article content too short for analysis");
+      const message = "Article content too short for analysis";
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -51,12 +58,17 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
 
       if (analysis) {
         setBiasData(analysis);
+        toast.success("Political bias analysis generated.");
       } else {
-        setError("Unable to analyze article bias");
+        const message = "Unable to analyze article bias";
+        setError(message);
+        toast.error(message);
       }
     } catch (err) {
       console.error("Error fetching bias analysis:", err);
-      setError("Failed to load bias analysis");
+      const message = "Failed to load bias analysis";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -145,23 +157,23 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
     },
   };
 
+  const spectrumPositions = [
+    "far-left",
+    "left",
+    "center-left",
+    "center",
+    "center-right",
+    "right",
+    "far-right",
+  ];
+
   const renderPoliticalSpectrum = () => {
     if (!biasData) return null;
-
-    const positions = [
-      "far-left",
-      "left",
-      "center-left",
-      "center",
-      "center-right",
-      "right",
-      "far-right",
-    ];
 
     return (
       <div className="political-spectrum">
         <div className="spectrum-bar">
-          {positions.map((pos) => {
+          {spectrumPositions.map((pos) => {
             const details = positionDetails[pos] || {
               label: getPositionLabel(pos),
               description: "",
@@ -206,11 +218,22 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
 
   return (
     <div className="bias-analysis-container">
-      <h2>
-        {/* @ts-ignore */}
-        <MdInsights size={24} />
-        Political Bias Analysis
-      </h2>
+      <div className="bias-title-row">
+        <h2>
+          {/* @ts-ignore */}
+          <MdInsights size={24} />
+          Political Bias Analysis
+        </h2>
+        <button
+          type="button"
+          className="info-icon-btn"
+          onClick={() => setShowBiasHelp(true)}
+          aria-label="Political spectrum help"
+        >
+          {/* @ts-ignore */}
+          <MdHelpOutline size={18} />
+        </button>
+      </div>
 
       {!hasRequested && (
         <div className="bias-cta">
@@ -340,6 +363,28 @@ export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {showBiasHelp && (
+        <InfoModal
+          title="Political spectrum guide"
+          onClose={() => setShowBiasHelp(false)}
+        >
+          <p>
+            The spectrum highlights how the article frames issues, from
+            progressive to conservative viewpoints.
+          </p>
+          <ul className="info-modal-list">
+            {spectrumPositions.map((pos) => {
+              const detail = positionDetails[pos];
+              return (
+                <li key={detail.label}>
+                  <strong>{detail.label}:</strong> {detail.description}
+                </li>
+              );
+            })}
+          </ul>
+        </InfoModal>
       )}
     </div>
   );
