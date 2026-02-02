@@ -45,7 +45,6 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
   const [ratingsLoading, setRatingsLoading] = useState(false);
   const [ratingsError, setRatingsError] = useState<string | null>(null);
   const [ratingsList, setRatingsList] = useState<RatingWithUser[]>([]);
-  const [ratingsLoadedFor, setRatingsLoadedFor] = useState<string | null>(null);
 
   // Fetch user rating and stats on mount
   useEffect(() => {
@@ -84,7 +83,6 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
   useEffect(() => {
     setShowRatingsModal(false);
     setRatingsList([]);
-    setRatingsLoadedFor(null);
   }, [articleId]);
 
   const handleSubmitRating = useCallback(async () => {
@@ -304,7 +302,6 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
       }
 
       setRatingsList(allRatings);
-      setRatingsLoadedFor(articleId);
     } catch (error) {
       console.error("Error loading ratings list:", error);
       setRatingsError("Unable to load ratings. Please try again.");
@@ -315,10 +312,8 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
 
   const openRatingsModal = () => {
     setShowRatingsModal(true);
-    if (ratingsLoadedFor !== articleId) {
-      setRatingsList([]);
-      loadRatings();
-    }
+    setRatingsList([]);
+    loadRatings();
   };
 
   if (isLoading) {
