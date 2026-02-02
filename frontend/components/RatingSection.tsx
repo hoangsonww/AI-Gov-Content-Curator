@@ -670,6 +670,10 @@ const RatingSection: React.FC<RatingSectionProps> = ({ articleId }) => {
             You can edit or delete your rating later. Changes update the
             averages shown above.
           </p>
+          <p>
+            All ratings are <strong>anonymous</strong>, so your identity is not
+            linked to your feedback.
+          </p>
         </InfoModal>
       )}
 
