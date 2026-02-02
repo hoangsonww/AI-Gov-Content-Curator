@@ -69,8 +69,6 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-121212?style=flat&logo=chainlink&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-FF4785?style=flat&logo=graphql&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazon-aws&logoColor=white)
-![Azure](https://img.shields.io/badge/Azure-0078D4?style=flat&logo=microsoft-azure&logoColor=white)
 
 > [!IMPORTANT]
 > This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
