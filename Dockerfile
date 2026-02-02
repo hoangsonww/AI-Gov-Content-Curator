@@ -7,7 +7,7 @@ WORKDIR /workspace
 # Copy root package files (npm workspaces)
 COPY package.json package-lock.json ./
 
-# Install all dependencies for all workspaces
+# Install all dependencies for all workspaces in this repo
 RUN npm ci
 
 # Copy everything else
