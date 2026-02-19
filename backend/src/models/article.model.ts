@@ -33,6 +33,9 @@ import { Schema, model, Document } from "mongoose";
  *           type: string
  *           format: date-time
  *           description: Timestamp when the article was fetched.
+ *         sourceScore:
+ *            type: number
+ *            descrioption: Reputation score of the article source
  *     FavoriteResponse:
  *       type: object
  *       properties:
@@ -54,6 +57,7 @@ export interface IArticle extends Document {
   topics: string[];
   source: string;
   fetchedAt: Date;
+  sourceScore: number; //added new field
 }
 
 const articleSchema = new Schema<IArticle>({
@@ -64,6 +68,7 @@ const articleSchema = new Schema<IArticle>({
   topics: { type: [String], default: [] },
   source: { type: String, required: true },
   fetchedAt: { type: Date, default: Date.now },
+  sourceScore: {type: Number}, 
 });
 
 // Set a custom toJSON transform to enforce key ordering
@@ -78,6 +83,7 @@ articleSchema.set("toJSON", {
       topics: ret.topics,
       source: ret.source,
       fetchedAt: ret.fetchedAt,
+      sourceScore: ret.sourceScore, 
     };
   },
 });

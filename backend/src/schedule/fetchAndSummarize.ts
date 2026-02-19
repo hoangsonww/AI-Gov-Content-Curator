@@ -26,6 +26,7 @@ import { summarizeContent } from "../services/summarization.service";
 import { extractTopics } from "../services/topicExtractor.service";
 import logger from "../utils/logger";
 import { cleanUp } from "../scripts/cleanData";
+import { calculateSourceScore } from "../services/sourceScoring.service";
 
 dotenv.config();
 mongoose.set("strictQuery", false);
@@ -71,6 +72,7 @@ async function upsertArticle(data: {
   summary: string;
   topics: string[];
   source: string;
+  sourceScore: number;
 }) {
   const res = await Article.updateOne(
     { url: data.url },
@@ -140,6 +142,7 @@ async function processApiArticle(api: {
 
     const summary = await summarizeContent(text);
     const topics = await extractTopics(summary);
+    const sourceScore = calculateSourceScore(api.url);
 
     await upsertArticle({
       url: api.url,
@@ -148,6 +151,7 @@ async function processApiArticle(api: {
       summary,
       topics,
       source: api.source?.name ?? "newsapi",
+      sourceScore,
     });
   } catch (err) {
     logger.error(`Error processing API article ${api.url}:`, err);
@@ -190,6 +194,7 @@ async function processUrl(url: string): Promise<void> {
     // 2) Summarize + topics
     const summary = await summarizeContent(art.content);
     const topics = await extractTopics(summary);
+    const sourceScore = calculateSourceScore(art.url);
 
     // 3) Upsert
     await upsertArticle({
@@ -199,6 +204,7 @@ async function processUrl(url: string): Promise<void> {
       summary,
       topics,
       source: art.source,
+      sourceScore,
     });
 
     await wait(DELAY_BETWEEN_REQUESTS_MS);
