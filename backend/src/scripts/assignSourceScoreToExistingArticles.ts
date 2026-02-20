@@ -34,7 +34,7 @@ const assignSourceScoreToArticles = async () => {
       for (const article of articles) {
         try {
           logger.info(`Calculating source score for article: ${article.title}`);
-          const sourceScore = calculateSourceScore(article.source);
+          const sourceScore = calculateSourceScore(article.url);
           article.sourceScore = sourceScore;
           await article.save();
           processed++;

@@ -46,7 +46,7 @@ export function calculateSourceScore(source: string): number {
 
   } catch (error) {
     console.error("Invalid URL:", source);
-    return 0;
+    return -1;
   }
 
   // Clamp score between 0–100
