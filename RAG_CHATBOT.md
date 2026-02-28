@@ -59,7 +59,7 @@ This document describes the implementation of the sitewide AI chat feature that 
 flowchart LR
     User[User question] --> UI["Frontend (ai_chat.tsx)\nSSE client"]
     UI --> API["Backend /api/chat/sitewide\nExpress + Next.js route"]
-    API --> Embed["text-embedding-004\n(query embedding)"]
+    API --> Embed["gemini-embedding-001\n(query embedding)"]
     Embed --> Pinecone["Pinecone index\nai-gov-articles"]
     Pinecone --> Context["Top K matches -> context\n+ citation metadata"]
     Context --> Gemini["Gemini 2.0 Flash / Flash Lite\nstreamed response"]
@@ -90,7 +90,7 @@ stateDiagram-v2
 
 1. **Pinecone Service** (`backend/src/services/pinecone.service.ts`)
    - Added `searchArticles()` function for semantic search
-   - Converts user queries to embeddings using Google's text-embedding-004 model
+   - Converts user queries to embeddings using Google's gemini-embedding-001 model
    - Returns top 5 most relevant articles based on similarity scores
 
 2. **Chat Controller** (`backend/src/controllers/chat.controller.ts`)
@@ -179,7 +179,7 @@ data: {"success":true,"citationCount":5}
 ```mermaid
 flowchart LR
     Req["Incoming POST /api/chat/sitewide"] --> Validate["Validate body\n+ trim history"]
-    Validate --> EmbedQ["Embed query\ntext-embedding-004"]
+    Validate --> EmbedQ["Embed query\ngemini-embedding-001"]
     EmbedQ --> Search["Pinecone topK search"]
     Search --> Context["Build context\nwith [Source N]"]
     Context --> Prompt["System instruction\n+citation rules"]

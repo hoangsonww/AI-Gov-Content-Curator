@@ -1,0 +1,6 @@
+interface:
+  display_name: "Backend API And AI"
+  short_description: "Handle backend API, auth, chat, Gemini, Pinecone, and maintenance script changes."
+  default_prompt: "Use this skill to work safely in backend/, preserving API compatibility and operational safety."
+policy:
+  allow_implicit_invocation: true
