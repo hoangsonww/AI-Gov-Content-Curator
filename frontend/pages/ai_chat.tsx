@@ -34,20 +34,22 @@ const nowTime = () =>
 
 const MessageContent = memo(({ message }: { message: Message }) => {
   const [hoveredCitation, setHoveredCitation] = useState<number | null>(null);
+  const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
   const linkifyCitations = (text: string) =>
-    text.replace(/\[Source (\d+(?:,\s*\d+)*)\]/gi, (match, nums) => {
-      const ids = nums
-        .split(",")
-        .map((num: string) => num.trim())
-        .filter(Boolean);
-      if (!ids.length) return match;
-      return ids
-        .map(
-          (num: string) => `[[Source ${num}]](#citation-${message.id}-${num})`,
-        )
-        .join(", ");
-    });
+    text.replace(
+      /\[((?:Sources?\s+\d+)(?:\s*,\s*(?:Sources?\s+)?\d+)*)\]/gi,
+      (match, citationGroup) => {
+        const ids = citationGroup.match(/\d+/g) ?? [];
+        if (!ids.length) return match;
+        return ids
+          .map(
+            (num: string) =>
+              `[[Source ${num}]](#citation-${message.id}-${num})`,
+          )
+          .join(", ");
+      },
+    );
 
   const markdown = linkifyCitations(message.text).replace(/\r?\n/g, "  \n");
 
@@ -76,18 +78,15 @@ const MessageContent = memo(({ message }: { message: Message }) => {
                     onMouseLeave={() => setHoveredCitation(null)}
                     onClick={(e) => {
                       e.preventDefault();
+                      if (citationNum) {
+                        setSelectedCitation(citationNum);
+                      }
                       const citationEl = document.getElementById(citationId);
                       if (citationEl) {
                         citationEl.scrollIntoView({
                           behavior: "smooth",
                           block: "nearest",
                         });
-                        citationEl.classList.add("highlight-citation");
-                        setTimeout(
-                          () =>
-                            citationEl.classList.remove("highlight-citation"),
-                          2000,
-                        );
                       }
                     }}
                   >
@@ -132,7 +131,8 @@ const MessageContent = memo(({ message }: { message: Message }) => {
               <div
                 key={citation.number}
                 id={`citation-${message.id}-${citation.number}`}
-                className={`source-item ${hoveredCitation === citation.number ? "source-hovered" : ""}`}
+                className={`source-item ${hoveredCitation === citation.number ? "source-hovered" : ""} ${selectedCitation === citation.number ? "source-selected" : ""}`}
+                onClick={() => setSelectedCitation(citation.number)}
               >
                 <span className="source-num">[{citation.number}]</span>
                 <div className="source-body">
@@ -1325,7 +1325,7 @@ export default function ChatPage() {
 
           :global(.source-item:hover),
           :global(.source-item.source-hovered),
-          :global(.source-item.highlight-citation) {
+          :global(.source-item.source-selected) {
             background: var(--chat-accent-soft-bg);
             border-color: var(--chat-accent-soft-border);
           }
