@@ -1057,7 +1057,7 @@ to read through the entire article.
 
 The sitewide chat lets users ask open-ended questions across the full corpus—not just a single article—while keeping every claim cited.
 
-- **RAG over the whole library:** The backend (`/api/chat/sitewide`) converts queries to text-embedding-004 vectors, searches Pinecone for top matches, and builds a context block with `[Source N]` slots.
+- **RAG over the whole library:** The backend (`/api/chat/sitewide`) converts queries to gemini-embedding-001 vectors, searches Pinecone for top matches, and builds a context block with `[Source N]` slots.
 - **Streaming Gemini replies:** Gemini 2.0 Flash / Flash Lite streams text via Server-Sent Events (SSE) with automatic API-key/model failover and history compaction to stay within token budgets.
 - **Inline citations & warnings:** Responses carry citation metadata plus hallucination checks (missing citations, invalid refs, overconfident claims, uncited numbers). The frontend renders clickable superscripts and yellow warnings if issues are detected.
 - **Rich client UX:** `frontend/pages/ai_chat.tsx` provides multiple conversations, local storage persistence, typing indicators, and interactive source cards.
@@ -1074,7 +1074,7 @@ sequenceDiagram
 
     User->>UI: Ask question
     UI->>API: POST userMessage + trimmed history
-    API->>Vec: Embed query (text-embedding-004) & semantic search
+    API->>Vec: Embed query (gemini-embedding-001) & semantic search
     Vec-->>API: Top K articles + metadata
     API->>LLM: Stream request with context + citations + guardrails
     LLM-->>API: SSE chunks (text)

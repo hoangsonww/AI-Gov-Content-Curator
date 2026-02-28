@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "synthora-agentic-pipeline": {
+      "command": "python",
+      "args": ["-m", "agentic_ai.mcp_server.server"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+}

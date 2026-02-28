@@ -15,7 +15,6 @@ COPY . .
 
 # Install Playwright browsers for frontend tests
 RUN npm --workspace frontend exec playwright install --with-deps
-
 # 1) Lint entire monorepo
 RUN npm run lint
 

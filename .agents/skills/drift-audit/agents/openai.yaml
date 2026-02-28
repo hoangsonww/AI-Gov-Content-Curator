@@ -1,0 +1,6 @@
+interface:
+  display_name: "Drift Audit"
+  short_description: "Audit repo docs, wrappers, schedules, and runtime assumptions for real drift."
+  default_prompt: "Use this skill to find concrete docs-to-code and wrapper-to-runtime mismatches in this repository."
+policy:
+  allow_implicit_invocation: true

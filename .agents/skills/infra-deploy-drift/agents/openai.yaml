@@ -1,0 +1,6 @@
+interface:
+  display_name: "Infra Deploy Drift"
+  short_description: "Handle Terraform, Kubernetes, and rollout changes with drift and rollback awareness."
+  default_prompt: "Use this skill to inspect or change infrastructure/ without missing deployment drift or rollback risks."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Release Readiness"
+  short_description: "Map changed files to the right validation and summarize what is still blocking release."
+  default_prompt: "Use this skill to assess whether the current change is validated enough to hand off, merge, or deploy."
+policy:
+  allow_implicit_invocation: true

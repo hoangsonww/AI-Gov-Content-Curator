@@ -26,7 +26,7 @@
 
 ## Overview
 
-This feature adds a related articles carousel to article detail pages using Pinecone vector similarity search with Google's text-embedding-004 model.
+This feature adds a related articles carousel to article detail pages using Pinecone vector similarity search with Google's gemini-embedding-001 model.
 
 ## End-to-End Flow
 
@@ -93,7 +93,7 @@ This will:
 
 - Connect to MongoDB
 - Fetch all articles in batches of 50
-- Generate embeddings using Google's text-embedding-004
+- Generate embeddings using Google's gemini-embedding-001
 - Upload vectors to Pinecone with metadata
 - Show progress and completion stats
 
@@ -111,9 +111,9 @@ The crawler script (`crawler/scripts/fetchLatestArticles.ts`) now automatically:
 
 ### Vector Embedding
 
-- **Model**: Google Generative AI `text-embedding-004`
+- **Model**: Google Generative AI `gemini-embedding-001`
 - **Input**: Article title + summary
-- **Dimension**: 768 (default for text-embedding-004)
+- **Dimension**: 768 (default for gemini-embedding-001)
 
 ### Pinecone Storage
 

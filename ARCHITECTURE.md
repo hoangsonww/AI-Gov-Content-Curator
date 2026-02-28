@@ -503,7 +503,7 @@ sequenceDiagram
     Cron->>Crawl: Trigger fetchAndSummarize (6:00 AM UTC)
     Crawl->>AI: Summarize & extract topics from articles
     AI-->>Crawl: Return summary, topics, bias analysis
-    Crawl->>AI: Generate embeddings (text-embedding-004)
+    Crawl->>AI: Generate embeddings (gemini-embedding-001)
     AI-->>Crawl: Return vector embeddings
     Crawl->>DB: Upsert articles with metadata
     Crawl->>Vector: Upsert article vectors
@@ -587,7 +587,7 @@ flowchart LR
     end
 
     subgraph SitewideRAG[Sitewide Chat Path - RAG]
-        EntrySitewide --> Embed[Embed query<br/>text-embedding-004]
+        EntrySitewide --> Embed[Embed query<br/>gemini-embedding-001]
         Embed --> PineconeSearch[Semantic Search<br/>Pinecone ai-gov-articles<br/>topK=5]
         PineconeSearch --> Context[Build context block<br/>Source 1-5:<br/>titles + URLs + summaries]
         Context --> GeminiRag[Gemini 2.0 Flash<br/>SSE streaming<br/>+ failover models]
@@ -706,7 +706,7 @@ flowchart TB
     Dedupe --> FetchPage["Fetch Article Page<br/>Axios → Cheerio<br/>Puppeteer fallback"]
     FetchPage --> Summarize["Summarize Content<br/>(services/summarization.service.ts)<br/>Gemini API"]
     Summarize --> Topics["Extract Topics<br/>(services/topicExtractor.service.ts)<br/>Entity recognition"]
-    Topics --> Vectorize["Generate Embeddings<br/>(text-embedding-004)"]
+    Topics --> Vectorize["Generate Embeddings<br/>(gemini-embedding-001)"]
     Vectorize --> Upsert["Upsert to MongoDB<br/>(models/article.model.ts)"]
     Upsert --> UpsertVector["Upsert to Pinecone<br/>(Vector index)"]
     UpsertVector --> Cleanup["Cleanup & Prune<br/>(scripts/cleanData.ts)<br/>Remove old articles"]
@@ -798,7 +798,7 @@ flowchart LR
     Planner --> Fetcher["Fetch & Parse<br/>(HTML extraction)"]
     Fetcher --> Summarizer["Gemini Summarization<br/>+ Bias prompts"]
     Summarizer --> Tagger["Topic/Entity Tagging<br/>(NER models)"]
-    Tagger --> Vectorizer["Embedding Generation<br/>(text-embedding-004)"]
+    Tagger --> Vectorizer["Embedding Generation<br/>(gemini-embedding-001)"]
     Vectorizer --> Pinecone[(Pinecone Index)]
     Tagger --> Mongo[(MongoDB)]
     Pinecone -->|Semantic search| ChatCtlr["Backend Chat Controller<br/>(handleSitewideChat)"]
@@ -1678,7 +1678,7 @@ aws cloudwatch get-metric-statistics \
 
 **Index:** `ai-gov-articles`
 
-**Dimensions:** 768 (text-embedding-004)
+**Dimensions:** 768 (gemini-embedding-001)
 
 **Metadata:**
 ```typescript
@@ -2029,7 +2029,7 @@ flowchart LR
 
 **Pinecone:**
 - `ai-gov-articles` index for semantic search
-- 768-dimensional vectors (text-embedding-004)
+- 768-dimensional vectors (gemini-embedding-001)
 - TopK=5 for low latency
 
 **Redis:**
