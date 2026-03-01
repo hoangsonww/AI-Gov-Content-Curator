@@ -216,3 +216,9 @@ docker-compute:
 	./shell/docker_computer.sh
 
 reboot: clean bootstrap dev
+
+.PHONY: show-runtime-info
+show-runtime-info:
+	@echo "Node: $$(node --version 2>/dev/null || echo unavailable)"
+	@echo "npm: $$(npm --version 2>/dev/null || echo unavailable)"
+	@echo "Python: $$(python3 --version 2>/dev/null || python --version 2>/dev/null || echo unavailable)"
