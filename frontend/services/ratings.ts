@@ -43,13 +43,17 @@ export interface RatingsListResponse {
   };
 }
 
+const createRatingSessionId = (): string => {
+  return `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
 // Helper function to get or create session ID
 export const getSessionId = (): string => {
   if (typeof window === "undefined") return "";
 
   let sessionId = localStorage.getItem("ratingSessionId");
   if (!sessionId) {
-    sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    sessionId = createRatingSessionId();
     localStorage.setItem("ratingSessionId", sessionId);
   }
   return sessionId;
