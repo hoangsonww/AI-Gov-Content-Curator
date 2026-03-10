@@ -19,6 +19,8 @@ import ThemeToggle from "./ThemeToggle";
 import AuthDropdown from "./AuthDropdown";
 import Tooltip from "./Tooltip";
 import TranslateDropdown from "./TranslateDropdown";
+import DesktopMenuDropdown from "./DesktopMenuDropdown";
+
 
 const ArticleIcon = MdArticle as React.FC<{ size?: number }>;
 const MailIcon = MdMailOutline as React.FC<{ size?: number }>;
@@ -33,9 +35,9 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
 
   // Desktop popovers
   const [openDropdown, setOpenDropdown] = useState<
-    "theme" | "auth" | "translate" | null
+    "theme" | "auth" | "translate" | "menu" | null
   >(null);
-  const toggleDesktop = (which: "theme" | "auth" | "translate") =>
+  const toggleDesktop = (which: "theme" | "auth" | "translate" | "menu") =>
     setOpenDropdown((prev) => (prev === which ? null : which));
   const closeDesktop = () => setOpenDropdown(null);
 
@@ -106,6 +108,8 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
   //   setIsLoggedIn(false);
   //   setTimeout(() => window.location.reload(), 1000);
   // };
+
+
 
   return (
     <header className="navbar-container fade-down">
@@ -184,7 +188,15 @@ export default function Navbar({ theme, onThemeChange }: NavbarProps) {
             toggle={() => toggleDesktop("auth")}
             closeOther={closeDesktop}
           />
+
+          <DesktopMenuDropdown
+            open={openDropdown === "menu"}
+            toggle={() => toggleDesktop("menu")}
+            closeOther={closeDesktop}
+          />
         </div>
+        
+
 
         {/* Mobile Nav */}
         <div className="mobile-dropdown-container" ref={mobileRef}>
