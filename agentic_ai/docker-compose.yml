@@ -4,8 +4,8 @@ services:
   # Agentic AI Pipeline Service
   agentic-pipeline:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: agentic_ai/Dockerfile
     container_name: synthora-agentic-pipeline
     ports:
       - "8000:8000"
@@ -25,9 +25,9 @@ services:
       - synthora-network
     restart: unless-stopped
     volumes:
-      - ./logs:/app/logs
+      - ./logs:/app/agentic_ai/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "from mcp_server.runtime import ServerRuntime; import sys; sys.exit(0 if ServerRuntime().ready else 1)"]
       interval: 30s
       timeout: 10s
       retries: 3

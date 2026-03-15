@@ -7,7 +7,8 @@ The main services are:
 - `frontend/`: Next.js Pages Router app for article browsing, auth UX, comments, ratings, and chat.
 - `crawler/`: scheduled ingestion pipeline using Axios/Cheerio/Puppeteer, Gemini, MongoDB, Pinecone.
 - `newsletters/`: scheduled Resend-based digest sender backed by MongoDB.
-- `agentic_ai/`: Python LangGraph pipeline plus a local MCP server.
+- `agentic_ai/`: Python LangGraph pipeline.
+- `mcp_server/`: MCP server package for the agentic pipeline.
 - `infrastructure/`: Terraform, Kubernetes, monitoring, and deployment wrappers.
 - `shell/` and `bin/`: developer wrappers; useful, but some scripts have drift.
 
@@ -60,7 +61,7 @@ Newsletters:
 Agentic AI:
 
 - `cd agentic_ai && make run-mcp`
-- `cd agentic_ai && python -m agentic_ai.mcp_server.server`
+- `cd agentic_ai && PYTHONPATH=.. python -m mcp_server`
 
 Infrastructure:
 
@@ -109,4 +110,4 @@ Infrastructure:
 
 Use the nested `CLAUDE.md` files when you move into a service. Use the project skills when the task matches a workflow or domain. Use the custom subagents when you need isolated review or focused research.
 
-The project MCP config points at `agentic_ai.mcp_server.server` and assumes the Python dependencies from `agentic_ai/requirements.txt` are installed in the active environment.
+The project MCP config points at `mcp_server` and assumes the Python dependencies from `agentic_ai/requirements.txt` are installed in the active environment.

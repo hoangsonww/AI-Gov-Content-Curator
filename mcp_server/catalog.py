@@ -1,0 +1,49 @@
+"""Catalog of exposed MCP primitives for discovery and diagnostics."""
+from __future__ import annotations
+
+TOOL_CATALOG: list[str] = [
+    "process_article",
+    "process_article_batch",
+    "validate_article_payload",
+    "get_processing_status",
+    "get_processing_result",
+    "list_processing_jobs",
+    "delete_processing_job",
+    "purge_processing_jobs",
+    "analyze_content",
+    "analyze_sentiment",
+    "extract_topics",
+    "evaluate_quality",
+    "compute_text_metrics",
+    "generate_summary",
+    "check_pipeline_health",
+    "get_pipeline_graph",
+    "get_runtime_readiness",
+    "get_server_capabilities",
+    "diagnose_provider_configuration",
+    "run_preflight_checks",
+]
+
+RESOURCE_CATALOG: list[str] = [
+    "config://pipeline",
+    "config://limits",
+    "config://providers",
+    "config://features",
+    "runtime://health",
+    "runtime://readiness",
+    "runtime://capabilities",
+    "runtime://pipeline/graph",
+    "jobs://stats",
+    "jobs://recent",
+    "topics://available",
+]
+
+PROMPT_CATALOG: list[str] = [
+    "summarize_article_prompt",
+    "executive_brief_prompt",
+    "analyze_sentiment_prompt",
+    "classify_article_prompt",
+    "quality_audit_prompt",
+    "red_team_bias_prompt",
+    "incident_triage_prompt",
+]

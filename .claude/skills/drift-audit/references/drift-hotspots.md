@@ -7,5 +7,5 @@ Use these as a starting point when auditing:
 - `newsletters/Dockerfile` versus `newsletters/package.json`
 - `frontend/services/api.ts` versus `frontend/pages/ai_chat.tsx`
 - `backend` runtime docs versus `src/app.ts`, `src/server.ts`, and scheduled handlers
-- `agentic_ai/README.md` and `Makefile` versus `agentic_ai/mcp_server/server.py`
+- `agentic_ai/README.md` and `Makefile` versus `mcp_server/app.py`
 - `infrastructure/README.md` and `DEPLOYMENT.md` versus Terraform and Kubernetes manifests

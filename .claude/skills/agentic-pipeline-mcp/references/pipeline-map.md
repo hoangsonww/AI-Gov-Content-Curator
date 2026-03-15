@@ -5,14 +5,20 @@
 - `agentic_ai/core/pipeline.py`
 - `agentic_ai/agents/`
 - `agentic_ai/config/settings.py`
-- `agentic_ai/mcp_server/server.py`
+- `mcp_server/app.py`
+- `mcp_server/tools/`
+- `mcp_server/resources/`
+- `mcp_server/prompts/`
+- `mcp_server/runtime.py`
+- `mcp_server/job_store.py`
+- `mcp_server/server.py` (compatibility wrapper)
 - `agentic_ai/requirements.txt`
 - `agentic_ai/Makefile`
 
 ## Local Run Paths
 
 - `make run-mcp`
-- `python -m agentic_ai.mcp_server.server`
+- `python -m mcp_server`
 
 ## MCP Notes
 

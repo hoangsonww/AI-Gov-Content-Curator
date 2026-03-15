@@ -5,18 +5,37 @@ Processes articles using serverless architecture.
 import json
 import os
 import sys
-from typing import Dict, Any
+import asyncio
+from typing import Dict, Any, Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.pipeline import AgenticPipeline
+from config.settings import settings
 import structlog
 
 logger = structlog.get_logger()
 
 # Initialize pipeline (cold start)
 pipeline = None
+
+
+def _run_async(coro):
+    """
+    Run async code safely from synchronous Lambda handler.
+    """
+    return asyncio.run(coro)
+
+
+def _validate_payload(payload: Dict[str, Any]) -> Optional[str]:
+    if not isinstance(payload.get("article_id"), str) or not payload["article_id"].strip():
+        return "Missing or invalid required field: article_id"
+    if not isinstance(payload.get("content"), str) or not payload["content"].strip():
+        return "Missing or invalid required field: content"
+    if len(payload["content"]) > settings.mcp_max_content_chars:
+        return f"content exceeds max length ({settings.mcp_max_content_chars})"
+    return None
 
 
 def get_pipeline() -> AgenticPipeline:
@@ -57,21 +76,18 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body = json.loads(body)
             event = body
 
-        # Validate input
-        required_fields = ["article_id", "content"]
-        for field in required_fields:
-            if field not in event:
-                return {
-                    "statusCode": 400,
-                    "body": json.dumps({"error": f"Missing required field: {field}"})
-                }
+        validation_error = _validate_payload(event)
+        if validation_error:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": validation_error})
+            }
 
         # Get pipeline and process
         pipeline_instance = get_pipeline()
 
-        # Process article (use sync version for Lambda)
-        import asyncio
-        result = asyncio.run(pipeline_instance.process_article(event))
+        # Process article
+        result = _run_async(pipeline_instance.process_article(event))
 
         logger.info("Processing completed", article_id=event["article_id"])
 
