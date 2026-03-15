@@ -7,7 +7,7 @@ WORKDIR /workspace
 # Copy root package files (npm workspaces)
 COPY package.json package-lock.json ./
 
-# Install all dependencies for all workspaces
+# Install all dependencies for all workspaces in this repo
 RUN npm ci
 
 # Copy everything else
@@ -15,7 +15,6 @@ COPY . .
 
 # Install Playwright browsers for frontend tests
 RUN npm --workspace frontend exec playwright install --with-deps
-
 # 1) Lint entire monorepo
 RUN npm run lint
 

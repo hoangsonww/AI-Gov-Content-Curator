@@ -1,8 +1,82 @@
 # 🚀 AI Curator - Advanced DevOps & Deployment Infrastructure
 
+## Table of Contents
+
+- [Overview](#overview)
+- [High-Level Topology](#high-level-topology)
+- [CI/CD Flow](#cicd-flow)
+- [🎯 Key Features](#-key-features)
+  - [✨ Deployment Strategies](#-deployment-strategies)
+  - [🌍 Multi-Cloud & Multi-Region](#-multi-cloud--multi-region)
+  - [📊 Monitoring & Observability](#-monitoring--observability)
+  - [🔄 Auto-Scaling](#-auto-scaling)
+  - [🛡️ Security & Compliance](#-security--compliance)
+  - [🔧 CI/CD Pipelines](#-cicd-pipelines)
+  - [💾 Disaster Recovery](#-disaster-recovery)
+- [📁 Directory Structure](#-directory-structure)
+- [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Deploy to AWS (Blue/Green)](#deploy-to-aws-bluegreen)
+  - [Deploy to Kubernetes (Canary)](#deploy-to-kubernetes-canary)
+- [📊 Monitoring](#-monitoring)
+  - [Grafana Dashboard](#grafana-dashboard)
+  - [Prometheus Queries](#prometheus-queries)
+  - [CloudWatch Dashboard](#cloudwatch-dashboard)
+- [🔄 CI/CD Pipelines](#-cicd-pipelines-1)
+  - [GitHub Actions (Current)](#github-actions-current)
+  - [CircleCI (Enhanced)](#circleci-enhanced)
+  - [Jenkins (Full-Featured)](#jenkins-full-featured)
+- [🌍 Multi-Region Architecture](#-multi-region-architecture)
+  - [Regions](#regions)
+  - [Traffic Routing](#traffic-routing)
+  - [Failover](#failover)
+- [💰 Cost Optimization](#-cost-optimization)
+  - [Fargate Spot](#fargate-spot)
+  - [Scheduled Scaling](#scheduled-scaling)
+  - [Cost Reports](#cost-reports)
+- [🔧 Troubleshooting](#-troubleshooting)
+  - [Deployment Stuck](#deployment-stuck)
+  - [High Error Rate](#high-error-rate)
+  - [Canary Analysis Failed](#canary-analysis-failed)
+- [📚 Additional Resources](#-additional-resources)
+- [🛠️ Makefile Commands](#-makefile-commands)
+- [🎯 Deployment Decision Matrix](#-deployment-decision-matrix)
+- [📞 Support](#-support)
+
 ## Overview
 
 This directory contains a comprehensive, production-ready deployment infrastructure supporting multiple advanced deployment strategies, platforms, and regions.
+
+## High-Level Topology
+
+```mermaid
+flowchart TB
+    Users[Users] --> CDN[CloudFront + WAF]
+    CDN --> GA[Global Accelerator / Route 53]
+    GA --> LB[ALB / Ingress]
+    LB --> ECS[AWS ECS Services]
+    LB --> K8s[Kubernetes Services]
+    ECS --> Data[(MongoDB / Redis / Pinecone)]
+    K8s --> Data
+    ECS --> Observability[CloudWatch / Prometheus / Grafana]
+    K8s --> Observability
+```
+
+## CI/CD Flow
+
+```mermaid
+flowchart LR
+    Dev[Developer Commit] --> CI[CI Pipeline]
+    CI --> Build[Build + Test]
+    Build --> Scan[Security Scan]
+    Scan --> Deploy{Deploy Strategy}
+    Deploy -->|Blue/Green| BG[CodeDeploy / ECS]
+    Deploy -->|Canary| Canary[Argo Rollouts]
+    Deploy -->|Rolling| Rolling[Kubernetes / ECS Rolling]
+    BG --> Observe[Monitoring + Alerts]
+    Canary --> Observe
+    Rolling --> Observe
+```
 
 ## 🎯 Key Features
 
@@ -481,8 +555,7 @@ make clean                   # Clean temporary files
 ## 📞 Support
 
 - **Issues**: https://github.com/hoangsonww/AI-Gov-Content-Curator/issues
-- **Slack**: #ai-curator-deployments
-- **Email**: support@example.com
+- **Email**: hoangson091104@gmail.com
 - **Documentation**: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ---

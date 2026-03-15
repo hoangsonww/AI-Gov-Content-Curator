@@ -171,6 +171,12 @@
   border: 1px solid var(--card-border);
 }
 
+/* Disable global hover scale for search result cards */
+.article-search-results .hover-animate:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .search-header {
   display: flex;
   flex-direction: column;

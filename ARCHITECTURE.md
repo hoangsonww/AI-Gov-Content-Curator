@@ -4,27 +4,99 @@ This document provides a comprehensive, production-ready view of the SynthoraAI 
 
 ## Table of Contents
 
-1. [System Context](#system-context)
-2. [Service Responsibilities](#service-responsibilities)
-3. [Runtime & Infrastructure Topology](#runtime--infrastructure-topology)
-4. [Deployment Strategies](#deployment-strategies)
-5. [Infrastructure Architecture](#infrastructure-architecture)
-6. [Data Flow & Processing](#data-flow--processing)
-7. [Conversational AI Stack](#conversational-ai-stack)
-8. [Backend Architecture](#backend-architecture)
-9. [Crawler Architecture](#crawler-architecture)
-10. [Frontend Architecture](#frontend-architecture)
-11. [Newsletter Service Architecture](#newsletter-service-architecture)
-12. [Agentic AI Pipeline](#agentic-ai-pipeline)
-13. [CI/CD Pipelines](#cicd-pipelines)
-14. [Monitoring & Observability](#monitoring--observability)
-15. [Auto-Scaling & Performance](#auto-scaling--performance)
-16. [Multi-Region & High Availability](#multi-region--high-availability)
-17. [Security & Compliance](#security--compliance)
-18. [Disaster Recovery & Business Continuity](#disaster-recovery--business-continuity)
-19. [Configuration Management](#configuration-management)
-20. [Data Models & Storage](#data-models--storage)
-21. [Operational Runbooks](#operational-runbooks)
+- [System Context](#system-context)
+- [Service Responsibilities](#service-responsibilities)
+- [Runtime & Infrastructure Topology](#runtime--infrastructure-topology)
+- [Deployment Strategies](#deployment-strategies)
+  - [Blue/Green Deployment](#bluegreen-deployment)
+  - [Canary Deployment](#canary-deployment)
+  - [Rolling Deployment](#rolling-deployment)
+  - [A/B Testing](#ab-testing)
+- [Infrastructure Architecture](#infrastructure-architecture)
+  - [AWS ECS Architecture](#aws-ecs-architecture)
+  - [Kubernetes Architecture](#kubernetes-architecture)
+- [Data Flow & Processing](#data-flow--processing)
+  - [End-to-End Data Flow](#end-to-end-data-flow)
+  - [Request Lifecycle (User → API → Data)](#request-lifecycle-user--api--data)
+- [Conversational AI Stack](#conversational-ai-stack)
+  - [Architecture Overview](#architecture-overview)
+  - [Sitewide Chat Streaming Contract](#sitewide-chat-streaming-contract)
+- [Backend Architecture](#backend-architecture)
+- [Crawler Architecture](#crawler-architecture)
+- [Frontend Architecture](#frontend-architecture)
+- [Newsletter Service Architecture](#newsletter-service-architecture)
+- [Agentic AI Pipeline](#agentic-ai-pipeline)
+- [CI/CD Pipelines](#cicd-pipelines)
+  - [GitHub Actions (Current Lightweight Pipeline)](#github-actions-current-lightweight-pipeline)
+  - [CircleCI (Enhanced Pipeline)](#circleci-enhanced-pipeline)
+  - [Jenkins (Full-Featured Pipeline)](#jenkins-full-featured-pipeline)
+- [Monitoring & Observability](#monitoring--observability)
+  - [Metrics Collection](#metrics-collection)
+    - [CloudWatch (AWS ECS)](#cloudwatch-aws-ecs)
+    - [Prometheus (Kubernetes)](#prometheus-kubernetes)
+  - [Dashboards](#dashboards)
+    - [Grafana](#grafana)
+  - [Logging](#logging)
+    - [CloudWatch Logs (AWS)](#cloudwatch-logs-aws)
+    - [Kubernetes Logs](#kubernetes-logs)
+  - [Distributed Tracing](#distributed-tracing)
+  - [Alerting](#alerting)
+    - [Critical Alerts (PagerDuty / SNS)](#critical-alerts-pagerduty--sns)
+    - [Warning Alerts (Slack)](#warning-alerts-slack)
+- [Auto-Scaling & Performance](#auto-scaling--performance)
+  - [Auto-Scaling Strategies](#auto-scaling-strategies)
+    - [Target Tracking Scaling](#target-tracking-scaling)
+    - [Scheduled Scaling](#scheduled-scaling)
+    - [Predictive Scaling](#predictive-scaling)
+    - [Step Scaling](#step-scaling)
+    - [SQS-Based Scaling](#sqs-based-scaling)
+  - [Performance Optimization](#performance-optimization)
+    - [Caching Strategy](#caching-strategy)
+    - [Performance Targets](#performance-targets)
+    - [Cost Optimization](#cost-optimization)
+- [Multi-Region & High Availability](#multi-region--high-availability)
+  - [Multi-Region Architecture](#multi-region-architecture)
+  - [Traffic Routing](#traffic-routing)
+  - [Data Replication](#data-replication)
+  - [High Availability Features](#high-availability-features)
+- [Security & Compliance](#security--compliance)
+  - [Authentication & Authorization](#authentication--authorization)
+  - [Secrets Management](#secrets-management)
+  - [Network Security](#network-security)
+  - [Compliance & Auditing](#compliance--auditing)
+- [Disaster Recovery & Business Continuity](#disaster-recovery--business-continuity)
+  - [Backup Strategy](#backup-strategy)
+  - [Recovery Procedures](#recovery-procedures)
+    - [Single Service Failure](#single-service-failure)
+    - [Deployment Rollback](#deployment-rollback)
+    - [Availability Zone Failure](#availability-zone-failure)
+    - [Region Failure](#region-failure)
+    - [Database Corruption](#database-corruption)
+  - [Recovery Time Objectives](#recovery-time-objectives)
+- [Configuration Management](#configuration-management)
+  - [Environment Variables](#environment-variables)
+  - [Environment Profiles](#environment-profiles)
+  - [Terraform Variables](#terraform-variables)
+- [Data Models & Storage](#data-models--storage)
+  - [MongoDB Collections](#mongodb-collections)
+  - [Pinecone Vector Index](#pinecone-vector-index)
+  - [Redis Cache Schema](#redis-cache-schema)
+- [Operational Runbooks](#operational-runbooks)
+  - [Health Checks](#health-checks)
+  - [Common Operations](#common-operations)
+    - [Deploy New Version](#deploy-new-version)
+    - [Scale Services Manually](#scale-services-manually)
+    - [Rotate Secrets](#rotate-secrets)
+    - [View Logs](#view-logs)
+    - [Debugging Production Issues](#debugging-production-issues)
+  - [Disaster Recovery Drills](#disaster-recovery-drills)
+- [Build & Deployment Workflow](#build--deployment-workflow)
+- [Performance, Caching & Resilience](#performance-caching--resilience)
+- [Networking & Access Control](#networking--access-control)
+- [Reliability & Failure Modes](#reliability--failure-modes)
+- [Automation & Tooling](#automation--tooling)
+- [Storage, Indexing & Scaling Notes](#storage-indexing--scaling-notes)
+- [References & Further Reading](#references--further-reading)
 
 ---
 
@@ -72,7 +144,7 @@ flowchart LR
 | **Crawler** | `crawler/` | Crawl homepages & APIs, deduplicate URLs, fetch full articles (Axios/Cheerio/Puppeteer), summarize via AI, extract topics, vectorize content, upsert to MongoDB & Pinecone | Next.js API routes, Puppeteer, Axios, Cheerio, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
 | **Frontend Web App** | `frontend/` | User-facing portal with article lists, filters, detail views, theming, authentication UX, article discussions, AI chat interface | Next.js, React, Tailwind CSS, TypeScript | Vercel, AWS ECS, Kubernetes, CloudFront CDN |
 | **Newsletter Service** | `newsletters/` | Manage subscriber list, generate daily digests, integrate with Resend, subscription/unsubscription endpoints | Next.js API routes, Resend SDK, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
-| **Agentic AI Pipeline** | `agentic_ai/` | LangGraph/LangChain workflows for content enrichment, bias detection, advanced summarization | Python, LangChain, LangGraph, Azure Functions | Azure Functions, AWS Lambda, Kubernetes Jobs |
+| **Agentic AI Pipeline + MCP Server** | `agentic_ai/`, `mcp_server/` | LangGraph/LangChain workflows plus MCP tools/resources/prompts, processing job orchestration, and runtime diagnostics | Python, LangChain, LangGraph, FastMCP | Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs |
 | **Python Crawler Toolkit** | `python_crawler/` | Async crawling alternative with CLI, concurrency controls, local summarization | Python, aiohttp, Google Generative AI SDK | Manual/CLI, Docker containers |
 | **Shell & Make CLI** | `shell/`, `Makefile` | Developer ergonomics, dev servers, builds, scheduled jobs, lint/test runners, multi-service orchestration | Bash, Node.js scripts | Local development, CI/CD pipelines |
 
@@ -431,7 +503,7 @@ sequenceDiagram
     Cron->>Crawl: Trigger fetchAndSummarize (6:00 AM UTC)
     Crawl->>AI: Summarize & extract topics from articles
     AI-->>Crawl: Return summary, topics, bias analysis
-    Crawl->>AI: Generate embeddings (text-embedding-004)
+    Crawl->>AI: Generate embeddings (gemini-embedding-001)
     AI-->>Crawl: Return vector embeddings
     Crawl->>DB: Upsert articles with metadata
     Crawl->>Vector: Upsert article vectors
@@ -515,7 +587,7 @@ flowchart LR
     end
 
     subgraph SitewideRAG[Sitewide Chat Path - RAG]
-        EntrySitewide --> Embed[Embed query<br/>text-embedding-004]
+        EntrySitewide --> Embed[Embed query<br/>gemini-embedding-001]
         Embed --> PineconeSearch[Semantic Search<br/>Pinecone ai-gov-articles<br/>topK=5]
         PineconeSearch --> Context[Build context block<br/>Source 1-5:<br/>titles + URLs + summaries]
         Context --> GeminiRag[Gemini 2.0 Flash<br/>SSE streaming<br/>+ failover models]
@@ -634,7 +706,7 @@ flowchart TB
     Dedupe --> FetchPage["Fetch Article Page<br/>Axios → Cheerio<br/>Puppeteer fallback"]
     FetchPage --> Summarize["Summarize Content<br/>(services/summarization.service.ts)<br/>Gemini API"]
     Summarize --> Topics["Extract Topics<br/>(services/topicExtractor.service.ts)<br/>Entity recognition"]
-    Topics --> Vectorize["Generate Embeddings<br/>(text-embedding-004)"]
+    Topics --> Vectorize["Generate Embeddings<br/>(gemini-embedding-001)"]
     Vectorize --> Upsert["Upsert to MongoDB<br/>(models/article.model.ts)"]
     Upsert --> UpsertVector["Upsert to Pinecone<br/>(Vector index)"]
     UpsertVector --> Cleanup["Cleanup & Prune<br/>(scripts/cleanData.ts)<br/>Remove old articles"]
@@ -718,7 +790,7 @@ flowchart LR
 
 ## Agentic AI Pipeline
 
-The `agentic_ai/` package provides LangGraph/LangChain-based workflows for advanced content enrichment.
+The `agentic_ai/` and `mcp_server/` packages provide LangGraph/LangChain workflows plus an MCP interface for enterprise-grade content enrichment operations.
 
 ```mermaid
 flowchart LR
@@ -726,7 +798,7 @@ flowchart LR
     Planner --> Fetcher["Fetch & Parse<br/>(HTML extraction)"]
     Fetcher --> Summarizer["Gemini Summarization<br/>+ Bias prompts"]
     Summarizer --> Tagger["Topic/Entity Tagging<br/>(NER models)"]
-    Tagger --> Vectorizer["Embedding Generation<br/>(text-embedding-004)"]
+    Tagger --> Vectorizer["Embedding Generation<br/>(gemini-embedding-001)"]
     Vectorizer --> Pinecone[(Pinecone Index)]
     Tagger --> Mongo[(MongoDB)]
     Pinecone -->|Semantic search| ChatCtlr["Backend Chat Controller<br/>(handleSitewideChat)"]
@@ -735,10 +807,11 @@ flowchart LR
 
 **Features:**
 - **Multi-agent Workflows:** Modular agents for fetching, summarizing, tagging
-- **Bias Detection:** Specialized prompts to identify political bias
-- **Deployment:** Azure Functions (current), AWS Lambda (planned), Kubernetes Jobs
+- **MCP Interface:** Structured tools/resources/prompts with diagnostics and readiness checks
+- **Bias Detection:** Specialized prompts and sentiment/bias analysis workflows
+- **Deployment:** Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs
 
-See `agentic_ai/README.md` for detailed architecture and deployment instructions.
+See `agentic_ai/README.md` and `mcp_server/` for detailed runtime, tool surface, and deployment instructions.
 
 ---
 
@@ -1606,7 +1679,7 @@ aws cloudwatch get-metric-statistics \
 
 **Index:** `ai-gov-articles`
 
-**Dimensions:** 768 (text-embedding-004)
+**Dimensions:** 768 (gemini-embedding-001)
 
 **Metadata:**
 ```typescript
@@ -1957,7 +2030,7 @@ flowchart LR
 
 **Pinecone:**
 - `ai-gov-articles` index for semantic search
-- 768-dimensional vectors (text-embedding-004)
+- 768-dimensional vectors (gemini-embedding-001)
 - TopK=5 for low latency
 
 **Redis:**

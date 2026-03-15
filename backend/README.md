@@ -16,6 +16,23 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture Overview](#architecture-overview)
+- [Detailed Description](#detailed-description)
+  - [Data Ingestion & Processing](#data-ingestion--processing)
+  - [Database & Storage](#database--storage)
+  - [API Layer](#api-layer)
+  - [Request Lifecycle](#request-lifecycle)
+- [Scheduling & Deployment](#scheduling--deployment)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Run Locally](#run-locally)
+- [Logging & Error Handling](#logging--error-handling)
+- [Conclusion](#conclusion)
+
 ## Overview
 
 The **Government Content Curator Backend** is a robust API service designed to serve curated articles to government staff. This backend performs the following tasks:
@@ -41,57 +58,17 @@ The **Government Content Curator Backend** is a robust API service designed to s
 
 ## Architecture Overview
 
-```
-      +----------------+       +--------------------------+
-      |                |       |                          |
-      |   Data Sources |       |   Public API Sources     |
-      |                |       |   (e.g., NewsAPI)        |
-      +--------+-------+       +-------------+------------+
-               |                              |
-               |                              |
-               v                              v
-      +----------------+       +--------------------------+
-      |                |       |                          |
-      | Custom Crawlers|       | API Fetcher Service      |
-      | (Homepage      |       |                          |
-      |  Crawling)     |       +-------------+------------+
-      +--------+-------+                     |
-               |                             |
-               +------------+----------------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Data Processing  |
-                  | (Summarization via |
-                  |  Gemini AI /       |
-                  | GoogleGenerativeAI)|
-                  |                    |
-                  +---------+----------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   MongoDB Storage  |
-                  | (via Mongoose)     |
-                  |                    |
-                  +---------+----------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Express.js API   |
-                  | (REST Endpoints)   |
-                  |                    |
-                  +---------+----------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Next.js Frontend |
-                  |  (Consumer of API) |
-                  |                    |
-                  +--------------------+
+```mermaid
+flowchart LR
+    Client[Frontend / CLI] --> API[/Next.js + Express API/]
+    API --> Ctrl[Controllers]
+    Ctrl --> Services[Services & Helpers]
+    Services --> DB[(MongoDB)]
+    Services --> Cache[(Redis)]
+    Services --> AI[(AI/ML Services)]
+    Services --> Vec[(Pinecone)]
+    DB --> API
+    Cache --> API
 ```
 
 ---
@@ -127,6 +104,36 @@ The **Government Content Curator Backend** is a robust API service designed to s
   | GET        | `/api/articles`     | Returns a paginated list of articles. Accepts `page`, `limit`, `source` query params. |
   | GET        | `/api/articles/:id` | Retrieves detailed information about a single article by its ID.                      |
 
+### Request Lifecycle
+
+At a high level, each request follows the same pattern:
+
+1. **Request validation** and parameter parsing at the API layer
+2. **Controller orchestration** to call the right service logic
+3. **Data fetch / compute** (MongoDB, Redis cache, AI calls, vector search)
+4. **Response shaping** to keep payloads consistent and UI-friendly
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Next.js API Route
+    participant Ctrl as Controller
+    participant Svc as Service Layer
+    participant DB as MongoDB
+    participant Cache as Redis
+
+    Client->>API: HTTP request
+    API->>Ctrl: Validate + route
+    Ctrl->>Svc: Business logic
+    Svc->>Cache: Check cache
+    Cache-->>Svc: Hit/Miss
+    Svc->>DB: Query/Update
+    DB-->>Svc: Result set
+    Svc-->>Ctrl: Response DTO
+    Ctrl-->>API: Status + payload
+    API-->>Client: JSON response
+```
+
 ---
 
 ## Scheduling & Deployment
@@ -145,7 +152,6 @@ The **Government Content Curator Backend** is a robust API service designed to s
 
 - **Node.js** (v18 or later)
 - **MongoDB** (local or cloud)
-- **Vercel CLI** (for deployment)
 
 ### Installation
 
@@ -185,42 +191,6 @@ The server runs on `http://localhost:3000`. Test endpoints like:
 
 - `GET /api/articles`
 - `GET /api/articles/:id`
-
----
-
-## Deployment on Vercel
-
-Create or update **`vercel.json`**:
-
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "src/server.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/server.ts"
-    }
-  ]
-}
-```
-
-- **Builds**: Uses `@vercel/next` to build the Next.js + Express project.
-- **Crons**: Schedules the function at `/api/scheduled/fetchAndSummarize` for 6:00 AM and 6:00 PM UTC daily.
-
-### Steps to Deploy
-
-1. **Set Environment Variables** in Vercel project settings (MONGODB_URI, GOOGLE_AI_API_KEY, etc.).
-2. **Deploy**:
-
-   ```bash
-   vercel --prod
-   ```
 
 ---
 

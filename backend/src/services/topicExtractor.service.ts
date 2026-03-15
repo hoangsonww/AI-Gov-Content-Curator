@@ -108,7 +108,7 @@ const isOverload = (e: any) =>
 export async function extractTopics(raw: string): Promise<string[]> {
   const content =
     raw.length > MAX_CONTENT_CHARS
-      ? raw.slice(0, MAX_CONTENT_CHARS) + "…"
+      ? raw.slice(0, MAX_CONTENT_CHARS) + "..."
       : raw;
 
   const models = await getGeminiModels(API_KEYS);

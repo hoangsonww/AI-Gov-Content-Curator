@@ -1,8 +1,45 @@
-# Related Articles Carousel - Implementation Guide
+# Related Articles Implementation - SynthoraAI Documentation
+
+## Table of Contents
+
+- [Overview](#overview)
+- [End-to-End Flow](#end-to-end-flow)
+- [Components](#components)
+  - [1. Backend Service (`backend/src/services/pinecone.service.ts`)](#1-backend-service-backendsrcservicespineconeservicets)
+  - [2. Backend API Endpoint](#2-backend-api-endpoint)
+  - [3. Crawler Integration (`crawler/services/pinecone.service.ts`)](#3-crawler-integration-crawlerservicespineconeservicets)
+  - [4. Frontend Component (`frontend/components/RelatedArticles.tsx`)](#4-frontend-component-frontendcomponentsrelatedarticlestsx)
+- [Setup Instructions](#setup-instructions)
+  - [1. Environment Variables](#1-environment-variables)
+  - [2. One-Time Vectorization of Existing Articles](#2-one-time-vectorization-of-existing-articles)
+  - [3. Automatic Sync (Already Integrated)](#3-automatic-sync-already-integrated)
+- [Architecture](#architecture)
+  - [Vector Embedding](#vector-embedding)
+  - [Pinecone Storage](#pinecone-storage)
+  - [Similarity Search](#similarity-search)
+- [Ranking & Filtering Notes](#ranking--filtering-notes)
+- [Operational Notes](#operational-notes)
+- [Usage](#usage)
+  - [Frontend](#frontend)
+  - [API Testing](#api-testing)
+- [Performance Considerations](#performance-considerations)
 
 ## Overview
 
-This feature adds a related articles carousel to article detail pages using Pinecone vector similarity search with Google's text-embedding-004 model.
+This feature adds a related articles carousel to article detail pages using Pinecone vector similarity search with Google's gemini-embedding-001 model.
+
+## End-to-End Flow
+
+```mermaid
+flowchart LR
+    Source[Article Content] --> Embed[Generate Embedding]
+    Embed --> Pinecone[(Pinecone Index)]
+    UI[Frontend Article Page] --> API[/GET /api/articles/:id/similar/]
+    API --> Pinecone
+    Pinecone --> API
+    API --> UI
+    Bulk[One-Time Vectorization Script] --> Embed
+```
 
 ## Components
 
@@ -56,7 +93,7 @@ This will:
 
 - Connect to MongoDB
 - Fetch all articles in batches of 50
-- Generate embeddings using Google's text-embedding-004
+- Generate embeddings using Google's gemini-embedding-001
 - Upload vectors to Pinecone with metadata
 - Show progress and completion stats
 
@@ -74,9 +111,9 @@ The crawler script (`crawler/scripts/fetchLatestArticles.ts`) now automatically:
 
 ### Vector Embedding
 
-- **Model**: Google Generative AI `text-embedding-004`
+- **Model**: Google Generative AI `gemini-embedding-001`
 - **Input**: Article title + summary
-- **Dimension**: 768 (default for text-embedding-004)
+- **Dimension**: 768 (default for gemini-embedding-001)
 
 ### Pinecone Storage
 
@@ -98,6 +135,23 @@ Each vector stores:
 - Filters out the query article itself
 - Returns top K similar articles with scores
 - Combines with recency/quality heuristics (via metadata)
+
+## Ranking & Filtering Notes
+
+To keep results relevant and diverse, typical production setups apply lightweight filters:
+
+- **Self-exclusion** by article ID
+- **Soft recency bias**, e.g., prefer recent content when scores are close
+- **Topic-aware filtering** to avoid showing duplicates from the same source
+- **Minimum similarity threshold** to avoid low-quality matches
+
+If you add or tune these rules, keep them centralized in the backend so the frontend remains a simple renderer.
+
+## Operational Notes
+
+- **Re-index on schema changes**: if metadata fields or embedding inputs change, re-vectorize to avoid mismatches.
+- **Handle missing embeddings**: fall back to recent or popular articles when an article is not embedded yet.
+- **Backfill scheduling**: run the bulk vectorization script off-hours for large datasets.
 
 ## Usage
 

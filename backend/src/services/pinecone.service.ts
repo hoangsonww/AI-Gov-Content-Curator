@@ -3,6 +3,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 let pinecone: Pinecone | null = null;
 let embeddingModel: any = null;
+const EMBEDDING_MODEL = "models/gemini-embedding-001";
+const EMBEDDING_DIMENSIONS = 768;
 
 function getPineconeClient() {
   if (!pinecone) {
@@ -23,7 +25,7 @@ function getEmbeddingModel() {
     }
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
     embeddingModel = genAI.getGenerativeModel({
-      model: "models/text-embedding-004",
+      model: EMBEDDING_MODEL,
     });
   }
   return embeddingModel;
@@ -43,13 +45,23 @@ export interface ArticleVector {
 
 async function getEmbedding(text: string): Promise<number[]> {
   const model = getEmbeddingModel();
-  const embedResp = await model.embedContent(text);
+  const embedResp = await model.embedContent({
+    content: {
+      parts: [{ text }],
+    },
+    outputDimensionality: EMBEDDING_DIMENSIONS,
+  });
   if (
     !embedResp ||
     !embedResp.embedding ||
     !Array.isArray(embedResp.embedding.values)
   ) {
     throw new Error("Invalid embedding response format.");
+  }
+  if (embedResp.embedding.values.length !== EMBEDDING_DIMENSIONS) {
+    throw new Error(
+      `Expected ${EMBEDDING_DIMENSIONS}-dimensional embedding, received ${embedResp.embedding.values.length}.`,
+    );
   }
   return embedResp.embedding.values;
 }

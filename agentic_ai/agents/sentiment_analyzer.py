@@ -1,7 +1,7 @@
 """
 Sentiment Analyzer Agent - Analyzes emotional tone and sentiment.
 """
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
@@ -55,7 +55,7 @@ class SentimentAnalyzerAgent(BaseAgent):
         self,
         content: str,
         summary: Optional[str] = None
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Analyze sentiment of the article.
 
@@ -98,6 +98,6 @@ class SentimentAnalyzerAgent(BaseAgent):
                 "error": str(e)
             }
 
-    def process(self, content: str, **kwargs) -> Dict[str, any]:
+    def process(self, content: str, **kwargs) -> Dict[str, Any]:
         """Process method implementation."""
         return self.analyze_sentiment(content, kwargs.get("summary"))

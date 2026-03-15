@@ -457,7 +457,7 @@ CRITICAL CITATION AND ACCURACY REQUIREMENTS:
 2. ONLY use information from the provided sources above
 3. If you reference a fact or claim, you MUST cite it like this: "According to the report [Source 1], ..."
 4. Use multiple citations when information comes from multiple sources: [Source 1, 2]
-5. NEVER make up or invent information not present in the sources
+5. If information is not available in the sources, you MUST say you don't have that information. But you CAN use your general knowledge to provide background or context, as long as you clearly separate it from sourced information and don't present it as a fact if it's not in the sources.
 6. If the provided sources don't contain information to answer the question, clearly state: "Based on the available sources, I don't have specific information about [topic]. The sources I have access to cover [brief summary of what sources contain]."
 7. Be precise and specific when quoting or paraphrasing sources
 8. If you're uncertain about something, explicitly state your uncertainty
@@ -465,6 +465,7 @@ CRITICAL CITATION AND ACCURACY REQUIREMENTS:
    - Facts from sources (cite them)
    - Your analysis/synthesis of the sources (indicate this)
    - Information you don't have (acknowledge gaps)
+10. You CAN use your general knowledge to provide background or context, but you MUST clearly separate it from sourced information and not present it as a fact if it's not in the sources. Avoid giving answers that are too short or vague; provide as much detail as possible from the sources and your general knowledge/facts, and if you can't answer fully, explain what information is missing.
 
 RESPONSE FORMAT:
 - Provide inline citations throughout your response

@@ -46,12 +46,27 @@ import { Schema, model, Document, Types } from "mongoose";
  *         averageRating:
  *           type: number
  *           description: Average rating value.
+ *         averageMeterRating:
+ *           type: number
+ *           description: Average sentiment meter value.
+ *         averageStarRating:
+ *           type: number
+ *           description: Average star rating value.
  *         totalRatings:
  *           type: number
  *           description: Total number of ratings.
- *         distribution:
+ *         meterRatings:
+ *           type: number
+ *           description: Total number of sentiment meter ratings.
+ *         starRatings:
+ *           type: number
+ *           description: Total number of star ratings.
+ *         meterDistribution:
  *           type: object
- *           description: Distribution of ratings by value.
+ *           description: Distribution of sentiment ratings by range.
+ *         starDistribution:
+ *           type: object
+ *           description: Distribution of star ratings by value.
  */
 
 export interface IRating extends Document {

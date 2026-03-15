@@ -94,7 +94,7 @@ export async function sendNewsletter() {
           ${
             trimmed
               ? `<tr><td style="padding:16px 24px;font-size:14px;color:#555;text-align:center;">
-                   …and more! Visit <a href="https://sonnguyenhoang.com" style="color:#0d6efd;text-decoration:none;">our site</a> to see all articles.
+                   ...and more! Visit <a href="https://sonnguyenhoang.com" style="color:#0d6efd;text-decoration:none;">our site</a> to see all articles.
                  </td></tr>`
               : ""
           }
@@ -122,7 +122,7 @@ export async function sendNewsletter() {
     const text = shown
       .map((a, i) => `${i + 1}. ${a.title}\n${a.url}`)
       .join("\n\n")
-      .concat(trimmed ? "\n\n…and more on the site." : "");
+      .concat(trimmed ? "\n\n...and more on the site." : "");
 
     // send email and throttle to 2 requests/sec
     const { error } = await resend.emails.send({

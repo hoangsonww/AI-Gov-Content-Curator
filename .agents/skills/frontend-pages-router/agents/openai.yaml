@@ -1,0 +1,6 @@
+interface:
+  display_name: "Frontend Pages Router"
+  short_description: "Handle Pages Router UI, browser state, article flows, and sitewide chat safely."
+  default_prompt: "Use this skill to work in frontend/ while preserving browser-only behavior and route interactions."
+policy:
+  allow_implicit_invocation: true

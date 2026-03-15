@@ -69,8 +69,7 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-121212?style=flat&logo=chainlink&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-FF4785?style=flat&logo=graphql&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazon-aws&logoColor=white)
-![Azure](https://img.shields.io/badge/Azure-0078D4?style=flat&logo=microsoft-azure&logoColor=white)
+![Model Context Protocol (MCP)](https://img.shields.io/badge/Model%20Context%20Protocol-000?style=flat&logo=modelcontextprotocol&logoColor=white)
 
 > [!IMPORTANT]
 > This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
@@ -80,7 +79,6 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ## Table of Contents
 
 - [Overview](#overview)
-- [User Interface](#user-interface)
 - [Architecture](#architecture)
 - [Collaboration & Agile Workflow with Jira](#collaboration--agile-workflow-with-jira)
   - [Introduction](#introduction)
@@ -88,45 +86,74 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
   - [Why Jira?](#why-jira)
   - [Project Board](#project-board)
   - [Workflow](#workflow)
+  - [Confluence](#confluence)
+- [User Interface](#user-interface)
+  - [0. Landing Page](#0-landing-page)
+  - [1. Home Page](#1-home-page)
+  - [2. Article Details Page](#2-article-details-page)
+  - [2.1. Article Q&A Feature](#21-article-qa-feature)
+  - [2.2. Related Articles (Vector Similarity Search)](#22-related-articles-vector-similarity-search)
+  - [2.3. AI-Powered Article Bias Analysis](#23-ai-powered-article-bias-analysis)
+  - [2.4. Article Ratings](#24-article-ratings)
+  - [2.5. Article Comments](#25-article-comments)
+  - [3. Favorite Articles Page (Only for Authenticated Users)](#3-favorite-articles-page-only-for-authenticated-users)
+  - [4. Newsletter Subscription Page](#4-newsletter-subscription-page)
+  - [5. User Authentication](#5-user-authentication)
+  - [6. User Registration](#6-user-registration)
+  - [7. Reset Password](#7-reset-password)
+  - [8. Search Results](#8-search-results)
+  - [9. App-wide Translate Feature](#9-app-wide-translate-feature)
+  - [10. 404 Not Found Page](#10-404-not-found-page)
+  - [11. Daily Newsletter Email Example](#11-daily-newsletter-email-example)
 - [Backend](#backend)
   - [Features](#features)
-  - [Prerequisites & Installation](#prerequisites--installation-backend)
-  - [Configuration](#configuration-backend)
-  - [Running Locally](#running-locally-backend)
-  - [Deployment on Vercel](#deployment-on-vercel-backend)
+  - [Backend Swagger API Documentation](#backend-swagger-api-documentation)
+  - [Prerequisites & Installation (Backend)](#prerequisites--installation-backend)
+  - [Configuration (Backend)](#configuration-backend)
+  - [Running Locally (Backend)](#running-locally-backend)
+  - [Deployment on Vercel (Backend)](#deployment-on-vercel-backend)
 - [Crawler](#crawler)
   - [Features](#features-1)
-  - [Prerequisites & Installation](#prerequisites--installation-crawler)
-  - [Running Locally](#running-locally-crawler)
-  - [Deployment on Vercel](#deployment-on-vercel-crawler)
+  - [Prerequisites & Installation (Crawler)](#prerequisites--installation-crawler)
+  - [Running Locally (Crawler)](#running-locally-crawler)
+  - [Deployment on Vercel (Crawler)](#deployment-on-vercel-crawler)
 - [Frontend](#frontend)
   - [Features](#features-2)
-  - [Prerequisites & Installation](#prerequisites--installation-frontend)
-  - [Configuration](#configuration-frontend)
-  - [Running Locally](#running-locally-frontend)
-  - [Deployment on Vercel](#deployment-on-vercel-frontend)
+  - [Prerequisites & Installation (Frontend)](#prerequisites--installation-frontend)
+  - [Configuration (Frontend)](#configuration-frontend)
+  - [Running Locally (Frontend)](#running-locally-frontend)
+  - [Deployment on Vercel (Frontend)](#deployment-on-vercel-frontend)
 - [Newsletter Subscription](#newsletter-subscription)
   - [Features (Newsletter)](#features-newsletter)
   - [Prerequisites & Installation (Newsletter)](#prerequisites--installation-newsletter)
+  - [Note](#note)
 - [Agentic AI Pipeline](#agentic-ai-pipeline)
+  - [Overview](#overview-1)
+  - [Key Features](#key-features)
+  - [Architecture](#architecture-1)
+  - [Getting Started](#getting-started)
+  - [Detailed Documentation](#detailed-documentation)
 - [Article Q&A Feature](#article-qa-feature)
   - [Features (Article Q&A)](#features-article-qa)
   - [Prerequisites & Installation (Article Q&A)](#prerequisites--installation-article-qa)
-- [Intelligent Recommendation System](#intelligent-recommendation-system)
-  - [Related Articles (Vector Similarity Search)](#related-articles-vector-similarity-search)
-  - [Recommended Articles (Client-Side ML)](#recommended-articles-client-side-ml)
+  - [Using the Article Q&A Feature](#using-the-article-qa-feature)
 - [Sitewide AI Chat](#sitewide-ai-chat)
   - [How It Works](#how-it-works)
   - [Streaming Contract](#streaming-contract)
+- [Intelligent Recommendation System](#intelligent-recommendation-system)
+  - [Related Articles (Vector Similarity Search)](#related-articles-vector-similarity-search)
+  - [Recommended Articles (Client-Side ML)](#recommended-articles-client-side-ml)
 - [Command Line Interface (CLI)](#command-line-interface-cli)
   - [Installation](#installation)
   - [Usage](#usage)
-  - [Workspace Management](#workspace-management)
-  - [Crawling](#crawling)
-  - [Article CRUD](#article-crud)
+    - [Workspace Management](#workspace-management)
+    - [Crawling](#crawling)
+    - [Article CRUD](#article-crud)
 - [Shell Scripts & Makefile](#shell-scripts--makefile)
   - [Shell Scripts](#shell-scripts)
+    - [`daily.sh` Script in Root Directory](#dailysh-script-in-root-directory)
   - [Makefile](#makefile)
+    - [Example Makefile Targets](#example-makefile-targets)
 - [Testing](#testing)
   - [Backend](#backend-1)
   - [Frontend](#frontend-1)
@@ -907,7 +934,7 @@ The pipeline uses an **assembly line architecture** where articles flow through 
 - **Redis**: State management and caching
 - **MongoDB**: Data persistence
 - **Prometheus**: Metrics and monitoring
-- **FastMCP**: Model Context Protocol server implementation
+- **MCP Python SDK (FastMCP)**: Model Context Protocol server implementation
 
 **Cloud Deployment:**
 - **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch
@@ -929,7 +956,7 @@ cp .env.example .env
 # Edit .env with your API keys
 
 # Run the MCP server
-python -m agentic_ai.mcp_server.server
+PYTHONPATH=.. python -m mcp_server
 ```
 
 **Use Programmatically:**
@@ -1003,6 +1030,8 @@ The chatbot is given an identity (ArticleIQ) and is designed to answer questions
 - **RAG Integration:** The AI will use RAG (Retrieval-Augmented Generation) to provide accurate and contextually relevant answers based on the article content.
 - **Real-Time Responses:** Users will receive answers in real-time, enhancing the overall user experience and engagement with the content.
 
+In addition to the site-wide chatbot, article-specific chatbots are also available on each article detail page. These chatbots are tailored to the content of the specific article, allowing users to ask questions and receive answers that are directly relevant to the article they are reading.
+
 ### Prerequisites & Installation (Article Q&A)
 
 > [!TIP]
@@ -1029,7 +1058,7 @@ to read through the entire article.
 
 The sitewide chat lets users ask open-ended questions across the full corpus—not just a single article—while keeping every claim cited.
 
-- **RAG over the whole library:** The backend (`/api/chat/sitewide`) converts queries to text-embedding-004 vectors, searches Pinecone for top matches, and builds a context block with `[Source N]` slots.
+- **RAG over the whole library:** The backend (`/api/chat/sitewide`) converts queries to gemini-embedding-001 vectors, searches Pinecone for top matches, and builds a context block with `[Source N]` slots.
 - **Streaming Gemini replies:** Gemini 2.0 Flash / Flash Lite streams text via Server-Sent Events (SSE) with automatic API-key/model failover and history compaction to stay within token budgets.
 - **Inline citations & warnings:** Responses carry citation metadata plus hallucination checks (missing citations, invalid refs, overconfident claims, uncited numbers). The frontend renders clickable superscripts and yellow warnings if issues are detected.
 - **Rich client UX:** `frontend/pages/ai_chat.tsx` provides multiple conversations, local storage persistence, typing indicators, and interactive source cards.
@@ -1046,7 +1075,7 @@ sequenceDiagram
 
     User->>UI: Ask question
     UI->>API: POST userMessage + trimmed history
-    API->>Vec: Embed query (text-embedding-004) & semantic search
+    API->>Vec: Embed query (gemini-embedding-001) & semantic search
     Vec-->>API: Top K articles + metadata
     API->>LLM: Stream request with context + citations + guardrails
     LLM-->>API: SSE chunks (text)
@@ -1070,6 +1099,16 @@ SynthoraAI employs a sophisticated, multi-layered recommendation engine to deliv
 ### Related Articles (Vector Similarity Search)
 
 The Related Articles feature leverages **Pinecone**, a high-performance vector database, to find semantically similar articles:
+
+```mermaid
+flowchart LR
+    Article[Current Article] --> Embed[Generate Embedding]
+    Embed --> Pinecone[(Pinecone Index)]
+    UI[Article Page] --> API[/api/articles/:id/similar/]
+    API --> Pinecone
+    Pinecone --> API
+    API --> UI
+```
 
 - **Embedding Generation:** Article content is transformed into high-dimensional vector embeddings using state-of-the-art NLP models
 - **Vector Storage:** Embeddings are indexed in Pinecone for lightning-fast similarity searches

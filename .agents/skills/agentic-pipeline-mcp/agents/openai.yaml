@@ -1,0 +1,6 @@
+interface:
+  display_name: "Agentic Pipeline MCP"
+  short_description: "Work on the Python LangGraph pipeline and local MCP server with current runtime assumptions."
+  default_prompt: "Use this skill to inspect or change agentic_ai/ and Codex MCP wiring based on the current Python implementation."
+policy:
+  allow_implicit_invocation: true

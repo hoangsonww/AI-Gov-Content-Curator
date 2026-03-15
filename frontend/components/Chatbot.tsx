@@ -50,7 +50,7 @@ export default function Chatbot({ article }: { article: Article }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loaderText, setLoaderText] = useState("Thinking…");
+  const [loaderText, setLoaderText] = useState("Thinking...");
 
   const dragRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -62,8 +62,8 @@ export default function Chatbot({ article }: { article: Article }) {
   useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
     if (loading) {
-      setLoaderText("Thinking…");
-      t = setTimeout(() => setLoaderText("Generating response…"), 3000);
+      setLoaderText("Thinking...");
+      t = setTimeout(() => setLoaderText("Generating response..."), 3000);
     }
     return () => clearTimeout(t);
   }, [loading]);
@@ -437,16 +437,7 @@ export default function Chatbot({ article }: { article: Article }) {
                         ))}
                         {loading && (
                           <div className="cb-loader">
-                            <motion.span
-                              animate={{ rotate: 360 }}
-                              transition={{
-                                repeat: Infinity,
-                                ease: "linear",
-                                duration: 1,
-                              }}
-                            >
-                              <AiOutlineLoading3Quarters size={22} />
-                            </motion.span>
+                            <span className="cb-spinner" aria-hidden="true" />
                             <span>{loaderText}</span>
                           </div>
                         )}
@@ -459,7 +450,7 @@ export default function Chatbot({ article }: { article: Article }) {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && send()}
-                      placeholder="Type your question…"
+                      placeholder="Type your question..."
                       disabled={loading}
                     />
                     <button

@@ -2,6 +2,25 @@
 
 This directory contains Azure deployment configurations for the SynthoraAI Agentic AI Pipeline.
 
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Deployment](#deployment)
+  - [Quick Deploy](#quick-deploy)
+  - [Manual Deployment](#manual-deployment)
+- [Testing](#testing)
+- [Monitoring](#monitoring)
+- [Scaling Configuration](#scaling-configuration)
+- [Cost Optimization](#cost-optimization)
+- [Security](#security)
+- [Troubleshooting](#troubleshooting)
+  - [Cold Start Issues](#cold-start-issues)
+  - [Memory Issues](#memory-issues)
+  - [Timeout Issues](#timeout-issues)
+- [Cleanup](#cleanup)
+- [CI/CD Integration](#cicd-integration)
+
 ## Architecture
 
 The Azure deployment uses serverless architecture with:
@@ -10,6 +29,16 @@ The Azure deployment uses serverless architecture with:
 - **Azure Key Vault**: Secure storage for API keys and secrets
 - **Application Insights**: Monitoring and logging
 - **App Service Plan**: Elastic Premium for production workloads
+
+```mermaid
+flowchart LR
+    Client[Client / MCP] --> Func[Azure Functions]
+    Func --> Queue[Storage Queue]
+    Func --> Blob[Blob Storage]
+    Func --> DB[(MongoDB)]
+    Func --> KV[Key Vault]
+    Func --> Logs[Application Insights]
+```
 
 ## Prerequisites
 

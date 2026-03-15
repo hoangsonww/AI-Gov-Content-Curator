@@ -1,4 +1,44 @@
-# Sitewide Chat Feature - Implementation Guide
+# Sitewide Chat Feature - SynthoraAI Documentation
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+  - [Streaming Event Lifecycle (Frontend)](#streaming-event-lifecycle-frontend)
+  - [Backend Components](#backend-components)
+  - [Frontend Components](#frontend-components)
+- [API Specification](#api-specification)
+  - [Endpoint: `/api/chat/sitewide`](#endpoint-apichatsitewide)
+- [How It Works](#how-it-works)
+  - [Step 1: User Submits Query](#step-1-user-submits-query)
+  - [Step 2: Semantic Search](#step-2-semantic-search)
+  - [Step 3: Context Building](#step-3-context-building)
+  - [Step 4: AI Response Generation](#step-4-ai-response-generation)
+  - [Step 5: Frontend Display](#step-5-frontend-display)
+- [Error Handling](#error-handling)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+- [Performance Optimizations](#performance-optimizations)
+- [Security Considerations](#security-considerations)
+- [Configuration](#configuration)
+  - [Required Environment Variables (Backend)](#required-environment-variables-backend)
+  - [Required Environment Variables (Frontend)](#required-environment-variables-frontend)
+- [Testing the Feature](#testing-the-feature)
+  - [Local Development](#local-development)
+  - [Test Cases](#test-cases)
+- [Production Deployment](#production-deployment)
+  - [Backend](#backend-1)
+  - [Frontend](#frontend-1)
+- [Monitoring and Maintenance](#monitoring-and-maintenance)
+  - [Logs to Monitor](#logs-to-monitor)
+  - [Metrics to Track](#metrics-to-track)
+- [Future Enhancements](#future-enhancements)
+- [Troubleshooting](#troubleshooting)
+  - ["No relevant articles found"](#no-relevant-articles-found)
+  - ["All API keys exhausted"](#all-api-keys-exhausted)
+  - [Streaming not working](#streaming-not-working)
+  - [Build errors](#build-errors)
+- [Support](#support)
 
 ## Overview
 
@@ -19,7 +59,7 @@ This document describes the implementation of the sitewide AI chat feature that 
 flowchart LR
     User[User question] --> UI["Frontend (ai_chat.tsx)\nSSE client"]
     UI --> API["Backend /api/chat/sitewide\nExpress + Next.js route"]
-    API --> Embed["text-embedding-004\n(query embedding)"]
+    API --> Embed["gemini-embedding-001\n(query embedding)"]
     Embed --> Pinecone["Pinecone index\nai-gov-articles"]
     Pinecone --> Context["Top K matches -> context\n+ citation metadata"]
     Context --> Gemini["Gemini 2.0 Flash / Flash Lite\nstreamed response"]
@@ -50,7 +90,7 @@ stateDiagram-v2
 
 1. **Pinecone Service** (`backend/src/services/pinecone.service.ts`)
    - Added `searchArticles()` function for semantic search
-   - Converts user queries to embeddings using Google's text-embedding-004 model
+   - Converts user queries to embeddings using Google's gemini-embedding-001 model
    - Returns top 5 most relevant articles based on similarity scores
 
 2. **Chat Controller** (`backend/src/controllers/chat.controller.ts`)
@@ -139,7 +179,7 @@ data: {"success":true,"citationCount":5}
 ```mermaid
 flowchart LR
     Req["Incoming POST /api/chat/sitewide"] --> Validate["Validate body\n+ trim history"]
-    Validate --> EmbedQ["Embed query\ntext-embedding-004"]
+    Validate --> EmbedQ["Embed query\ngemini-embedding-001"]
     EmbedQ --> Search["Pinecone topK search"]
     Search --> Context["Build context\nwith [Source N]"]
     Context --> Prompt["System instruction\n+citation rules"]

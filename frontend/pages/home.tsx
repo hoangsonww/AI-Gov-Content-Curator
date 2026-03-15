@@ -159,7 +159,7 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
           break;
         }
         console.warn(
-          `getLatestArticles attempt ${attempt} returned empty array; retrying…`,
+          `getLatestArticles attempt ${attempt} returned empty array; retrying...`,
         );
       } catch (err) {
         console.warn(`getLatestArticles attempt ${attempt} failed:`, err);

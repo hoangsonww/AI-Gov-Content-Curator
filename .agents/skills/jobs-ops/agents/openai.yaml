@@ -1,0 +1,6 @@
+interface:
+  display_name: "Jobs And Operations"
+  short_description: "Handle crawler and newsletter schedules, cleanup paths, and live job risks."
+  default_prompt: "Use this skill to inspect or change crawler/newsletter jobs without missing cron or side-effect risks."
+policy:
+  allow_implicit_invocation: true

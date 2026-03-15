@@ -1,0 +1,6 @@
+interface:
+  display_name: "Monorepo Workflows"
+  short_description: "Route work to the right service, commands, and validation path in this monorepo."
+  default_prompt: "Use this skill to determine the owning service, canonical commands, and validation path for work in this repository."
+policy:
+  allow_implicit_invocation: true

@@ -2,6 +2,22 @@
 
 This directory contains AWS deployment configurations for the SynthoraAI Agentic AI Pipeline.
 
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Deployment](#deployment)
+  - [Quick Deploy](#quick-deploy)
+  - [Manual Deployment](#manual-deployment)
+- [Testing](#testing)
+- [Monitoring](#monitoring)
+- [Cost Optimization](#cost-optimization)
+- [Cleanup](#cleanup)
+- [Troubleshooting](#troubleshooting)
+  - [Lambda Timeout](#lambda-timeout)
+  - [Memory Issues](#memory-issues)
+  - [Dependencies Too Large](#dependencies-too-large)
+
 ## Architecture
 
 The AWS deployment uses serverless architecture with:
@@ -11,6 +27,17 @@ The AWS deployment uses serverless architecture with:
 - **SQS**: Queue for asynchronous processing
 - **Secrets Manager**: Secure storage for API keys
 - **CloudWatch**: Monitoring and logging
+
+```mermaid
+flowchart LR
+    Client[Client / MCP] --> APIGW[API Gateway]
+    APIGW --> Lambda[Lambda Functions]
+    Lambda --> SQS[SQS Queue]
+    Lambda --> S3[S3 Artifacts]
+    Lambda --> DB[(MongoDB)]
+    Lambda --> Secrets[Secrets Manager]
+    Lambda --> Logs[CloudWatch Logs]
+```
 
 ## Prerequisites
 

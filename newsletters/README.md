@@ -11,17 +11,18 @@ This directory contains the **Newsletter Service** for the SynthoraAI - AI Artic
 
 ## Table of Contents
 
-1. [Features](#features)
-2. [Prerequisites](#prerequisites)
-3. [Installation](#installation)
-4. [Environment Variables](#environment-variables)
-5. [Available Scripts](#available-scripts)
-6. [Local Development](#local-development)
-7. [Cron / Scheduled Job](#cron--scheduled-job)
-8. [API Endpoints](#api-endpoints)
-9. [Minimal UI](#minimal-ui)
-10. [Deployment on Vercel](#deployment-on-vercel)
-11. [License](#license)
+- [Features](#features)
+- [Newsletter Flow](#newsletter-flow)
+- [Subscription Lifecycle](#subscription-lifecycle)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Available Scripts](#available-scripts)
+- [Local Development](#local-development)
+- [Cron / Scheduled Job](#cron--scheduled-job)
+- [API Endpoints](#api-endpoints)
+- [Minimal UI](#minimal-ui)
+- [License](#license)
 
 ---
 
@@ -34,6 +35,40 @@ This directory contains the **Newsletter Service** for the SynthoraAI - AI Artic
 - **Logging**: Console logs each step when run locally or as a cron job.
 
 ---
+
+## Newsletter Flow
+
+```mermaid
+flowchart LR
+    User[Subscriber] --> Form[Subscribe Form]
+    Form --> API[/Subscribe Endpoint/]
+    API --> DB[(MongoDB)]
+    Cron[Vercel Cron] --> Job[Newsletter Job]
+    Job --> DB
+    Job --> Resend[Resend API]
+    Resend --> User
+```
+
+## Subscription Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI
+    participant API
+    participant DB
+
+    User->>UI: Submit email
+    UI->>API: POST /api/newsletter/subscribe
+    API->>DB: Upsert subscriber
+    DB-->>API: OK
+    API-->>UI: Confirmed
+    User->>UI: Click unsubscribe link
+    UI->>API: GET /api/newsletter/unsubscribe
+    API->>DB: Remove subscriber
+    DB-->>API: OK
+    API-->>UI: Unsubscribed
+```
 
 ## Prerequisites
 
@@ -70,8 +105,6 @@ RESEND_FROM="AI Curator <news@yourdomain.com>"
 # Unsubscribe link base (should match your backend URL)
 UNSUBSCRIBE_BASE_URL=https://<your-backend-domain>/api/newsletter/unsubscribe
 ```
-
-> **Note**: In production (Vercel), set these same variables under _Settings → Environment Variables_.
 
 ---
 
@@ -148,16 +181,6 @@ The Next.js app in this directory has a single page (`pages/index.tsx`) that:
 - Adapts to light & dark themes with animations.
 
 You can preview it locally via `npm run dev`.
-
----
-
-## Deployment on Vercel
-
-1. Push this repo to GitHub (or similar).
-2. Import the `newsletters/` project in Vercel.
-3. Set Environment Variables in Vercel settings.
-4. Configure `vercel.json` to add a cron trigger for `/api/scheduled/sendNewsletter` if desired.
-5. Deploy. Vercel will run `npm run build` automatically.
 
 ---
 

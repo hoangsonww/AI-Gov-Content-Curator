@@ -21,19 +21,19 @@ echo "This script is meant to run daily to complete the following tasks:" | tee 
 
 # 1️⃣ Run the crawler
 echo "" | tee -a "$LOGFILE"
-echo "1. 📡 Running crawler… (cwd: $SCRIPT_DIR/crawler)" | tee -a "$LOGFILE"
+echo "1. 📡 Running crawler... (cwd: $SCRIPT_DIR/crawler)" | tee -a "$LOGFILE"
 cd "$SCRIPT_DIR/crawler"
 npm install --silent               2>&1 | tee -a "$LOGFILE"
 npm run crawl                     2>&1 | tee -a "$LOGFILE"
 
 # 2️⃣ Clean old articles
 echo "" | tee -a "$LOGFILE"
-echo "2. 🧹 Cleaning articles… (cwd: $SCRIPT_DIR/crawler)" | tee -a "$LOGFILE"
+echo "2. 🧹 Cleaning articles... (cwd: $SCRIPT_DIR/crawler)" | tee -a "$LOGFILE"
 npm run clean:articles            2>&1 | tee -a "$LOGFILE"
 
 # 3️⃣ Send the newsletter
 echo "" | tee -a "$LOGFILE"
-echo "3. 📨 Sending newsletter… (cwd: $SCRIPT_DIR/newsletters)" | tee -a "$LOGFILE"
+echo "3. 📨 Sending newsletter... (cwd: $SCRIPT_DIR/newsletters)" | tee -a "$LOGFILE"
 cd "$SCRIPT_DIR/newsletters"
 npm install --silent               2>&1 | tee -a "$LOGFILE"
 npm run newsletter                2>&1 | tee -a "$LOGFILE"

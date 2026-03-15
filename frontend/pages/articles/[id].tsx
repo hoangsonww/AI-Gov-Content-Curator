@@ -13,6 +13,7 @@ import Chatbot from "../../components/Chatbot";
 import RatingSection from "../../components/RatingSection";
 import BiasAnalysisSection from "../../components/BiasAnalysis";
 import RelatedArticles from "../../components/RelatedArticles";
+import Tooltip from "../../components/Tooltip";
 import { getArticleById } from "../../services/api";
 import { trackInteraction } from "../../services/reranker";
 
@@ -131,67 +132,79 @@ export default function ArticlePage({ article }: ArticlePageProps) {
           }}
         >
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            <motion.button
-              className={`action-btn ${copied ? "copied" : ""}`}
-              onClick={copyAll}
-              title="Copy all article info"
-              variants={buttonItem}
-            >
-              {/* @ts-ignore */}
-              {copied ? <MdCheck size={20} /> : <MdContentCopy size={20} />}
-            </motion.button>
-            <motion.button
-              className="action-btn"
-              onClick={shareEmail}
-              title="Share via Email"
-              variants={buttonItem}
-            >
-              {/* @ts-ignore */}
-              <MdEmail size={20} />
-            </motion.button>
-            <motion.button
-              className="action-btn"
-              onClick={shareTwitter}
-              title="Share on Twitter"
-              variants={buttonItem}
-            >
-              {/* @ts-ignore */}
-              <AiOutlineTwitter size={20} />
-            </motion.button>
-            <motion.button
-              className="action-btn"
-              onClick={shareLinkedIn}
-              title="Share on LinkedIn"
-              variants={buttonItem}
-            >
-              {/* @ts-ignore */}
-              <AiFillLinkedin size={20} />
-            </motion.button>
-            <motion.button
-              className="action-btn"
-              onClick={shareFacebook}
-              title="Share on Facebook"
-              variants={buttonItem}
-            >
-              {/* @ts-ignore */}
-              <FaFacebookF size={20} />
-            </motion.button>
+            <Tooltip text={copied ? "Copied!" : "Copy article"}>
+              <motion.button
+                className={`action-btn ${copied ? "copied" : ""}`}
+                onClick={copyAll}
+                aria-label="Copy all article info"
+                variants={buttonItem}
+              >
+                {/* @ts-ignore */}
+                {copied ? <MdCheck size={20} /> : <MdContentCopy size={20} />}
+              </motion.button>
+            </Tooltip>
+            <Tooltip text="Share via Email">
+              <motion.button
+                className="action-btn"
+                onClick={shareEmail}
+                aria-label="Share via Email"
+                variants={buttonItem}
+              >
+                {/* @ts-ignore */}
+                <MdEmail size={20} />
+              </motion.button>
+            </Tooltip>
+            <Tooltip text="Share on Twitter">
+              <motion.button
+                className="action-btn"
+                onClick={shareTwitter}
+                aria-label="Share on Twitter"
+                variants={buttonItem}
+              >
+                {/* @ts-ignore */}
+                <AiOutlineTwitter size={20} />
+              </motion.button>
+            </Tooltip>
+            <Tooltip text="Share on LinkedIn">
+              <motion.button
+                className="action-btn"
+                onClick={shareLinkedIn}
+                aria-label="Share on LinkedIn"
+                variants={buttonItem}
+              >
+                {/* @ts-ignore */}
+                <AiFillLinkedin size={20} />
+              </motion.button>
+            </Tooltip>
+            <Tooltip text="Share on Facebook">
+              <motion.button
+                className="action-btn"
+                onClick={shareFacebook}
+                aria-label="Share on Facebook"
+                variants={buttonItem}
+              >
+                {/* @ts-ignore */}
+                <FaFacebookF size={20} />
+              </motion.button>
+            </Tooltip>
           </div>
 
           <Link href="/home" passHref legacyBehavior>
-            <motion.a
-              className="action-btn"
-              title="Back to Home"
-              variants={buttonItem}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {/* @ts-ignore */}
-              <MdHome size={20} />
-            </motion.a>
+            <Tooltip text="Back to Home">
+              <motion.a
+                className="action-btn"
+                aria-label="Back to Home"
+                variants={buttonItem}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {/* @ts-ignore */}
+                <MdHome size={20} />
+              </motion.a>
+            </Tooltip>
           </Link>
         </motion.div>
 

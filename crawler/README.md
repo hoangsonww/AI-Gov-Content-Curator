@@ -19,61 +19,32 @@ To access the crawler function directly, visit: [https://ai-content-curator-craw
 
 ---
 
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Detailed Description](#detailed-description)
+  - [Data Ingestion & Extraction](#data-ingestion--extraction)
+  - [Crawl Lifecycle](#crawl-lifecycle)
+  - [Error Handling & Resilience](#error-handling--resilience)
+  - [Deployment & Scheduling](#deployment--scheduling)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Additional Information](#additional-information)
+- [Conclusion](#conclusion)
+
 ## Architecture Overview
 
 Below is a text-based diagram illustrating the crawler’s position in the overall system architecture:
 
-```
-      +----------------+       +--------------------------+
-      |                |       |                          |
-      |   Data Sources |       |   Public API Sources     |
-      |                |       |   (e.g., NewsAPI)        |
-      +--------+-------+       +-------------+------------+
-               |                              |
-               |                              |
-               v                              v
-      +----------------+       +--------------------------+
-      |                |       |                          |
-      | Custom Crawler |       | API Fetcher Service      |
-      | (URL           |       |                          |
-      |  Crawlings)    |       +-------------+------------+
-      +--------+-------+                     |
-               |                             |
-               +------------+----------------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Data Processing  |
-                  | (Summarization via |
-                  |  Gemini AI /       |
-                  | GoogleGenerativeAI)|
-                  |                    |
-                  +---------+----------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   MongoDB Storage  |
-                  | (via Mongoose)     |
-                  |                    |
-                  +---------+----------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Express.js API   |
-                  | (REST Endpoints)   |
-                  |                    |
-                  +---------+----------+
-                            |
-                            v
-                  +--------------------+
-                  |                    |
-                  |   Next.js Frontend |
-                  |  (Consumer of API) |
-                  |                    |
-                  +--------------------+
+```mermaid
+flowchart LR
+    Sources[Government Sites & APIs] --> Crawl[Crawler Service]
+    Crawl --> Parse[Extract URLs + Content]
+    Parse --> AI[Summarize & Topic Extract]
+    AI --> DB[(MongoDB)]
+    DB --> API[Backend API]
+    API --> UI[Frontend]
 ```
 
 ---
@@ -88,6 +59,23 @@ Below is a text-based diagram illustrating the crawler’s position in the overa
 - **Article Extraction:**  
   A dedicated helper function (`crawlArticlesFromHomepage`) scans homepage URLs, extracts article links and metadata, and forwards them to the next stage of processing. This enables efficient aggregation of content from multiple government-related sources.
 
+### Crawl Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant Cron as Vercel Cron
+    participant Crawler as Crawler API
+    participant Parser as Extractor
+    participant AI as Gemini
+    participant DB as MongoDB
+
+    Cron->>Crawler: Trigger fetchAndSummarize
+    Crawler->>Parser: Fetch & parse pages
+    Parser->>AI: Summarize + topics
+    AI-->>Crawler: Summary output
+    Crawler->>DB: Upsert article record
+```
+
 ### Error Handling & Resilience
 
 - **Retry Mechanism:**  
@@ -95,6 +83,17 @@ Below is a text-based diagram illustrating the crawler’s position in the overa
 
 - **Fallback Strategies:**  
   If static fetching via Axios/Cheerio fails, the system automatically switches to a dynamic fetching approach using Puppeteer. This ensures continuous operation even when encountering sites with stricter content-delivery policies.
+
+```mermaid
+flowchart TD
+    Start[Fetch URL] --> Static[Static Fetch]
+    Static -->|Success| Parse[Parse Content]
+    Static -->|Fail / 403 / Timeout| Retry[Retry with Backoff]
+    Retry -->|Success| Parse
+    Retry -->|Still Fails| Dynamic[Playwright Fallback]
+    Dynamic -->|Success| Parse
+    Dynamic -->|Fail| Skip[Log & Skip URL]
+```
 
 ### Deployment & Scheduling
 
@@ -115,7 +114,6 @@ Below is a text-based diagram illustrating the crawler’s position in the overa
 
 - **Node.js** (v18 or later recommended)
 - **NPM** (or Yarn, for package management)
-- **Vercel CLI** (for deployment)
 
 ### Installation
 
@@ -165,48 +163,6 @@ npx ts-node schedule/fetchAndSummarize.ts
 ```
 
 This will trigger the crawler function without starting the Next.js server.
-
----
-
-## Deployment on Vercel
-
-### Next.js + Cron Setup
-
-Below is a minimal `vercel.json` example to deploy a Next.js project **and** schedule the crawler:
-
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/scheduled/fetchAndSummarize",
-      "schedule": "0 6 * * *"
-    }
-  ]
-}
-```
-
-- **`@vercel/next`**: Tells Vercel to treat this as a Next.js project, automatically building pages (including the UI at `/`) and API routes (e.g., `/api/scheduled/fetchAndSummarize`).
-- **Cron Job**: Triggers the crawler function (`/api/scheduled/fetchAndSummarize`) at **6:00 AM UTC** daily.
-
-### Steps to Deploy
-
-1. **Add the `.env` Variables** to the Vercel Project:  
-   In your Vercel dashboard, set environment variables like `MONGODB_URI`, `GOOGLE_AI_API_KEY`, etc.
-
-2. **Deploy with Vercel CLI** (or via GitHub Integration):
-
-   ```bash
-   vercel --prod
-   ```
-
-   Once deployed, Vercel will serve your Next.js UI at the root path (`/`) and schedule the crawler function at `/api/scheduled/fetchAndSummarize`.
 
 ---
 

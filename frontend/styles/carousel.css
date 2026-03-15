@@ -94,11 +94,6 @@
 
 /* Mobile */
 @media (max-width: 640px) {
-  .article-carousel-section .slick-prev:before,
-  .article-carousel-section .slick-next:before {
-    font-size: 18px !important;
-  }
-
   .article-carousel-section .slick-dots {
     bottom: -35px !important;
   }

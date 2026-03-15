@@ -149,7 +149,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   return (
     <>
       <div
-        className="article-card hover-animate"
+        className="article-card"
         style={{ position: "relative" }}
         onClick={handleCardClick}
       >

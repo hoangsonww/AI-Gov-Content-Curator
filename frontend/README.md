@@ -16,6 +16,26 @@ This **frontend** provides an interface for government staff (and potentially th
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Rendering & Data Flow](#rendering--data-flow)
+- [UI Navigation Flow](#ui-navigation-flow)
+- [Folder Structure](#folder-structure)
+- [Key Features](#key-features)
+- [Setup & Installation](#setup--installation)
+- [Usage](#usage)
+  - [1. Home Page](#1-home-page)
+  - [2. Home Page (Dark Mode)](#2-home-page-dark-mode)
+  - [3. Article Details Page](#3-article-details-page)
+- [Deployment](#deployment)
+- [Additional Configuration](#additional-configuration)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+- [Conclusion](#conclusion)
+
 ## Overview
 
 1. **Fetch & Display Articles**  
@@ -28,6 +48,28 @@ This **frontend** provides an interface for government staff (and potentially th
    Built on Next.js (React-based framework), offering server-side rendering for SEO optimization, faster initial loads, and an overall better user experience.
 
 ---
+
+## Rendering & Data Flow
+
+```mermaid
+flowchart LR
+    User[User Browser] --> UI[Next.js Pages]
+    UI --> API[/Backend API/]
+    API --> DB[(MongoDB)]
+    API --> UI
+```
+
+## UI Navigation Flow
+
+```mermaid
+flowchart LR
+    Landing[Landing / Home] --> Detail[Article Detail]
+    Detail --> Related[Related Articles]
+    Landing --> Search[Search Results]
+    Landing --> Auth[Login / Register]
+    Auth --> Profile[Profile / Favorites]
+    Landing --> Newsletter[Newsletter Signup]
+```
 
 ## Folder Structure
 

@@ -1,0 +1,62 @@
+# Prompt before live crawler runs outside the sandbox.
+prefix_rule(
+    pattern = ["npm", "run", "crawl"],
+    decision = "prompt",
+    justification = "Crawler runs hit live external sites and APIs; confirm the environment and intent first.",
+    match = [
+        "npm run crawl",
+    ],
+    not_match = [
+        "npm test",
+        "npm run clean:articles",
+    ],
+)
+
+# Prompt before newsletter sends outside the sandbox.
+prefix_rule(
+    pattern = ["npm", "run", ["newsletter", "send"]],
+    decision = "prompt",
+    justification = "Newsletter commands can send live email or assume production-like state; confirm before running.",
+    match = [
+        "npm run newsletter",
+        "npm run send",
+    ],
+    not_match = [
+        "npm run dev",
+    ],
+)
+
+# Prompt before live pruning or deploy operations outside the sandbox.
+prefix_rule(
+    pattern = ["npm", "run", "prune-articles:live"],
+    decision = "prompt",
+    justification = "Live pruning mutates stored article data; confirm before running.",
+    match = [
+        "npm run prune-articles:live",
+    ],
+)
+
+prefix_rule(
+    pattern = ["make", ["terraform-apply", "aws-deploy", "k8s-deploy-all"]],
+    decision = "prompt",
+    justification = "Infrastructure apply and deploy commands affect live rollout state; confirm target environment first.",
+    match = [
+        "make terraform-apply",
+        "make aws-deploy",
+        "make k8s-deploy-all",
+    ],
+    not_match = [
+        "make terraform-plan",
+    ],
+)
+
+# Block destructive repo resets outside the sandbox.
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Avoid destructive history resets in this repo. Use git status, git diff, or ask the user before removing work.",
+    match = [
+        "git reset --hard",
+        "git reset --hard HEAD~1",
+    ],
+)

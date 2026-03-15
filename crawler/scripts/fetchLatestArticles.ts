@@ -296,7 +296,7 @@ async function ingest(url: string, browser: Browser) {
     if (art.content.length < 200) return;
 
     const summary =
-      (await summarizeAI(art.content)) || art.content.slice(0, 400) + "…";
+      (await summarizeAI(art.content)) || art.content.slice(0, 400) + "...";
     const topics = await topicsAI(summary);
 
     const result = await Article.updateOne(
