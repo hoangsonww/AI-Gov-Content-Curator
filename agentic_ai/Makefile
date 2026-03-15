@@ -1,4 +1,4 @@
-.PHONY: help install test lint format clean docker-build docker-up docker-down deploy-aws deploy-azure
+.PHONY: help install test lint format clean docker-build docker-up docker-down deploy-aws deploy-azure mcp-preflight
 
 # Default target
 .DEFAULT_GOAL := help
@@ -15,10 +15,10 @@ install-dev: ## Install development dependencies
 	pip install -r requirements.txt pytest pytest-asyncio pytest-cov black flake8 mypy
 
 test: ## Run tests
-	pytest tests/ -v --cov=agentic_ai --cov-report=html
+	PYTHONPATH=..:$$PYTHONPATH pytest tests/ -v --cov=agentic_ai --cov-report=html
 
 test-watch: ## Run tests in watch mode
-	pytest tests/ -v --looponfail
+	PYTHONPATH=..:$$PYTHONPATH pytest tests/ -v --looponfail
 
 lint: ## Run linting
 	flake8 agentic_ai/ tests/
@@ -35,7 +35,7 @@ clean: ## Clean generated files
 	rm -rf build/ dist/ .pytest_cache/ .coverage htmlcov/
 
 docker-build: ## Build Docker image
-	docker build -t synthora-agentic-pipeline:latest .
+	docker build -f Dockerfile -t synthora-agentic-pipeline:latest ..
 
 docker-up: ## Start Docker containers
 	docker-compose up -d
@@ -53,7 +53,10 @@ deploy-azure: ## Deploy to Azure
 	cd azure && ./deploy.sh production
 
 run-mcp: ## Run MCP server locally
-	python -m agentic_ai.mcp_server.server
+	PYTHONPATH=..:$$PYTHONPATH python -m mcp_server
+
+mcp-preflight: ## Run local MCP runtime readiness check
+	PYTHONPATH=..:$$PYTHONPATH python -c "from mcp_server.runtime import ServerRuntime; import json; runtime=ServerRuntime(); print(json.dumps(runtime.readiness(), indent=2)); raise SystemExit(0 if runtime.ready else 1)"
 
 run-pipeline: ## Run pipeline example
 	python examples/run_pipeline.py

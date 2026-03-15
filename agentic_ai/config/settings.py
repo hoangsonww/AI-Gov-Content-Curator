@@ -1,7 +1,7 @@
 """
 Production-ready configuration settings for the Agentic AI Pipeline.
 """
-from typing import Optional, List
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings with environment variable support."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=("agentic_ai/.env", ".env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="allow"
@@ -18,9 +18,11 @@ class Settings(BaseSettings):
 
     # Application Settings
     app_name: str = "SynthoraAI Agentic Pipeline"
+    app_version: str = Field(default="1.0.0", description="Application version")
     environment: str = Field(default="production", description="Environment: development, staging, production")
     debug: bool = Field(default=False, description="Debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
+    log_json: bool = Field(default=True, description="Emit structured JSON logs")
 
     # API Settings
     api_host: str = Field(default="0.0.0.0", description="API host")
@@ -28,8 +30,16 @@ class Settings(BaseSettings):
     api_workers: int = Field(default=4, description="Number of API workers")
 
     # MCP Server Settings
+    mcp_server_name: str = Field(default="synthora-agentic-pipeline", description="MCP server name")
+    mcp_server_version: str = Field(default="1.0.0", description="MCP server version")
     mcp_port: int = Field(default=8001, description="MCP server port")
     mcp_max_connections: int = Field(default=100, description="Max MCP connections")
+    mcp_max_content_chars: int = Field(default=20000, description="Max article content size")
+    mcp_max_metadata_entries: int = Field(default=50, description="Max metadata keys")
+    mcp_max_metadata_value_chars: int = Field(default=2000, description="Max metadata value size")
+    mcp_max_batch_items: int = Field(default=25, description="Max items allowed per batch tool call")
+    mcp_max_job_history: int = Field(default=1000, description="Max in-memory processing job records")
+    mcp_job_ttl_seconds: int = Field(default=86400, description="Job retention TTL in seconds")
 
     # LLM Configuration
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")
@@ -38,7 +48,7 @@ class Settings(BaseSettings):
     cohere_api_key: Optional[str] = Field(default=None, description="Cohere API key")
 
     default_llm_provider: str = Field(default="google", description="Default LLM provider")
-    default_model: str = Field(default="gemini-pro", description="Default model name")
+    default_model: str = Field(default="gemini-1.5-flash", description="Default model name")
     temperature: float = Field(default=0.7, description="LLM temperature")
     max_tokens: int = Field(default=2000, description="Max tokens for LLM responses")
 

@@ -18,12 +18,8 @@ A sophisticated, production-ready Agentic AI system built with LangGraph and Lan
   - [5. Quality Checker Agent](#5-quality-checker-agent)
 - [🔌 MCP Server](#-mcp-server)
   - [Available Tools](#available-tools)
-    - [`process_article`](#processarticle)
-    - [`analyze_content`](#analyzecontent)
-    - [`generate_summary`](#generatesummary)
-    - [`check_pipeline_health`](#checkpipelinehealth)
-    - [`get_processing_status`](#getprocessingstatus)
   - [Resources](#resources)
+  - [Prompts](#prompts)
   - [MCP Integration Flow](#mcp-integration-flow)
 - [☁️ Cloud Deployment](#-cloud-deployment)
   - [AWS Architecture](#aws-architecture)
@@ -33,6 +29,7 @@ A sophisticated, production-ready Agentic AI system built with LangGraph and Lan
   - [Installation](#installation)
   - [Running Locally](#running-locally)
     - [Start the MCP Server](#start-the-mcp-server)
+    - [Run MCP Runtime Preflight](#run-mcp-runtime-preflight)
     - [Use the Pipeline Programmatically](#use-the-pipeline-programmatically)
 - [🌩️ Deployment](#-deployment)
   - [Deploy to AWS](#deploy-to-aws)
@@ -273,37 +270,49 @@ Validates output quality and completeness.
 
 The Model Context Protocol (MCP) server provides a standardized interface for AI interactions.
 
+### Server Package Layout
+
+The MCP server is organized as a package instead of a monolithic file:
+
+- `mcp_server/app.py`: composition root and server bootstrap
+- `mcp_server/tools/`: MCP tool registrations and request flow
+- `mcp_server/resources/`: MCP resource registrations
+- `mcp_server/prompts/`: MCP prompt registrations
+- `mcp_server/runtime.py`: runtime container (pipeline + job store)
+- `mcp_server/job_store.py`: async-safe in-memory job retention
+- `mcp_server/models.py`: request/status schemas
+- `mcp_server/validation.py`: payload and metadata guardrails
+- `mcp_server/logging_config.py`: stderr-safe structured logging
+- `mcp_server/server.py`: compatibility wrapper entrypoint
+
 ### Available Tools
 
-#### `process_article`
-Process an article through the full pipeline.
+The MCP server now exposes an enterprise-focused tool surface across three domains:
 
-```python
-{
-    "article_id": "unique-id",
-    "content": "Article content...",
-    "url": "https://example.com/article",
-    "source": "government"
-}
-```
+- **Processing lifecycle tools**
+- `process_article`, `process_article_batch`, `validate_article_payload`
+- `get_processing_status`, `get_processing_result`, `list_processing_jobs`
+- `delete_processing_job`, `purge_processing_jobs`
+- **Analysis tools**
+- `analyze_content`, `analyze_sentiment`, `extract_topics`
+- `evaluate_quality`, `compute_text_metrics`, `generate_summary`
+- **Operations/diagnostics tools**
+- `check_pipeline_health`, `get_pipeline_graph`, `get_runtime_readiness`
+- `get_server_capabilities`, `diagnose_provider_configuration`, `run_preflight_checks`
 
-#### `analyze_content`
-Run specific analysis (content, sentiment, or classification).
-
-#### `generate_summary`
-Generate only a summary without full pipeline processing.
-
-#### `check_pipeline_health`
-Get health status of the pipeline and all agents.
-
-#### `get_processing_status`
-Check the status of an article processing job.
+Use `get_server_capabilities` at runtime as the source of truth for current tool inventory.
 
 ### Resources
 
-- `config://pipeline` - Pipeline configuration
-- `config://topics` - Available topic categories
-- `stats://processing` - Processing statistics
+- `config://pipeline`, `config://limits`, `config://providers`, `config://features`
+- `runtime://health`, `runtime://readiness`, `runtime://capabilities`, `runtime://pipeline/graph`
+- `jobs://stats`, `jobs://recent`, `topics://available`
+
+### Prompts
+
+- `summarize_article_prompt`, `executive_brief_prompt`
+- `analyze_sentiment_prompt`, `classify_article_prompt`, `quality_audit_prompt`
+- `red_team_bias_prompt`, `incident_triage_prompt`
 
 ### MCP Integration Flow
 
@@ -453,10 +462,18 @@ graph TB
 #### Start the MCP Server
 
 ```bash
-python -m agentic_ai.mcp_server.server
+PYTHONPATH=.. python -m mcp_server
 ```
 
-The MCP server will start on `http://localhost:8001`.
+The MCP server runs over stdio transport and is intended to be launched by an MCP host/client.
+
+#### Run MCP Runtime Preflight
+
+```bash
+make mcp-preflight
+```
+
+This command exits non-zero when runtime is not ready (for example, missing provider credentials).
 
 #### Use the Pipeline Programmatically
 
@@ -536,11 +553,7 @@ Prometheus metrics are available on port 9090 (configurable):
 
 ### Health Checks
 
-Check pipeline health via MCP server:
-
-```bash
-curl http://localhost:8001/health
-```
+Check pipeline health via the `check_pipeline_health` MCP tool from your MCP client.
 
 ---
 
@@ -564,11 +577,13 @@ Key settings:
 ENVIRONMENT=production
 DEBUG=false
 LOG_LEVEL=INFO
+LOG_JSON=true
+APP_VERSION=1.0.0
 
 # LLM Configuration
 GOOGLE_AI_API_KEY=your-key-here
 DEFAULT_LLM_PROVIDER=google
-DEFAULT_MODEL=gemini-pro
+DEFAULT_MODEL=gemini-1.5-flash
 TEMPERATURE=0.7
 MAX_TOKENS=2000
 
@@ -590,6 +605,15 @@ PINECONE_INDEX_NAME=synthora-ai
 MAX_ITERATIONS=10
 AGENT_TIMEOUT=300
 ENABLE_HUMAN_IN_LOOP=false
+
+# MCP Runtime Guardrails
+MCP_SERVER_NAME=synthora-agentic-pipeline
+MCP_SERVER_VERSION=1.0.0
+MCP_MAX_CONTENT_CHARS=20000
+MCP_MAX_METADATA_ENTRIES=50
+MCP_MAX_METADATA_VALUE_CHARS=2000
+MCP_MAX_JOB_HISTORY=1000
+MCP_JOB_TTL_SECONDS=86400
 
 # Monitoring
 ENABLE_METRICS=true
@@ -615,10 +639,10 @@ AZURE_RESOURCE_GROUP=your-resource-group
 pip install -r requirements.txt
 
 # Run all tests
-pytest tests/ -v
+PYTHONPATH=.. pytest tests/ -v
 
 # Run with coverage
-pytest tests/ --cov=agentic_ai --cov-report=html
+PYTHONPATH=.. pytest tests/ --cov=agentic_ai --cov-report=html
 ```
 
 ### Example Test
@@ -715,20 +739,33 @@ async def process_new_article(article):
 ### MCP Client Integration
 
 ```python
-from mcp import Client
+import asyncio
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
 
-client = Client("http://localhost:8001")
 
-# Process article via MCP
-result = await client.call_tool(
-    "process_article",
-    {
-        "article_id": "123",
-        "content": "Article content...",
-        "url": "https://example.com",
-        "source": "government"
-    }
-)
+async def run():
+    server = StdioServerParameters(
+        command="python",
+        args=["-m", "mcp_server"],
+        env={"PYTHONPATH": "."},
+    )
+    async with stdio_client(server) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool(
+                "process_article",
+                {
+                    "article_id": "123",
+                    "content": "Article content...",
+                    "url": "https://example.com",
+                    "source": "government",
+                },
+            )
+            print(result)
+
+
+asyncio.run(run())
 ```
 
 ---

@@ -6,7 +6,8 @@ import json
 import logging
 import os
 import sys
-from typing import Dict, Any
+import asyncio
+from typing import Dict, Any, Optional
 
 import azure.functions as func
 
@@ -14,6 +15,7 @@ import azure.functions as func
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.pipeline import AgenticPipeline
+from config.settings import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,6 +23,23 @@ logger = logging.getLogger(__name__)
 
 # Initialize pipeline (singleton for warm starts)
 pipeline = None
+
+
+def _run_async(coro):
+    """
+    Run async code safely from a synchronous Azure Function handler.
+    """
+    return asyncio.run(coro)
+
+
+def _validate_payload(payload: Dict[str, Any]) -> Optional[str]:
+    if not isinstance(payload.get("article_id"), str) or not payload["article_id"].strip():
+        return "Missing or invalid required field: article_id"
+    if not isinstance(payload.get("content"), str) or not payload["content"].strip():
+        return "Missing or invalid required field: content"
+    if len(payload["content"]) > settings.mcp_max_content_chars:
+        return f"content exceeds max length ({settings.mcp_max_content_chars})"
+    return None
 
 
 def get_pipeline() -> AgenticPipeline:
@@ -60,22 +79,19 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
 
-        # Validate required fields
-        required_fields = ["article_id", "content"]
-        for field in required_fields:
-            if field not in req_body:
-                return func.HttpResponse(
-                    json.dumps({"error": f"Missing required field: {field}"}),
-                    status_code=400,
-                    mimetype="application/json"
-                )
+        validation_error = _validate_payload(req_body)
+        if validation_error:
+            return func.HttpResponse(
+                json.dumps({"error": validation_error}),
+                status_code=400,
+                mimetype="application/json"
+            )
 
         # Get pipeline and process
         pipeline_instance = get_pipeline()
 
         # Process article
-        import asyncio
-        result = asyncio.run(pipeline_instance.process_article(req_body))
+        result = _run_async(pipeline_instance.process_article(req_body))
 
         logger.info(f"Processing completed for article: {req_body['article_id']}")
 
@@ -119,9 +135,12 @@ def queue_process(msg: func.QueueMessage) -> None:
         # Get pipeline and process
         pipeline_instance = get_pipeline()
 
+        validation_error = _validate_payload(message_data)
+        if validation_error:
+            raise ValueError(validation_error)
+
         # Process article
-        import asyncio
-        result = asyncio.run(pipeline_instance.process_article(message_data))
+        result = _run_async(pipeline_instance.process_article(message_data))
 
         logger.info(f"Queue processing completed for article: {message_data.get('article_id')}")
 
