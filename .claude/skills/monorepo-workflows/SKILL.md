@@ -1,6 +1,6 @@
 ---
 name: monorepo-workflows
-description: Use this skill when working anywhere in the SynthoraAI monorepo and you need the repository-specific operating model: which service owns what, which commands are canonical, which wrappers are stale, how to choose tests, and which paths are generated or risky to edit.
+description: "Use this skill when working anywhere in the SynthoraAI monorepo and you need the repository-specific operating model: which service owns what, which commands are canonical, which wrappers are stale, how to choose tests, and which paths are generated or risky to edit."
 ---
 
 # Monorepo Workflows
