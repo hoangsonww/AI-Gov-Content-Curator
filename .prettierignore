@@ -1,6 +1,8 @@
 .next
 frontend/test-results
 frontend/playwright-report
+frontend/public/sw.js
+frontend/public/workbox-*.js
 backend/dist
 /daily.log
 *.md
