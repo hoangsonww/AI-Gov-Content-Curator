@@ -144,7 +144,7 @@ flowchart LR
 | **Crawler** | `crawler/` | Crawl homepages & APIs, deduplicate URLs, fetch full articles (Axios/Cheerio/Puppeteer), summarize via AI, extract topics, vectorize content, upsert to MongoDB & Pinecone | Next.js API routes, Puppeteer, Axios, Cheerio, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
 | **Frontend Web App** | `frontend/` | User-facing portal with article lists, filters, detail views, theming, authentication UX, article discussions, AI chat interface | Next.js, React, Tailwind CSS, TypeScript | Vercel, AWS ECS, Kubernetes, CloudFront CDN |
 | **Newsletter Service** | `newsletters/` | Manage subscriber list, generate daily digests, integrate with Resend, subscription/unsubscription endpoints | Next.js API routes, Resend SDK, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
-| **Agentic AI Pipeline** | `agentic_ai/` | LangGraph/LangChain workflows for content enrichment, bias detection, advanced summarization | Python, LangChain, LangGraph, Azure Functions | Azure Functions, AWS Lambda, Kubernetes Jobs |
+| **Agentic AI Pipeline + MCP Server** | `agentic_ai/`, `mcp_server/` | LangGraph/LangChain workflows plus MCP tools/resources/prompts, processing job orchestration, and runtime diagnostics | Python, LangChain, LangGraph, FastMCP | Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs |
 | **Python Crawler Toolkit** | `python_crawler/` | Async crawling alternative with CLI, concurrency controls, local summarization | Python, aiohttp, Google Generative AI SDK | Manual/CLI, Docker containers |
 | **Shell & Make CLI** | `shell/`, `Makefile` | Developer ergonomics, dev servers, builds, scheduled jobs, lint/test runners, multi-service orchestration | Bash, Node.js scripts | Local development, CI/CD pipelines |
 
@@ -790,7 +790,7 @@ flowchart LR
 
 ## Agentic AI Pipeline
 
-The `agentic_ai/` package provides LangGraph/LangChain-based workflows for advanced content enrichment.
+The `agentic_ai/` and `mcp_server/` packages provide LangGraph/LangChain workflows plus an MCP interface for enterprise-grade content enrichment operations.
 
 ```mermaid
 flowchart LR
@@ -807,10 +807,11 @@ flowchart LR
 
 **Features:**
 - **Multi-agent Workflows:** Modular agents for fetching, summarizing, tagging
-- **Bias Detection:** Specialized prompts to identify political bias
-- **Deployment:** Azure Functions (current), AWS Lambda (planned), Kubernetes Jobs
+- **MCP Interface:** Structured tools/resources/prompts with diagnostics and readiness checks
+- **Bias Detection:** Specialized prompts and sentiment/bias analysis workflows
+- **Deployment:** Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs
 
-See `agentic_ai/README.md` for detailed architecture and deployment instructions.
+See `agentic_ai/README.md` and `mcp_server/` for detailed runtime, tool surface, and deployment instructions.
 
 ---
 

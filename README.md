@@ -69,6 +69,7 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-121212?style=flat&logo=chainlink&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-FF4785?style=flat&logo=graphql&logoColor=white)
+![Model Context Protocol (MCP)](https://img.shields.io/badge/Model%20Context%20Protocol-000?style=flat&logo=modelcontextprotocol&logoColor=white)
 
 > [!IMPORTANT]
 > This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
@@ -933,7 +934,7 @@ The pipeline uses an **assembly line architecture** where articles flow through 
 - **Redis**: State management and caching
 - **MongoDB**: Data persistence
 - **Prometheus**: Metrics and monitoring
-- **FastMCP**: Model Context Protocol server implementation
+- **MCP Python SDK (FastMCP)**: Model Context Protocol server implementation
 
 **Cloud Deployment:**
 - **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch
@@ -955,7 +956,7 @@ cp .env.example .env
 # Edit .env with your API keys
 
 # Run the MCP server
-python -m agentic_ai.mcp_server.server
+PYTHONPATH=.. python -m mcp_server
 ```
 
 **Use Programmatically:**

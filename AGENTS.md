@@ -14,7 +14,8 @@
 - `frontend/`: Next.js Pages Router app, auth UX, article browsing, article detail flows, sitewide chat UI
 - `crawler/`: scheduled ingestion, scraping, summarization, topic extraction, MongoDB upserts, Pinecone sync
 - `newsletters/`: scheduled daily digest sender using Resend
-- `agentic_ai/`: Python LangGraph pipeline and local MCP server
+- `agentic_ai/`: Python LangGraph pipeline
+- `mcp_server/`: MCP server package for the agentic pipeline
 - `infrastructure/`: Terraform, Kubernetes, monitoring, rollout config
 - `shell/` and `bin/`: developer wrappers and CLI
 

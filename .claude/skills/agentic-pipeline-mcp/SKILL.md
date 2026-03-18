@@ -16,7 +16,7 @@ This skill covers `agentic_ai/` and the repo-local Claude Code MCP setup.
 
 ## Validation
 
-- Check `agentic_ai/mcp_server/server.py`, `agentic_ai/config/settings.py`, and `agentic_ai/requirements.txt` together.
+- Check `mcp_server/app.py`, `mcp_server/runtime.py`, `agentic_ai/config/settings.py`, and `agentic_ai/requirements.txt` together.
 - Confirm whether a requested change belongs in the pipeline, the MCP wrapper, or the deployment adapters.
 
 ## References

@@ -62,7 +62,7 @@ Risks:
 ## Agentic AI
 
 - `cd agentic_ai && make run-mcp`
-- `cd agentic_ai && python -m agentic_ai.mcp_server.server`
+- `cd agentic_ai && PYTHONPATH=.. python -m mcp_server`
 
 Risks:
 

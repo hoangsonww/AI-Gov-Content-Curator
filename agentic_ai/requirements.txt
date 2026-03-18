@@ -2,6 +2,10 @@
 langchain>=0.1.0
 langchain-core>=0.1.0
 langchain-community>=0.0.10
+langchain-google-genai>=1.0.0
+langchain-openai>=0.1.0
+langchain-anthropic>=0.1.0
+langchain-cohere>=0.1.0
 langgraph>=0.0.20
 langsmith>=0.0.77
 
@@ -17,8 +21,7 @@ chromadb>=0.4.0
 faiss-cpu>=1.7.4
 
 # MCP Server
-mcp>=0.1.0
-fastmcp>=0.1.0
+mcp>=1.2.0
 
 # API & Web
 fastapi>=0.109.0
