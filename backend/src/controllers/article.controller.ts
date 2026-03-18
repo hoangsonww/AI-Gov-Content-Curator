@@ -312,58 +312,76 @@ export const getSimilarArticles = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Article not found" });
     }
 
-    // Try vector similarity first; returns [] on any Pinecone failure
+    const toResult = (a: any) => ({
+      id: String(a._id),
+      score: null,
+      url: a.url,
+      title: a.title,
+      summary: a.summary,
+      topics: a.topics,
+      source: a.source,
+      fetchedAt: a.fetchedAt,
+    });
+
+    // 1. Vector similarity (Pinecone) — returns [] on any failure
     let similarArticles = await findSimilarArticles(id, limit);
 
-    // Fallback: topic-overlap query in MongoDB
+    // 2. Topic overlap
     if (similarArticles.length === 0 && article.topics.length > 0) {
-      const fallback = await Article.find({
+      const rows = await Article.find({
         _id: { $ne: article._id },
         topics: { $in: article.topics },
       })
         .sort({ fetchedAt: -1 })
         .limit(limit)
         .lean();
-
-      similarArticles = fallback.map((a) => ({
-        id: String(a._id),
-        score: null,
-        url: a.url,
-        title: a.title,
-        summary: a.summary,
-        topics: a.topics,
-        source: a.source,
-        fetchedAt: a.fetchedAt,
-      }));
+      similarArticles = rows.map(toResult);
     }
 
-    // Last resort: recent articles from the same source
+    // 3. Same source
     if (similarArticles.length === 0) {
-      const fallback = await Article.find({
+      const rows = await Article.find({
         _id: { $ne: article._id },
         source: article.source,
       })
         .sort({ fetchedAt: -1 })
         .limit(limit)
         .lean();
+      similarArticles = rows.map(toResult);
+    }
 
-      similarArticles = fallback.map((a) => ({
-        id: String(a._id),
-        score: null,
-        url: a.url,
-        title: a.title,
-        summary: a.summary,
-        topics: a.topics,
-        source: a.source,
-        fetchedAt: a.fetchedAt,
-      }));
+    // 4. Text-token search on title + summary (uses text index)
+    if (similarArticles.length === 0) {
+      const keywords = `${article.title} ${article.summary || ""}`
+        .split(/\s+/)
+        .filter((w) => w.length > 3)
+        .slice(0, 8)
+        .join(" ");
+
+      if (keywords) {
+        const rows = await Article.find(
+          { _id: { $ne: article._id }, $text: { $search: keywords } },
+          { score: { $meta: "textScore" } },
+        )
+          .sort({ score: { $meta: "textScore" } })
+          .limit(limit)
+          .lean();
+        similarArticles = rows.map(toResult);
+      }
+    }
+
+    // 5. Absolute last resort: most recent articles
+    if (similarArticles.length === 0) {
+      const rows = await Article.find({ _id: { $ne: article._id } })
+        .sort({ fetchedAt: -1 })
+        .limit(limit)
+        .lean();
+      similarArticles = rows.map(toResult);
     }
 
     res.json({ data: similarArticles });
   } catch (error: any) {
     console.error("Error fetching similar articles:", error);
-    res
-      .status(500)
-      .json({ error: error.message || "Failed to fetch similar articles" });
+    res.json({ data: [] });
   }
 };
