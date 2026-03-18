@@ -63,7 +63,7 @@
     "start:crawler": "cd crawler && npm run start",
     "lint": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\"",
     "format": "npm run lint",
-    "prepare": "husky install"
+    "prepare": "husky install || true"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

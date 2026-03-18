@@ -108,7 +108,10 @@ export async function findSimilarArticles(
     const articleVector = fetchResponse.records[articleId];
 
     if (!articleVector || !articleVector.values) {
-      throw new Error(`Article ${articleId} not found in vector database`);
+      console.warn(
+        `Article ${articleId} not found in vector database, skipping vector search`,
+      );
+      return [];
     }
 
     const queryResponse = await index.query({
@@ -128,8 +131,11 @@ export async function findSimilarArticles(
 
     return similarArticles;
   } catch (error) {
-    console.error(`Error finding similar articles for ${articleId}:`, error);
-    throw error;
+    console.error(
+      `Vector search failed for ${articleId}, falling back:`,
+      error,
+    );
+    return [];
   }
 }
 

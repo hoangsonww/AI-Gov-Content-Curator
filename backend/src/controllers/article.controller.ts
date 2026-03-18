@@ -312,7 +312,52 @@ export const getSimilarArticles = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Article not found" });
     }
 
-    const similarArticles = await findSimilarArticles(id, limit);
+    // Try vector similarity first; returns [] on any Pinecone failure
+    let similarArticles = await findSimilarArticles(id, limit);
+
+    // Fallback: topic-overlap query in MongoDB
+    if (similarArticles.length === 0 && article.topics.length > 0) {
+      const fallback = await Article.find({
+        _id: { $ne: article._id },
+        topics: { $in: article.topics },
+      })
+        .sort({ fetchedAt: -1 })
+        .limit(limit)
+        .lean();
+
+      similarArticles = fallback.map((a) => ({
+        id: String(a._id),
+        score: null,
+        url: a.url,
+        title: a.title,
+        summary: a.summary,
+        topics: a.topics,
+        source: a.source,
+        fetchedAt: a.fetchedAt,
+      }));
+    }
+
+    // Last resort: recent articles from the same source
+    if (similarArticles.length === 0) {
+      const fallback = await Article.find({
+        _id: { $ne: article._id },
+        source: article.source,
+      })
+        .sort({ fetchedAt: -1 })
+        .limit(limit)
+        .lean();
+
+      similarArticles = fallback.map((a) => ({
+        id: String(a._id),
+        score: null,
+        url: a.url,
+        title: a.title,
+        summary: a.summary,
+        topics: a.topics,
+        source: a.source,
+        fetchedAt: a.fetchedAt,
+      }));
+    }
 
     res.json({ data: similarArticles });
   } catch (error: any) {
