@@ -46,3 +46,7 @@ next-env.d.ts
 /playwright-report
 /playwright-coverage
 /test-results
+
+# PWA service worker & cache
+public/sw.js
+public/workbox-*.js

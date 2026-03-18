@@ -66,6 +66,9 @@ const articleSchema = new Schema<IArticle>({
   fetchedAt: { type: Date, default: Date.now },
 });
 
+// Text index for efficient keyword-based similarity fallback
+articleSchema.index({ title: "text", summary: "text" });
+
 // Set a custom toJSON transform to enforce key ordering
 articleSchema.set("toJSON", {
   transform: function (doc, ret) {

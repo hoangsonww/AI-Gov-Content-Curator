@@ -55,6 +55,6 @@
     "typescript": "^4.8.0"
   },
   "engines": {
-    "node": "22.x"
+    "node": ">=18"
   }
 }
