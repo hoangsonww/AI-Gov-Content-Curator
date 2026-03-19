@@ -9,7 +9,9 @@
       "Bash(npm ls:*)",
       "Bash(npm install:*)",
       "Bash(npm:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_take_screenshot"
     ],
     "deny": [],
     "ask": []
