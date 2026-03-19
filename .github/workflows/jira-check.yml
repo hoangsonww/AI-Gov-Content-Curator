@@ -1,4 +1,4 @@
-name: "PR Title Jira Check"
+name: "🔍 PR Title Jira Check"
 
 on:
   pull_request:
