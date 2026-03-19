@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Son Nguyen
 
-name: Analyze Lines of Code in AI Content Curator Repository
+name: 📈 Analyze Lines of Code in AI Content Curator Repository
 
 on:
   push:

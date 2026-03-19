@@ -1,4 +1,6 @@
-name: "Branch Name Jira Check"
+# Copyright (c) 2026 Son Nguyen
+
+name: "🔍 Branch Name Jira Check"
 
 on:
   push:

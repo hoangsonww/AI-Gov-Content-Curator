@@ -1,9 +1,17 @@
-name: Code Linting
+# Copyright (c) 2026 Son Nguyen
 
-on: [push, pull_request]
+name: 👨🏻‍💻 Code Linting
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   lint:
+    name: "👨 Lint Codebase with Prettier"
     runs-on: ubuntu-latest
 
     steps:

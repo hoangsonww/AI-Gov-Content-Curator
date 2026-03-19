@@ -1,4 +1,6 @@
-name: "PR Title Jira Check"
+# Copyright (c) 2026 Son Nguyen
+
+name: "🔍 PR Title Jira Check"
 
 on:
   pull_request:
