@@ -1,11 +1,12 @@
 # Copyright (c) 2026 Son Nguyen
 
-name: Code Linting
+name: 👨🏻‍💻 Code Linting
 
 on: [push, pull_request]
 
 jobs:
   lint:
+    name: "👨 Lint Codebase with Prettier"
     runs-on: ubuntu-latest
 
     steps:
