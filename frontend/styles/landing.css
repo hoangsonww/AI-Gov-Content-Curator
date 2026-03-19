@@ -325,6 +325,7 @@
   justify-content: center;
   padding: 0.9rem 1.9rem;
   border-radius: 999px;
+  overflow: hidden;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -340,6 +341,7 @@
 .landing-page .btn.primary {
   background: linear-gradient(90deg, #f4b860, #f08f4f);
   color: #0b1a2b;
+  border: none;
   box-shadow: 0 14px 30px rgba(240, 143, 79, 0.35);
 }
 
@@ -351,6 +353,7 @@
 .landing-page .btn.chat {
   background: linear-gradient(120deg, #1f8a70, #4ac49a);
   color: #071923;
+  border: none;
   box-shadow: 0 16px 32px rgba(31, 138, 112, 0.35);
 }
 
