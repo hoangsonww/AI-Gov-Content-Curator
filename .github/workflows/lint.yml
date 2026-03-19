@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Son Nguyen
+
 name: Code Linting
 
 on: [push, pull_request]

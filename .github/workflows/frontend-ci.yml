@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Son Nguyen
+
 name: Frontend CI/CD
 
 # Note: This workflow is deprecated and will be removed in the future.
