@@ -396,7 +396,14 @@ export async function handleSitewideChat(
       // 1. Search for relevant articles using Pinecone
       sendEvent("status", { message: "Searching relevant articles..." });
 
-      const relevantArticles = await searchArticles(userMessage, 5);
+      let relevantArticles: any[] = [];
+      try {
+        relevantArticles = await searchArticles(userMessage, 5);
+      } catch (error) {
+        // Defensive fallback in case the search service throws unexpectedly.
+        console.error("Pinecone retrieval failed in sitewide chat:", error);
+        relevantArticles = [];
+      }
 
       if (relevantArticles.length === 0) {
         sendEvent("context", {
