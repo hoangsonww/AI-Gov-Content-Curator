@@ -924,6 +924,47 @@ flowchart TD
 | `templates/` | Standardised error response templates with HTTP status mapping |
 | `agents/prompts/` | Grounding rules, prompt caching strategy, prompt versioning registry |
 
+### Beads Task Decomposition (`.beads/`)
+
+Beads are the atomic unit of work in the agentic architecture. Each bead is a discrete, well-scoped task that an agent (human or AI) can claim, execute, and verify independently. They enable fine-grained parallelism, error isolation, and a clear audit trail across the pipeline layers above.
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> CLAIMED
+    CLAIMED --> IN_PROGRESS
+    CLAIMED --> BLOCKED
+    IN_PROGRESS --> REVIEW
+    IN_PROGRESS --> BLOCKED
+    REVIEW --> DONE
+    BLOCKED --> REVIEW
+    DONE --> [*]
+```
+
+**Naming & Scope:**
+
+| Prefix  | Service                          | Example     |
+|---------|----------------------------------|-------------|
+| `ORCH`  | TypeScript orchestration         | `ORCH-001`  |
+| `MCP`   | MCP server                       | `MCP-003`   |
+| `PIPE`  | Python agentic pipeline          | `PIPE-012`  |
+| `CRAWL` | Crawler                          | `CRAWL-005` |
+| `NEWS`  | Newsletter                       | `NEWS-002`  |
+| `INFRA` | Infrastructure / Terraform / K8s | `INFRA-008` |
+| `DOCS`  | Documentation                    | `DOCS-004`  |
+| `TEST`  | Test coverage                    | `TEST-007`  |
+
+**Concurrency control:** File-level reservations in `.beads/.status.json` ensure only one agent edits a file at a time. High-contention files (`docker-compose.yml`, root `package.json`, `ARCHITECTURE.md`) require explicit coordination; isolated directories (`orchestration/src/agents/prompts/`, `agentic_ai/agents/`, `.claude/skills/`) are safe for parallel work.
+
+**Compound learning:** On completion, agents record structured session logs in `.agent-sessions/` via the `compound-review` skill. Future agents read recent sessions before starting related beads to reuse proven approaches and avoid repeated mistakes.
+
+**Cross-layer integration:**
+- The **TypeScript ChatSupervisor** can decompose complex requests into sub-beads distributed across the 16 chat agents.
+- **Python LangGraph** pipeline stages map to beads during batch enrichment, giving per-article progress tracking and selective retry.
+- **MCP tools** read bead status to provide context-aware development assistance in Claude Code.
+
+See [.beads/README.md](.beads/README.md) for the full specification and [.agent-sessions/README.md](.agent-sessions/README.md) for the session log format.
+
 ---
 
 ## CI/CD Pipelines

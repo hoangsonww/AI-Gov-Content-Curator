@@ -752,6 +752,43 @@ graph LR
 | `/api/orchestrator/cost` | GET | `handleCostSnapshot` | Cost tracking |
 | `/api/orchestrator/session/:id` | DELETE | `handleDeleteSession` | Session cleanup |
 
+### Task Coordination via Beads
+
+Beads provide the cross-cutting task decomposition layer that coordinates work across all three AI modules. Each bead is a discrete, well-scoped unit of work that an agent (human or AI) can claim, execute, and verify independently.
+
+**Identity:** Service-scoped IDs (`ORCH-001`, `PIPE-012`, `CRAWL-005`, etc.) tie each bead to the module it affects. Eight prefixes cover every service boundary.
+
+**Lifecycle:**
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> CLAIMED
+    CLAIMED --> IN_PROGRESS
+    CLAIMED --> BLOCKED
+    IN_PROGRESS --> REVIEW
+    IN_PROGRESS --> BLOCKED
+    REVIEW --> DONE
+    BLOCKED --> REVIEW
+    DONE --> [*]
+```
+
+**Concurrency control:** File-level reservations in `.beads/.status.json` ensure only one agent owns a given file at a time. High-contention files (`docker-compose.yml`, root `package.json`, `ARCHITECTURE.md`) require explicit coordination; isolated directories (`orchestration/src/agents/prompts/`, `agentic_ai/agents/`, `.claude/skills/`) are safe parallel zones.
+
+**Per-module integration:**
+
+| Module | How Beads Apply |
+|--------|----------------|
+| TypeScript Chat Orchestration | `ChatSupervisor` decomposes complex requests into sub-beads distributed across the 16 chat agents; each agent reports bead-level status for aggregation |
+| Python LangGraph Pipeline | Pipeline stages (scrape → summarize → bias → topics) map to beads during batch enrichment, giving per-article progress tracking and selective retry via `ContentSupervisor` |
+| MCP Server | MCP tools read bead status to provide context-aware assistance in Claude Code, preventing conflicting edits |
+
+**Cost attribution:** The TypeScript `CostTracker` and Python `CostBudgetManager` can tag LLM costs with the active bead ID, enabling per-task cost analysis and budget enforcement.
+
+**Compound learning:** On completion, agents record structured session logs in `.agent-sessions/` via the `compound-review` skill. Each session captures work summary, files touched, codebase insights, gotchas, and recommendations. Future agents read recent sessions before starting related beads. Sessions older than 90 days are pruned unless tagged `[KEEP]`.
+
+See [.beads/README.md](.beads/README.md) for the full specification and [.agent-sessions/README.md](.agent-sessions/README.md) for the session log format.
+
 ---
 
 ## LLM Providers & Models
