@@ -73,9 +73,6 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![LangGraph](https://img.shields.io/badge/LangGraph-FF4785?style=flat&logo=graphql&logoColor=white)
 ![Model Context Protocol (MCP)](https://img.shields.io/badge/Model%20Context%20Protocol-000?style=flat&logo=modelcontextprotocol&logoColor=white)
 
-> [!IMPORTANT]
-> This is a work in progress. Please review the information, test out the applications, and provide feedback or contributions. More features are also coming soon!
-
 ---
 
 ## Table of Contents
@@ -106,27 +103,6 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ## Overview
 
 The **SynthoraAI - AI-Powered Article Content Curator** system is designed to provide government staff with up-to-date, summarized content from trusted government sources and reputable news outlets. By leveraging AI (Google Generative AI / Gemini) for summarization and using modern web technologies, this solution ensures that users receive concise, accurate, and timely information.
-
-- **Data Ingestion:**  
-  The system aggregates article URLs from multiple sources (government homepages and public APIs like NewsAPI) using a decoupled crawler service.
-- **Content Processing:**  
-  The backend processes the fetched articles by generating concise summaries via Google Generative AI. This step includes handling rate limits and transient errors with robust retry mechanisms.
-- **Data Storage & API Serving:**  
-  Articles—comprising URLs, titles, full content, AI-generated summaries, source details, and fetch timestamps—are stored in MongoDB (managed through Mongoose). An Express.js API, integrated within a Next.js project, exposes REST endpoints for fetching article lists and individual article details.
-- **Frontend Experience:**  
-  A responsive Next.js/React interface allows users to easily browse paginated article lists, filter by source, and view detailed article pages, with dark/light mode support. The frontend also includes user authentication, enabling users to mark articles as favorites for quick access.
-- **Scheduled Updates:**  
-  Both the backend and crawler employ scheduled serverless functions (via Vercel cron) to periodically update the content. This ensures that the system (articles) remains fresh and up-to-date.
-- **Newsletter Subscription:**  
-  Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
-- **Architecture:**
-  Monorepo structure with separate directories for the backend, crawler, and frontend. Each component is designed to be scalable, maintainable, and deployable on Vercel.
-- **User Authentication:**  
-  Users can create an account, log in, and receive a JWT token for secure access to the system.
-- **Favorite Articles:**  
-  Authenticated users can mark articles as favorites for quick access and reference.
-- **Dark Mode:**  
-  The frontend offers a dark mode option for improved readability and user experience.
 
 > [!IMPORTANT]
 > Live Web App: **[https://synthoraai.vercel.app/](https://synthoraai.vercel.app/).**
@@ -873,6 +849,13 @@ The pipeline uses an **assembly line architecture** where articles flow through 
 **Cloud Deployment:**
 - **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch
 - **Azure**: Functions, Storage Queues, Blob Storage, Key Vault, Application Insights
+
+**Beads Subarchitecture:**
+- Beads are the atomic unit of work in the agentic architecture. Each bead is a discrete, well-scoped task that an agent (human or AI) can claim, execute, and verify independently
+- Beads follow a `PENDING → CLAIMED → IN_PROGRESS → REVIEW → DONE` lifecycle with a `BLOCKED` escape state, and use file-level reservations (`.beads/.status.json`) to prevent concurrent-edit conflicts across agents
+- Service-scoped IDs (`ORCH-001`, `CRAWL-005`, `PIPE-012`, etc.) tie every bead to the service it changes, enabling per-service tracking and parallelism
+- A compound learning loop records structured session logs in `.agent-sessions/` after each completed bead, so future agents benefit from accumulated experience
+- See [.beads/README.md](.beads/README.md) for the full specification and [.agent-sessions/README.md](.agent-sessions/README.md) for session log format
 
 ### Getting Started
 
