@@ -11,7 +11,10 @@
       "Bash(npm:*)",
       "Bash(git add:*)",
       "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_take_screenshot"
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r agentic /c/Users/nguyens6/AI-Gov-Content-Curator/backend --include=*.ts --include=*.js)",
+      "Bash(grep -r orchestration /c/Users/nguyens6/AI-Gov-Content-Curator --include=*.ts --include=*.py)"
     ],
     "deny": [],
     "ask": []

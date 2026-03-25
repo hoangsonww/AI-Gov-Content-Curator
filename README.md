@@ -4,13 +4,15 @@
 > **SynthoraAI - Synthesizing the world’s news & information through AI.** 🚀✨
 
 The **SynthoraAI - AI-Powered Article Content Curator** is a comprehensive, AI-powered system designed to aggregate, summarize, and present curated government-related articles.
-This monorepo, multi-services project is organized into five main components:
+This monorepo, multi-services project is organized into seven main components:
 
 - **Backend:** Provides a robust RESTful API to store and serve curated articles.
 - **Crawler:** Automatically crawls and extracts article URLs and metadata from government homepages and public API sources.
 - **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
-- **Agentic AI Pipeline:** Sophisticated multi-agent system for advanced content processing using LangGraph and LangChain.
+- **Agentic AI Pipeline:** Sophisticated multi-agent system for advanced content processing using LangGraph and LangChain, with a FastAPI HTTP bridge for cross-service integration.
+- **Chat Orchestration:** TypeScript-based dual-provider (Anthropic + Google) chat layer with 16 specialized agents, intent routing, grounding validation, and cost tracking.
+- **MCP Server:** Model Context Protocol server exposing the agentic pipeline as 20 tools, 11 resources, and 7 prompts for IDE and AI-assistant integration.
 
 <p align="center">
   <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator Logo" width="30%">
@@ -81,83 +83,18 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Collaboration & Agile Workflow with Jira](#collaboration--agile-workflow-with-jira)
-  - [Introduction](#introduction)
-  - [Agile Approach](#agile-approach)
-  - [Why Jira?](#why-jira)
-  - [Project Board](#project-board)
-  - [Workflow](#workflow)
-  - [Confluence](#confluence)
 - [User Interface](#user-interface)
-  - [0. Landing Page](#0-landing-page)
-  - [1. Home Page](#1-home-page)
-  - [2. Article Details Page](#2-article-details-page)
-  - [2.1. Article Q&A Feature](#21-article-qa-feature)
-  - [2.2. Related Articles (Vector Similarity Search)](#22-related-articles-vector-similarity-search)
-  - [2.3. AI-Powered Article Bias Analysis](#23-ai-powered-article-bias-analysis)
-  - [2.4. Article Ratings](#24-article-ratings)
-  - [2.5. Article Comments](#25-article-comments)
-  - [3. Favorite Articles Page (Only for Authenticated Users)](#3-favorite-articles-page-only-for-authenticated-users)
-  - [4. Newsletter Subscription Page](#4-newsletter-subscription-page)
-  - [5. User Authentication](#5-user-authentication)
-  - [6. User Registration](#6-user-registration)
-  - [7. Reset Password](#7-reset-password)
-  - [8. Search Results](#8-search-results)
-  - [9. App-wide Translate Feature](#9-app-wide-translate-feature)
-  - [10. 404 Not Found Page](#10-404-not-found-page)
-  - [11. Daily Newsletter Email Example](#11-daily-newsletter-email-example)
 - [Backend](#backend)
-  - [Features](#features)
-  - [Backend Swagger API Documentation](#backend-swagger-api-documentation)
-  - [Prerequisites & Installation (Backend)](#prerequisites--installation-backend)
-  - [Configuration (Backend)](#configuration-backend)
-  - [Running Locally (Backend)](#running-locally-backend)
-  - [Deployment on Vercel (Backend)](#deployment-on-vercel-backend)
 - [Crawler](#crawler)
-  - [Features](#features-1)
-  - [Prerequisites & Installation (Crawler)](#prerequisites--installation-crawler)
-  - [Running Locally (Crawler)](#running-locally-crawler)
-  - [Deployment on Vercel (Crawler)](#deployment-on-vercel-crawler)
 - [Frontend](#frontend)
-  - [Features](#features-2)
-  - [Prerequisites & Installation (Frontend)](#prerequisites--installation-frontend)
-  - [Configuration (Frontend)](#configuration-frontend)
-  - [Running Locally (Frontend)](#running-locally-frontend)
-  - [Deployment on Vercel (Frontend)](#deployment-on-vercel-frontend)
 - [Newsletter Subscription](#newsletter-subscription)
-  - [Features (Newsletter)](#features-newsletter)
-  - [Prerequisites & Installation (Newsletter)](#prerequisites--installation-newsletter)
-  - [Note](#note)
 - [Agentic AI Pipeline](#agentic-ai-pipeline)
-  - [Overview](#overview-1)
-  - [Key Features](#key-features)
-  - [Architecture](#architecture-1)
-  - [Getting Started](#getting-started)
-  - [Detailed Documentation](#detailed-documentation)
 - [Article Q&A Feature](#article-qa-feature)
-  - [Features (Article Q&A)](#features-article-qa)
-  - [Prerequisites & Installation (Article Q&A)](#prerequisites--installation-article-qa)
-  - [Using the Article Q&A Feature](#using-the-article-qa-feature)
 - [Sitewide AI Chat](#sitewide-ai-chat)
-  - [How It Works](#how-it-works)
-  - [Streaming Contract](#streaming-contract)
 - [Intelligent Recommendation System](#intelligent-recommendation-system)
-  - [Related Articles (Vector Similarity Search)](#related-articles-vector-similarity-search)
-  - [Recommended Articles (Client-Side ML)](#recommended-articles-client-side-ml)
 - [Command Line Interface (CLI)](#command-line-interface-cli)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [Workspace Management](#workspace-management)
-    - [Crawling](#crawling)
-    - [Article CRUD](#article-crud)
 - [Shell Scripts & Makefile](#shell-scripts--makefile)
-  - [Shell Scripts](#shell-scripts)
-    - [`daily.sh` Script in Root Directory](#dailysh-script-in-root-directory)
-  - [Makefile](#makefile)
-    - [Example Makefile Targets](#example-makefile-targets)
 - [Testing](#testing)
-  - [Backend](#backend-1)
-  - [Frontend](#frontend-1)
-  - [Crawler](#crawler-1)
 - [Continuous Integration / Continuous Deployment (CI/CD)](#continuous-integration--continuous-deployment-cicd)
 - [Deployment](#deployment)
 - [License](#license)
@@ -192,7 +129,7 @@ The **SynthoraAI - AI-Powered Article Content Curator** system is designed to pr
   The frontend offers a dark mode option for improved readability and user experience.
 
 > [!IMPORTANT]
-> Live Web App: [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/).
+> Live Web App: **[https://synthoraai.vercel.app/](https://synthoraai.vercel.app/).**
 
 ---
 
@@ -244,7 +181,7 @@ sequenceDiagram
     Mail->>Subscribers: Send newsletter email
 ```
 
-This project consists of 4 primary microservices that interact with each other:
+This project consists of **4 primary microservices** that interact with each other:
 
 1. **Crawler:**
    - Crawls government homepages and public API sources to extract article URLs and metadata.
@@ -269,6 +206,15 @@ This project consists of 4 primary microservices that interact with each other:
    - Dedicated pages for full article content, AI-generated summaries, source information, and fetched timestamps.
    - User authentication for marking articles as favorites, commenting, discussions, and upvoting/downvoting comments.
    - **_Deployed on Vercel at [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/)._**
+
+Additionally, there are **3 advanced AI components:**
+
+1. **Agentic AI Pipeline:**
+   - A sophisticated multi-agent system built with Python, leveraging LangGraph and LangChain for advanced content processing. This pipeline handles tasks such as article summarization, topic extraction, bias analysis, and more. It is designed to be modular and extensible, allowing for the addition of new agents and tools as needed. The pipeline is exposed via a FastAPI HTTP bridge for seamless integration with other services.
+2. **Orchestration Layer:**
+   - **Python** (`agentic_ai/orchestration/`): Enterprise article processing orchestration atop the LangGraph pipeline — content supervision, cost budgeting, error recovery with circuit breaking, dead-letter queuing, and concurrent batch processing. Exposed via a FastAPI HTTP bridge (`agentic_ai/api.py` on port 8100) for cross-service integration.
+   - **TypeScript** (`orchestration/`): Dual-provider LLM chat layer — unified Anthropic + Google client, intent-based agent routing (16 agents), grounding validation, prompt caching, cost tracking, and structured observability. Integrated into the backend via `/api/orchestrator/*` endpoints. See `orchestration/README.md`.
+3. **MCP Server** (`mcp_server/`): Model Context Protocol server exposing the agentic pipeline over stdio — 20 tools, 11 resources, 7 prompts for Claude Code and IDE integration. Configured via `.mcp.json`.
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
 
@@ -295,14 +241,6 @@ Agile methodologies, such as Scrum or Kanban, are used to manage the development
 
 We chose Kanban for this project because it allows us to visualize the workflow, limit work in progress, and focus on delivering value incrementally. The Kanban board provides a clear overview of the project's status, making it easy to track progress and identify bottlenecks.
 
-- **A** in AGILE: Stands for **Adaptive**. We adapt to changes quickly and efficiently, ensuring that the project remains aligned with user needs and expectations.
-- **G** in AGILE: Stands for **Goal-oriented**. We focus on achieving specific goals and delivering value to users, ensuring that each task contributes to the overall success of the project.
-- **I** in AGILE: Stands for **Iterative**. We work in iterations, allowing us to continuously improve the project and respond to feedback from users and stakeholders.
-- **L** in AGILE: Stands for **Lean**. We aim to minimize waste and maximize value, ensuring that resources are used efficiently and effectively.
-- **E** in AGILE: Stands for **Empowered**. We empower team members to take ownership of their tasks and contribute to the project's success, fostering a collaborative and supportive environment.
-
-We believe that this AGILE approach, combined with the use of Jira for task management, will help us deliver a high-quality product that meets the needs of government staff and the public.
-
 ### Why Jira?
 
 We are currently pursuing an AGILE approach to development, and Jira is a great tool for managing tasks, tracking progress, and facilitating collaboration among team members. It allows us to create tasks, assign them to team members, set priorities, and track the status of each task in real-time.
@@ -320,9 +258,9 @@ If you need **access** to the project board, please contact me directly at [sonn
 
 ### Workflow
 
-The workflow for this project is as follows: As soon as you receive a task (verbally or in writing) or come up with an idea:
+As soon as you receive a task (verbally or in writing) or come up with an idea:
 
-1. Create a new task in the **Backlog** column of the Jira board.
+1. Create a new task in the **Backlog** column of the Jira board/list.
 2. Add a detailed description of the task, including acceptance criteria and due date.
 3. Assign the task to yourself or another team member.
 4. Create a new branch in the GitHub repository for the task. Make sure that you use the Jira issue key in the branch name (e.g., `AICC-123`).
@@ -343,10 +281,6 @@ This workflow ensures that tasks are tracked, code is reviewed, and the project 
 
 <p align="center">
   <img src="frontend/img/jira-general.png" alt="Jira Workflow" width="100%">
-</p>
-
-<p align="center">
-  <img src="frontend/img/jira-board.png" alt="Jira Board" width="100%">
 </p>
 
 ### Confluence
@@ -1012,6 +946,9 @@ For comprehensive documentation including:
 
 **Please see the complete documentation: [agentic_ai/README.md](agentic_ai/README.md)**
 
+> [!TIP]
+> For a comprehensive reference of all AI/ML components — the three orchestration layers, 21 agents, LLM providers, cost controls, grounding rules, and 15+ Mermaid architecture diagrams — see **[AI_ML.md](AI_ML.md)**.
+
 ---
 
 ## Article Q&A Feature
@@ -1056,12 +993,26 @@ to read through the entire article.
 
 ## Sitewide AI Chat
 
-The sitewide chat lets users ask open-ended questions across the full corpus—not just a single article—while keeping every claim cited.
+The sitewide chat lets users ask open-ended questions across the full corpus—not just a single article—while keeping every claim cited. The system provides two chat paths: a direct Gemini-powered RAG pipeline and an orchestrated multi-agent pipeline.
 
-- **RAG over the whole library:** The backend (`/api/chat/sitewide`) converts queries to gemini-embedding-001 vectors, searches Pinecone for top matches, and builds a context block with `[Source N]` slots.
+### Direct RAG Chat (`/api/chat/sitewide`)
+
+- **RAG over the whole library:** The backend converts queries to gemini-embedding-001 vectors, searches Pinecone for top matches, and builds a context block with `[Source N]` slots.
 - **Streaming Gemini replies:** Gemini 2.0 Flash / Flash Lite streams text via Server-Sent Events (SSE) with automatic API-key/model failover and history compaction to stay within token budgets.
 - **Inline citations & warnings:** Responses carry citation metadata plus hallucination checks (missing citations, invalid refs, overconfident claims, uncited numbers). The frontend renders clickable superscripts and yellow warnings if issues are detected.
-- **Rich client UX:** `frontend/pages/ai_chat.tsx` provides multiple conversations, local storage persistence, typing indicators, and interactive source cards.
+
+### Orchestrated Multi-Agent Chat (`/api/orchestrator/chat`)
+
+- **16 specialized agents:** 8 Anthropic (Claude) primary + 8 Google (Gemini) fallback agents covering article search, Q&A, topic exploration, trend analysis, bias detection, clarification, and quality review.
+- **Intent-based routing:** LLM-based intent classification routes queries to the best-fit agent, with keyword heuristic fallback.
+- **Dual-provider failover:** Anthropic primary with automatic Google failover after retry exhaustion (3 attempts, exponential backoff with jitter).
+- **Grounding validation:** 10 canonical rules applied post-generation to detect hallucinations, missing citations, and unsupported claims.
+- **Cost tracking:** Real-time daily budget enforcement with per-model cost breakdown.
+- **Streaming support:** SSE streaming via `/api/orchestrator/chat/stream`.
+
+### Rich Client UX
+
+- `frontend/pages/ai_chat.tsx` provides multiple conversations, local storage persistence, typing indicators, and interactive source cards.
 
 ### How It Works
 

@@ -121,15 +121,29 @@ flowchart LR
     Newsletter -->|Emails| Subscribers[(Email Recipients)]
     Frontend -->|UX Interactions| Users[(Analysts & Public Visitors)]
 
+    Backend -->|npm workspace| Orchestration[[TypeScript Orchestration<br/>ChatSupervisor + 16 Agents]]
+    Orchestration -->|Primary LLM| Anthropic[(Anthropic<br/>Claude)]
+    Orchestration -->|Fallback LLM| GoogleAI
+    Orchestration -->|HTTP :8100| PipelineAPI[[Python Pipeline API<br/>FastAPI Bridge]]
+    PipelineAPI -->|LangGraph| AgenticPipeline[[Agentic Pipeline<br/>5 LangGraph Agents]]
+    AgenticPipeline --> MongoDB
+    AgenticPipeline --> GoogleAI
+
+    MCP[[MCP Server<br/>stdio transport]] -->|Direct import| AgenticPipeline
+    IDE[(Claude Code / IDE)] -->|JSON-RPC| MCP
+
     Crawler -.->|Cron Jobs & Shell Scripts| Automation[Makefile & Shell Toolkit]
     Backend -.->|Operational Scripts| Automation
-    Backend -.->|AI-Assisted Features| GoogleAI
+    Backend -.->|Direct Gemini Chat| GoogleAI
     Backend -.->|Vector Search| Pinecone
 ```
 
 **Key Components:**
 - **Shared database:** MongoDB Atlas acts as the single source of truth for articles, comments, ratings, newsletter subscribers, chat sessions, and users
-- **AI integrations:** Google Generative AI powers summarization, topic extraction, and conversational experiences
+- **AI integrations:** Anthropic (Claude) and Google Generative AI power the dual-provider chat orchestration; Google Generative AI powers direct summarization, topic extraction, and conversational experiences
+- **Chat orchestration:** The TypeScript `orchestration/` package provides intent-based routing across 16 specialized agents with automatic provider failover, grounding validation, and cost tracking
+- **Article processing pipeline:** The Python `agentic_ai/` pipeline enriches articles through 5 LangGraph agents (analyze, summarize, classify, sentiment, quality check), exposed via a FastAPI HTTP bridge
+- **MCP integration:** The `mcp_server/` package exposes the pipeline as 20 tools, 11 resources, and 7 prompts for Claude Code and IDE integration
 - **Vector search:** Pinecone provides semantic search capabilities for the AI chat features
 - **Caching layer:** Redis accelerates hot API responses and reduces database load
 - **Automation:** Cron jobs (Vercel Cron + shell scripts) coordinate scheduled crawls, data hygiene, and newsletters
@@ -140,11 +154,12 @@ flowchart LR
 
 | Service | Location | Primary Responsibilities | Key Tech | Deployment Options |
 |---------|----------|-------------------------|----------|-------------------|
-| **Backend API** | `backend/` | REST endpoints, authentication, comments, ratings, bias analysis, topic extraction, newsletter webhooks, chat assistant, RAG-based Q&A | Next.js, Express, TypeScript, Mongoose, Redis, Pinecone, Google Generative AI | Vercel (serverless), AWS ECS (Fargate), Kubernetes |
+| **Backend API** | `backend/` | REST endpoints, authentication, comments, ratings, bias analysis, topic extraction, newsletter webhooks, chat assistant, RAG-based Q&A, orchestrated multi-agent chat (`/api/orchestrator/*`), article processing bridge | Next.js, Express, TypeScript, Mongoose, Redis, Pinecone, Google Generative AI, @synthoraai/orchestration | Vercel (serverless), AWS ECS (Fargate), Kubernetes |
 | **Crawler** | `crawler/` | Crawl homepages & APIs, deduplicate URLs, fetch full articles (Axios/Cheerio/Puppeteer), summarize via AI, extract topics, vectorize content, upsert to MongoDB & Pinecone | Next.js API routes, Puppeteer, Axios, Cheerio, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
 | **Frontend Web App** | `frontend/` | User-facing portal with article lists, filters, detail views, theming, authentication UX, article discussions, AI chat interface | Next.js, React, Tailwind CSS, TypeScript | Vercel, AWS ECS, Kubernetes, CloudFront CDN |
 | **Newsletter Service** | `newsletters/` | Manage subscriber list, generate daily digests, integrate with Resend, subscription/unsubscription endpoints | Next.js API routes, Resend SDK, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
-| **Agentic AI Pipeline + MCP Server** | `agentic_ai/`, `mcp_server/` | LangGraph/LangChain workflows plus MCP tools/resources/prompts, processing job orchestration, and runtime diagnostics | Python, LangChain, LangGraph, FastMCP | Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs |
+| **Agentic AI Pipeline + MCP Server** | `agentic_ai/`, `mcp_server/` | LangGraph/LangChain workflows plus MCP tools/resources/prompts, processing job orchestration, runtime diagnostics, and FastAPI HTTP bridge (`api.py` on :8100) for TypeScript integration | Python, LangChain, LangGraph, FastMCP, FastAPI | Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs |
+| **TypeScript Chat Orchestration** | `orchestration/` | Dual-provider LLM client (Anthropic + Google), 16-agent registry with intent routing, grounding validation, prompt caching, cost tracking, context management, and Python pipeline HTTP bridge | TypeScript, @anthropic-ai/sdk, @google/generative-ai, Zod | Bundled into backend Express process (npm workspace) |
 | **Python Crawler Toolkit** | `python_crawler/` | Async crawling alternative with CLI, concurrency controls, local summarization | Python, aiohttp, Google Generative AI SDK | Manual/CLI, Docker containers |
 | **Shell & Make CLI** | `shell/`, `Makefile` | Developer ergonomics, dev servers, builds, scheduled jobs, lint/test runners, multi-service orchestration | Bash, Node.js scripts | Local development, CI/CD pipelines |
 
@@ -632,6 +647,22 @@ sequenceDiagram
 - **Failover mechanisms:** Multiple Gemini API keys and model rotation for reliability
 - **History management:** Automatic compaction to respect token limits
 
+### Orchestration-Enhanced Chat
+
+The `orchestration/` package provides the multi-agent chat architecture with dual-provider LLM support, intent-based routing, and enterprise observability. The backend exposes this via `/api/orchestrator/chat` (non-streaming) and `/api/orchestrator/chat/stream` (SSE). A `PipelineClient` bridge (`orchestration/src/bridge/`) connects to the Python pipeline API over HTTP for article processing via `/api/orchestrator/process`:
+
+- **Dual-provider client** — Anthropic (Claude) and Google (Gemini) behind a unified `DualProviderClient` with automatic failover on the final retry attempt
+- **Intent classification** — LLM-based classification into 8 intent types with keyword heuristic fallback
+- **16 specialised agents** — 8 primary (Anthropic) + 8 Google fallbacks covering search, Q&A, topic exploration, trend analysis, bias detection, clarification, and quality review
+- **Grounding validation** — 10 canonical grounding rules enforced on every response with automated fabrication detection
+- **Prompt caching** — Hierarchical 4-layer cache strategy for Anthropic's prompt cache (grounding rules > system prompt > tools > conversation summary)
+- **Cost tracking** — Real-time daily budget enforcement with per-model breakdown and per-request recording
+- **Session context** — Token-aware message compaction, running summaries, and multi-session management
+- **Structured observability** — JSON logging in production, readable format in development, in-process metrics (counters, histograms, gauges)
+- **API boundary validation** — Zod schemas for all request/response types
+
+See [orchestration/README.md](orchestration/README.md) for full usage documentation.
+
 ---
 
 ## Backend Architecture
@@ -669,7 +700,8 @@ flowchart TB
 - **Controllers:** Thin orchestration mapping HTTP routes to service operations
   - `article.controller.ts` - Article CRUD and listing
   - `auth.controller.ts` - Authentication and authorization
-  - `chat.controller.ts` - AI chat endpoints (article Q&A + sitewide)
+  - `chat.controller.ts` - Direct Gemini chat endpoints (article Q&A + sitewide RAG)
+  - `orchestrated-chat.controller.ts` - Multi-agent orchestrated chat (ChatSupervisor), article processing (Python pipeline via PipelineClient), cost tracking, session management
   - `biasAnalysis.controller.ts` - Bias detection and analysis
   - `newsletter.controller.ts` - Newsletter subscription management
 
@@ -811,7 +843,86 @@ flowchart LR
 - **Bias Detection:** Specialized prompts and sentiment/bias analysis workflows
 - **Deployment:** Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs
 
-See `agentic_ai/README.md` and `mcp_server/` for detailed runtime, tool surface, and deployment instructions.
+See `agentic_ai/README.md` and `mcp_server/` for detailed runtime, tool surface, and deployment instructions. For a comprehensive reference of all AI/ML components, LLM providers, agents, cost controls, and Mermaid diagrams, see [`AI_ML.md`](AI_ML.md).
+
+### Python Orchestration Layer (`agentic_ai/orchestration/`)
+
+The Python orchestration layer adds enterprise concerns on top of the LangGraph pipeline:
+
+```mermaid
+flowchart TD
+    Article["Article Payload"] --> Supervisor["ContentSupervisor"]
+    Supervisor --> Classify["classify_article()"]
+    Classify --> Plan["build_execution_plan()"]
+    Plan --> Budget["CostBudgetManager.can_afford()"]
+    Budget -->|Affordable| Execute["execute_plan()"]
+    Budget -->|Exceeded| Abort["Return budget_exceeded"]
+    Execute --> Pipeline["AgenticPipeline<br/>(LangGraph)"]
+    Pipeline --> QualityGate["Quality Gate<br/>(score >= 0.7)"]
+    QualityGate --> Result["Merged Result"]
+
+    subgraph Recovery["Error Recovery"]
+        ErrorEngine["ErrorRecoveryEngine"]
+        CircuitBreaker["Circuit Breaker<br/>(3 failures / 5 min)"]
+        DLQ["DeadLetterQueue"]
+    end
+
+    Execute -.->|On failure| ErrorEngine
+    ErrorEngine --> CircuitBreaker
+    ErrorEngine -.->|Unrecoverable| DLQ
+```
+
+**Modules:**
+
+| Module | Purpose |
+|---|---|
+| `supervisor.py` | Content routing, execution plan construction, quality gate |
+| `agent_registry.py` | Thread-safe registry with 7 default agents, capability-based lookup |
+| `cost_budget.py` | Per-model cost estimation using PRICING table, daily budget enforcement |
+| `error_recovery.py` | 17 error-type strategies, AWS full-jitter backoff, circuit breaker |
+| `dead_letter.py` | Failed article queue with async replay |
+| `batch_processor.py` | Concurrent processing with asyncio semaphore, priority ordering |
+| `types.py` | Enums, dataclasses, and multi-provider pricing table |
+
+### TypeScript Orchestration Layer (`orchestration/`)
+
+The TypeScript orchestration layer powers the frontend chat experience with dual-provider LLM support:
+
+```mermaid
+flowchart TD
+    User["User Query"] --> Supervisor["ChatSupervisor"]
+    Supervisor --> Intent["classifyIntent()"]
+    Intent --> Route["routeToAgent()"]
+    Route --> Agent["Selected Agent<br/>(from 16 registered)"]
+    Agent --> LLM["DualProviderClient"]
+
+    LLM --> Anthropic["Anthropic API<br/>(Claude)"]
+    LLM --> Google["Google AI<br/>(Gemini)"]
+
+    Anthropic -.->|Failover| Google
+    Google -.->|Failover| Anthropic
+
+    LLM --> Response["Response"]
+    Response --> Grounding["GroundingValidator"]
+    Grounding --> Cost["CostTracker"]
+    Cost --> Context["ContextManager"]
+    Context --> Output["SupervisorResponse"]
+```
+
+**Modules:**
+
+| Module | Purpose |
+|---|---|
+| `supervisor/` | Intent classification, agent routing, handoff chains, health check |
+| `llm/` | Dual-provider client (Anthropic + Google) with retry, streaming, failover |
+| `agents/` | Registry (16 agents, dual-provider fallback), types, 8 system prompts |
+| `context/` | Session state, message history, token-aware compaction |
+| `cost/` | Daily budget enforcement with per-model breakdown |
+| `config/` | Zod-validated environment configuration with preflight checks |
+| `observability/` | Structured JSON logging, in-process metrics collector |
+| `schemas/` | Zod request/response validation for API boundaries |
+| `templates/` | Standardised error response templates with HTTP status mapping |
+| `agents/prompts/` | Grounding rules, prompt caching strategy, prompt versioning registry |
 
 ---
 
@@ -2055,6 +2166,7 @@ flowchart LR
 ## References & Further Reading
 
 - **Project README:** [README.md](README.md)
+- **AI/ML Details:** [AI_ML.md](AI_ML.md)
 - **Deployment Guide:** [infrastructure/DEPLOYMENT.md](infrastructure/DEPLOYMENT.md)
 - **Infrastructure README:** [infrastructure/README.md](infrastructure/README.md)
 - **Agentic AI Pipeline:** [agentic_ai/README.md](agentic_ai/README.md)

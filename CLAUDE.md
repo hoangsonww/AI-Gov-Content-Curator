@@ -8,6 +8,8 @@ The main services are:
 - `crawler/`: scheduled ingestion pipeline using Axios/Cheerio/Puppeteer, Gemini, MongoDB, Pinecone.
 - `newsletters/`: scheduled Resend-based digest sender backed by MongoDB.
 - `agentic_ai/`: Python LangGraph pipeline.
+- `agentic_ai/orchestration/`: Python orchestration layer — content supervisor, cost budgets, error recovery, dead-letter queue, batch processor.
+- `orchestration/`: TypeScript chat orchestration — dual-provider LLM client (Anthropic + Google), chat supervisor, 16 agents, grounding, cost tracking, observability.
 - `mcp_server/`: MCP server package for the agentic pipeline.
 - `infrastructure/`: Terraform, Kubernetes, monitoring, and deployment wrappers.
 - `shell/` and `bin/`: developer wrappers; useful, but some scripts have drift.
@@ -63,6 +65,12 @@ Agentic AI:
 - `cd agentic_ai && make run-mcp`
 - `cd agentic_ai && PYTHONPATH=.. python -m mcp_server`
 
+Orchestration (TypeScript):
+
+- `cd orchestration && npm run build`
+- `cd orchestration && npm run lint`
+- `cd orchestration && npm test`
+
 Infrastructure:
 
 - `cd infrastructure && make terraform-plan`
@@ -84,6 +92,8 @@ Infrastructure:
 - `frontend` relies heavily on browser-only APIs such as `localStorage`, cookies, and `window`.
 - `newsletters/Dockerfile` appears to assume compiled output that `next build` does not produce.
 - `agentic_ai` looks partly scaffolded; some Make targets and health-check assumptions do not match the current implementation.
+- `agentic_ai/orchestration/` is feature-complete but depends on `structlog` and `langgraph` being installed. The Python supervisor imports `..core.pipeline.AgenticPipeline` — if that module changes, the orchestration layer needs updating.
+- `orchestration/` (TypeScript) compiles clean and is feature-complete. Not yet wired into the backend Express routes — integration requires adding routes in `backend/` that instantiate `ChatSupervisor`.
 - `shell/` scripts are not always path-safe from the repo root despite what the docs say.
 
 ## Files Worth Reading Before Risky Changes
@@ -97,6 +107,8 @@ Infrastructure:
 - `crawler/README.md`
 - `newsletters/README.md`
 - `agentic_ai/README.md`
+- `agentic_ai/orchestration/README.md`
+- `orchestration/README.md`
 - `infrastructure/README.md`
 - `infrastructure/DEPLOYMENT.md`
 

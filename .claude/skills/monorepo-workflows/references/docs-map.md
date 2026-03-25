@@ -6,6 +6,7 @@ Use these files when you need project context beyond the code:
 - `ARCHITECTURE.md`: production topology, deployment patterns, system responsibilities
 - `RAG_CHATBOT.md`: sitewide chat flow, SSE contract, Pinecone-backed retrieval
 - `CHATBOT_GUARDRAILS.md`: citation system and hallucination checks
+- `AI_MD.md`: AI agent design, LangGraph pipeline, MCP server, and agentic use cases
 - `backend/README.md`: backend responsibilities and local setup
 - `frontend/README.md`: frontend routes and UX notes
 - `crawler/README.md`: ingestion flow and crawler assumptions
