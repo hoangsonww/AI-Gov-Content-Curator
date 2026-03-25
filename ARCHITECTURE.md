@@ -632,6 +632,22 @@ sequenceDiagram
 - **Failover mechanisms:** Multiple Gemini API keys and model rotation for reliability
 - **History management:** Automatic compaction to respect token limits
 
+### Orchestration-Enhanced Chat (Next Generation)
+
+The `orchestration/` package provides a next-generation chat architecture with dual-provider LLM support, intent-based routing, and enterprise observability:
+
+- **Dual-provider client** — Anthropic (Claude) and Google (Gemini) behind a unified `DualProviderClient` with automatic failover on the final retry attempt
+- **Intent classification** — LLM-based classification into 8 intent types with keyword heuristic fallback
+- **16 specialised agents** — 8 primary (Anthropic) + 8 Google fallbacks covering search, Q&A, topic exploration, trend analysis, bias detection, clarification, and quality review
+- **Grounding validation** — 10 canonical grounding rules enforced on every response with automated fabrication detection
+- **Prompt caching** — Hierarchical 4-layer cache strategy for Anthropic's prompt cache (grounding rules > system prompt > tools > conversation summary)
+- **Cost tracking** — Real-time daily budget enforcement with per-model breakdown and per-request recording
+- **Session context** — Token-aware message compaction, running summaries, and multi-session management
+- **Structured observability** — JSON logging in production, readable format in development, in-process metrics (counters, histograms, gauges)
+- **API boundary validation** — Zod schemas for all request/response types
+
+See `orchestration/README.md` for full usage documentation.
+
 ---
 
 ## Backend Architecture
@@ -812,6 +828,85 @@ flowchart LR
 - **Deployment:** Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs
 
 See `agentic_ai/README.md` and `mcp_server/` for detailed runtime, tool surface, and deployment instructions.
+
+### Python Orchestration Layer (`agentic_ai/orchestration/`)
+
+The Python orchestration layer adds enterprise concerns on top of the LangGraph pipeline:
+
+```mermaid
+flowchart TD
+    Article["Article Payload"] --> Supervisor["ContentSupervisor"]
+    Supervisor --> Classify["classify_article()"]
+    Classify --> Plan["build_execution_plan()"]
+    Plan --> Budget["CostBudgetManager.can_afford()"]
+    Budget -->|Affordable| Execute["execute_plan()"]
+    Budget -->|Exceeded| Abort["Return budget_exceeded"]
+    Execute --> Pipeline["AgenticPipeline<br/>(LangGraph)"]
+    Pipeline --> QualityGate["Quality Gate<br/>(score >= 0.7)"]
+    QualityGate --> Result["Merged Result"]
+
+    subgraph Recovery["Error Recovery"]
+        ErrorEngine["ErrorRecoveryEngine"]
+        CircuitBreaker["Circuit Breaker<br/>(3 failures / 5 min)"]
+        DLQ["DeadLetterQueue"]
+    end
+
+    Execute -.->|On failure| ErrorEngine
+    ErrorEngine --> CircuitBreaker
+    ErrorEngine -.->|Unrecoverable| DLQ
+```
+
+**Modules:**
+
+| Module | Purpose |
+|---|---|
+| `supervisor.py` | Content routing, execution plan construction, quality gate |
+| `agent_registry.py` | Thread-safe registry with 7 default agents, capability-based lookup |
+| `cost_budget.py` | Per-model cost estimation using PRICING table, daily budget enforcement |
+| `error_recovery.py` | 17 error-type strategies, AWS full-jitter backoff, circuit breaker |
+| `dead_letter.py` | Failed article queue with async replay |
+| `batch_processor.py` | Concurrent processing with asyncio semaphore, priority ordering |
+| `types.py` | Enums, dataclasses, and multi-provider pricing table |
+
+### TypeScript Orchestration Layer (`orchestration/`)
+
+The TypeScript orchestration layer powers the frontend chat experience with dual-provider LLM support:
+
+```mermaid
+flowchart TD
+    User["User Query"] --> Supervisor["ChatSupervisor"]
+    Supervisor --> Intent["classifyIntent()"]
+    Intent --> Route["routeToAgent()"]
+    Route --> Agent["Selected Agent<br/>(from 16 registered)"]
+    Agent --> LLM["DualProviderClient"]
+
+    LLM --> Anthropic["Anthropic API<br/>(Claude)"]
+    LLM --> Google["Google AI<br/>(Gemini)"]
+
+    Anthropic -.->|Failover| Google
+    Google -.->|Failover| Anthropic
+
+    LLM --> Response["Response"]
+    Response --> Grounding["GroundingValidator"]
+    Grounding --> Cost["CostTracker"]
+    Cost --> Context["ContextManager"]
+    Context --> Output["SupervisorResponse"]
+```
+
+**Modules:**
+
+| Module | Purpose |
+|---|---|
+| `supervisor/` | Intent classification, agent routing, handoff chains, health check |
+| `llm/` | Dual-provider client (Anthropic + Google) with retry, streaming, failover |
+| `agents/` | Registry (16 agents, dual-provider fallback), types, 8 system prompts |
+| `context/` | Session state, message history, token-aware compaction |
+| `cost/` | Daily budget enforcement with per-model breakdown |
+| `config/` | Zod-validated environment configuration with preflight checks |
+| `observability/` | Structured JSON logging, in-process metrics collector |
+| `schemas/` | Zod request/response validation for API boundaries |
+| `templates/` | Standardised error response templates with HTTP status mapping |
+| `agents/prompts/` | Grounding rules, prompt caching strategy, prompt versioning registry |
 
 ---
 

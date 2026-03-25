@@ -270,6 +270,10 @@ This project consists of 4 primary microservices that interact with each other:
    - User authentication for marking articles as favorites, commenting, discussions, and upvoting/downvoting comments.
    - **_Deployed on Vercel at [https://synthoraai.vercel.app/](https://synthoraai.vercel.app/)._**
 
+5. **Orchestration Layer:**
+   - **Python** (`agentic_ai/orchestration/`): Enterprise article processing orchestration atop the LangGraph pipeline — content supervision, cost budgeting, error recovery with circuit breaking, dead-letter queuing, and concurrent batch processing.
+   - **TypeScript** (`orchestration/`): Dual-provider LLM chat layer — unified Anthropic + Google client, intent-based agent routing (16 agents), grounding validation, prompt caching, cost tracking, and structured observability. See `orchestration/README.md`.
+
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
 
 > [!NOTE]
