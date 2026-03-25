@@ -7,9 +7,9 @@
  * The Python side is served by `agentic_ai/api.py` (FastAPI on port 8100).
  */
 
-import { createLogger } from '../observability/logger';
+import { createLogger } from "../observability/logger";
 
-const logger = createLogger('bridge.pipeline-client');
+const logger = createLogger("bridge.pipeline-client");
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -39,23 +39,29 @@ export interface ArticlePayload {
 
 export interface ProcessRequest {
   article: ArticlePayload;
-  mode?: 'full' | 'fast' | 'enrich' | 'reprocess';
+  mode?: "full" | "fast" | "enrich" | "reprocess";
 }
 
 export interface AnalyzeRequest {
   content: string;
-  analysis_type?: 'content' | 'sentiment' | 'classification' | 'summary' | 'quality' | 'full';
+  analysis_type?:
+    | "content"
+    | "sentiment"
+    | "classification"
+    | "summary"
+    | "quality"
+    | "full";
 }
 
 export interface BatchRequest {
   articles: ArticlePayload[];
-  mode?: 'full' | 'fast' | 'enrich' | 'reprocess';
+  mode?: "full" | "fast" | "enrich" | "reprocess";
   continue_on_error?: boolean;
 }
 
 export interface ProcessResult {
   article_id: string;
-  status: 'completed' | 'failed';
+  status: "completed" | "failed";
   result?: Record<string, unknown>;
   error?: string;
   duration_ms: number;
@@ -80,7 +86,7 @@ export interface BatchResult {
 }
 
 export interface PipelineHealth {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   pipeline_ready: boolean;
   startup_error?: string;
   version: string;
@@ -96,7 +102,11 @@ export class PipelineClient {
   private readonly retries: number;
 
   constructor(config: PipelineClientConfig = {}) {
-    this.baseUrl = (config.baseUrl ?? process.env.PIPELINE_API_URL ?? 'http://localhost:8100').replace(/\/+$/, '');
+    this.baseUrl = (
+      config.baseUrl ??
+      process.env.PIPELINE_API_URL ??
+      "http://localhost:8100"
+    ).replace(/\/+$/, "");
     this.timeoutMs = config.timeoutMs ?? 120_000;
     this.retries = config.retries ?? 2;
   }
@@ -107,22 +117,22 @@ export class PipelineClient {
 
   /** Process a single article through the LangGraph pipeline. */
   async processArticle(req: ProcessRequest): Promise<ProcessResult> {
-    return this.post<ProcessResult>('/process', req);
+    return this.post<ProcessResult>("/process", req);
   }
 
   /** Run individual analysis agents on content. */
   async analyzeContent(req: AnalyzeRequest): Promise<AnalyzeResult> {
-    return this.post<AnalyzeResult>('/analyze', req);
+    return this.post<AnalyzeResult>("/analyze", req);
   }
 
   /** Process a batch of articles concurrently. */
   async processBatch(req: BatchRequest): Promise<BatchResult> {
-    return this.post<BatchResult>('/batch', req);
+    return this.post<BatchResult>("/batch", req);
   }
 
   /** Check Python pipeline health. */
   async health(): Promise<PipelineHealth> {
-    return this.get<PipelineHealth>('/health');
+    return this.get<PipelineHealth>("/health");
   }
 
   /** True if the pipeline API is reachable and healthy. */
@@ -140,11 +150,11 @@ export class PipelineClient {
   // -----------------------------------------------------------------------
 
   private async get<T>(path: string): Promise<T> {
-    return this.request<T>('GET', path);
+    return this.request<T>("GET", path);
   }
 
   private async post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('POST', path, body);
+    return this.request<T>("POST", path, body);
   }
 
   private async request<T>(
@@ -160,17 +170,24 @@ export class PipelineClient {
     try {
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
       });
 
       if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        const err = new Error(`Pipeline API ${method} ${path} returned ${res.status}: ${detail}`);
+        const detail = await res.text().catch(() => "");
+        const err = new Error(
+          `Pipeline API ${method} ${path} returned ${res.status}: ${detail}`,
+        );
         // Retry on 502/503/504
         if (attempt <= this.retries && res.status >= 502 && res.status <= 504) {
-          logger.warn('pipeline_client.retry', { method, path, status: res.status, attempt });
+          logger.warn("pipeline_client.retry", {
+            method,
+            path,
+            status: res.status,
+            attempt,
+          });
           await this.backoff(attempt);
           return this.request<T>(method, path, body, attempt + 1);
         }
@@ -179,12 +196,19 @@ export class PipelineClient {
 
       return (await res.json()) as T;
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        throw new Error(`Pipeline API ${method} ${path} timed out after ${this.timeoutMs}ms`);
+      if (err instanceof DOMException && err.name === "AbortError") {
+        throw new Error(
+          `Pipeline API ${method} ${path} timed out after ${this.timeoutMs}ms`,
+        );
       }
       // Retry on network errors
       if (attempt <= this.retries && this.isNetworkError(err)) {
-        logger.warn('pipeline_client.retry_network', { method, path, attempt, error: String(err) });
+        logger.warn("pipeline_client.retry_network", {
+          method,
+          path,
+          attempt,
+          error: String(err),
+        });
         await this.backoff(attempt);
         return this.request<T>(method, path, body, attempt + 1);
       }
@@ -196,7 +220,7 @@ export class PipelineClient {
 
   private isNetworkError(err: unknown): boolean {
     if (err instanceof TypeError) return true; // fetch network error
-    const msg = err instanceof Error ? err.message : '';
+    const msg = err instanceof Error ? err.message : "";
     return /ECONNREFUSED|ECONNRESET|ENOTFOUND|socket hang up/i.test(msg);
   }
 

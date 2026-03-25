@@ -5,16 +5,16 @@
 
 /** The 10 canonical grounding rules enforced across all agents. */
 export const GROUNDING_RULES: readonly string[] = [
-  'Every factual claim must be traceable to a specific article in the corpus.',
-  'Do not fabricate article titles, publication dates, authors, or URLs.',
-  'When quoting directly, always include the article source and date.',
-  'If a question cannot be answered from available articles, state this explicitly.',
-  'Do not extrapolate or infer facts beyond what articles explicitly state.',
-  'Distinguish clearly between summarized content and verbatim quotation.',
-  'When articles conflict, present both perspectives with their respective sources.',
-  'Quantitative figures (statistics, percentages, monetary amounts) require direct citation.',
-  'Flag responses where corpus coverage may be outdated or incomplete.',
-  'Do not attribute opinions or policy positions to agencies without textual evidence.',
+  "Every factual claim must be traceable to a specific article in the corpus.",
+  "Do not fabricate article titles, publication dates, authors, or URLs.",
+  "When quoting directly, always include the article source and date.",
+  "If a question cannot be answered from available articles, state this explicitly.",
+  "Do not extrapolate or infer facts beyond what articles explicitly state.",
+  "Distinguish clearly between summarized content and verbatim quotation.",
+  "When articles conflict, present both perspectives with their respective sources.",
+  "Quantitative figures (statistics, percentages, monetary amounts) require direct citation.",
+  "Flag responses where corpus coverage may be outdated or incomplete.",
+  "Do not attribute opinions or policy positions to agencies without textual evidence.",
 ] as const;
 
 /** A source document used for grounding validation. */
@@ -50,13 +50,16 @@ export class GroundingValidator {
    * @param sources - The source documents that should ground the response.
    * @returns Validation result with validity flag, warnings, and score.
    */
-  validate(response: string, sources: GroundingSource[]): GroundingValidationResult {
+  validate(
+    response: string,
+    sources: GroundingSource[],
+  ): GroundingValidationResult {
     const warnings: string[] = [];
     let penaltyPoints = 0;
 
     // Check 1: response references at least one source
     if (sources.length === 0) {
-      warnings.push('No source documents provided for grounding validation.');
+      warnings.push("No source documents provided for grounding validation.");
       penaltyPoints += 30;
     }
 
@@ -71,13 +74,13 @@ export class GroundingValidator {
     for (const pattern of fabricationPatterns) {
       if (pattern.test(response)) {
         // Only warn if source snippets don't contain supporting text
-        const matchedText = (pattern.exec(response)?.[0] ?? '').toLowerCase();
-        const hasSupport = matchedText.length > 0 && sources.some((s) =>
-          s.snippet.toLowerCase().includes(matchedText)
-        );
+        const matchedText = (pattern.exec(response)?.[0] ?? "").toLowerCase();
+        const hasSupport =
+          matchedText.length > 0 &&
+          sources.some((s) => s.snippet.toLowerCase().includes(matchedText));
         if (!hasSupport) {
           warnings.push(
-            `Possible unsourced claim detected matching pattern: ${pattern.toString()}`
+            `Possible unsourced claim detected matching pattern: ${pattern.toString()}`,
           );
           penaltyPoints += 10;
         }
@@ -89,23 +92,31 @@ export class GroundingValidator {
       /\[\d+\]|\[Source:|\[Ref:/i.test(response) || sources.length === 0;
     if (sources.length > 0 && !hasCitationMarkers) {
       warnings.push(
-        'Response contains no citation markers despite source documents being provided.'
+        "Response contains no citation markers despite source documents being provided.",
       );
       penaltyPoints += 20;
     }
 
     // Check 4: check for absolute superlatives without backing
-    const superlatives = ['always', 'never', 'all agencies', 'every department', 'guaranteed'];
+    const superlatives = [
+      "always",
+      "never",
+      "all agencies",
+      "every department",
+      "guaranteed",
+    ];
     for (const term of superlatives) {
       if (response.toLowerCase().includes(term)) {
-        warnings.push(`Absolute superlative "${term}" used — verify source support.`);
+        warnings.push(
+          `Absolute superlative "${term}" used — verify source support.`,
+        );
         penaltyPoints += 5;
       }
     }
 
     // Check 5: response length sanity (empty or extremely short)
     if (response.trim().length < 50) {
-      warnings.push('Response is suspiciously short and may be incomplete.');
+      warnings.push("Response is suspiciously short and may be incomplete.");
       penaltyPoints += 15;
     }
 

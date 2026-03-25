@@ -2,4 +2,4 @@ export {
   ChatSupervisor,
   type ChatSupervisorConfig,
   type SupervisorResponse,
-} from './chat-supervisor';
+} from "./chat-supervisor";

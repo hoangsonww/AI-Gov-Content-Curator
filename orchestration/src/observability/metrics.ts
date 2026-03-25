@@ -63,7 +63,10 @@ export class MetricsCollector {
   }
 
   /** Get a statistical summary for a histogram. */
-  getHistogram(name: string, labels?: Record<string, string>): HistogramSummary | null {
+  getHistogram(
+    name: string,
+    labels?: Record<string, string>,
+  ): HistogramSummary | null {
     const values = this.histograms.get(this.key(name, labels));
     if (!values || values.length === 0) return null;
 
@@ -114,10 +117,30 @@ export class MetricsCollector {
       const { name, labels } = this.parseKey(key);
       const summary = this.getHistogram(name, labels);
       if (summary) {
-        points.push({ name: `histogram.${name}.count`, value: summary.count, labels, timestamp: now });
-        points.push({ name: `histogram.${name}.p50`, value: summary.p50, labels, timestamp: now });
-        points.push({ name: `histogram.${name}.p95`, value: summary.p95, labels, timestamp: now });
-        points.push({ name: `histogram.${name}.p99`, value: summary.p99, labels, timestamp: now });
+        points.push({
+          name: `histogram.${name}.count`,
+          value: summary.count,
+          labels,
+          timestamp: now,
+        });
+        points.push({
+          name: `histogram.${name}.p50`,
+          value: summary.p50,
+          labels,
+          timestamp: now,
+        });
+        points.push({
+          name: `histogram.${name}.p95`,
+          value: summary.p95,
+          labels,
+          timestamp: now,
+        });
+        points.push({
+          name: `histogram.${name}.p99`,
+          value: summary.p99,
+          labels,
+          timestamp: now,
+        });
       }
     }
 
@@ -145,19 +168,22 @@ export class MetricsCollector {
     const sorted = Object.entries(labels)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}=${v}`)
-      .join(',');
+      .join(",");
     return `${name}{${sorted}}`;
   }
 
-  private parseKey(key: string): { name: string; labels: Record<string, string> } {
-    const braceIdx = key.indexOf('{');
+  private parseKey(key: string): {
+    name: string;
+    labels: Record<string, string>;
+  } {
+    const braceIdx = key.indexOf("{");
     if (braceIdx === -1) return { name: key, labels: {} };
 
     const name = key.slice(0, braceIdx);
     const labelStr = key.slice(braceIdx + 1, -1);
     const labels: Record<string, string> = {};
-    for (const pair of labelStr.split(',')) {
-      const [k, v] = pair.split('=');
+    for (const pair of labelStr.split(",")) {
+      const [k, v] = pair.split("=");
       if (k && v) labels[k] = v;
     }
     return { name, labels };

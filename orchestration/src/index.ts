@@ -7,7 +7,11 @@
  */
 
 // -- Supervisor (primary entry point) -------------------------------------
-export { ChatSupervisor, type ChatSupervisorConfig, type SupervisorResponse } from './supervisor';
+export {
+  ChatSupervisor,
+  type ChatSupervisorConfig,
+  type SupervisorResponse,
+} from "./supervisor";
 
 // -- LLM client -----------------------------------------------------------
 export {
@@ -15,16 +19,24 @@ export {
   type LLMClientConfig,
   type GenerateParams,
   type GenerateResult,
-} from './llm';
+} from "./llm";
 
 // -- Context management ---------------------------------------------------
-export { ContextManager, type ContextManagerConfig, type SessionState } from './context';
+export {
+  ContextManager,
+  type ContextManagerConfig,
+  type SessionState,
+} from "./context";
 
 // -- Cost tracking --------------------------------------------------------
-export { CostTracker, type CostTrackerConfig, type DailyUsageSnapshot } from './cost';
+export {
+  CostTracker,
+  type CostTrackerConfig,
+  type DailyUsageSnapshot,
+} from "./cost";
 
 // -- Agent registry -------------------------------------------------------
-export { AgentRegistry, INTENT_CAPABILITY_MAP } from './agents/agent-registry';
+export { AgentRegistry, INTENT_CAPABILITY_MAP } from "./agents/agent-registry";
 
 // -- Prompts --------------------------------------------------------------
 export {
@@ -47,7 +59,7 @@ export {
   type CacheLayer,
   type CachedPrompt,
   type CacheSavingsEstimate,
-} from './agents/prompts';
+} from "./agents/prompts";
 
 // -- Config ---------------------------------------------------------------
 export {
@@ -55,7 +67,7 @@ export {
   tryLoadOrchestrationEnv,
   preflightCheck,
   type OrchestrationEnv,
-} from './config';
+} from "./config";
 
 // -- Observability --------------------------------------------------------
 export {
@@ -67,7 +79,7 @@ export {
   type LogEntry,
   type MetricPoint,
   type HistogramSummary,
-} from './observability';
+} from "./observability";
 
 // -- Schemas (API boundary validation) ------------------------------------
 export {
@@ -81,7 +93,7 @@ export {
   type BatchProcessRequest,
   type ChatResponse,
   type HealthCheckResponse,
-} from './schemas';
+} from "./schemas";
 
 // -- Pipeline bridge (Python API client) -----------------------------------
 export {
@@ -95,10 +107,14 @@ export {
   type AnalyzeResult as PipelineAnalyzeResult,
   type BatchResult as PipelineBatchResult,
   type PipelineHealth,
-} from './bridge';
+} from "./bridge";
 
 // -- Error templates ------------------------------------------------------
-export { getErrorResponse, formatApiError, type ErrorResponse } from './templates';
+export {
+  getErrorResponse,
+  formatApiError,
+  type ErrorResponse,
+} from "./templates";
 
 // -- Types & enums --------------------------------------------------------
 export {
@@ -118,4 +134,4 @@ export {
   type AgentError,
   type Message,
   type StreamChunk,
-} from './agents/types';
+} from "./agents/types";
