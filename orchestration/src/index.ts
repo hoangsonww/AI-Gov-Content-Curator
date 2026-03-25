@@ -83,6 +83,20 @@ export {
   type HealthCheckResponse,
 } from './schemas';
 
+// -- Pipeline bridge (Python API client) -----------------------------------
+export {
+  PipelineClient,
+  type PipelineClientConfig,
+  type ArticlePayload as PipelineArticlePayload,
+  type ProcessRequest as PipelineProcessRequest,
+  type AnalyzeRequest as PipelineAnalyzeRequest,
+  type BatchRequest as PipelineBatchRequest,
+  type ProcessResult as PipelineProcessResult,
+  type AnalyzeResult as PipelineAnalyzeResult,
+  type BatchResult as PipelineBatchResult,
+  type PipelineHealth,
+} from './bridge';
+
 // -- Error templates ------------------------------------------------------
 export { getErrorResponse, formatApiError, type ErrorResponse } from './templates';
 

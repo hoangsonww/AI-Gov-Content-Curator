@@ -270,6 +270,8 @@ Validates output quality and completeness.
 
 The Model Context Protocol (MCP) server provides a standardized interface for AI interactions.
 
+For more details, see [mcp_server/README.md](../mcp_server/README.md).
+
 ### Server Package Layout
 
 The MCP server is organized as a package instead of a monolithic file:
