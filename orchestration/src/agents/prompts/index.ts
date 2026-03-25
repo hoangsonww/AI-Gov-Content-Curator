@@ -95,7 +95,11 @@ export class PromptRegistry {
    * @param version - Version string these metrics apply to.
    * @param metrics - Partial metrics to merge into existing records.
    */
-  recordMetrics(id: string, version: string, metrics: Partial<PromptMetrics>): void {
+  recordMetrics(
+    id: string,
+    version: string,
+    metrics: Partial<PromptMetrics>,
+  ): void {
     const record = this.registry.get(id);
     if (!record) return;
 
@@ -151,15 +155,19 @@ export class PromptRegistry {
 }
 
 // Re-export system prompts
-export { SUPERVISOR_SYSTEM_PROMPT } from './system/supervisor';
-export { ARTICLE_SEARCH_SYSTEM_PROMPT } from './system/article-search';
-export { ARTICLE_QA_SYSTEM_PROMPT } from './system/article-qa';
-export { TOPIC_EXPLORER_SYSTEM_PROMPT } from './system/topic-explorer';
-export { TREND_ANALYST_SYSTEM_PROMPT } from './system/trend-analyst';
-export { BIAS_ANALYZER_SYSTEM_PROMPT } from './system/bias-analyzer';
-export { CLARIFICATION_SYSTEM_PROMPT } from './system/clarification';
-export { QUALITY_REVIEWER_SYSTEM_PROMPT } from './system/quality-reviewer';
-export { GROUNDING_RULES, GroundingValidator } from './grounding';
-export type { GroundingSource, GroundingValidationResult } from './grounding';
-export { PromptCacheStrategy } from './cache-strategy';
-export type { CacheLayer, CachedPrompt, CacheSavingsEstimate } from './cache-strategy';
+export { SUPERVISOR_SYSTEM_PROMPT } from "./system/supervisor";
+export { ARTICLE_SEARCH_SYSTEM_PROMPT } from "./system/article-search";
+export { ARTICLE_QA_SYSTEM_PROMPT } from "./system/article-qa";
+export { TOPIC_EXPLORER_SYSTEM_PROMPT } from "./system/topic-explorer";
+export { TREND_ANALYST_SYSTEM_PROMPT } from "./system/trend-analyst";
+export { BIAS_ANALYZER_SYSTEM_PROMPT } from "./system/bias-analyzer";
+export { CLARIFICATION_SYSTEM_PROMPT } from "./system/clarification";
+export { QUALITY_REVIEWER_SYSTEM_PROMPT } from "./system/quality-reviewer";
+export { GROUNDING_RULES, GroundingValidator } from "./grounding";
+export type { GroundingSource, GroundingValidationResult } from "./grounding";
+export { PromptCacheStrategy } from "./cache-strategy";
+export type {
+  CacheLayer,
+  CachedPrompt,
+  CacheSavingsEstimate,
+} from "./cache-strategy";

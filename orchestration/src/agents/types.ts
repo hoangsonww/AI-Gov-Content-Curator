@@ -14,66 +14,66 @@
 
 /** Error categories that can arise during agent execution. */
 export enum AgentErrorType {
-  rate_limited = 'rate_limited',
-  context_overflow = 'context_overflow',
-  tool_failure = 'tool_failure',
-  invalid_response = 'invalid_response',
-  timeout = 'timeout',
-  budget_exceeded = 'budget_exceeded',
-  provider_unavailable = 'provider_unavailable',
-  circular_handoff = 'circular_handoff',
-  max_iterations = 'max_iterations',
-  schema_validation = 'schema_validation',
-  authentication = 'authentication',
-  network_error = 'network_error',
-  content_filtered = 'content_filtered',
-  model_overloaded = 'model_overloaded',
-  token_limit = 'token_limit',
-  serialization = 'serialization',
-  unknown = 'unknown',
+  rate_limited = "rate_limited",
+  context_overflow = "context_overflow",
+  tool_failure = "tool_failure",
+  invalid_response = "invalid_response",
+  timeout = "timeout",
+  budget_exceeded = "budget_exceeded",
+  provider_unavailable = "provider_unavailable",
+  circular_handoff = "circular_handoff",
+  max_iterations = "max_iterations",
+  schema_validation = "schema_validation",
+  authentication = "authentication",
+  network_error = "network_error",
+  content_filtered = "content_filtered",
+  model_overloaded = "model_overloaded",
+  token_limit = "token_limit",
+  serialization = "serialization",
+  unknown = "unknown",
 }
 
 /** Supported LLM providers. */
 export enum ModelProvider {
-  anthropic = 'anthropic',
-  google = 'google',
-  openai = 'openai',
+  anthropic = "anthropic",
+  google = "google",
+  openai = "openai",
 }
 
 /** Processing mode determines how the orchestrator routes a query. */
 export enum ProcessingMode {
-  DIRECT = 'DIRECT',
-  TOOL_AUGMENTED = 'TOOL_AUGMENTED',
-  AGENTIC = 'AGENTIC',
+  DIRECT = "DIRECT",
+  TOOL_AUGMENTED = "TOOL_AUGMENTED",
+  AGENTIC = "AGENTIC",
 }
 
 /** Cost tier for budget-aware provider/model selection. */
 export enum CostTier {
-  economy = 'economy',
-  standard = 'standard',
-  premium = 'premium',
+  economy = "economy",
+  standard = "standard",
+  premium = "premium",
 }
 
 /** Reason a task is transferred to another agent. */
 export enum HandoffReason {
-  specialization = 'specialization',
-  context_limit = 'context_limit',
-  tool_requirement = 'tool_requirement',
-  quality_threshold = 'quality_threshold',
-  user_request = 'user_request',
-  fallback = 'fallback',
+  specialization = "specialization",
+  context_limit = "context_limit",
+  tool_requirement = "tool_requirement",
+  quality_threshold = "quality_threshold",
+  user_request = "user_request",
+  fallback = "fallback",
 }
 
 /** Detected intent type of a chat message. */
 export enum ChatIntentType {
-  article_search = 'article_search',
-  article_qa = 'article_qa',
-  topic_exploration = 'topic_exploration',
-  trend_analysis = 'trend_analysis',
-  bias_analysis = 'bias_analysis',
-  clarification = 'clarification',
-  general_chat = 'general_chat',
-  quality_review = 'quality_review',
+  article_search = "article_search",
+  article_qa = "article_qa",
+  topic_exploration = "topic_exploration",
+  trend_analysis = "trend_analysis",
+  bias_analysis = "bias_analysis",
+  clarification = "clarification",
+  general_chat = "general_chat",
+  quality_review = "quality_review",
 }
 
 // ---------------------------------------------------------------------------
@@ -211,7 +211,7 @@ export interface AgentError {
 /** A single message in a conversation thread. */
 export interface Message {
   /** Conversation role. */
-  role: 'user' | 'assistant' | 'system' | 'tool';
+  role: "user" | "assistant" | "system" | "tool";
   /** Message text content. */
   content: string;
   /** Optional tool call id for tool role messages. */
@@ -254,15 +254,15 @@ export const MODEL_PRICING: Record<
   { input: number; output: number; cachedInput?: number }
 > = {
   // Anthropic — cached = 10% of input (per Anthropic published pricing)
-  'claude-opus-4-6': { input: 15, output: 75, cachedInput: 1.50 },
-  'claude-sonnet-4-6': { input: 3, output: 15, cachedInput: 0.30 },
-  'claude-haiku-4-5': { input: 0.8, output: 4, cachedInput: 0.08 },
+  "claude-opus-4-6": { input: 15, output: 75, cachedInput: 1.5 },
+  "claude-sonnet-4-6": { input: 3, output: 15, cachedInput: 0.3 },
+  "claude-haiku-4-5": { input: 0.8, output: 4, cachedInput: 0.08 },
   // Google Gemini
-  'gemini-2.0-flash': { input: 0.1, output: 0.4, cachedInput: 0.025 },
-  'gemini-2.0-flash-lite': { input: 0.075, output: 0.3, cachedInput: 0.01875 },
-  'gemini-1.5-flash': { input: 0.075, output: 0.3, cachedInput: 0.01875 },
-  'gemini-1.5-pro': { input: 1.25, output: 5, cachedInput: 0.3125 },
+  "gemini-2.0-flash": { input: 0.1, output: 0.4, cachedInput: 0.025 },
+  "gemini-2.0-flash-lite": { input: 0.075, output: 0.3, cachedInput: 0.01875 },
+  "gemini-1.5-flash": { input: 0.075, output: 0.3, cachedInput: 0.01875 },
+  "gemini-1.5-pro": { input: 1.25, output: 5, cachedInput: 0.3125 },
   // OpenAI
-  'gpt-4o': { input: 2.50, output: 10, cachedInput: 1.25 },
-  'gpt-4o-mini': { input: 0.15, output: 0.60, cachedInput: 0.075 },
+  "gpt-4o": { input: 2.5, output: 10, cachedInput: 1.25 },
+  "gpt-4o-mini": { input: 0.15, output: 0.6, cachedInput: 0.075 },
 };

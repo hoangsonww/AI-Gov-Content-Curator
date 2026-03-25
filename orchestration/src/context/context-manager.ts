@@ -6,7 +6,7 @@
  * truncation to stay within model context limits.
  */
 
-import { type Message } from '../agents/types';
+import { type Message } from "../agents/types";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -68,7 +68,7 @@ export class ContextManager {
 
     const session: SessionState = {
       sessionId,
-      summary: '',
+      summary: "",
       messages: [],
       totalMessages: 0,
       createdAt: new Date().toISOString(),
@@ -118,7 +118,7 @@ export class ContextManager {
   getContext(sessionId: string): { summary: string; messages: Message[] } {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      return { summary: '', messages: [] };
+      return { summary: "", messages: [] };
     }
 
     const messages = this.truncateToTokenBudget(session.messages);
@@ -127,7 +127,7 @@ export class ContextManager {
 
   /** Return the running summary for a session. */
   getSummary(sessionId: string): string {
-    return this.sessions.get(sessionId)?.summary ?? '';
+    return this.sessions.get(sessionId)?.summary ?? "";
   }
 
   /** Manually update the running summary (e.g. after an LLM-based summarisation call). */
@@ -153,11 +153,11 @@ export class ContextManager {
     const toSummarise = session.messages.splice(0, midpoint);
 
     const bullets = toSummarise.map((m) => {
-      const firstLine = m.content.split('\n')[0]?.slice(0, 200) ?? '';
+      const firstLine = m.content.split("\n")[0]?.slice(0, 200) ?? "";
       return `- [${m.role}] ${firstLine}`;
     });
 
-    const newSummaryBlock = bullets.join('\n');
+    const newSummaryBlock = bullets.join("\n");
     session.summary = session.summary
       ? `${session.summary}\n${newSummaryBlock}`
       : newSummaryBlock;
@@ -179,7 +179,7 @@ export class ContextManager {
   private truncateToTokenBudget(messages: Message[]): Message[] {
     let totalTokens = messages.reduce(
       (sum, m) => sum + this.estimateTokens(m.content),
-      0
+      0,
     );
 
     const result = [...messages];

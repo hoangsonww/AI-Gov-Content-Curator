@@ -6,10 +6,7 @@
  * and CostTracker into a single entry-point for the backend chat API.
  */
 
-import {
-  AgentRegistry,
-  INTENT_CAPABILITY_MAP,
-} from '../agents/agent-registry';
+import { AgentRegistry, INTENT_CAPABILITY_MAP } from "../agents/agent-registry";
 import {
   type AgentDefinition,
   ChatIntentType,
@@ -17,19 +14,22 @@ import {
   type Message,
   type StreamChunk,
   type TaskMetadata,
-} from '../agents/types';
-import { ContextManager, type SessionState } from '../context/context-manager';
-import { CostTracker } from '../cost/cost-tracker';
+} from "../agents/types";
+import { ContextManager, type SessionState } from "../context/context-manager";
+import { CostTracker } from "../cost/cost-tracker";
 import {
   DualProviderClient,
   type GenerateResult,
   type LLMClientConfig,
-} from '../llm/dual-provider-client';
-import { GROUNDING_RULES, GroundingValidator } from '../agents/prompts/grounding';
-import { PromptCacheStrategy } from '../agents/prompts/cache-strategy';
-import { createLogger } from '../observability/logger';
+} from "../llm/dual-provider-client";
+import {
+  GROUNDING_RULES,
+  GroundingValidator,
+} from "../agents/prompts/grounding";
+import { PromptCacheStrategy } from "../agents/prompts/cache-strategy";
+import { createLogger } from "../observability/logger";
 
-const logger = createLogger('supervisor.chat');
+const logger = createLogger("supervisor.chat");
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -118,30 +118,42 @@ export class ChatSupervisor {
 
   async chat(
     sessionId: string,
-    userMessage: string
+    userMessage: string,
   ): Promise<SupervisorResponse> {
     const start = Date.now();
-    logger.info('chat.start', { sessionId, queryLength: userMessage.length });
+    logger.info("chat.start", { sessionId, queryLength: userMessage.length });
 
     // 1. Record user message
     this.context.addMessage(sessionId, {
-      role: 'user',
+      role: "user",
       content: userMessage,
       timestamp: new Date().toISOString(),
     });
 
     // 2. Classify intent
     const intent = await this.classifyIntent(sessionId, userMessage);
-    logger.debug('chat.intent_classified', { sessionId, intent: intent.intent, confidence: intent.confidence });
+    logger.debug("chat.intent_classified", {
+      sessionId,
+      intent: intent.intent,
+      confidence: intent.confidence,
+    });
 
     // 3. Route to best agent
     const agent = this.routeToAgent(intent);
-    logger.debug('chat.routed', { sessionId, agentId: agent.id, model: agent.model });
+    logger.debug("chat.routed", {
+      sessionId,
+      agentId: agent.id,
+      model: agent.model,
+    });
 
     // 4. Budget check
-    const estimatedCost = this.costTracker.estimateCost(agent.model, 2000, 1000);
+    const estimatedCost = this.costTracker.estimateCost(
+      agent.model,
+      2000,
+      1000,
+    );
     if (!this.costTracker.canAfford(estimatedCost)) {
-      logger.warn('chat.budget_exceeded', { sessionId, estimatedCost });
+      logger.warn("chat.budget_exceeded", { sessionId, estimatedCost });
       return this.budgetExceededResponse(sessionId, intent, agent);
     }
 
@@ -151,18 +163,20 @@ export class ChatSupervisor {
         sessionId,
         agent,
         intent,
-        []
+        [],
       );
 
       // 6. Handle empty content (model returned no text)
-      const content = result.content || 'I was unable to generate a response. Please try rephrasing your question.';
+      const content =
+        result.content ||
+        "I was unable to generate a response. Please try rephrasing your question.";
 
       // 7. Validate grounding
       const groundingResult = this.grounding.validate(content, []);
 
       // 8. Record assistant message and cost
       this.context.addMessage(sessionId, {
-        role: 'assistant',
+        role: "assistant",
         content,
         agentId: result.metadata.agentId,
         timestamp: new Date().toISOString(),
@@ -170,7 +184,7 @@ export class ChatSupervisor {
       this.costTracker.recordUsage(result.metadata);
 
       const latency = Date.now() - start;
-      logger.info('chat.complete', {
+      logger.info("chat.complete", {
         sessionId,
         agentId: result.metadata.agentId,
         latencyMs: latency,
@@ -189,7 +203,7 @@ export class ChatSupervisor {
       };
     } catch (err) {
       const latency = Date.now() - start;
-      logger.error('chat.failed', {
+      logger.error("chat.failed", {
         sessionId,
         agentId: agent.id,
         latencyMs: latency,
@@ -198,7 +212,8 @@ export class ChatSupervisor {
 
       // Return a structured error response instead of throwing
       return {
-        content: 'I encountered an error processing your request. Please try again.',
+        content:
+          "I encountered an error processing your request. Please try again.",
         sessionId,
         intent,
         agentId: agent.id,
@@ -225,12 +240,12 @@ export class ChatSupervisor {
 
   async *chatStream(
     sessionId: string,
-    userMessage: string
+    userMessage: string,
   ): AsyncGenerator<StreamChunk> {
-    logger.info('chatStream.start', { sessionId });
+    logger.info("chatStream.start", { sessionId });
 
     this.context.addMessage(sessionId, {
-      role: 'user',
+      role: "user",
       content: userMessage,
       timestamp: new Date().toISOString(),
     });
@@ -239,7 +254,11 @@ export class ChatSupervisor {
     const agent = this.routeToAgent(intent);
 
     // Budget check for streaming too
-    const estimatedCost = this.costTracker.estimateCost(agent.model, 2000, 1000);
+    const estimatedCost = this.costTracker.estimateCost(
+      agent.model,
+      2000,
+      1000,
+    );
     if (!this.costTracker.canAfford(estimatedCost)) {
       yield {
         delta: `I'm sorry, but the daily usage budget has been reached. Please try again tomorrow.`,
@@ -252,15 +271,19 @@ export class ChatSupervisor {
     const { summary, messages } = this.context.getContext(sessionId);
     const systemPrompt = this.buildSystemPrompt(agent, summary);
 
-    let fullText = '';
-    for await (const chunk of this.client.stream({ agent, systemPrompt, messages })) {
+    let fullText = "";
+    for await (const chunk of this.client.stream({
+      agent,
+      systemPrompt,
+      messages,
+    })) {
       fullText += chunk.delta;
       yield chunk;
 
       // On final chunk, record the assistant message and cost
       if (chunk.done && chunk.usage) {
         this.context.addMessage(sessionId, {
-          role: 'assistant',
+          role: "assistant",
           content: fullText,
           agentId: agent.id,
           timestamp: new Date().toISOString(),
@@ -278,10 +301,10 @@ export class ChatSupervisor {
             agent.model,
             chunk.usage.inputTokens,
             chunk.usage.outputTokens,
-            chunk.usage.cachedTokens ?? 0
+            chunk.usage.cachedTokens ?? 0,
           ),
         });
-        logger.info('chatStream.complete', { sessionId, agentId: agent.id });
+        logger.info("chatStream.complete", { sessionId, agentId: agent.id });
       }
     }
   }
@@ -292,9 +315,9 @@ export class ChatSupervisor {
 
   private async classifyIntent(
     sessionId: string,
-    query: string
+    query: string,
   ): Promise<IntentParameters> {
-    const supervisor = this.registry.get('supervisor');
+    const supervisor = this.registry.get("supervisor");
     if (!supervisor) {
       return this.fallbackIntent(query);
     }
@@ -303,13 +326,15 @@ export class ChatSupervisor {
       const result = await this.client.generate({
         agent: supervisor,
         systemPrompt: INTENT_CLASSIFICATION_PROMPT,
-        messages: [{ role: 'user', content: query }],
+        messages: [{ role: "user", content: query }],
         maxTokens: 256,
         temperature: 0.1,
       });
 
       // Strip markdown fences if the LLM wraps JSON in ```json ... ```
-      const raw = result.content.replace(/^```(?:json)?\s*|\s*```$/g, '').trim();
+      const raw = result.content
+        .replace(/^```(?:json)?\s*|\s*```$/g, "")
+        .trim();
       const parsed = JSON.parse(raw);
 
       // Validate the intent is a known ChatIntentType value
@@ -324,10 +349,11 @@ export class ChatSupervisor {
         entities: Array.isArray(parsed.entities) ? parsed.entities : [],
         dateRange: parsed.dateRange ?? undefined,
         source: parsed.source ?? undefined,
-        confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
+        confidence:
+          typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
       };
     } catch (err) {
-      logger.warn('Intent classification failed, using fallback', {
+      logger.warn("Intent classification failed, using fallback", {
         error: err instanceof Error ? err.message : String(err),
         query: query.slice(0, 100),
       });
@@ -340,15 +366,19 @@ export class ChatSupervisor {
     const lower = query.toLowerCase();
     let intent = ChatIntentType.general_chat;
 
-    if (lower.includes('search') || lower.includes('find')) {
+    if (lower.includes("search") || lower.includes("find")) {
       intent = ChatIntentType.article_search;
-    } else if (lower.includes('trend') || lower.includes('over time')) {
+    } else if (lower.includes("trend") || lower.includes("over time")) {
       intent = ChatIntentType.trend_analysis;
-    } else if (lower.includes('bias') || lower.includes('framing')) {
+    } else if (lower.includes("bias") || lower.includes("framing")) {
       intent = ChatIntentType.bias_analysis;
-    } else if (lower.includes('what') || lower.includes('how') || lower.includes('why')) {
+    } else if (
+      lower.includes("what") ||
+      lower.includes("how") ||
+      lower.includes("why")
+    ) {
       intent = ChatIntentType.article_qa;
-    } else if (lower.includes('topic') || lower.includes('explore')) {
+    } else if (lower.includes("topic") || lower.includes("explore")) {
       intent = ChatIntentType.topic_exploration;
     }
 
@@ -370,11 +400,13 @@ export class ChatSupervisor {
 
     if (candidates.length > 0) {
       // Prefer the non-fallback (primary) agent
-      return candidates.find((a) => !a.id.endsWith('-google')) ?? candidates[0]!;
+      return (
+        candidates.find((a) => !a.id.endsWith("-google")) ?? candidates[0]!
+      );
     }
 
     // Default to supervisor
-    return this.registry.get('supervisor')!;
+    return this.registry.get("supervisor")!;
   }
 
   // -----------------------------------------------------------------------
@@ -385,13 +417,13 @@ export class ChatSupervisor {
     sessionId: string,
     agent: AgentDefinition,
     intent: IntentParameters,
-    visited: string[]
+    visited: string[],
   ): Promise<{ result: GenerateResult; handoffChain: string[] }> {
     const chain = [...visited, agent.id];
 
     if (chain.length > this.maxDepth) {
       // Circular or too-deep chain — use supervisor to synthesise
-      const supervisor = this.registry.get('supervisor') ?? agent;
+      const supervisor = this.registry.get("supervisor") ?? agent;
       const result = await this.generateForAgent(sessionId, supervisor);
       return { result, handoffChain: chain };
     }
@@ -411,7 +443,7 @@ export class ChatSupervisor {
 
   private async generateForAgent(
     sessionId: string,
-    agent: AgentDefinition
+    agent: AgentDefinition,
   ): Promise<GenerateResult> {
     const { summary, messages } = this.context.getContext(sessionId);
     const systemPrompt = this.buildSystemPrompt(agent, summary);
@@ -427,20 +459,23 @@ export class ChatSupervisor {
   // Prompt construction
   // -----------------------------------------------------------------------
 
-  private buildSystemPrompt(agent: AgentDefinition, conversationSummary: string): string {
+  private buildSystemPrompt(
+    agent: AgentDefinition,
+    conversationSummary: string,
+  ): string {
     const parts: string[] = [
-      '## Grounding Rules',
-      GROUNDING_RULES.map((r, i) => `${i + 1}. ${r}`).join('\n'),
-      '',
+      "## Grounding Rules",
+      GROUNDING_RULES.map((r, i) => `${i + 1}. ${r}`).join("\n"),
+      "",
       `## Agent: ${agent.name}`,
       agent.systemPrompt,
     ];
 
     if (conversationSummary) {
-      parts.push('', '## Prior Context', conversationSummary);
+      parts.push("", "## Prior Context", conversationSummary);
     }
 
-    return parts.join('\n');
+    return parts.join("\n");
   }
 
   // -----------------------------------------------------------------------
@@ -450,7 +485,7 @@ export class ChatSupervisor {
   private budgetExceededResponse(
     sessionId: string,
     intent: IntentParameters,
-    agent: AgentDefinition
+    agent: AgentDefinition,
   ): SupervisorResponse {
     const snapshot = this.costTracker.getSnapshot();
     return {
@@ -500,7 +535,7 @@ export class ChatSupervisor {
 
   /** Health check for monitoring endpoints. */
   healthCheck(): {
-    status: 'healthy' | 'degraded' | 'unhealthy';
+    status: "healthy" | "degraded" | "unhealthy";
     providers: string[];
     warnings: string[];
     budget: { totalUsd: number; remainingUsd: number; budgetUsd: number };
@@ -510,23 +545,26 @@ export class ChatSupervisor {
     const warnings: string[] = [];
 
     if (providers.length === 0) {
-      warnings.push('No LLM providers available');
+      warnings.push("No LLM providers available");
     } else if (providers.length === 1) {
       warnings.push(`Only ${providers[0]} available — failover disabled`);
     }
 
     if (snapshot.remainingUsd <= 0) {
-      warnings.push('Daily budget exhausted');
+      warnings.push("Daily budget exhausted");
     } else if (snapshot.remainingUsd < snapshot.budgetUsd * 0.1) {
-      warnings.push(`Budget nearly exhausted: $${snapshot.remainingUsd.toFixed(4)} remaining`);
+      warnings.push(
+        `Budget nearly exhausted: $${snapshot.remainingUsd.toFixed(4)} remaining`,
+      );
     }
 
     const status =
       providers.length === 0 || snapshot.remainingUsd <= 0
-        ? 'unhealthy'
-        : providers.length === 1 || snapshot.remainingUsd < snapshot.budgetUsd * 0.1
-          ? 'degraded'
-          : 'healthy';
+        ? "unhealthy"
+        : providers.length === 1 ||
+            snapshot.remainingUsd < snapshot.budgetUsd * 0.1
+          ? "degraded"
+          : "healthy";
 
     return {
       status,

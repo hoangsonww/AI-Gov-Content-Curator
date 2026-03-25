@@ -3,7 +3,7 @@
  * Structures prompts into cacheable layers to maximize cache hit rates.
  */
 
-import { AgentDefinition, Message } from '../types';
+import { AgentDefinition, Message } from "../types";
 
 /** A single layer in a cached prompt structure. */
 export interface CacheLayer {
@@ -20,9 +20,13 @@ export interface CacheLayer {
 /** A fully assembled cached prompt ready to send to the Anthropic API. */
 export interface CachedPrompt {
   /** The system prompt with cache control annotations. */
-  system: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }>;
+  system: Array<{
+    type: "text";
+    text: string;
+    cache_control?: { type: "ephemeral" };
+  }>;
   /** The user/assistant message turns. */
-  messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
   /** Total estimated tokens across all layers. */
   totalEstimatedTokens: number;
   /** Estimated tokens that may be served from cache. */
@@ -64,36 +68,39 @@ export class PromptCacheStrategy {
     agent: AgentDefinition,
     groundingRules: readonly string[],
     conversationSummary: string,
-    recentMessages: Message[]
+    recentMessages: Message[],
   ): CachedPrompt {
     const layers = this.buildLayers(agent, groundingRules, conversationSummary);
 
     // Build system blocks — layers 1-3 are cached, layer 4 may be cached if non-trivial
-    const systemBlocks: CachedPrompt['system'] = [];
+    const systemBlocks: CachedPrompt["system"] = [];
 
     for (let i = 0; i < layers.length; i++) {
       const layer = layers[i];
       if (!layer) continue;
       if (layer.cacheable && layer.content.trim()) {
         systemBlocks.push({
-          type: 'text',
+          type: "text",
           text: layer.content,
-          cache_control: { type: 'ephemeral' },
+          cache_control: { type: "ephemeral" },
         });
       } else if (layer.content.trim()) {
-        systemBlocks.push({ type: 'text', text: layer.content });
+        systemBlocks.push({ type: "text", text: layer.content });
       }
     }
 
     // Build message turns from recent messages (layer 5 — not cached)
-    const messages: CachedPrompt['messages'] = recentMessages
-      .filter((m) => m.role === 'user' || m.role === 'assistant')
+    const messages: CachedPrompt["messages"] = recentMessages
+      .filter((m) => m.role === "user" || m.role === "assistant")
       .map((m) => ({
-        role: m.role as 'user' | 'assistant',
+        role: m.role as "user" | "assistant",
         content: m.content,
       }));
 
-    const totalEstimatedTokens = layers.reduce((sum, l) => sum + l.estimatedTokens, 0);
+    const totalEstimatedTokens = layers.reduce(
+      (sum, l) => sum + l.estimatedTokens,
+      0,
+    );
     const estimatedCachedTokens = layers
       .filter((l) => l.cacheable)
       .reduce((sum, l) => sum + l.estimatedTokens, 0);
@@ -115,10 +122,11 @@ export class PromptCacheStrategy {
    */
   estimateCacheSavings(
     totalInputTokens: number,
-    cachedTokens: number
+    cachedTokens: number,
   ): CacheSavingsEstimate {
     const freshTokens = totalInputTokens - cachedTokens;
-    const cacheRatio = totalInputTokens > 0 ? cachedTokens / totalInputTokens : 0;
+    const cacheRatio =
+      totalInputTokens > 0 ? cachedTokens / totalInputTokens : 0;
 
     // claude-sonnet-4-6: input $3/M, cached input $0.375/M
     const standardCostPerToken = 3 / 1_000_000;
@@ -144,55 +152,60 @@ export class PromptCacheStrategy {
   private buildLayers(
     agent: AgentDefinition,
     groundingRules: readonly string[],
-    conversationSummary: string
+    conversationSummary: string,
   ): CacheLayer[] {
     // Layer 1: Base grounding rules (most stable — cache forever)
     const groundingText = [
-      '## Grounding Rules (apply to all responses)',
-      groundingRules.map((r, i) => `${i + 1}. ${r}`).join('\n'),
-    ].join('\n');
+      "## Grounding Rules (apply to all responses)",
+      groundingRules.map((r, i) => `${i + 1}. ${r}`).join("\n"),
+    ].join("\n");
 
     // Layer 2: Agent system prompt (stable per agent type)
     const systemText = [
       `## Agent: ${agent.name}`,
       agent.description,
       agent.systemPrompt,
-    ].join('\n\n');
+    ].join("\n\n");
 
     // Layer 3: Tool definitions (stable per session)
     const toolsText =
       agent.tools && agent.tools.length > 0
-        ? ['## Available Tools', agent.tools.map((t) => `- ${t}`).join('\n')].join('\n')
-        : '';
+        ? [
+            "## Available Tools",
+            agent.tools.map((t) => `- ${t}`).join("\n"),
+          ].join("\n")
+        : "";
 
     // Layer 4: Conversation summary (session-level, cache if non-trivial)
     const summaryText = conversationSummary.trim()
-      ? ['## Conversation Summary (prior context)', conversationSummary].join('\n\n')
-      : '';
+      ? ["## Conversation Summary (prior context)", conversationSummary].join(
+          "\n\n",
+        )
+      : "";
 
     const estimate = (text: string) => Math.ceil(text.length / 4);
 
     return [
       {
-        name: 'grounding_rules',
+        name: "grounding_rules",
         content: groundingText,
         cacheable: true,
         estimatedTokens: estimate(groundingText),
       },
       {
-        name: 'system_prompt',
+        name: "system_prompt",
         content: systemText,
         cacheable: true,
         estimatedTokens: estimate(systemText),
       },
       {
-        name: 'tool_definitions',
+        name: "tool_definitions",
         content: toolsText,
         cacheable: true,
         estimatedTokens: estimate(toolsText),
       },
       {
-        name: 'conversation_summary',
+        name: "conversation_summary",
         content: summaryText,
         cacheable: summaryText.length > 200,
         estimatedTokens: estimate(summaryText),

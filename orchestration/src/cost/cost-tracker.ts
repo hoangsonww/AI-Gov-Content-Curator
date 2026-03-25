@@ -5,7 +5,7 @@
  * daily budget cap. Thread-safe for single-process Node.js usage.
  */
 
-import { MODEL_PRICING, type TaskMetadata } from '../agents/types';
+import { MODEL_PRICING, type TaskMetadata } from "../agents/types";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -27,7 +27,10 @@ export interface DailyUsageSnapshot {
   /** Remaining allowance in USD. */
   remainingUsd: number;
   /** Per-model breakdown. */
-  byModel: Record<string, { costUsd: number; inputTokens: number; outputTokens: number }>;
+  byModel: Record<
+    string,
+    { costUsd: number; inputTokens: number; outputTokens: number }
+  >;
   /** Total requests tracked today. */
   requestCount: number;
 }
@@ -43,8 +46,10 @@ export class CostTracker {
   private currentDate: string;
   private totalUsd = 0;
   private requestCount = 0;
-  private byModel: Map<string, { costUsd: number; inputTokens: number; outputTokens: number }> =
-    new Map();
+  private byModel: Map<
+    string,
+    { costUsd: number; inputTokens: number; outputTokens: number }
+  > = new Map();
 
   constructor(config: CostTrackerConfig = {}) {
     this.dailyBudgetUsd = config.dailyBudgetUsd ?? DEFAULT_DAILY_BUDGET;
@@ -63,7 +68,7 @@ export class CostTracker {
     model: string,
     inputTokens: number,
     outputTokens: number,
-    cachedTokens = 0
+    cachedTokens = 0,
   ): number {
     const pricing = MODEL_PRICING[model];
     if (!pricing) return 0;
@@ -103,7 +108,7 @@ export class CostTracker {
   getSnapshot(): DailyUsageSnapshot {
     this.maybeReset();
 
-    const byModelObj: DailyUsageSnapshot['byModel'] = {};
+    const byModelObj: DailyUsageSnapshot["byModel"] = {};
     for (const [model, data] of this.byModel) {
       byModelObj[model] = { ...data };
     }
@@ -113,7 +118,9 @@ export class CostTracker {
       totalUsd: Math.round(this.totalUsd * 1_000_000) / 1_000_000,
       budgetUsd: this.dailyBudgetUsd,
       remainingUsd:
-        Math.round(Math.max(0, this.dailyBudgetUsd - this.totalUsd) * 1_000_000) / 1_000_000,
+        Math.round(
+          Math.max(0, this.dailyBudgetUsd - this.totalUsd) * 1_000_000,
+        ) / 1_000_000,
       byModel: byModelObj,
       requestCount: this.requestCount,
     };

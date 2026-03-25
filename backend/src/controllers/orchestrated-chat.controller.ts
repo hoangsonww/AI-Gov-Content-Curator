@@ -28,15 +28,15 @@ function getSupervisor(): ChatSupervisor {
   if (!supervisor) {
     supervisor = new ChatSupervisor({
       dailyBudgetUsd: parseFloat(
-        process.env.ORCHESTRATION_DAILY_BUDGET_USD || "10"
+        process.env.ORCHESTRATION_DAILY_BUDGET_USD || "10",
       ),
       maxHandoffDepth: parseInt(
         process.env.ORCHESTRATION_MAX_HANDOFF_DEPTH || "5",
-        10
+        10,
       ),
       maxActiveMessages: parseInt(
         process.env.ORCHESTRATION_MAX_ACTIVE_MESSAGES || "20",
-        10
+        10,
       ),
     });
   }
@@ -64,7 +64,7 @@ function getPipelineClient(): PipelineClient {
 export async function handleOrchestratedChat(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const parsed = chatRequestSchema.safeParse(req.body);
@@ -107,7 +107,7 @@ export async function handleOrchestratedChat(
 export async function handleOrchestratedChatStream(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const parsed = chatRequestSchema.safeParse(req.body);
@@ -171,7 +171,7 @@ export async function handleOrchestratedChatStream(
 export async function handleArticleProcess(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const parsed = articleProcessRequestSchema.safeParse(req.body);
@@ -207,7 +207,7 @@ export async function handleArticleProcess(
 export async function handleArticleAnalyze(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const { content, analysis_type = "full" } = req.body;
@@ -230,7 +230,7 @@ export async function handleArticleAnalyze(
 export async function handleBatchProcess(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const parsed = batchProcessRequestSchema.safeParse(req.body);
@@ -270,7 +270,7 @@ export async function handleBatchProcess(
 export async function handleOrchestratorHealth(
   _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const sv = getSupervisor();
@@ -309,7 +309,7 @@ export async function handleOrchestratorHealth(
 export async function handleCostSnapshot(
   _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const sv = getSupervisor();
@@ -326,7 +326,7 @@ export async function handleCostSnapshot(
 export async function handleDeleteSession(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const { sessionId } = req.params;

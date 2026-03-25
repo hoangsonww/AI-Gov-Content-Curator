@@ -5,7 +5,7 @@
  * layer to guarantee runtime type safety.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Request schemas
@@ -20,7 +20,7 @@ export const chatRequestSchema = z.object({
   /** Whether to stream the response via SSE. */
   stream: z.boolean().optional().default(false),
   /** Optional processing mode override. */
-  mode: z.enum(['DIRECT', 'TOOL_AUGMENTED', 'AGENTIC']).optional(),
+  mode: z.enum(["DIRECT", "TOOL_AUGMENTED", "AGENTIC"]).optional(),
   /** Optional metadata from the client. */
   metadata: z.record(z.unknown()).optional(),
 });
@@ -38,7 +38,7 @@ export const articleProcessRequestSchema = z.object({
     title: z.string().optional(),
   }),
   /** Processing mode. */
-  mode: z.enum(['full', 'fast', 'enrich', 'reprocess']).default('full'),
+  mode: z.enum(["full", "fast", "enrich", "reprocess"]).default("full"),
   /** Priority for batch ordering (higher = sooner). */
   priority: z.number().int().min(0).max(100).default(0),
 });
@@ -48,7 +48,7 @@ export type ArticleProcessRequest = z.infer<typeof articleProcessRequestSchema>;
 /** Schema for batch processing requests. */
 export const batchProcessRequestSchema = z.object({
   articles: z.array(articleProcessRequestSchema.shape.article).min(1).max(100),
-  mode: z.enum(['full', 'fast', 'enrich', 'reprocess']).default('full'),
+  mode: z.enum(["full", "fast", "enrich", "reprocess"]).default("full"),
 });
 
 export type BatchProcessRequest = z.infer<typeof batchProcessRequestSchema>;
@@ -90,7 +90,7 @@ export type ChatResponse = z.infer<typeof chatResponseSchema>;
 
 /** Health check response schema. */
 export const healthCheckSchema = z.object({
-  status: z.enum(['healthy', 'degraded', 'unhealthy']),
+  status: z.enum(["healthy", "degraded", "unhealthy"]),
   providers: z.array(z.string()),
   warnings: z.array(z.string()),
   budget: z.object({

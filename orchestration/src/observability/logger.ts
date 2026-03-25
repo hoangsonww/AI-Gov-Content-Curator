@@ -9,7 +9,7 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface LogEntry {
   /** ISO-8601 timestamp. */
@@ -47,10 +47,10 @@ export class Logger {
   private readonly isProduction: boolean;
   private requestId?: string;
 
-  constructor(module: string, minLevel: LogLevel = 'info') {
+  constructor(module: string, minLevel: LogLevel = "info") {
     this.module = module;
     this.minLevel = minLevel;
-    this.isProduction = process.env.NODE_ENV === 'production';
+    this.isProduction = process.env.NODE_ENV === "production";
   }
 
   /** Create a child logger bound to a specific request. */
@@ -61,26 +61,30 @@ export class Logger {
   }
 
   debug(message: string, context?: Record<string, unknown>): void {
-    this.log('debug', message, context);
+    this.log("debug", message, context);
   }
 
   info(message: string, context?: Record<string, unknown>): void {
-    this.log('info', message, context);
+    this.log("info", message, context);
   }
 
   warn(message: string, context?: Record<string, unknown>): void {
-    this.log('warn', message, context);
+    this.log("warn", message, context);
   }
 
   error(message: string, context?: Record<string, unknown>): void {
-    this.log('error', message, context);
+    this.log("error", message, context);
   }
 
   // -----------------------------------------------------------------------
   // Internal
   // -----------------------------------------------------------------------
 
-  private log(level: LogLevel, message: string, context?: Record<string, unknown>): void {
+  private log(
+    level: LogLevel,
+    message: string,
+    context?: Record<string, unknown>,
+  ): void {
     if (LEVEL_PRIORITY[level] < LEVEL_PRIORITY[this.minLevel]) return;
 
     const entry: LogEntry = {
@@ -94,14 +98,14 @@ export class Logger {
 
     if (this.isProduction) {
       // JSON lines for log aggregation (ELK, CloudWatch, etc.)
-      const stream = level === 'error' ? process.stderr : process.stdout;
-      stream.write(JSON.stringify(entry) + '\n');
+      const stream = level === "error" ? process.stderr : process.stdout;
+      stream.write(JSON.stringify(entry) + "\n");
     } else {
       // Readable format for development
       const prefix = `[${entry.timestamp}] ${level.toUpperCase().padEnd(5)} [${this.module}]`;
-      const reqPart = this.requestId ? ` req=${this.requestId}` : '';
-      const ctxPart = context ? ` ${JSON.stringify(context)}` : '';
-      const stream = level === 'error' ? console.error : console.log;
+      const reqPart = this.requestId ? ` req=${this.requestId}` : "";
+      const ctxPart = context ? ` ${JSON.stringify(context)}` : "";
+      const stream = level === "error" ? console.error : console.log;
       stream(`${prefix}${reqPart} ${message}${ctxPart}`);
     }
   }
@@ -112,6 +116,7 @@ export class Logger {
  * Pass the orchestration log level from config for consistent filtering.
  */
 export function createLogger(module: string, level?: LogLevel): Logger {
-  const envLevel = (process.env.ORCHESTRATION_LOG_LEVEL as LogLevel) ?? level ?? 'info';
+  const envLevel =
+    (process.env.ORCHESTRATION_LOG_LEVEL as LogLevel) ?? level ?? "info";
   return new Logger(module, envLevel);
 }
