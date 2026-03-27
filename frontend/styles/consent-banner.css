@@ -1,0 +1,73 @@
+/* Full width banner at the bottom */
+.consent-banner-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 9999;
+  /* background-color: rgba(0, 0, 0, 0.2); subtle semi-transparent overlay */
+}
+
+/* Banner container stretched across width */
+.consent-banner {
+  background-color: #d3d3d3; /* grayish background */
+  color: black; /* text color */
+  padding: 16px 24px;
+  border-radius: 0; /* no rounded edges for full-width effect */
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Buttons container */
+.consent-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px; /* buttons closer together */
+  margin-top: 12px;
+}
+
+/* Individual buttons */
+.consent-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+/* Accept button */
+.consent-buttons button:first-child {
+  background-color: #4caf50;
+  color: white;
+}
+
+.consent-buttons button:first-child:hover {
+  background-color: #45a049;
+}
+
+/* Reject All button */
+.consent-buttons button:nth-child(2) {
+  background-color: #f44336;
+  color: white;
+}
+
+.consent-buttons button:nth-child(2):hover {
+  background-color: #da190b;
+}
+
+/* Customize button */
+.consent-buttons button:last-child {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.consent-buttons button:last-child:hover {
+  background-color: #e0e0e0;
+}

@@ -29,6 +29,8 @@ import "../styles/comments.css";
 import "../styles/rating.css";
 import "../styles/biasAnalysis.css";
 import "../styles/translate.css";
+import "../styles/consent-banner.css";
+import ConsentBanner from "../components/ConsentBanner";
 import Layout from "../components/Layout";
 import { MdArrowUpward } from "react-icons/md";
 import { Analytics } from "@vercel/analytics/react";
@@ -133,6 +135,8 @@ function App({ Component, pageProps }: AppProps) {
           <MdArrowUpward size={24} />
         </button>
       )}
+      {/* ✅ Consent Banner */}
+      <ConsentBanner />
     </Layout>
   );
 }
