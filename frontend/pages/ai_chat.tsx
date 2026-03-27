@@ -287,7 +287,8 @@ export default function ChatPage() {
   }
 
   async function submitEdit() {
-    if (!editingMsgId || !editText.trim() || !activeConversation || isTyping) return;
+    if (!editingMsgId || !editText.trim() || !activeConversation || isTyping)
+      return;
 
     const msgIndex = activeConversation.messages.findIndex(
       (m) => m.id === editingMsgId,
@@ -306,9 +307,7 @@ export default function ChatPage() {
     const historyBefore = activeConversation.messages.slice(0, msgIndex);
     setConversations((prev) =>
       prev.map((c) =>
-        c.id === activeConvId
-          ? { ...c, messages: [...historyBefore] }
-          : c,
+        c.id === activeConvId ? { ...c, messages: [...historyBefore] } : c,
       ),
     );
 
@@ -1327,7 +1326,10 @@ export default function ChatPage() {
             cursor: pointer;
             color: var(--chat-muted);
             opacity: 0.5;
-            transition: opacity 0.15s, background 0.15s, color 0.15s;
+            transition:
+              opacity 0.15s,
+              background 0.15s,
+              color 0.15s;
             padding: 0;
             flex-shrink: 0;
             align-self: center;
@@ -1766,7 +1768,6 @@ export default function ChatPage() {
             .message-bubble {
               max-width: 92%;
             }
-
           }
 
           @media (max-width: 600px) {
