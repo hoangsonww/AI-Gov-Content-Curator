@@ -835,7 +835,13 @@ export default function ChatPage() {
                       <button
                         className="edit-action-btn edit-confirm"
                         onClick={() => void submitEdit()}
-                        disabled={!editText.trim()}
+                        disabled={
+                          !editText.trim() ||
+                          editText.trim() ===
+                            activeConversation?.messages
+                              .find((msg) => msg.id === editingMsgId)
+                              ?.text.trim()
+                        }
                         title="Send edited message (Enter)"
                         aria-label="Send edited message"
                       >
