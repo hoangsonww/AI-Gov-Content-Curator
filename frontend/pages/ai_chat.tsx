@@ -300,245 +300,26 @@ export default function ChatPage() {
       return;
     }
 
-    // Capture convId so streaming closures use a stable reference
-    const targetConvId = activeConvId;
     const trimmedText = editText.trim();
 
-    // Truncate: keep messages before the edited one, then append the edited version
+    // Truncate conversation: keep only messages before the edited one
     const historyBefore = activeConversation.messages.slice(0, msgIndex);
-    const editedMsg: Message = {
-      id: `m-${Date.now()}`,
-      role: "user",
-      text: trimmedText,
-      time: nowTime(),
-    };
-
-    // Update conversation: truncate + new edited message
     setConversations((prev) =>
       prev.map((c) =>
-        c.id === targetConvId
-          ? { ...c, messages: [...historyBefore, editedMsg] }
+        c.id === activeConvId
+          ? { ...c, messages: [...historyBefore] }
           : c,
       ),
     );
 
     setEditingMsgId(null);
     setEditText("");
-    setIsTyping(true);
 
-    try {
-      // Build history from the truncated messages (before the edit point)
-      const mappedHistory = historyBefore.slice(-10).map((m) => ({
-        role: m.role === "user" ? "user" : "assistant",
-        text: m.text,
-      }));
-      const firstUserIdx = mappedHistory.findIndex((m) => m.role === "user");
-      const history =
-        firstUserIdx === -1 ? [] : mappedHistory.slice(firstUserIdx);
-
-      const API_URL = (
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://ai-content-curator-backend.vercel.app"
-      ).replace(/\/$/, "");
-      const response = await fetch(`${API_URL}/api/chat/sitewide`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
-        },
-        body: JSON.stringify({
-          userMessage: trimmedText,
-          history: history,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const aiMsgId = `m-ai-${Date.now()}`;
-      let streamedText = "";
-      let citations: Citation[] = [];
-      let warnings: string[] = [];
-
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === targetConvId
-            ? {
-                ...c,
-                messages: [
-                  ...c.messages,
-                  {
-                    id: aiMsgId,
-                    role: "ai" as const,
-                    text: "",
-                    time: nowTime(),
-                    citations: [],
-                    warnings: [],
-                  },
-                ],
-              }
-            : c,
-        ),
-      );
-      setIsTyping(false);
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) {
-        throw new Error("Response body is not readable");
-      }
-
-      let buffer = "";
-      let currentEvent = "";
-      let dataLines: string[] = [];
-
-      const flushEvent = () => {
-        if (dataLines.length === 0) return;
-        const payload = dataLines.join("\n").trim();
-        dataLines = [];
-        if (!payload) return;
-
-        try {
-          const data = JSON.parse(payload);
-
-          if (data.sources) {
-            citations = data.sources;
-          }
-
-          if (data.warnings) {
-            warnings = data.warnings;
-          }
-
-          if (typeof data.text === "string" || currentEvent === "chunk") {
-            if (typeof data.text === "string") {
-              streamedText += data.text;
-            }
-
-            setConversations((prevConvs) =>
-              prevConvs.map((c) => {
-                if (c.id !== targetConvId) return c;
-                return {
-                  ...c,
-                  messages: c.messages.map((m) =>
-                    m.id === aiMsgId
-                      ? {
-                          ...m,
-                          text: streamedText,
-                          citations: [...citations],
-                          warnings: [...warnings],
-                        }
-                      : m,
-                  ),
-                };
-              }),
-            );
-          } else if (currentEvent === "error" && data.message) {
-            if (streamedText.trim().length === 0) {
-              streamedText =
-                data.message || "An error occurred. Please try again.";
-            } else {
-              warnings = [...warnings, data.message];
-            }
-            setConversations((prev) =>
-              prev.map((c) =>
-                c.id === targetConvId
-                  ? {
-                      ...c,
-                      messages: c.messages.map((m) =>
-                        m.id === aiMsgId
-                          ? {
-                              ...m,
-                              text: streamedText,
-                              citations: [...citations],
-                              warnings: [...warnings],
-                            }
-                          : m,
-                      ),
-                    }
-                  : c,
-              ),
-            );
-          }
-        } catch (err) {
-          console.error("Failed to parse SSE payload", {
-            currentEvent,
-            payload,
-            err,
-          });
-        }
-      };
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex = buffer.indexOf("\n");
-        while (newlineIndex !== -1) {
-          const line = buffer.slice(0, newlineIndex).trimEnd();
-          buffer = buffer.slice(newlineIndex + 1);
-
-          if (line.startsWith("event:")) {
-            flushEvent();
-            currentEvent = line.slice(6).trim();
-          } else if (line.startsWith("data:")) {
-            dataLines.push(line.slice(5).trim());
-          } else if (line === "") {
-            flushEvent();
-            currentEvent = "";
-          }
-
-          newlineIndex = buffer.indexOf("\n");
-        }
-      }
-
-      flushEvent();
-
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === targetConvId
-            ? {
-                ...c,
-                messages: c.messages.map((m) =>
-                  m.id === aiMsgId
-                    ? {
-                        ...m,
-                        text:
-                          streamedText ||
-                          "Sorry, I couldn't generate a response. Please try again.",
-                        citations,
-                        warnings,
-                      }
-                    : m,
-                ),
-              }
-            : c,
-        ),
-      );
-    } catch (error) {
-      console.error("Error sending edited message:", error);
-      setIsTyping(false);
-
-      const errorMsg: Message = {
-        id: `m-ai-${Date.now()}`,
-        role: "ai",
-        text: "Sorry, there was an error processing your request. Please check your connection and try again.",
-        time: nowTime(),
-      };
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === targetConvId
-            ? { ...c, messages: [...c.messages, errorMsg] }
-            : c,
-        ),
-      );
-    }
+    // Reuse sendMessage with the truncated history — it appends the user msg and streams the AI response
+    await sendMessage(trimmedText, historyBefore);
   }
 
-  async function sendMessage(text: string) {
+  async function sendMessage(text: string, overrideHistory?: Message[]) {
     if (!text.trim()) return;
 
     const msg: Message = {
@@ -551,8 +332,16 @@ export default function ChatPage() {
     let currentConvId = activeConvId;
     let historyMessages: Message[] = [];
 
-    // If no conversations exist, create one
-    if (conversations.length === 0) {
+    if (overrideHistory) {
+      // Called from submitEdit — conversation already truncated, history provided
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeConvId ? { ...c, messages: [...c.messages, msg] } : c,
+        ),
+      );
+      historyMessages = overrideHistory;
+    } else if (conversations.length === 0) {
+      // First message ever — create a new conversation
       const newConvId = `c-${Date.now()}`;
       const welcomeMsg: Message = {
         id: `m-welcome-${Date.now()}`,
