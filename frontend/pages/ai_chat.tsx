@@ -1056,8 +1056,7 @@ export default function ChatPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className={`message-bubble ${m.role}`}>
-                    <MessageContent message={m} />
+                  <>
                     {m.role === "user" && !isTyping && (
                       <button
                         className="msg-edit-btn"
@@ -1068,7 +1067,10 @@ export default function ChatPage() {
                         <Pencil size={13} strokeWidth={2.2} />
                       </button>
                     )}
-                  </div>
+                    <div className={`message-bubble ${m.role}`}>
+                      <MessageContent message={m} />
+                    </div>
+                  </>
                 )}
               </div>
             ))}
@@ -1489,10 +1491,6 @@ export default function ChatPage() {
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            padding-right: 36px;
-          }
-          .message-row.ai {
-            padding-right: 0;
           }
           .message-row.user {
             justify-content: flex-end;
@@ -1528,15 +1526,7 @@ export default function ChatPage() {
             transform: translateY(-1px);
           }
 
-          .message-bubble.user {
-            position: relative;
-          }
-
-          :global(.msg-edit-btn) {
-            position: absolute;
-            top: 50%;
-            right: -32px;
-            transform: translateY(-50%);
+          .msg-edit-btn {
             background: var(--chat-surface-alt);
             border: 1px solid var(--chat-border-subtle);
             border-radius: 8px;
@@ -1550,9 +1540,11 @@ export default function ChatPage() {
             opacity: 0.5;
             transition: opacity 0.15s, background 0.15s, color 0.15s;
             padding: 0;
+            flex-shrink: 0;
+            align-self: center;
           }
 
-          :global(.msg-edit-btn:hover) {
+          .msg-edit-btn:hover {
             opacity: 1;
             background: var(--chat-accent-soft-bg);
             color: var(--chat-accent);
@@ -1986,21 +1978,6 @@ export default function ChatPage() {
               max-width: 92%;
             }
 
-            .message-row {
-              padding-right: 0;
-            }
-
-            :global(.msg-edit-btn) {
-              position: static;
-              transform: none;
-              margin-top: 6px;
-              align-self: flex-end;
-              opacity: 0.6;
-            }
-
-            .message-bubble.edit-mode {
-              min-width: 0;
-            }
           }
 
           @media (max-width: 600px) {
