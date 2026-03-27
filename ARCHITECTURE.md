@@ -646,6 +646,7 @@ sequenceDiagram
 - **Hallucination detection:** Automated checks for invalid citations, unsupported claims, and suspicious numbers
 - **Failover mechanisms:** Multiple Gemini API keys and model rotation for reliability
 - **History management:** Automatic compaction to respect token limits
+- **Message editing & branching:** Users can edit any previously sent message; the conversation truncates at that point and re-sends with only the preceding history, creating a new branch
 
 ### Orchestration-Enhanced Chat
 
@@ -776,7 +777,7 @@ flowchart TB
 **Key Pages:**
 - `pages/index.tsx` - Homepage with hero slider and latest articles
 - `pages/articles/[id].tsx` - Article detail view with Q&A chat
-- `pages/ai_chat.tsx` - Sitewide AI chat interface with RAG
+- `pages/ai_chat.tsx` - Sitewide AI chat interface with RAG, message editing, and conversation branching
 - `pages/api/health.ts` - Health check endpoint
 
 **Features:**

@@ -290,6 +290,7 @@ function MessageContent({ message }: { message: Message })
 - **Converts**: Citations to interactive React components
 - **Manages**: Hover state for visual feedback
 - **Handles**: Click events for scrolling to sources
+- **Supports message editing**: When a user edits a prior message, the conversation is truncated at that point and only the preceding history (with its citations) is preserved; the edited message triggers a fresh backend call with correct context
 
 ### SSE Event Types
 

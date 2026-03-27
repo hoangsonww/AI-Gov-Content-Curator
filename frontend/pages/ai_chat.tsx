@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Head from "next/head";
-import { Send } from "lucide-react";
+import { Send, Pencil, Check, X } from "lucide-react";
 
 type Citation = {
   number: number;
@@ -189,6 +189,9 @@ export default function ChatPage() {
   const [renameConvId, setRenameConvId] = useState("");
   const [renameValue, setRenameValue] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -252,6 +255,288 @@ export default function ChatPage() {
       )}px`;
     }
   }, [input]);
+
+  useEffect(() => {
+    if (editTextareaRef.current) {
+      editTextareaRef.current.style.height = "auto";
+      editTextareaRef.current.style.height = `${Math.min(
+        160,
+        editTextareaRef.current.scrollHeight,
+      )}px`;
+    }
+  }, [editText]);
+
+  useEffect(() => {
+    if (editingMsgId && editTextareaRef.current) {
+      editTextareaRef.current.focus();
+      // Place cursor at end of text
+      const len = editTextareaRef.current.value.length;
+      editTextareaRef.current.setSelectionRange(len, len);
+    }
+  }, [editingMsgId]);
+
+  function startEditing(msg: Message) {
+    if (isTyping) return;
+    setEditingMsgId(msg.id);
+    setEditText(msg.text);
+  }
+
+  function cancelEditing() {
+    setEditingMsgId(null);
+    setEditText("");
+  }
+
+  async function submitEdit() {
+    if (!editingMsgId || !editText.trim() || !activeConversation || isTyping) return;
+
+    const msgIndex = activeConversation.messages.findIndex(
+      (m) => m.id === editingMsgId,
+    );
+    if (msgIndex === -1) return;
+
+    const original = activeConversation.messages[msgIndex];
+    if (editText.trim() === original.text.trim()) {
+      cancelEditing();
+      return;
+    }
+
+    // Capture convId so streaming closures use a stable reference
+    const targetConvId = activeConvId;
+    const trimmedText = editText.trim();
+
+    // Truncate: keep messages before the edited one, then append the edited version
+    const historyBefore = activeConversation.messages.slice(0, msgIndex);
+    const editedMsg: Message = {
+      id: `m-${Date.now()}`,
+      role: "user",
+      text: trimmedText,
+      time: nowTime(),
+    };
+
+    // Update conversation: truncate + new edited message
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === targetConvId
+          ? { ...c, messages: [...historyBefore, editedMsg] }
+          : c,
+      ),
+    );
+
+    setEditingMsgId(null);
+    setEditText("");
+    setIsTyping(true);
+
+    try {
+      // Build history from the truncated messages (before the edit point)
+      const mappedHistory = historyBefore.slice(-10).map((m) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        text: m.text,
+      }));
+      const firstUserIdx = mappedHistory.findIndex((m) => m.role === "user");
+      const history =
+        firstUserIdx === -1 ? [] : mappedHistory.slice(firstUserIdx);
+
+      const API_URL = (
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://ai-content-curator-backend.vercel.app"
+      ).replace(/\/$/, "");
+      const response = await fetch(`${API_URL}/api/chat/sitewide`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          userMessage: trimmedText,
+          history: history,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const aiMsgId = `m-ai-${Date.now()}`;
+      let streamedText = "";
+      let citations: Citation[] = [];
+      let warnings: string[] = [];
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === targetConvId
+            ? {
+                ...c,
+                messages: [
+                  ...c.messages,
+                  {
+                    id: aiMsgId,
+                    role: "ai" as const,
+                    text: "",
+                    time: nowTime(),
+                    citations: [],
+                    warnings: [],
+                  },
+                ],
+              }
+            : c,
+        ),
+      );
+      setIsTyping(false);
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("Response body is not readable");
+      }
+
+      let buffer = "";
+      let currentEvent = "";
+      let dataLines: string[] = [];
+
+      const flushEvent = () => {
+        if (dataLines.length === 0) return;
+        const payload = dataLines.join("\n").trim();
+        dataLines = [];
+        if (!payload) return;
+
+        try {
+          const data = JSON.parse(payload);
+
+          if (data.sources) {
+            citations = data.sources;
+          }
+
+          if (data.warnings) {
+            warnings = data.warnings;
+          }
+
+          if (typeof data.text === "string" || currentEvent === "chunk") {
+            if (typeof data.text === "string") {
+              streamedText += data.text;
+            }
+
+            setConversations((prevConvs) =>
+              prevConvs.map((c) => {
+                if (c.id !== targetConvId) return c;
+                return {
+                  ...c,
+                  messages: c.messages.map((m) =>
+                    m.id === aiMsgId
+                      ? {
+                          ...m,
+                          text: streamedText,
+                          citations: [...citations],
+                          warnings: [...warnings],
+                        }
+                      : m,
+                  ),
+                };
+              }),
+            );
+          } else if (currentEvent === "error" && data.message) {
+            if (streamedText.trim().length === 0) {
+              streamedText =
+                data.message || "An error occurred. Please try again.";
+            } else {
+              warnings = [...warnings, data.message];
+            }
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === targetConvId
+                  ? {
+                      ...c,
+                      messages: c.messages.map((m) =>
+                        m.id === aiMsgId
+                          ? {
+                              ...m,
+                              text: streamedText,
+                              citations: [...citations],
+                              warnings: [...warnings],
+                            }
+                          : m,
+                      ),
+                    }
+                  : c,
+              ),
+            );
+          }
+        } catch (err) {
+          console.error("Failed to parse SSE payload", {
+            currentEvent,
+            payload,
+            err,
+          });
+        }
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex = buffer.indexOf("\n");
+        while (newlineIndex !== -1) {
+          const line = buffer.slice(0, newlineIndex).trimEnd();
+          buffer = buffer.slice(newlineIndex + 1);
+
+          if (line.startsWith("event:")) {
+            flushEvent();
+            currentEvent = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
+            dataLines.push(line.slice(5).trim());
+          } else if (line === "") {
+            flushEvent();
+            currentEvent = "";
+          }
+
+          newlineIndex = buffer.indexOf("\n");
+        }
+      }
+
+      flushEvent();
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === targetConvId
+            ? {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === aiMsgId
+                    ? {
+                        ...m,
+                        text:
+                          streamedText ||
+                          "Sorry, I couldn't generate a response. Please try again.",
+                        citations,
+                        warnings,
+                      }
+                    : m,
+                ),
+              }
+            : c,
+        ),
+      );
+    } catch (error) {
+      console.error("Error sending edited message:", error);
+      setIsTyping(false);
+
+      const errorMsg: Message = {
+        id: `m-ai-${Date.now()}`,
+        role: "ai",
+        text: "Sorry, there was an error processing your request. Please check your connection and try again.",
+        time: nowTime(),
+      };
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === targetConvId
+            ? { ...c, messages: [...c.messages, errorMsg] }
+            : c,
+        ),
+      );
+    }
+  }
 
   async function sendMessage(text: string) {
     if (!text.trim()) return;
@@ -383,12 +668,10 @@ export default function ChatPage() {
 
           if (data.sources) {
             citations = data.sources;
-            console.log("Received citations:", citations.length);
           }
 
           if (data.warnings) {
             warnings = data.warnings;
-            console.log("Received warnings:", warnings);
           }
 
           if (typeof data.text === "string" || currentEvent === "chunk") {
@@ -558,7 +841,7 @@ export default function ChatPage() {
       };
       setConversations((prev) =>
         prev.map((c) =>
-          c.id === activeConvId
+          c.id === currentConvId
             ? { ...c, messages: [...c.messages, errorMsg] }
             : c,
         ),
@@ -734,9 +1017,59 @@ export default function ChatPage() {
 
             {activeConversation?.messages.map((m) => (
               <div key={m.id} className={`message-row ${m.role}`}>
-                <div className={`message-bubble ${m.role}`}>
-                  <MessageContent message={m} />
-                </div>
+                {m.role === "user" && editingMsgId === m.id ? (
+                  <div className="message-bubble user edit-mode">
+                    <textarea
+                      ref={editTextareaRef}
+                      className="edit-textarea"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void submitEdit();
+                        }
+                        if (e.key === "Escape") {
+                          cancelEditing();
+                        }
+                      }}
+                      rows={1}
+                    />
+                    <div className="edit-actions">
+                      <button
+                        className="edit-action-btn edit-cancel"
+                        onClick={cancelEditing}
+                        title="Cancel (Esc)"
+                        aria-label="Cancel edit"
+                      >
+                        <X size={15} strokeWidth={2.5} />
+                      </button>
+                      <button
+                        className="edit-action-btn edit-confirm"
+                        onClick={() => void submitEdit()}
+                        disabled={!editText.trim()}
+                        title="Send edited message (Enter)"
+                        aria-label="Send edited message"
+                      >
+                        <Check size={15} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`message-bubble ${m.role}`}>
+                    <MessageContent message={m} />
+                    {m.role === "user" && !isTyping && (
+                      <button
+                        className="msg-edit-btn"
+                        onClick={() => startEditing(m)}
+                        title="Edit message"
+                        aria-label="Edit message"
+                      >
+                        <Pencil size={13} strokeWidth={2.2} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -1156,6 +1489,10 @@ export default function ChatPage() {
             display: flex;
             align-items: flex-start;
             gap: 10px;
+            padding-right: 36px;
+          }
+          .message-row.ai {
+            padding-right: 0;
           }
           .message-row.user {
             justify-content: flex-end;
@@ -1189,6 +1526,106 @@ export default function ChatPage() {
 
           .message-bubble:hover {
             transform: translateY(-1px);
+          }
+
+          .message-bubble.user {
+            position: relative;
+          }
+
+          :global(.msg-edit-btn) {
+            position: absolute;
+            top: 50%;
+            right: -32px;
+            transform: translateY(-50%);
+            background: var(--chat-surface-alt);
+            border: 1px solid var(--chat-border-subtle);
+            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--chat-muted);
+            opacity: 0.5;
+            transition: opacity 0.15s, background 0.15s, color 0.15s;
+            padding: 0;
+          }
+
+          :global(.msg-edit-btn:hover) {
+            opacity: 1;
+            background: var(--chat-accent-soft-bg);
+            color: var(--chat-accent);
+            border-color: var(--chat-accent-soft-border);
+          }
+
+          .message-bubble.edit-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 14px;
+            min-width: 280px;
+          }
+
+          .edit-textarea {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--chat-user-text);
+            resize: none;
+            font-size: 14px;
+            font-family: "Inter", sans-serif;
+            line-height: 1.5;
+            outline: none;
+          }
+
+          .edit-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+          }
+
+          .edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+          }
+
+          .edit-action-btn {
+            border: none;
+            border-radius: 8px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            padding: 0;
+          }
+
+          .edit-cancel {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+          }
+
+          .edit-cancel:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+          }
+
+          .edit-confirm {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+          }
+
+          .edit-confirm:hover {
+            background: rgba(255, 255, 255, 0.35);
+          }
+
+          .edit-confirm:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
           }
 
           :global(.msg-content) {
@@ -1548,6 +1985,22 @@ export default function ChatPage() {
             .message-bubble {
               max-width: 92%;
             }
+
+            .message-row {
+              padding-right: 0;
+            }
+
+            :global(.msg-edit-btn) {
+              position: static;
+              transform: none;
+              margin-top: 6px;
+              align-self: flex-end;
+              opacity: 0.6;
+            }
+
+            .message-bubble.edit-mode {
+              min-width: 0;
+            }
           }
 
           @media (max-width: 600px) {
@@ -1623,6 +2076,10 @@ export default function ChatPage() {
               flex-direction: column;
               align-items: flex-start;
               gap: 6px;
+            }
+
+            .message-bubble.edit-mode {
+              width: 100%;
             }
           }
 

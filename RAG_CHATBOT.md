@@ -111,6 +111,7 @@ stateDiagram-v2
    - Real-time streaming response handling using Fetch API
    - Robust error handling and fallback messages
    - Beautiful UI with dark theme and smooth animations
+   - Inline message editing with conversation branching: users can edit any sent message via a pencil icon, which truncates all subsequent messages and re-sends with the corrected history
 
 2. **Environment Configuration** (`frontend/.env.local`)
    - `NEXT_PUBLIC_API_URL` - Backend API URL (default: http://localhost:3000)
