@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Head from "next/head";
-import { Send } from "lucide-react";
+import { Send, Pencil, Check, X } from "lucide-react";
 
 type Citation = {
   number: number;
@@ -189,6 +189,9 @@ export default function ChatPage() {
   const [renameConvId, setRenameConvId] = useState("");
   const [renameValue, setRenameValue] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -253,7 +256,69 @@ export default function ChatPage() {
     }
   }, [input]);
 
-  async function sendMessage(text: string) {
+  useEffect(() => {
+    if (editTextareaRef.current) {
+      editTextareaRef.current.style.height = "auto";
+      editTextareaRef.current.style.height = `${Math.min(
+        160,
+        editTextareaRef.current.scrollHeight,
+      )}px`;
+    }
+  }, [editText]);
+
+  useEffect(() => {
+    if (editingMsgId && editTextareaRef.current) {
+      editTextareaRef.current.focus();
+      // Place cursor at end of text
+      const len = editTextareaRef.current.value.length;
+      editTextareaRef.current.setSelectionRange(len, len);
+    }
+  }, [editingMsgId]);
+
+  function startEditing(msg: Message) {
+    if (isTyping) return;
+    setEditingMsgId(msg.id);
+    setEditText(msg.text);
+  }
+
+  function cancelEditing() {
+    setEditingMsgId(null);
+    setEditText("");
+  }
+
+  async function submitEdit() {
+    if (!editingMsgId || !editText.trim() || !activeConversation || isTyping)
+      return;
+
+    const msgIndex = activeConversation.messages.findIndex(
+      (m) => m.id === editingMsgId,
+    );
+    if (msgIndex === -1) return;
+
+    const original = activeConversation.messages[msgIndex];
+    if (editText.trim() === original.text.trim()) {
+      cancelEditing();
+      return;
+    }
+
+    const trimmedText = editText.trim();
+
+    // Truncate conversation: keep only messages before the edited one
+    const historyBefore = activeConversation.messages.slice(0, msgIndex);
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === activeConvId ? { ...c, messages: [...historyBefore] } : c,
+      ),
+    );
+
+    setEditingMsgId(null);
+    setEditText("");
+
+    // Reuse sendMessage with the truncated history — it appends the user msg and streams the AI response
+    await sendMessage(trimmedText, historyBefore);
+  }
+
+  async function sendMessage(text: string, overrideHistory?: Message[]) {
     if (!text.trim()) return;
 
     const msg: Message = {
@@ -266,8 +331,16 @@ export default function ChatPage() {
     let currentConvId = activeConvId;
     let historyMessages: Message[] = [];
 
-    // If no conversations exist, create one
-    if (conversations.length === 0) {
+    if (overrideHistory) {
+      // Called from submitEdit — conversation already truncated, history provided
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeConvId ? { ...c, messages: [...c.messages, msg] } : c,
+        ),
+      );
+      historyMessages = overrideHistory;
+    } else if (conversations.length === 0) {
+      // First message ever — create a new conversation
       const newConvId = `c-${Date.now()}`;
       const welcomeMsg: Message = {
         id: `m-welcome-${Date.now()}`,
@@ -383,12 +456,10 @@ export default function ChatPage() {
 
           if (data.sources) {
             citations = data.sources;
-            console.log("Received citations:", citations.length);
           }
 
           if (data.warnings) {
             warnings = data.warnings;
-            console.log("Received warnings:", warnings);
           }
 
           if (typeof data.text === "string" || currentEvent === "chunk") {
@@ -558,7 +629,7 @@ export default function ChatPage() {
       };
       setConversations((prev) =>
         prev.map((c) =>
-          c.id === activeConvId
+          c.id === currentConvId
             ? { ...c, messages: [...c.messages, errorMsg] }
             : c,
         ),
@@ -734,9 +805,67 @@ export default function ChatPage() {
 
             {activeConversation?.messages.map((m) => (
               <div key={m.id} className={`message-row ${m.role}`}>
-                <div className={`message-bubble ${m.role}`}>
-                  <MessageContent message={m} />
-                </div>
+                {m.role === "user" && editingMsgId === m.id ? (
+                  <div className="message-bubble user edit-mode">
+                    <textarea
+                      ref={editTextareaRef}
+                      className="edit-textarea"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void submitEdit();
+                        }
+                        if (e.key === "Escape") {
+                          cancelEditing();
+                        }
+                      }}
+                      rows={1}
+                    />
+                    <div className="edit-actions">
+                      <button
+                        className="edit-action-btn edit-cancel"
+                        onClick={cancelEditing}
+                        title="Cancel (Esc)"
+                        aria-label="Cancel edit"
+                      >
+                        <X size={15} strokeWidth={2.5} />
+                      </button>
+                      <button
+                        className="edit-action-btn edit-confirm"
+                        onClick={() => void submitEdit()}
+                        disabled={
+                          !editText.trim() ||
+                          editText.trim() ===
+                            activeConversation?.messages
+                              .find((msg) => msg.id === editingMsgId)
+                              ?.text.trim()
+                        }
+                        title="Send edited message (Enter)"
+                        aria-label="Send edited message"
+                      >
+                        <Check size={15} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {m.role === "user" && !isTyping && (
+                      <button
+                        className="msg-edit-btn"
+                        onClick={() => startEditing(m)}
+                        title="Edit message"
+                        aria-label="Edit message"
+                      >
+                        <Pencil size={13} strokeWidth={2.2} />
+                      </button>
+                    )}
+                    <div className={`message-bubble ${m.role}`}>
+                      <MessageContent message={m} />
+                    </div>
+                  </>
+                )}
               </div>
             ))}
 
@@ -1191,6 +1320,103 @@ export default function ChatPage() {
             transform: translateY(-1px);
           }
 
+          .msg-edit-btn {
+            background: var(--chat-surface-alt);
+            border: 1px solid var(--chat-border-subtle);
+            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--chat-muted);
+            opacity: 0.5;
+            transition:
+              opacity 0.15s,
+              background 0.15s,
+              color 0.15s;
+            padding: 0;
+            flex-shrink: 0;
+            align-self: center;
+          }
+
+          .msg-edit-btn:hover {
+            opacity: 1;
+            background: var(--chat-accent-soft-bg);
+            color: var(--chat-accent);
+            border-color: var(--chat-accent-soft-border);
+          }
+
+          .message-bubble.edit-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 14px;
+            min-width: 280px;
+          }
+
+          .edit-textarea {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--chat-user-text);
+            resize: none;
+            font-size: 14px;
+            font-family: "Inter", sans-serif;
+            line-height: 1.5;
+            outline: none;
+          }
+
+          .edit-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+          }
+
+          .edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+          }
+
+          .edit-action-btn {
+            border: none;
+            border-radius: 8px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            padding: 0;
+          }
+
+          .edit-cancel {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+          }
+
+          .edit-cancel:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+          }
+
+          .edit-confirm {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+          }
+
+          .edit-confirm:hover {
+            background: rgba(255, 255, 255, 0.35);
+          }
+
+          .edit-confirm:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+          }
+
           :global(.msg-content) {
             width: 100%;
           }
@@ -1623,6 +1849,10 @@ export default function ChatPage() {
               flex-direction: column;
               align-items: flex-start;
               gap: 6px;
+            }
+
+            .message-bubble.edit-mode {
+              width: 100%;
             }
           }
 

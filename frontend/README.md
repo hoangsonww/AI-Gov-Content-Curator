@@ -161,6 +161,12 @@ A high-level look at the project structure:
 
 - Pages are mobile-friendly (responsive) with a CSS grid or flex layout for article cards.
 
+5. **Sitewide AI Chat with Message Editing**
+
+- The `/ai_chat` page provides a full-featured conversational interface with multiple conversations, local storage persistence, and real-time SSE streaming.
+- Users can edit any previously sent message by clicking the pencil icon. Editing truncates the conversation at that point (removing all later messages) and re-sends with only the preceding history, effectively branching the conversation.
+- Keyboard shortcuts: Enter to submit the edit, Escape to cancel. The edit UI adapts to both desktop and mobile viewports.
+
 ---
 
 ## Setup & Installation
