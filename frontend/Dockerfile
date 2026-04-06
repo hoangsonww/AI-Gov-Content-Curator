@@ -2,29 +2,31 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
 
+# Copy the rest of the application code
 COPY . .
 
+# Build the Next.js application
 RUN npm run build
 
 # Stage 2: Production image
 FROM node:20-alpine
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# Copy only production dependencies
+COPY package*.json ./
+RUN npm install --production
 
+# Copy the built output from the builder stage
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
 
-RUN addgroup -g 1001 -S appgroup && adduser -u 1001 -S appuser -G appgroup
-USER appuser
-
+# Expose the port that the app listens on
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" || exit 1
-
+# Start the Next.js application in production mode
 CMD ["npm", "start"]

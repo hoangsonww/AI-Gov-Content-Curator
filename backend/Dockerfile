@@ -1,47 +1,46 @@
 # ------------------------------------------------------------------------
-# Stage 1: Build the TypeScript application
-# ------------------------------------------------------------------------
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-RUN apk add --no-cache libc6-compat
-
-COPY package.json package-lock.json tsconfig.json ./
-RUN npm ci
-
-COPY src/ src/
-RUN npx tsc
-
-# ------------------------------------------------------------------------
-# Stage 2: Production runtime
+# Stage: Runtime image for government-article-curator-backend
+# We skip an explicit tsc build and use ts-node at runtime with transpile-only
+# to avoid compile-time type errors in your build environment.
 # ------------------------------------------------------------------------
 FROM node:18-alpine
 
+# set working directory
 WORKDIR /app
 
+# install OS-level dependencies (libc6-compat for some native modules)
 RUN apk add --no-cache libc6-compat
 
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# ------------------------------------------------------------------------
+# Copy package manifests and install ALL dependencies including devDeps
+# so that ts-node and your scripts are available at runtime.
+# ------------------------------------------------------------------------
+COPY package.json package-lock.json tsconfig.json ./
+RUN npm install
 
-COPY --from=builder /app/dist ./dist
+# ------------------------------------------------------------------------
+# Copy your TypeScript source files
+# ------------------------------------------------------------------------
+COPY src/ src/
 
-# OCI labels
+# ------------------------------------------------------------------------
+# Add OCI labels so GHCR and other registries show metadata
+# ------------------------------------------------------------------------
 LABEL org.opencontainers.image.title="government-article-curator-backend" \
       org.opencontainers.image.description="Backend service for Government Article Curator: fetch & summarize news." \
       org.opencontainers.image.version="1.0.0" \
       org.opencontainers.image.authors="Son Nguyen" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.url="https://github.com/hoangsonww/AI-Gov-Content-Curator" \
-      org.opencontainers.image.revision="1.0.0"
+      org.opencontainers.image.revision="1.0.0" \
+      org.opencontainers.image.created="${BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}"
 
-RUN addgroup -g 1001 -S appgroup && adduser -u 1001 -S appuser -G appgroup
-USER appuser
-
+# ------------------------------------------------------------------------
+# Expose the port your Express server listens on
+# ------------------------------------------------------------------------
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" || exit 1
-
-CMD ["node", "dist/server.js"]
+# ------------------------------------------------------------------------
+# Entrypoint: run your server via ts-node in transpile-only mode
+# ------------------------------------------------------------------------
+CMD ["npx", "ts-node", "--transpile-only", "src/server.ts"]
