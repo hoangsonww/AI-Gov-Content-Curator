@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.5.0, < 2.0.0"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 5.30"
     }
   }
 
@@ -304,6 +304,10 @@ resource "aws_sns_topic" "alerts" {
   name              = "ai-curator-${var.environment}-alerts"
   display_name      = "AI Curator Alerts"
   kms_master_key_id = aws_kms_key.sns.id
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_sns_topic_subscription" "email" {
@@ -317,6 +321,10 @@ resource "aws_kms_key" "sns" {
   description             = "KMS key for SNS encryption"
   deletion_window_in_days = 7
   enable_key_rotation     = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_kms_alias" "sns" {
@@ -332,7 +340,8 @@ resource "aws_ssm_parameter" "mongodb_uri" {
   value       = var.mongodb_uri
 
   lifecycle {
-    ignore_changes = [value]
+    ignore_changes  = [value]
+    prevent_destroy = true
   }
 }
 
@@ -343,7 +352,8 @@ resource "aws_ssm_parameter" "google_ai_key" {
   value       = var.google_ai_api_key
 
   lifecycle {
-    ignore_changes = [value]
+    ignore_changes  = [value]
+    prevent_destroy = true
   }
 }
 
@@ -354,7 +364,8 @@ resource "aws_ssm_parameter" "resend_key" {
   value       = var.resend_api_key
 
   lifecycle {
-    ignore_changes = [value]
+    ignore_changes  = [value]
+    prevent_destroy = true
   }
 }
 
@@ -365,6 +376,7 @@ resource "aws_ssm_parameter" "news_api_key" {
   value       = var.news_api_key
 
   lifecycle {
-    ignore_changes = [value]
+    ignore_changes  = [value]
+    prevent_destroy = true
   }
 }

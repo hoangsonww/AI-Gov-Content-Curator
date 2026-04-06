@@ -77,6 +77,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "alarm_sns_topic_arn" {
+  description = "SNS topic ARN for CloudWatch alarm notifications"
+  type        = string
+  default     = ""
+}
+
 locals {
   name_prefix = "ai-curator-${var.environment}"
   common_tags = merge(var.tags, {
@@ -281,7 +287,7 @@ resource "aws_kinesis_firehose_delivery_stream" "splunk" {
 
     s3_configuration {
       role_arn           = aws_iam_role.firehose.arn
-      bucket_arn         = var.enable_s3_backup ? aws_s3_bucket.firehose_backup[0].arn : "arn:aws:s3:::placeholder"
+      bucket_arn         = var.enable_s3_backup ? aws_s3_bucket.firehose_backup[0].arn : "arn:aws:s3:::unused"
       prefix             = "splunk-failed/${var.environment}/"
       error_output_prefix = "splunk-errors/${var.environment}/"
       buffering_interval = 300
@@ -485,6 +491,8 @@ resource "aws_cloudwatch_metric_alarm" "firehose_delivery_errors" {
   statistic           = "Maximum"
   threshold           = 900
   alarm_description   = "Splunk Firehose delivery freshness exceeds 15 minutes"
+  alarm_actions       = var.alarm_sns_topic_arn != "" ? [var.alarm_sns_topic_arn] : []
+  ok_actions          = var.alarm_sns_topic_arn != "" ? [var.alarm_sns_topic_arn] : []
 
   dimensions = {
     DeliveryStreamName = aws_kinesis_firehose_delivery_stream.splunk.name
@@ -503,6 +511,8 @@ resource "aws_cloudwatch_metric_alarm" "firehose_throttling" {
   statistic           = "Sum"
   threshold           = 100
   alarm_description   = "Splunk Firehose is experiencing throttling"
+  alarm_actions       = var.alarm_sns_topic_arn != "" ? [var.alarm_sns_topic_arn] : []
+  ok_actions          = var.alarm_sns_topic_arn != "" ? [var.alarm_sns_topic_arn] : []
 
   dimensions = {
     DeliveryStreamName = aws_kinesis_firehose_delivery_stream.splunk.name

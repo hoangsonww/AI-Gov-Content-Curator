@@ -133,6 +133,29 @@ resource "aws_sqs_queue" "article_processing_dlq" {
   }
 }
 
+resource "aws_cloudwatch_metric_alarm" "dlq_depth" {
+  alarm_name          = "${var.environment}-article-processing-dlq-depth"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 0
+  alarm_description   = "Dead letter queue has messages — indicates processing failures"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  ok_actions          = [aws_sns_topic.alerts.arn]
+
+  dimensions = {
+    QueueName = aws_sqs_queue.article_processing_dlq.name
+  }
+
+  tags = {
+    Name        = "${var.environment}-dlq-depth-alarm"
+    Environment = var.environment
+  }
+}
+
 # Auto Scaling based on SQS Queue Depth
 resource "aws_appautoscaling_policy" "sqs_scaling" {
   name               = "ai-curator-${var.environment}-sqs-scaling"
@@ -240,6 +263,7 @@ resource "aws_ecs_capacity_provider" "fargate_spot" {
 
 # Capacity Provider Strategy
 resource "aws_ecs_cluster_capacity_providers" "spot_strategy" {
+  count        = var.enable_spot_instances ? 1 : 0
   cluster_name = module.ecs_cluster.cluster_name
 
   capacity_providers = ["FARGATE", "FARGATE_SPOT"]
