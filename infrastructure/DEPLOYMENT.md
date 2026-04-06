@@ -311,7 +311,7 @@ make k8s-deploy-all IMAGE_TAG=v1.2.3
 
 ```bash
 # Deploy with canary strategy
-make k8s-deploy-all IMAGE_TAG=latest
+make k8s-deploy-all IMAGE_TAG=$(git rev-parse --short HEAD)
 
 # Watch rollout progress
 kubectl argo rollouts get rollout backend -n ai-curator --watch
@@ -909,7 +909,7 @@ make k8s-deploy SERVICE=backend
 **Diagnosis**:
 ```bash
 # Test connectivity
-kubectl run test-pod --image=mongo:latest -it --rm -- \
+kubectl run test-pod --image=mongo:7.0 -it --rm -- \
   mongosh "mongodb+srv://..."
 
 # Check secrets

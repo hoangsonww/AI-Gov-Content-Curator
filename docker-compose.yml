@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -15,6 +13,19 @@ services:
       NEWS_API_KEY: "${NEWS_API_KEY}"
       CRAWL_URLS: "${CRAWL_URLS}"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -25,6 +36,22 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: "http://localhost:3000"
     restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      - app-network
 
   crawler:
     build:
@@ -44,6 +71,22 @@ services:
       NEWS_API_KEY1: "${NEWS_API_KEY1}"
       CRAWL_URLS: "${CRAWL_URLS}"
     restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    networks:
+      - app-network
 
   newsletters:
     build:
@@ -59,6 +102,22 @@ services:
       UNSUBSCRIBE_BASE_URL: "${UNSUBSCRIBE_BASE_URL}"
       AICC_API_URL: "${AICC_API_URL}"
     restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      - app-network
 
   # Splunk OpenTelemetry Collector (local dev log & trace forwarding)
   otel-collector:
@@ -81,3 +140,17 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      - app-network
+      - monitoring-network
+
+networks:
+  app-network:
+    driver: bridge
+  monitoring-network:
+    driver: bridge

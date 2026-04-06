@@ -254,9 +254,11 @@ metadata:
   name: backend-secrets
   namespace: ai-curator
 type: Opaque
-# Replace with actual values or use external secrets operator
+# ⚠️  DO NOT commit real secrets here. Use External Secrets Operator (ESO)
+# with ExternalSecret CRDs pointing to AWS Secrets Manager or Vault.
+# These placeholders exist only for local dev / reference.
 stringData:
-  MONGODB_URI: "REPLACE_ME"
-  GOOGLE_AI_API_KEY: "REPLACE_ME"
-  RESEND_API_KEY: "REPLACE_ME"
-  NEWS_API_KEY: "REPLACE_ME"
+  MONGODB_URI: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  GOOGLE_AI_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  RESEND_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  NEWS_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"

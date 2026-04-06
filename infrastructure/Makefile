@@ -1,6 +1,7 @@
-.PHONY: help aws-deploy aws-rollback k8s-deploy k8s-rollback k8s-promote terraform-init terraform-plan terraform-apply terraform-destroy splunk-deploy splunk-status splunk-logs splunk-health splunk-restart splunk-remove splunk-update-token
+.PHONY: help aws-deploy aws-rollback k8s-deploy k8s-rollback k8s-promote terraform-init terraform-plan terraform-apply terraform-destroy splunk-deploy splunk-status splunk-logs splunk-health splunk-restart splunk-remove splunk-update-token terraform-validate terraform-output aws-deploy-backend aws-deploy-frontend aws-rollback-backend aws-rollback-frontend aws-status k8s-install-tools k8s-deploy-infrastructure k8s-deploy-backend k8s-deploy-frontend k8s-deploy-all k8s-restart k8s-logs k8s-shell k8s-abort monitoring-dashboard monitoring-prometheus monitoring-alerts validate-health build-images push-images clean quick-deploy-aws quick-deploy-k8s full-deploy
 
 # Colors
+RED    := $(shell tput -Txterm setaf 1)
 GREEN  := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
 WHITE  := $(shell tput -Txterm setaf 7)
@@ -8,9 +9,9 @@ CYAN   := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
 
 # Variables
-ENVIRONMENT ?= prod
+ENVIRONMENT ?= dev
 SERVICE ?= all
-IMAGE_TAG ?= latest
+IMAGE_TAG ?= $(error IMAGE_TAG is required — use a commit SHA or version tag, not 'latest')
 
 help: ## Show this help
 	@echo ''
@@ -244,10 +245,10 @@ push-images: ## Push Docker images to registry
 	@docker push ghcr.io/hoangsonww/ai-curator-crawler:${IMAGE_TAG}
 	@docker push ghcr.io/hoangsonww/ai-curator-newsletters:${IMAGE_TAG}
 
-clean: ## Clean up temporary files
+clean: ## Clean up temporary files (preserves .terraform.lock.hcl)
 	@echo "${YELLOW}Cleaning up...${RESET}"
-	@cd terraform && rm -f tfplan terraform.tfstate* .terraform.lock.hcl
-	@rm -rf .terraform
+	@cd terraform && rm -f tfplan
+	@rm -rf .terraform/modules .terraform/providers
 
 ##
 ## Quick Deploy Commands

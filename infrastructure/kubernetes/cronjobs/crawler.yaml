@@ -73,7 +73,8 @@ metadata:
   name: crawler-secrets
   namespace: ai-curator
 type: Opaque
+# ⚠️  DO NOT commit real secrets. Use External Secrets Operator (ESO).
 stringData:
-  MONGODB_URI: "REPLACE_ME"
-  NEWS_API_KEY: "REPLACE_ME"
-  GOOGLE_AI_API_KEY: "REPLACE_ME"
+  MONGODB_URI: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  NEWS_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  GOOGLE_AI_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"

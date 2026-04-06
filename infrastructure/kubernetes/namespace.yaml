@@ -4,4 +4,25 @@ metadata:
   name: ai-curator
   labels:
     name: ai-curator
+    kubernetes.io/metadata.name: ai-curator
     environment: production
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    kubernetes.io/metadata.name: monitoring
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: splunk-monitoring
+  labels:
+    name: splunk-monitoring
+    kubernetes.io/metadata.name: splunk-monitoring
+    environment: production
+

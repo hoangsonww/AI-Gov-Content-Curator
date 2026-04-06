@@ -73,6 +73,7 @@ metadata:
   name: newsletter-secrets
   namespace: ai-curator
 type: Opaque
+# ⚠️  DO NOT commit real secrets. Use External Secrets Operator (ESO).
 stringData:
-  MONGODB_URI: "REPLACE_ME"
-  RESEND_API_KEY: "REPLACE_ME"
+  MONGODB_URI: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  RESEND_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
