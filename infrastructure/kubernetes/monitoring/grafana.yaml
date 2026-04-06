@@ -205,6 +205,11 @@ spec:
       labels:
         app: grafana
     spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 472
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: grafana
           image: grafana/grafana:10.2.0
@@ -232,7 +237,7 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: dashboards
               mountPath: /var/lib/grafana/dashboards
-            - name: storage
+            - name: grafana-storage
               mountPath: /var/lib/grafana
           resources:
             requests:
@@ -241,6 +246,13 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 472
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           livenessProbe:
             httpGet:
               path: /api/health
@@ -253,6 +265,12 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            failureThreshold: 30
+            periodSeconds: 5
       volumes:
         - name: datasources
           configMap:
@@ -263,8 +281,9 @@ spec:
         - name: dashboards
           configMap:
             name: grafana-dashboard-ai-curator
-        - name: storage
-          emptyDir: {}
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-data
 ---
 apiVersion: v1
 kind: Service
@@ -287,4 +306,20 @@ metadata:
   namespace: monitoring
 type: Opaque
 stringData:
-  admin-password: "changeme123"
+  # TODO: Replace with External Secrets Operator to pull from AWS Secrets Manager / Vault
+  admin-password: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data
+  namespace: monitoring
+  labels:
+    app: grafana
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp3

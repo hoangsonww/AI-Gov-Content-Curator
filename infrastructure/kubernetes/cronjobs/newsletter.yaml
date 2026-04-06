@@ -23,10 +23,15 @@ spec:
             app: newsletter
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
           containers:
             - name: newsletter
-              image: ghcr.io/hoangsonww/ai-curator-newsletters:latest
-              imagePullPolicy: Always
+              image: ghcr.io/hoangsonww/ai-curator-newsletters:IMAGE_TAG
+              imagePullPolicy: IfNotPresent
               command: ["npm", "run", "send"]
               env:
                 - name: NODE_ENV
@@ -43,6 +48,13 @@ spec:
                 limits:
                   cpu: 500m
                   memory: 1Gi
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
           imagePullSecrets:
             - name: ghcr-secret
 ---

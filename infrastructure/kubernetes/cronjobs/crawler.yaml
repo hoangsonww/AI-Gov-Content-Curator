@@ -23,10 +23,15 @@ spec:
             app: crawler
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
           containers:
             - name: crawler
-              image: ghcr.io/hoangsonww/ai-curator-crawler:latest
-              imagePullPolicy: Always
+              image: ghcr.io/hoangsonww/ai-curator-crawler:IMAGE_TAG
+              imagePullPolicy: IfNotPresent
               command: ["npm", "run", "crawl"]
               env:
                 - name: NODE_ENV
@@ -43,6 +48,13 @@ spec:
                 limits:
                   cpu: 500m
                   memory: 1Gi
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
           imagePullSecrets:
             - name: ghcr-secret
 ---
