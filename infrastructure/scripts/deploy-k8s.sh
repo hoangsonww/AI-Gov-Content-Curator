@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -47,7 +47,8 @@ deploy_infrastructure() {
     # Install Istio (if not already installed)
     if ! kubectl get namespace istio-system &> /dev/null; then
         echo -e "${YELLOW}Installing Istio...${NC}"
-        curl -L https://istio.io/downloadIstio | sh -
+        ISTIO_VERSION="1.22.0"
+        curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION sh -
         cd istio-*
         export PATH=$PWD/bin:$PATH
         istioctl install --set profile=default -y
@@ -63,7 +64,7 @@ deploy_infrastructure() {
     if ! kubectl get namespace argo-rollouts &> /dev/null; then
         echo -e "${YELLOW}Installing Argo Rollouts...${NC}"
         kubectl create namespace argo-rollouts
-        kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+        kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/download/v1.7.2/install.yaml
     else
         echo -e "${GREEN}Argo Rollouts already installed${NC}"
     fi
@@ -245,6 +246,8 @@ restart_deployment() {
 check_health() {
     local service_name=$1
     local path="/health"
+    local PF_PID=""
+    trap '[ -n "${PF_PID:-}" ] && kill "$PF_PID" 2>/dev/null || true' RETURN
 
     if [ "$service_name" == "frontend" ]; then
         path="/api/health"
@@ -269,18 +272,11 @@ check_health() {
     for i in {1..30}; do
         if curl -sf "$ENDPOINT" > /dev/null; then
             echo -e "${GREEN}Health check passed${NC}"
-            if [ ! -z "$PF_PID" ]; then
-                kill $PF_PID
-            fi
             return 0
         fi
         echo "Attempt $i: Waiting for service to be healthy..."
         sleep 10
     done
-
-    if [ ! -z "$PF_PID" ]; then
-        kill $PF_PID
-    fi
 
     echo -e "${RED}Health check failed${NC}"
     return 1
