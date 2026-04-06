@@ -23,8 +23,8 @@ pipeline {
         )
         string(
             name: 'IMAGE_TAG',
-            defaultValue: 'latest',
-            description: 'Docker image tag to deploy'
+            defaultValue: '',
+            description: 'Image tag (required). Use commit SHA or build number. Do NOT use latest.'
         )
         booleanParam(
             name: 'RUN_SECURITY_SCAN',
@@ -47,8 +47,11 @@ pipeline {
         AWS_REGION = 'us-east-1'
         ECR_REGISTRY = credentials('ecr-registry')
         GITHUB_TOKEN = credentials('github-token')
+        GITHUB_USERNAME = credentials('github-username')
         SLACK_CHANNEL = '#deployments'
         DOCKER_BUILDKIT = '1'
+        SPLUNK_HEC_URL = credentials('splunk-hec-url')
+        SPLUNK_HEC_TOKEN = credentials('splunk-hec-token')
     }
 
     options {
@@ -76,6 +79,9 @@ pipeline {
         }
 
         stage('Install Dependencies') {
+            options {
+                timeout(time: 15, unit: 'MINUTES')
+            }
             parallel {
                 stage('Backend Dependencies') {
                     steps {
@@ -130,8 +136,8 @@ pipeline {
 
                             // Snyk scan
                             sh '''
-                                npx snyk test --severity-threshold=high || true
-                                npx snyk code test || true
+                                npx snyk test --severity-threshold=high
+                                npx snyk code test
                             '''
 
                             // Trivy scan
@@ -182,6 +188,9 @@ pipeline {
         }
 
         stage('Build Docker Images') {
+            options {
+                timeout(time: 15, unit: 'MINUTES')
+            }
             steps {
                 script {
                     parallel(
@@ -228,12 +237,11 @@ pipeline {
 
                         def services = ['backend', 'frontend', 'crawler', 'newsletters']
                         services.each { service ->
-                            sh """
-                                docker push ghcr.io/hoangsonww/ai-curator-${service}:${env.BUILD_TAG}
-                                docker tag ghcr.io/hoangsonww/ai-curator-${service}:${env.BUILD_TAG} \
-                                           ghcr.io/hoangsonww/ai-curator-${service}:latest
-                                docker push ghcr.io/hoangsonww/ai-curator-${service}:latest
-                            """
+                            sh "docker push ghcr.io/hoangsonww/ai-curator-${service}:${env.BUILD_TAG}"
+                            if (params.ENVIRONMENT == 'prod') {
+                                sh "docker tag ghcr.io/hoangsonww/ai-curator-${service}:${env.BUILD_TAG} ghcr.io/hoangsonww/ai-curator-${service}:latest"
+                                sh "docker push ghcr.io/hoangsonww/ai-curator-${service}:latest"
+                            }
                         }
                     }
                 }
@@ -284,7 +292,24 @@ pipeline {
             }
         }
 
+        stage('Backup') {
+            when {
+                expression { params.ENVIRONMENT == 'prod' }
+            }
+            steps {
+                script {
+                    sh '''
+                        # Create backup before deployment
+                        aws s3 sync s3://ai-curator-backups/latest s3://ai-curator-backups/$(date +%Y%m%d-%H%M%S)
+                    '''
+                }
+            }
+        }
+
         stage('Deploy') {
+            options {
+                timeout(time: 15, unit: 'MINUTES')
+            }
             parallel {
                 stage('Deploy to AWS') {
                     when {
@@ -319,7 +344,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        npm run test:integration || true
+                        npm run test:integration
                     '''
                 }
             }
@@ -390,35 +415,36 @@ pipeline {
             }
             steps {
                 script {
-                    sh '''
-                        # Run database migrations if needed
-                        echo "Running database migrations..."
-                    '''
+                    // TODO: Implement actual migration runner (e.g., migrate-mongo, prisma migrate)
+                    echo "⚠️  Database migration stage is a placeholder — no migrations configured"
                 }
             }
         }
 
-        stage('Backup') {
-            when {
-                expression { params.ENVIRONMENT == 'prod' }
-            }
-            steps {
-                script {
-                    sh '''
-                        # Create backup before deployment
-                        aws s3 sync s3://ai-curator-backups/latest s3://ai-curator-backups/$(date +%Y%m%d-%H%M%S)
-                    '''
-                }
-            }
-        }
     }
 
     post {
         always {
             cleanWs()
+            script {
+                notifySplunk('COMPLETED', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    strategy: params.DEPLOYMENT_STRATEGY,
+                    build_tag: env.BUILD_TAG,
+                    result: currentBuild.result ?: 'SUCCESS',
+                    duration: currentBuild.durationString
+                ])
+            }
         }
         success {
             script {
+                notifySplunk('SUCCESS', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    strategy: params.DEPLOYMENT_STRATEGY,
+                    build_tag: env.BUILD_TAG
+                ])
                 notifySlack('SUCCESS', """
                     ✅ Deployment to ${params.ENVIRONMENT} successful!
                     Platform: ${params.PLATFORM}
@@ -429,6 +455,12 @@ pipeline {
         }
         failure {
             script {
+                notifySplunk('FAILURE', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    build_url: env.BUILD_URL,
+                    build_tag: env.BUILD_TAG
+                ])
                 notifySlack('FAILURE', """
                     ❌ Deployment to ${params.ENVIRONMENT} failed!
                     Platform: ${params.PLATFORM}
@@ -438,6 +470,11 @@ pipeline {
         }
         unstable {
             script {
+                notifySplunk('UNSTABLE', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    build_tag: env.BUILD_TAG
+                ])
                 notifySlack('UNSTABLE', """
                     ⚠️  Deployment to ${params.ENVIRONMENT} unstable
                     Platform: ${params.PLATFORM}
@@ -469,4 +506,37 @@ def notifySlack(String status, String message) {
         color: color,
         message: message
     )
+}
+
+def notifySplunk(String status, Map eventData) {
+    def payload = [
+        time: System.currentTimeMillis() / 1000,
+        source: 'jenkins',
+        sourcetype: 'jenkins:deployment',
+        index: 'ai_curator_deployments',
+        host: env.NODE_NAME ?: 'jenkins',
+        event: [
+            status: status,
+            job_name: env.JOB_NAME,
+            build_number: env.BUILD_NUMBER,
+            build_url: env.BUILD_URL,
+            git_commit: env.GIT_COMMIT_SHORT,
+            timestamp: new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone('UTC'))
+        ] + eventData
+    ]
+
+    try {
+        def jsonPayload = groovy.json.JsonOutput.toJson(payload)
+        httpRequest(
+            url: "${env.SPLUNK_HEC_URL}/services/collector/event",
+            httpMode: 'POST',
+            contentType: 'APPLICATION_JSON',
+            customHeaders: [[name: 'Authorization', value: "Splunk ${env.SPLUNK_HEC_TOKEN}"]],
+            requestBody: jsonPayload,
+            validResponseCodes: '200',
+            quiet: true
+        )
+    } catch (Exception e) {
+        echo "Warning: Failed to send event to Splunk: ${e.message}"
+    }
 }

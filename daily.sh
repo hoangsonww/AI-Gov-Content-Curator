@@ -15,6 +15,14 @@ cd "$SCRIPT_DIR"
 
 LOGFILE="$SCRIPT_DIR/daily.log"
 
+# Prevent concurrent execution
+LOCKFILE="/tmp/daily.sh.lock"
+exec 200>"$LOCKFILE"
+flock -n 200 || { echo "$(date): Another instance is already running" >> "$LOGFILE"; exit 1; }
+
+# Notify on failure
+trap 'echo "$(date): daily.sh FAILED" >> "$LOGFILE"' ERR
+
 echo "----------------------------------------" | tee -a "$LOGFILE"
 echo "Daily run started at $(date +"%Y-%m-%d %H:%M:%S")" | tee -a "$LOGFILE"
 echo "This script is meant to run daily to complete the following tasks:" | tee -a "$LOGFILE"
@@ -23,7 +31,7 @@ echo "This script is meant to run daily to complete the following tasks:" | tee 
 echo "" | tee -a "$LOGFILE"
 echo "1. 📡 Running crawler... (cwd: $SCRIPT_DIR/crawler)" | tee -a "$LOGFILE"
 cd "$SCRIPT_DIR/crawler"
-npm install --silent               2>&1 | tee -a "$LOGFILE"
+npm ci --omit=dev --silent               2>&1 | tee -a "$LOGFILE"
 npm run crawl                     2>&1 | tee -a "$LOGFILE"
 
 # 2️⃣ Clean old articles
@@ -35,7 +43,7 @@ npm run clean:articles            2>&1 | tee -a "$LOGFILE"
 echo "" | tee -a "$LOGFILE"
 echo "3. 📨 Sending newsletter... (cwd: $SCRIPT_DIR/newsletters)" | tee -a "$LOGFILE"
 cd "$SCRIPT_DIR/newsletters"
-npm install --silent               2>&1 | tee -a "$LOGFILE"
+npm ci --omit=dev --silent               2>&1 | tee -a "$LOGFILE"
 npm run newsletter                2>&1 | tee -a "$LOGFILE"
 
 echo "" | tee -a "$LOGFILE"

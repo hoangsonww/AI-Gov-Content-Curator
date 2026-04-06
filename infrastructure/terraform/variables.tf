@@ -2,12 +2,22 @@ variable "aws_region" {
   description = "AWS region for resources"
   type        = string
   default     = "us-east-1"
+
+  validation {
+    condition     = can(regex("^(us|eu|ap|sa|ca|me|af)-(north|south|east|west|central|northeast|southeast)-[1-3]$", var.aws_region))
+    error_message = "Must be a valid AWS region."
+  }
 }
 
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
-  default     = "prod"
+  default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
 }
 
 variable "vpc_cidr" {
@@ -85,7 +95,11 @@ variable "backend_max_capacity" {
 variable "backend_image" {
   description = "Docker image for backend service"
   type        = string
-  default     = "ghcr.io/hoangsonww/ai-curator-backend:latest"
+
+  validation {
+    condition     = !can(regex(":latest$", var.backend_image))
+    error_message = "Image tag :latest is not allowed. Use a pinned version or SHA digest."
+  }
 }
 
 # Frontend Service Configuration
@@ -122,7 +136,11 @@ variable "frontend_max_capacity" {
 variable "frontend_image" {
   description = "Docker image for frontend service"
   type        = string
-  default     = "ghcr.io/hoangsonww/ai-curator-frontend:latest"
+
+  validation {
+    condition     = !can(regex(":latest$", var.frontend_image))
+    error_message = "Image tag :latest is not allowed. Use a pinned version or SHA digest."
+  }
 }
 
 # Crawler Service Configuration
@@ -141,7 +159,11 @@ variable "crawler_memory" {
 variable "crawler_image" {
   description = "Docker image for crawler service"
   type        = string
-  default     = "ghcr.io/hoangsonww/ai-curator-crawler:latest"
+
+  validation {
+    condition     = !can(regex(":latest$", var.crawler_image))
+    error_message = "Image tag :latest is not allowed. Use a pinned version or SHA digest."
+  }
 }
 
 # Newsletter Service Configuration
@@ -160,7 +182,11 @@ variable "newsletter_memory" {
 variable "newsletter_image" {
   description = "Docker image for newsletter service"
   type        = string
-  default     = "ghcr.io/hoangsonww/ai-curator-newsletters:latest"
+
+  validation {
+    condition     = !can(regex(":latest$", var.newsletter_image))
+    error_message = "Image tag :latest is not allowed. Use a pinned version or SHA digest."
+  }
 }
 
 # Secrets (should be set via environment variables or tfvars file)
@@ -191,4 +217,85 @@ variable "news_api_key" {
 variable "alert_email" {
   description = "Email address for CloudWatch alerts"
   type        = string
+}
+
+# Splunk Integration Configuration
+variable "enable_splunk" {
+  description = "Enable Splunk integration via Kinesis Data Firehose"
+  type        = bool
+  default     = false
+}
+
+variable "splunk_hec_endpoint" {
+  description = "Splunk HTTP Event Collector endpoint URL (e.g. https://splunk.example.com:8088)"
+  type        = string
+  default     = ""
+}
+
+variable "splunk_hec_token" {
+  description = "Splunk HEC authentication token"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "splunk_index" {
+  description = "Default Splunk index for log ingestion"
+  type        = string
+  default     = "ai_curator_logs"
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch Log Group retention in days"
+  type        = number
+  default     = 30
+
+  validation {
+    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.log_retention_days)
+    error_message = "Must be a valid CloudWatch Logs retention period."
+  }
+}
+
+variable "enable_predictive_scaling" {
+  description = "Enable predictive auto-scaling (requires ASG workers)"
+  type        = bool
+  default     = false
+}
+
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for scaling event notifications"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "domain_name" {
+  description = "Domain name for Route53 hosted zone"
+  type        = string
+  default     = "ai-curator.example.com"
+}
+
+variable "cloudfront_secret" {
+  description = "Shared secret for CloudFront origin verification"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "enable_redis_global" {
+  description = "Enable global Redis (ElastiCache) replication"
+  type        = bool
+  default     = false
+}
+
+variable "enable_spot_instances" {
+  description = "Enable advanced Fargate Spot capacity provider strategy (overrides base module)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_edge_auth" {
+  description = "Enable Lambda@Edge authentication for CloudFront"
+  type        = bool
+  default     = false
 }

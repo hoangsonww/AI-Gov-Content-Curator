@@ -31,7 +31,7 @@ This monorepo, multi-services project is organized into seven main components:
 - **Agentic AI Pipeline:** `agentic_ai/`
   - Documentation: [agentic_ai/README.md](agentic_ai/README.md)
 
-Additionally, the project includes a set of shell scripts and a Makefile for automating common tasks, as well as a CLI tool for managing crawling and article operations. It also fully supports AWS, Terraform, & Kubernetes deployments with blue/green deployments, canary releases, and rolling updates via GitHub Actions.
+Additionally, the project includes a set of shell scripts and a Makefile for automating common tasks, as well as a CLI tool for managing crawling and article operations. It also fully supports AWS, Terraform, & Kubernetes deployments with blue/green deployments, canary releases, and rolling updates via GitHub Actions. Enterprise-grade observability is provided through Splunk (via OpenTelemetry Collector and Kinesis Data Firehose), Prometheus, and Grafana.
 
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-268?style=flat&logo=express&logoColor=white)
@@ -72,6 +72,12 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![LangChain](https://img.shields.io/badge/LangChain-121212?style=flat&logo=chainlink&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-FF4785?style=flat&logo=graphql&logoColor=white)
 ![Model Context Protocol (MCP)](https://img.shields.io/badge/Model%20Context%20Protocol-000?style=flat&logo=modelcontextprotocol&logoColor=white)
+![Splunk](https://img.shields.io/badge/Splunk-000000?style=flat&logo=splunk&logoColor=white)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-7B5EA7?style=flat&logo=opentelemetry&logoColor=white)
+![Kinesis Firehose](https://img.shields.io/badge/Kinesis%20Firehose-FF9900?style=flat&logo=kinopoisk&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
+![Istio](https://img.shields.io/badge/Istio-466BB0?style=flat&logo=istio&logoColor=white)
 
 ---
 
@@ -132,6 +138,21 @@ flowchart LR
     Backend -.->|AI-Assisted Features| GoogleAI
     Crawler -.->|Cron & Shell Scripts| Automation[Shell / Make CLI]
     Backend -.->|Operational Scripts| Automation
+
+    subgraph Observability[Observability Stack]
+        OTEL[Splunk OTEL Collector]
+        Splunk[(Splunk)]
+        Prometheus[Prometheus]
+        Grafana[Grafana]
+    end
+
+    Backend -.->|OTLP + logs| OTEL
+    Frontend -.->|OTLP + logs| OTEL
+    Crawler -.->|logs| OTEL
+    Newsletter -.->|logs| OTEL
+    OTEL -->|HEC| Splunk
+    OTEL -->|remote write| Prometheus
+    Prometheus --> Grafana
 ```
 
 To illustrate how articles move through the platform, the following sequence captures the typical daily refresh:
@@ -844,10 +865,11 @@ The pipeline uses an **assembly line architecture** where articles flow through 
 - **Redis**: State management and caching
 - **MongoDB**: Data persistence
 - **Prometheus**: Metrics and monitoring
+- **Splunk + OpenTelemetry**: Centralized log aggregation, distributed tracing, and enterprise observability via OTEL Collector
 - **MCP Python SDK (FastMCP)**: Model Context Protocol server implementation
 
 **Cloud Deployment:**
-- **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch
+- **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch, Kinesis Firehose → Splunk HEC
 - **Azure**: Functions, Storage Queues, Blob Storage, Key Vault, Application Insights
 
 **Beads Subarchitecture:**

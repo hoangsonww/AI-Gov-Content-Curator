@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -12,6 +12,7 @@ NC='\033[0m' # No Color
 ENVIRONMENT=${1:-prod}
 SERVICE=${2:-all}
 DEPLOYMENT_TYPE=${3:-blue-green}  # blue-green, rolling, or canary
+IMAGE_TAG=${4:-latest}
 
 echo -e "${GREEN}=== AI Curator AWS Deployment ===${NC}"
 echo "Environment: $ENVIRONMENT"
@@ -40,11 +41,13 @@ deploy_with_terraform() {
     # Plan deployment
     terraform plan -var="environment=$ENVIRONMENT" -out=tfplan
 
-    # Ask for confirmation
-    read -p "Do you want to proceed with the deployment? (yes/no): " confirm
-    if [ "$confirm" != "yes" ]; then
-        echo -e "${RED}Deployment cancelled${NC}"
-        exit 0
+    # Ask for confirmation (skip in CI or when AUTO_APPROVE is set)
+    if [ "${AUTO_APPROVE:-false}" != "true" ] && [ -t 0 ]; then
+        read -p "Do you want to proceed with the deployment? (yes/no): " confirm
+        if [ "$confirm" != "yes" ]; then
+            echo -e "${RED}Aborting...${NC}"
+            exit 1
+        fi
     fi
 
     # Apply Terraform
@@ -80,7 +83,7 @@ deploy_service_blue_green() {
         --output json)
 
     # Register new task definition with latest image
-    NEW_TASK_DEF=$(echo $TASK_DEFINITION | jq --arg IMAGE "ghcr.io/hoangsonww/ai-curator-$service_name:latest" \
+    NEW_TASK_DEF=$(echo $TASK_DEFINITION | jq --arg IMAGE "ghcr.io/hoangsonww/ai-curator-$service_name:$IMAGE_TAG" \
         '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
         | aws ecs register-task-definition --cli-input-json file:///dev/stdin --query 'taskDefinition.taskDefinitionArn' --output text)
 
@@ -212,13 +215,26 @@ check_health() {
     return 1
 }
 
+# Retrieve ALB DNS for health checks
+get_alb_dns() {
+    cd infrastructure/terraform
+    local dns=""
+    dns=$(terraform output -raw alb_dns_name 2>/dev/null) || true
+    cd ../..
+    echo "$dns"
+}
+
 # Main deployment logic
 case "$SERVICE" in
     backend)
         deploy_service_blue_green "backend"
+        ALB_DNS=$(get_alb_dns)
+        [ -n "$ALB_DNS" ] && check_health "backend" "$ALB_DNS"
         ;;
     frontend)
         deploy_service_blue_green "frontend"
+        ALB_DNS=$(get_alb_dns)
+        [ -n "$ALB_DNS" ] && check_health "frontend" "$ALB_DNS"
         ;;
     all)
         deploy_with_terraform
@@ -226,6 +242,9 @@ case "$SERVICE" in
         deploy_service_blue_green "backend"
         echo ""
         deploy_service_blue_green "frontend"
+        echo ""
+        check_health "backend" "$ALB_DNS"
+        check_health "frontend" "$ALB_DNS"
         ;;
     rollback-backend)
         rollback_deployment "backend"

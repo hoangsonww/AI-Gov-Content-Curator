@@ -311,7 +311,7 @@ make k8s-deploy-all IMAGE_TAG=v1.2.3
 
 ```bash
 # Deploy with canary strategy
-make k8s-deploy-all IMAGE_TAG=latest
+make k8s-deploy-all IMAGE_TAG=$(git rev-parse --short HEAD)
 
 # Watch rollout progress
 kubectl argo rollouts get rollout backend -n ai-curator --watch
@@ -436,6 +436,202 @@ curl -X POST https://jenkins.example.com/job/ai-curator/buildWithParameters \
 ---
 
 ## Monitoring & Observability
+
+### Overview
+
+The platform uses a multi-layer observability stack:
+
+| Layer | AWS (ECS/Fargate) | Kubernetes | Local Dev |
+|-------|-------------------|------------|-----------|
+| **Metrics** | CloudWatch + Splunk via Firehose | Prometheus + Splunk OTEL | OTEL Collector (stdout) |
+| **Logs** | CloudWatch → Kinesis Firehose → Splunk HEC | Splunk OTEL filelog receiver → Splunk HEC | OTEL Collector → Splunk HEC |
+| **Traces** | X-Ray + Splunk (via OTLP) | Splunk OTEL (OTLP receiver) → Splunk HEC | OTEL Collector → Splunk HEC |
+| **Dashboards** | CloudWatch Dashboards, Splunk | Grafana + Splunk | Splunk |
+| **Alerts** | CloudWatch Alarms → SNS, Splunk alerts | Prometheus Alertmanager, Splunk alerts | — |
+
+### Splunk Integration
+
+#### Architecture
+
+```mermaid
+flowchart TB
+    subgraph K8s["Kubernetes Cluster"]
+        direction TB
+        subgraph Pods["Application Pods"]
+            BackendPod["Backend Pod"]
+            FrontendPod["Frontend Pod"]
+            CrawlerJob["Crawler Job"]
+            NewsletterJob["Newsletter Job"]
+        end
+
+        subgraph OTELAgent["Splunk OTEL Collector · DaemonSet"]
+            direction TB
+            Receivers["Receivers\nfilelog · otlp · hostmetrics\nkubeletstats · prometheus"]
+            Processors["Processors\nk8sattributes · transform\nbatch · memory_limiter"]
+            Exporters["Exporters\nsplunk_hec · prometheusremotewrite"]
+            Receivers --> Processors --> Exporters
+        end
+
+        ClusterRx["Cluster Receiver · Deployment\nk8s_cluster · k8s_events"]
+        Prom["Prometheus\n(metric federation)"]
+    end
+
+    SplunkHEC["Splunk HEC\n(logs · metrics · traces)"]
+
+    Pods -->|"OTLP + filelog"| OTELAgent
+    ClusterRx -->|"splunk_hec"| SplunkHEC
+    Exporters -->|"splunk_hec"| SplunkHEC
+    Exporters -->|"remote_write"| Prom
+
+    style SplunkHEC fill:#000,color:#65A637,stroke:#65A637
+    style OTELAgent fill:#1a1a2e,color:#fff,stroke:#7B5EA7
+    style ClusterRx fill:#1a1a2e,color:#fff,stroke:#7B5EA7
+```
+
+```mermaid
+flowchart LR
+    subgraph AWS["AWS · ECS / Fargate"]
+        ECS["ECS Tasks\nbackend · frontend\ncrawler · newsletter"]
+        CWLogs["CloudWatch\nLog Groups"]
+        SubFilter["Subscription\nFilter"]
+        Lambda["Lambda\n(transform)"]
+        Firehose["Kinesis\nData Firehose"]
+        S3Backup["S3 Bucket\n(failed delivery backup)"]
+    end
+
+    SplunkHEC2["Splunk HEC"]
+
+    ECS -->|"container logs"| CWLogs
+    CWLogs --> SubFilter
+    SubFilter --> Firehose
+    Firehose --> Lambda
+    Lambda --> Firehose
+    Firehose -->|"HEC events"| SplunkHEC2
+    Firehose -->|"failures"| S3Backup
+
+    style SplunkHEC2 fill:#000,color:#65A637,stroke:#65A637
+    style Firehose fill:#FF9900,color:#fff,stroke:#FF9900
+```
+
+#### Splunk Indexes
+
+| Index | Content | Retention |
+|-------|---------|-----------|
+| `ai_curator_logs` | Application logs, K8s events, CloudWatch logs | 90 days |
+| `ai_curator_metrics` | Host/container/app metrics | 30 days |
+| `ai_curator_traces` | Distributed traces (OTLP) | 14 days |
+| `ai_curator_deployments` | Jenkins/CI deployment events | 365 days |
+| `ai_curator_dev` | Local development logs | 7 days |
+
+#### Setup: Kubernetes
+
+```bash
+# 1. Update the Splunk HEC token secret
+cd infrastructure
+make splunk-update-token
+
+# 2. Deploy the OTEL Collector
+make splunk-deploy
+
+# 3. Verify collector health
+make splunk-status
+make splunk-health
+
+# 4. Tail collector logs
+make splunk-logs
+```
+
+#### Setup: AWS (Terraform)
+
+```bash
+# 1. Enable Splunk in terraform.tfvars
+cat >> terraform/terraform.tfvars <<EOF
+enable_splunk       = true
+splunk_hec_endpoint = "https://splunk.example.com:8088"
+splunk_hec_token    = "your-hec-token-here"
+splunk_index        = "ai_curator_logs"
+EOF
+
+# 2. Plan and apply
+make terraform-plan ENVIRONMENT=prod
+make terraform-apply
+```
+
+#### Setup: Local Development
+
+```bash
+# Set environment variables for OTEL forwarding
+export SPLUNK_HEC_TOKEN="your-dev-token"
+export SPLUNK_HEC_ENDPOINT="https://splunk-dev.example.com:8088/services/collector"
+
+# Start services with OTEL collector
+docker-compose up -d
+```
+
+#### Useful Splunk Searches
+
+```spl
+# All errors from the backend service in the last hour
+index=ai_curator_logs sourcetype="otel:logs" k8s.deployment.name="backend" level="error"
+| timechart count by k8s.pod.name
+
+# Deployment events from Jenkins
+index=ai_curator_deployments sourcetype="jenkins:deployment"
+| table _time status environment platform strategy build_tag duration
+
+# P95 latency by service
+index=ai_curator_metrics metric_name="http_request_duration_milliseconds"
+| timechart p95(metric_value) by service
+
+# Failed Firehose deliveries (AWS path)
+index=ai_curator_logs sourcetype="aws:cloudwatch:logs" log_group="/ecs/*"
+| stats count by log_group
+
+# OTEL Collector health
+index=_internal source="*splunk-otel*"
+| stats count by host log_level
+```
+
+#### Troubleshooting Splunk
+
+**Collector not forwarding logs:**
+```bash
+# Check collector pods
+kubectl get pods -n splunk-monitoring
+
+# Check collector logs for errors
+kubectl logs -n splunk-monitoring -l app.kubernetes.io/component=agent --tail=200 | grep -i error
+
+# Verify HEC connectivity from inside the cluster
+kubectl run test-hec --image=curlimages/curl -it --rm -- \
+  curl -k https://splunk-hec.ai-curator.internal:8088/services/collector/health
+```
+
+**High export failure rate:**
+```bash
+# Check Splunk HEC status
+curl -k https://your-splunk:8088/services/collector/health
+
+# Check collector queue metrics
+kubectl exec -n splunk-monitoring \
+  $(kubectl get pod -n splunk-monitoring -l app.kubernetes.io/component=agent -o jsonpath='{.items[0].metadata.name}') \
+  -- curl -s http://localhost:8888/metrics | grep otelcol_exporter
+```
+
+**AWS Firehose delivery issues:**
+```bash
+# Check Firehose metrics
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/Firehose \
+  --metric-name DeliveryToSplunk.Success \
+  --dimensions Name=DeliveryStreamName,Value=ai-curator-prod-splunk \
+  --start-time $(date -u -v-1H +%Y-%m-%dT%H:%M:%S) \
+  --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
+  --period 300 --statistics Sum
+
+# Check failed delivery S3 bucket
+aws s3 ls s3://ai-curator-prod-splunk-firehose-backup/splunk-failed/ --recursive
+```
 
 ### Metrics
 
@@ -713,7 +909,7 @@ make k8s-deploy SERVICE=backend
 **Diagnosis**:
 ```bash
 # Test connectivity
-kubectl run test-pod --image=mongo:latest -it --rm -- \
+kubectl run test-pod --image=mongo:7.0 -it --rm -- \
   mongosh "mongodb+srv://..."
 
 # Check secrets

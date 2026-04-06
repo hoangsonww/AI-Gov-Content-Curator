@@ -49,11 +49,20 @@ spec:
     metadata:
       labels:
         app: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: backend
-          image: ghcr.io/hoangsonww/ai-curator-backend:latest
-          imagePullPolicy: Always
+          image: ghcr.io/hoangsonww/ai-curator-backend:IMAGE_TAG
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 3000
@@ -75,6 +84,13 @@ spec:
             limits:
               cpu: 1000m
               memory: 2Gi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           livenessProbe:
             httpGet:
               path: /health
@@ -91,6 +107,12 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            failureThreshold: 30
+            periodSeconds: 5
   strategy:
     canary:
       # Reference to stable service
@@ -232,9 +254,11 @@ metadata:
   name: backend-secrets
   namespace: ai-curator
 type: Opaque
-# Replace with actual values or use external secrets operator
+# ⚠️  DO NOT commit real secrets here. Use External Secrets Operator (ESO)
+# with ExternalSecret CRDs pointing to AWS Secrets Manager or Vault.
+# These placeholders exist only for local dev / reference.
 stringData:
-  MONGODB_URI: "REPLACE_ME"
-  GOOGLE_AI_API_KEY: "REPLACE_ME"
-  RESEND_API_KEY: "REPLACE_ME"
-  NEWS_API_KEY: "REPLACE_ME"
+  MONGODB_URI: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  GOOGLE_AI_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  RESEND_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"
+  NEWS_API_KEY: "REPLACE_VIA_EXTERNAL_SECRETS_OPERATOR"

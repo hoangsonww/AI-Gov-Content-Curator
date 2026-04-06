@@ -62,3 +62,19 @@ output "sns_topic_arn" {
   description = "ARN of SNS topic for alerts"
   value       = aws_sns_topic.alerts.arn
 }
+
+# Splunk Integration Outputs
+output "splunk_firehose_arn" {
+  description = "ARN of the Kinesis Firehose delivery stream for Splunk"
+  value       = var.enable_splunk ? module.splunk[0].firehose_delivery_stream_arn : ""
+}
+
+output "splunk_firehose_name" {
+  description = "Name of the Splunk Kinesis Firehose delivery stream"
+  value       = var.enable_splunk ? module.splunk[0].firehose_delivery_stream_name : ""
+}
+
+output "splunk_backup_bucket_arn" {
+  description = "ARN of the S3 bucket backing failed Splunk deliveries"
+  value       = var.enable_splunk ? module.splunk[0].s3_backup_bucket_arn : ""
+}

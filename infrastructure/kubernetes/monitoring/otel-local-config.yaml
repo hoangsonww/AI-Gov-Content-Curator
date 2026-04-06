@@ -1,0 +1,59 @@
+# Lightweight OTEL Collector config for local development (docker-compose)
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    send_batch_size: 512
+    timeout: 5s
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 128
+    spike_limit_mib: 32
+
+exporters:
+  # In local dev, log to stdout for visibility
+  debug:
+    verbosity: basic
+    sampling_initial: 10
+    sampling_thereafter: 50
+
+  # Forward to Splunk HEC if configured
+  splunk_hec:
+    token: "${env:SPLUNK_HEC_TOKEN}"
+    endpoint: "${env:SPLUNK_HEC_ENDPOINT}"
+    source: "otel-local-dev"
+    sourcetype: "otel:logs"
+    index: "ai_curator_dev"
+    tls:
+      insecure_skip_verify: true
+
+service:
+  extensions: [health_check]
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, splunk_hec]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, splunk_hec]
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, splunk_hec]

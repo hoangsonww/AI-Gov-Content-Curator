@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # install_sync_cron.sh
 # ---------------------------------------------------------------
 # Adds cron entries to run `sync_vectors.sh` 5 times daily:

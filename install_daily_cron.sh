@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # install_daily_cron.sh
 # ---------------------------------------------------------------
 # Adds a cron entry to run `daily.sh` at 16:00 (4:00 PM) daily.
@@ -39,4 +40,4 @@ CRON_JOB="0 16 * * * $DAILY_SH >> $LOGFILE 2>&1"
 #    - append our new line
 ( crontab -l 2>/dev/null | grep -v -F "$DAILY_SH" ; echo "$CRON_JOB" ) | crontab -
 
-echo "✅ Cron job installed. Will run daily.sh at 12:00 PM and log to $LOGFILE"
+echo "✅ Cron job installed. Will run daily.sh at 4:00 PM (16:00 UTC) and log to $LOGFILE"

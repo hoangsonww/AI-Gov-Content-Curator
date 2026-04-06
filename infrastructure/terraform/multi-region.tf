@@ -39,6 +39,10 @@ resource "aws_route53_health_check" "primary" {
 resource "aws_route53_zone" "main" {
   name = var.domain_name
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     Name = "ai-curator-${var.environment}"
   }
@@ -117,6 +121,25 @@ resource "aws_s3_bucket" "global_accelerator_logs" {
   }
 }
 
+resource "aws_s3_bucket_server_side_encryption_configuration" "ga_logs" {
+  bucket = aws_s3_bucket.global_accelerator_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
+    }
+    bucket_key_enabled = true
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "ga_logs" {
+  bucket                  = aws_s3_bucket.global_accelerator_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 # Cross-Region Replication for S3
 resource "aws_s3_bucket_replication_configuration" "replication" {
   depends_on = [aws_s3_bucket_versioning.source]
@@ -185,6 +208,10 @@ resource "aws_dynamodb_table" "sessions" {
     enabled = true
   }
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     Name = "ai-curator-${var.environment}-sessions"
   }
@@ -216,6 +243,10 @@ resource "aws_elasticache_replication_group" "primary" {
   transit_encryption_enabled = true
 
   subnet_group_name = aws_elasticache_subnet_group.redis[0].name
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   tags = {
     Name = "ai-curator-${var.environment}-redis-primary"
@@ -362,6 +393,25 @@ resource "aws_s3_bucket" "cloudfront_logs" {
   tags = {
     Name = "ai-curator-${var.environment}-cloudfront-logs"
   }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
+    }
+    bucket_key_enabled = true
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
+  bucket                  = aws_s3_bucket.cloudfront_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # Lambda@Edge for Authentication
