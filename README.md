@@ -74,7 +74,7 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![Model Context Protocol (MCP)](https://img.shields.io/badge/Model%20Context%20Protocol-000?style=flat&logo=modelcontextprotocol&logoColor=white)
 ![Splunk](https://img.shields.io/badge/Splunk-000000?style=flat&logo=splunk&logoColor=white)
 ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-7B5EA7?style=flat&logo=opentelemetry&logoColor=white)
-![Kinesis Firehose](https://img.shields.io/badge/Kinesis%20Firehose-FF9900?style=flat&logo=amazonwebservices&logoColor=white)
+![Kinesis Firehose](https://img.shields.io/badge/Kinesis%20Firehose-FF9900?style=flat&logo=kinopoisk&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
 ![Istio](https://img.shields.io/badge/Istio-466BB0?style=flat&logo=istio&logoColor=white)
