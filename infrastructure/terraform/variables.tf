@@ -192,3 +192,72 @@ variable "alert_email" {
   description = "Email address for CloudWatch alerts"
   type        = string
 }
+
+# Splunk Integration Configuration
+variable "enable_splunk" {
+  description = "Enable Splunk integration via Kinesis Data Firehose"
+  type        = bool
+  default     = false
+}
+
+variable "splunk_hec_endpoint" {
+  description = "Splunk HTTP Event Collector endpoint URL (e.g. https://splunk.example.com:8088)"
+  type        = string
+  default     = ""
+}
+
+variable "splunk_hec_token" {
+  description = "Splunk HEC authentication token"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "splunk_index" {
+  description = "Default Splunk index for log ingestion"
+  type        = string
+  default     = "ai_curator_logs"
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch Log Group retention in days"
+  type        = number
+  default     = 30
+}
+
+variable "enable_predictive_scaling" {
+  description = "Enable predictive auto-scaling (requires ASG workers)"
+  type        = bool
+  default     = false
+}
+
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for scaling event notifications"
+  type        = string
+  default     = ""
+}
+
+variable "domain_name" {
+  description = "Domain name for Route53 hosted zone"
+  type        = string
+  default     = "ai-curator.example.com"
+}
+
+variable "cloudfront_secret" {
+  description = "Shared secret for CloudFront origin verification"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "enable_redis_global" {
+  description = "Enable global Redis (ElastiCache) replication"
+  type        = bool
+  default     = false
+}
+
+variable "enable_edge_auth" {
+  description = "Enable Lambda@Edge authentication for CloudFront"
+  type        = bool
+  default     = false
+}

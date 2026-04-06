@@ -1,4 +1,4 @@
-.PHONY: help aws-deploy aws-rollback k8s-deploy k8s-rollback k8s-promote terraform-init terraform-plan terraform-apply terraform-destroy
+.PHONY: help aws-deploy aws-rollback k8s-deploy k8s-rollback k8s-promote terraform-init terraform-plan terraform-apply terraform-destroy splunk-deploy splunk-status splunk-logs splunk-health splunk-restart splunk-remove splunk-update-token
 
 # Colors
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -165,6 +165,59 @@ monitoring-prometheus: ## Open Prometheus UI
 monitoring-alerts: ## View active alerts
 	@echo "${CYAN}Fetching active alerts...${RESET}"
 	@kubectl get prometheusrules -A
+
+##
+## Splunk Observability Commands
+##
+
+splunk-deploy: ## Deploy Splunk OTEL Collector to Kubernetes
+	@echo "${GREEN}Deploying Splunk OTEL Collector...${RESET}"
+	@kubectl apply -f kubernetes/monitoring/splunk-otel-collector.yaml
+	@echo "${GREEN}Splunk OTEL Collector deployed${RESET}"
+
+splunk-status: ## Check Splunk OTEL Collector status
+	@echo "${CYAN}Checking Splunk OTEL Collector status...${RESET}"
+	@echo "--- DaemonSet (node agents) ---"
+	@kubectl get daemonset -n splunk-monitoring -l app.kubernetes.io/name=splunk-otel-collector
+	@echo ""
+	@echo "--- Cluster Receiver ---"
+	@kubectl get deployment -n splunk-monitoring -l app.kubernetes.io/component=cluster-receiver
+	@echo ""
+	@echo "--- All Pods ---"
+	@kubectl get pods -n splunk-monitoring
+	@echo ""
+	@echo "--- Collector Service ---"
+	@kubectl get svc -n splunk-monitoring
+
+splunk-logs: ## Tail Splunk OTEL Collector logs
+	@echo "${CYAN}Tailing Splunk OTEL Collector agent logs...${RESET}"
+	@kubectl logs -f -l app.kubernetes.io/name=splunk-otel-collector -n splunk-monitoring --tail=100
+
+splunk-health: ## Check Splunk OTEL Collector health
+	@echo "${CYAN}Checking OTEL Collector health...${RESET}"
+	@kubectl exec -n splunk-monitoring $$(kubectl get pod -n splunk-monitoring -l app.kubernetes.io/component=agent -o jsonpath='{.items[0].metadata.name}') -- curl -sf http://localhost:13133/ && echo "Healthy" || echo "Unhealthy"
+
+splunk-restart: ## Restart Splunk OTEL Collector
+	@echo "${YELLOW}Restarting Splunk OTEL Collector...${RESET}"
+	@kubectl rollout restart daemonset/splunk-otel-collector-agent -n splunk-monitoring
+	@kubectl rollout restart deployment/splunk-otel-collector-cluster-receiver -n splunk-monitoring
+	@echo "${GREEN}Restart initiated${RESET}"
+
+splunk-remove: ## Remove Splunk OTEL Collector from Kubernetes
+	@echo "${YELLOW}Removing Splunk OTEL Collector...${RESET}"
+	@kubectl delete -f kubernetes/monitoring/splunk-otel-collector.yaml --ignore-not-found
+	@echo "${GREEN}Splunk OTEL Collector removed${RESET}"
+
+splunk-update-token: ## Update Splunk HEC token secret
+	@echo "${YELLOW}Updating Splunk HEC token...${RESET}"
+	@read -sp "Enter Splunk HEC Token: " TOKEN; \
+	echo; \
+	kubectl create secret generic splunk-otel-collector \
+		--namespace=splunk-monitoring \
+		--from-literal=splunk_hec_token="$$TOKEN" \
+		--from-literal=splunk_observability_access_token="$$TOKEN" \
+		--dry-run=client -o yaml | kubectl apply -f -
+	@echo "${GREEN}Splunk HEC token updated${RESET}"
 
 ##
 ## Utility Commands

@@ -17,6 +17,17 @@ data:
         cluster: 'ai-curator'
         environment: 'production'
 
+    # Remote write to Splunk Observability for metric federation
+    remote_write:
+      - url: "${SPLUNK_METRICS_ENDPOINT:-http://splunk-otel-collector.splunk-monitoring.svc.cluster.local:9090/api/v1/write}"
+        remote_timeout: 30s
+        queue_config:
+          capacity: 10000
+          max_shards: 5
+          min_shards: 1
+          max_samples_per_send: 2000
+          batch_send_deadline: 10s
+
     # Alertmanager configuration
     alerting:
       alertmanagers:
@@ -135,6 +146,25 @@ data:
           - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
             action: keep
             regex: istio-telemetry;prometheus
+
+      # Splunk OTEL Collector self-metrics
+      - job_name: 'splunk-otel-collector'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - splunk-monitoring
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+            action: keep
+            regex: splunk-otel-collector
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            action: keep
+            regex: 8888
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -223,6 +253,41 @@ data:
             annotations:
               summary: "Rollout stuck for {{ $labels.rollout }}"
               description: "Rollout {{ $labels.rollout }} has been progressing for more than 30 minutes"
+
+          # Splunk OTEL Collector down
+          - alert: SplunkCollectorDown
+            expr: up{job="splunk-otel-collector"} == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Splunk OTEL Collector is down"
+              description: "Splunk OTEL Collector pod {{ $labels.pod }} has been down for more than 5 minutes. Log forwarding is disrupted."
+
+          # Splunk OTEL Collector export errors
+          - alert: SplunkExportErrors
+            expr: |
+              rate(otelcol_exporter_send_failed_log_records_total{job="splunk-otel-collector"}[5m]) > 10
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Splunk OTEL Collector export failures"
+              description: "Collector {{ $labels.pod }} is failing to export >10 log records/sec to Splunk"
+
+          # Splunk OTEL Collector queue saturation
+          - alert: SplunkCollectorQueueFull
+            expr: |
+              otelcol_exporter_queue_size{job="splunk-otel-collector"}
+              /
+              otelcol_exporter_queue_capacity{job="splunk-otel-collector"}
+              > 0.8
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Splunk OTEL Collector queue near capacity"
+              description: "Collector {{ $labels.pod }} queue is {{ $value | humanizePercentage }} full"
 ---
 apiVersion: apps/v1
 kind: Deployment

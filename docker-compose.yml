@@ -59,3 +59,25 @@ services:
       UNSUBSCRIBE_BASE_URL: "${UNSUBSCRIBE_BASE_URL}"
       AICC_API_URL: "${AICC_API_URL}"
     restart: unless-stopped
+
+  # Splunk OpenTelemetry Collector (local dev log & trace forwarding)
+  otel-collector:
+    image: quay.io/signalfx/splunk-otel-collector:0.96.1
+    container_name: otel-collector
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "13133:13133" # Health check
+      - "8888:8888"   # Collector metrics
+    environment:
+      SPLUNK_HEC_TOKEN: "${SPLUNK_HEC_TOKEN:-00000000-0000-0000-0000-000000000000}"
+      SPLUNK_HEC_ENDPOINT: "${SPLUNK_HEC_ENDPOINT:-https://localhost:8088/services/collector}"
+      SPLUNK_CONFIG: /etc/otel/config.yaml
+    volumes:
+      - ./infrastructure/kubernetes/monitoring/otel-local-config.yaml:/etc/otel/config.yaml:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:13133/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

@@ -136,6 +136,21 @@ flowchart LR
     Backend -.->|Operational Scripts| Automation
     Backend -.->|Direct Gemini Chat| GoogleAI
     Backend -.->|Vector Search| Pinecone
+
+    subgraph Observability[Observability Stack]
+        SplunkOTEL[Splunk OTEL Collector<br/>DaemonSet]
+        SplunkHEC[(Splunk)]
+        Prom[Prometheus]
+        Graf[Grafana]
+    end
+
+    Backend -.->|OTLP + logs| SplunkOTEL
+    Frontend -.->|OTLP + logs| SplunkOTEL
+    Crawler -.->|logs| SplunkOTEL
+    Newsletter -.->|logs| SplunkOTEL
+    SplunkOTEL -->|HEC| SplunkHEC
+    SplunkOTEL -->|remote_write| Prom
+    Prom --> Graf
 ```
 
 **Key Components:**
@@ -146,6 +161,7 @@ flowchart LR
 - **MCP integration:** The `mcp_server/` package exposes the pipeline as 20 tools, 11 resources, and 7 prompts for Claude Code and IDE integration
 - **Vector search:** Pinecone provides semantic search capabilities for the AI chat features
 - **Caching layer:** Redis accelerates hot API responses and reduces database load
+- **Observability:** Splunk OTEL Collector (DaemonSet) collects logs, metrics, and traces from all services via filelog, OTLP, hostmetrics, and kubeletstats receivers — enriched with K8s metadata, redacted for secrets, and exported to Splunk HEC; metrics are also federated to Prometheus for Grafana dashboards
 - **Automation:** Cron jobs (Vercel Cron + shell scripts) coordinate scheduled crawls, data hygiene, and newsletters
 
 ---
@@ -215,6 +231,13 @@ flowchart TB
         NewsAPI[News APIs]
     end
 
+    subgraph Observability["Observability Layer"]
+        SplunkOTEL[Splunk OTEL Collector<br/>DaemonSet + Cluster Receiver]
+        SplunkHEC[Splunk HEC<br/>Logs · Metrics · Traces]
+        Prometheus[Prometheus + Grafana]
+        CWLogs[CloudWatch Logs<br/>→ Kinesis Firehose → Splunk]
+    end
+
     Internet --> CloudFront
     CloudFront --> WAF
     WAF --> GlobalAccel
@@ -226,6 +249,11 @@ flowchart TB
     K8s --> Data
     AWS --> External
     K8s --> External
+    K8s --> SplunkOTEL
+    SplunkOTEL --> SplunkHEC
+    SplunkOTEL --> Prometheus
+    AWS --> CWLogs
+    CWLogs --> SplunkHEC
 ```
 
 **Deployment Paths:**
@@ -457,10 +485,13 @@ graph TB
             end
         end
 
-        subgraph Monitoring["Monitoring Stack"]
+        subgraph Monitoring["Monitoring & Observability"]
             Prometheus[Prometheus<br/>Metrics Collection]
             Grafana[Grafana<br/>Dashboards]
             AlertManager[AlertManager<br/>Alert Routing]
+            SplunkOTEL[Splunk OTEL Collector<br/>DaemonSet · Logs + Metrics + Traces]
+            SplunkClusterRx[Splunk Cluster Receiver<br/>K8s Events + Cluster Metrics]
+            SplunkHEC[Splunk HEC<br/>Centralized Observability]
         end
 
         subgraph Progressive["Progressive Delivery"]
@@ -479,13 +510,22 @@ graph TB
     AnalysisTemplates --> ArgoRollouts
     Prometheus --> Grafana
     Prometheus --> AlertManager
+    BackendRollout --> SplunkOTEL
+    FrontendRollout --> SplunkOTEL
+    CrawlerCron --> SplunkOTEL
+    NewsletterCron --> SplunkOTEL
+    SplunkOTEL -->|splunk_hec| SplunkHEC
+    SplunkOTEL -->|remote_write| Prometheus
+    SplunkClusterRx -->|splunk_hec| SplunkHEC
 ```
 
 **Key Components:**
 - **Istio Service Mesh:** Traffic management, observability, security
 - **Argo Rollouts:** Progressive delivery controller for canary deployments
 - **Prometheus:** Metrics collection and alerting rules
-- **Grafana:** Visualization and dashboards
+- **Grafana:** Visualization and dashboards with Splunk data source
+- **Splunk OTEL Collector:** Node-level DaemonSet collecting container logs (filelog), application telemetry (OTLP), host metrics, and kubelet stats — enriched with Kubernetes metadata, sanitized for secrets, and exported to Splunk HEC
+- **Splunk Cluster Receiver:** Cluster-wide K8s event and resource metric aggregation
 - **Analysis Templates:** Automated canary validation via Prometheus metrics
 
 **Kubernetes Resources:**
@@ -494,7 +534,9 @@ graph TB
 - `infrastructure/kubernetes/frontend/deployment.yaml` - Frontend Argo Rollout
 - `infrastructure/kubernetes/cronjobs/` - Scheduled task definitions
 - `infrastructure/kubernetes/istio/gateway.yaml` - Istio traffic management
-- `infrastructure/kubernetes/monitoring/` - Prometheus & Grafana stack
+- `infrastructure/kubernetes/monitoring/prometheus.yaml` - Prometheus metrics & alerts
+- `infrastructure/kubernetes/monitoring/grafana.yaml` - Grafana dashboards
+- `infrastructure/kubernetes/monitoring/splunk-otel-collector.yaml` - Splunk OTEL Collector (DaemonSet + Cluster Receiver)
 
 ---
 
@@ -1041,6 +1083,62 @@ Smoke Tests → Notify Slack
 
 ## Monitoring & Observability
 
+### Observability Architecture
+
+```mermaid
+flowchart TB
+    subgraph Apps["Application Services"]
+        Backend["Backend API"]
+        Frontend["Frontend SSR"]
+        Crawler["Crawler Jobs"]
+        Newsletter["Newsletter Jobs"]
+    end
+
+    subgraph K8sObservability["Kubernetes Observability"]
+        OTELAgent["Splunk OTEL Collector\nDaemonSet (per node)"]
+        ClusterRx["Splunk Cluster Receiver\nDeployment"]
+        Prom["Prometheus"]
+        Grafana["Grafana\nDashboards"]
+        AlertMgr["AlertManager"]
+    end
+
+    subgraph AWSObservability["AWS Observability"]
+        CWLogs["CloudWatch Logs"]
+        CWMetrics["CloudWatch Metrics\n& Alarms"]
+        Firehose["Kinesis Data Firehose"]
+        TransformLambda["Lambda\nLog Transformer"]
+        S3Backup["S3\nFailed Delivery Backup"]
+    end
+
+    SplunkHEC["Splunk\nHEC Endpoint"]
+    SplunkUI["Splunk Search &\nDashboards"]
+    JenkinsCI["Jenkins CI/CD\nBuild Events"]
+
+    Apps -->|"OTLP traces + logs\nfilelog scraping\nhostmetrics"| OTELAgent
+    ClusterRx -->|"k8s_cluster metrics\nk8s_events"| SplunkHEC
+    OTELAgent -->|"splunk_hec\nlogs · metrics · traces"| SplunkHEC
+    OTELAgent -->|"remote_write"| Prom
+    Prom --> Grafana
+    Prom --> AlertMgr
+
+    Apps -->|"container stdout/stderr"| CWLogs
+    CWLogs -->|"subscription filter"| Firehose
+    Firehose --> TransformLambda --> Firehose
+    Firehose -->|"HEC events"| SplunkHEC
+    Firehose -->|"failures"| S3Backup
+    CWLogs --> CWMetrics
+
+    JenkinsCI -->|"deployment events"| SplunkHEC
+    SplunkHEC --> SplunkUI
+    Grafana -.->|"Splunk data source"| SplunkUI
+
+    style SplunkHEC fill:#000,color:#65A637,stroke:#65A637
+    style SplunkUI fill:#000,color:#65A637,stroke:#65A637
+    style OTELAgent fill:#1a1a2e,color:#fff,stroke:#7B5EA7
+    style ClusterRx fill:#1a1a2e,color:#fff,stroke:#7B5EA7
+    style Firehose fill:#FF9900,color:#232F3E,stroke:#FF9900
+```
+
 ### Metrics Collection
 
 #### CloudWatch (AWS ECS)
@@ -1095,6 +1193,11 @@ sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
 2. **Deployment Metrics:** Canary weight, rollout status, analysis results
 3. **Infrastructure Metrics:** CPU, memory, network, disk usage
 4. **Business Metrics:** Articles processed, users active, newsletters sent
+5. **Splunk OTEL Collector:** Exported log records/sec, queue utilization, collector resource usage
+
+**Data Sources:**
+- **Prometheus** (default) — K8s and application metrics
+- **Splunk** — Centralized logs, traces, and deployment events via `grafana-splunk-datasource`
 
 **Access:**
 ```bash
@@ -1113,6 +1216,10 @@ make monitoring-dashboard
 - `/ecs/ai-curator-prod-frontend`
 - `/ecs/ai-curator-prod-crawler`
 - `/ecs/ai-curator-prod-newsletter`
+
+**Pipeline:** CloudWatch Logs → Subscription Filter → Kinesis Data Firehose → Lambda (transform) → Splunk HEC
+
+**Terraform:** `infrastructure/terraform/splunk.tf`, `infrastructure/terraform/modules/splunk/`
 
 **CloudWatch Logs Insights Queries:**
 ```sql
@@ -1135,7 +1242,8 @@ fields @message
 **Tools:**
 - `kubectl logs` for individual pods
 - `stern` for multi-pod tailing
-- EFK stack (Elasticsearch, Fluentd, Kibana) for centralized logging
+- **Splunk OTEL Collector** (primary) — DaemonSet with filelog receiver collects all container logs from `/var/log/pods/`, enriches with K8s metadata, redacts secrets, and exports to Splunk HEC
+- **Splunk Cluster Receiver** — collects K8s events and cluster-level metrics
 
 **Example Commands:**
 ```bash
@@ -1147,23 +1255,43 @@ stern backend -n ai-curator
 
 # Search for errors
 kubectl logs -l app=backend -n ai-curator --tail=1000 | grep ERROR
+
+# Check Splunk OTEL Collector status
+cd infrastructure && make splunk-status
+
+# Tail Splunk collector logs
+cd infrastructure && make splunk-logs
+```
+
+**Splunk Search (SPL):**
+```spl
+index=ai_curator_logs sourcetype="otel:logs" k8s.deployment.name="backend" level="error"
+| timechart count by k8s.pod.name
+
+index=ai_curator_logs sourcetype="kube:events" reason="BackOff"
+| table _time namespace pod reason message
 ```
 
 ### Distributed Tracing
 
-**Platform:** Istio + Jaeger
+**Platforms:** Istio + Jaeger (K8s), Splunk OTEL Collector (OTLP → Splunk HEC)
 
-**Configuration:** `infrastructure/kubernetes/istio/`
+**Configuration:** `infrastructure/kubernetes/istio/`, `infrastructure/kubernetes/monitoring/splunk-otel-collector.yaml`
 
 **Features:**
 - End-to-end request tracing across microservices
 - Latency breakdown by service
 - Error propagation visualization
+- OTLP trace ingestion via Splunk OTEL Collector exported to `ai_curator_traces` index
 
 **Access:**
 ```bash
+# Jaeger UI
 kubectl port-forward -n istio-system svc/jaeger-query 16686:16686
 # Open http://localhost:16686
+
+# Splunk trace search
+# index=ai_curator_traces sourcetype="otel:traces" service.name="backend"
 ```
 
 ### Alerting
@@ -1185,6 +1313,8 @@ kubectl port-forward -n istio-system svc/jaeger-query 16686:16686
 - Disk usage > 90%
 - Canary rollout stuck
 - Cache hit rate < 70%
+- Splunk OTEL Collector export failures > 10 records/sec
+- Splunk OTEL Collector queue > 80% full
 
 **Configuration:**
 ```yaml

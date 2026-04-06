@@ -1,0 +1,736 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: splunk-monitoring
+  labels:
+    name: splunk-monitoring
+    app.kubernetes.io/part-of: ai-curator
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: splunk-otel-collector
+  namespace: splunk-monitoring
+type: Opaque
+stringData:
+  splunk_hec_token: "REPLACE_WITH_HEC_TOKEN"
+  splunk_observability_access_token: "REPLACE_WITH_O11Y_TOKEN"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: splunk-otel-collector
+  namespace: splunk-monitoring
+  labels:
+    app.kubernetes.io/name: splunk-otel-collector
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: splunk-otel-collector
+rules:
+  - apiGroups: [""]
+    resources:
+      - events
+      - namespaces
+      - namespaces/status
+      - nodes
+      - nodes/spec
+      - nodes/stats
+      - nodes/proxy
+      - pods
+      - pods/status
+      - replicationcontrollers
+      - replicationcontrollers/status
+      - services
+      - endpoints
+      - persistentvolumeclaims
+      - resourcequotas
+      - configmaps
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - daemonsets
+      - deployments
+      - replicasets
+      - statefulsets
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["extensions"]
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: splunk-otel-collector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: splunk-otel-collector
+subjects:
+  - kind: ServiceAccount
+    name: splunk-otel-collector
+    namespace: splunk-monitoring
+---
+# ConfigMap: Shared OTEL pipeline configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: splunk-otel-collector-agent
+  namespace: splunk-monitoring
+data:
+  relay.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+      zpages:
+        endpoint: 0.0.0.0:55679
+
+    receivers:
+      # Collect container logs from /var/log/pods
+      filelog:
+        include:
+          - /var/log/pods/ai-curator_*/*/*.log
+          - /var/log/pods/splunk-monitoring_*/*/*.log
+        exclude:
+          - /var/log/pods/*/otel-collector/*.log
+        start_at: beginning
+        include_file_path: true
+        include_file_name: false
+        operators:
+          - type: router
+            id: get-format
+            routes:
+              - output: parser-docker
+                expr: 'body matches "^\\{"'
+              - output: parser-crio
+                expr: 'body matches "^[^ Z]+ "'
+              - output: parser-containerd
+                expr: 'body matches "^[^ Z]+Z"'
+          - type: regex_parser
+            id: parser-crio
+            regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
+            output: extract_metadata
+            timestamp:
+              parse_from: attributes.time
+              layout_type: gotime
+              layout: '2006-01-02T15:04:05.999999999Z07:00'
+          - type: regex_parser
+            id: parser-containerd
+            regex: '^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
+            output: extract_metadata
+            timestamp:
+              parse_from: attributes.time
+              layout_type: gotime
+              layout: '2006-01-02T15:04:05.999999999Z'
+          - type: json_parser
+            id: parser-docker
+            output: extract_metadata
+            timestamp:
+              parse_from: attributes.time
+              layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+          - type: regex_parser
+            id: extract_metadata
+            regex: '^(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
+            parse_from: attributes["log.file.path"]
+          - type: move
+            from: attributes.log
+            to: body
+          - type: move
+            from: attributes.stream
+            to: attributes["log.iostream"]
+
+      # Receive OTLP data from application instrumentation
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+      # Collect host metrics
+      hostmetrics:
+        collection_interval: 30s
+        scrapers:
+          cpu:
+          disk:
+          filesystem:
+          load:
+          memory:
+          network:
+          paging:
+          processes:
+
+      # Collect kubelet metrics
+      kubeletstats:
+        collection_interval: 30s
+        auth_type: serviceAccount
+        endpoint: "https://${env:K8S_NODE_NAME}:10250"
+        insecure_skip_verify: true
+        metric_groups:
+          - node
+          - pod
+          - container
+
+      # Prometheus scraping for app metrics
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'ai-curator-backend'
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names: [ai-curator]
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_app]
+                  action: keep
+                  regex: backend
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+                  action: replace
+                  target_label: __address__
+                  regex: (.+)
+                  replacement: ${1}:$$1
+            - job_name: 'ai-curator-frontend'
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names: [ai-curator]
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_app]
+                  action: keep
+                  regex: frontend
+
+    processors:
+      batch:
+        send_batch_size: 8192
+        send_batch_max_size: 16384
+        timeout: 5s
+
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 512
+        spike_limit_mib: 128
+
+      # Enrich with Kubernetes metadata
+      k8sattributes:
+        auth_type: serviceAccount
+        passthrough: false
+        filter:
+          node_from_env_var: K8S_NODE_NAME
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.deployment.name
+            - k8s.node.name
+            - k8s.container.name
+            - container.id
+            - container.image.name
+            - container.image.tag
+          labels:
+            - tag_name: app
+              key: app
+              from: pod
+            - tag_name: environment
+              key: environment
+              from: namespace
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: connection
+
+      resource:
+        attributes:
+          - key: deployment.environment
+            value: production
+            action: upsert
+          - key: service.namespace
+            value: ai-curator
+            action: upsert
+          - key: host.name
+            from_attribute: k8s.node.name
+            action: upsert
+
+      # Redact sensitive data from logs before sending to Splunk
+      transform:
+        log_statements:
+          - context: log
+            statements:
+              - replace_pattern(body, "(?i)(mongodb\\+srv://)[^\\s]+", "$${1}***REDACTED***")
+              - replace_pattern(body, "(?i)(api[_-]?key[=:]\\s*)[^\\s,\"]+", "$${1}***REDACTED***")
+              - replace_pattern(body, "(?i)(bearer\\s+)[^\\s]+", "$${1}***REDACTED***")
+              - replace_pattern(body, "(?i)(password[=:]\\s*)[^\\s,\"]+", "$${1}***REDACTED***")
+
+    exporters:
+      # Send logs to Splunk HEC
+      splunk_hec/logs:
+        token: "${env:SPLUNK_HEC_TOKEN}"
+        endpoint: "${env:SPLUNK_HEC_ENDPOINT}"
+        source: "otel-k8s"
+        sourcetype: "otel:logs"
+        index: "ai_curator_logs"
+        tls:
+          insecure_skip_verify: false
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+        sending_queue:
+          enabled: true
+          num_consumers: 10
+          queue_size: 5000
+
+      # Send metrics to Splunk HEC
+      splunk_hec/metrics:
+        token: "${env:SPLUNK_HEC_TOKEN}"
+        endpoint: "${env:SPLUNK_HEC_ENDPOINT}"
+        source: "otel-k8s"
+        sourcetype: "otel:metrics"
+        index: "ai_curator_metrics"
+        tls:
+          insecure_skip_verify: false
+
+      # Send traces to Splunk HEC
+      splunk_hec/traces:
+        token: "${env:SPLUNK_HEC_TOKEN}"
+        endpoint: "${env:SPLUNK_HEC_ENDPOINT}"
+        source: "otel-k8s"
+        sourcetype: "otel:traces"
+        index: "ai_curator_traces"
+        tls:
+          insecure_skip_verify: false
+
+      # Forward metrics to existing Prometheus for Grafana compatibility
+      prometheusremotewrite:
+        endpoint: "http://prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+
+      # Debug exporter for troubleshooting (disabled in prod)
+      # debug:
+      #   verbosity: detailed
+
+    service:
+      extensions: [health_check, zpages]
+      telemetry:
+        logs:
+          level: info
+        metrics:
+          address: 0.0.0.0:8888
+      pipelines:
+        logs:
+          receivers: [filelog, otlp]
+          processors: [memory_limiter, k8sattributes, resource, transform, batch]
+          exporters: [splunk_hec/logs]
+        metrics:
+          receivers: [hostmetrics, kubeletstats, prometheus, otlp]
+          processors: [memory_limiter, k8sattributes, resource, batch]
+          exporters: [splunk_hec/metrics, prometheusremotewrite]
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, k8sattributes, resource, batch]
+          exporters: [splunk_hec/traces]
+---
+# DaemonSet: Node-level agent for log & metric collection
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: splunk-otel-collector-agent
+  namespace: splunk-monitoring
+  labels:
+    app.kubernetes.io/name: splunk-otel-collector
+    app.kubernetes.io/component: agent
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: splunk-otel-collector
+      app.kubernetes.io/component: agent
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: splunk-otel-collector
+        app.kubernetes.io/component: agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8888"
+    spec:
+      serviceAccountName: splunk-otel-collector
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      tolerations:
+        - operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: otel-collector
+          image: quay.io/signalfx/splunk-otel-collector:0.96.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - /otelcol
+            - --config=/conf/relay.yaml
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+              hostPort: 4317
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+              hostPort: 4318
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
+          env:
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: K8S_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SPLUNK_HEC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: splunk-otel-collector
+                  key: splunk_hec_token
+            - name: SPLUNK_HEC_ENDPOINT
+              value: "https://splunk-hec.ai-curator.internal:8088/services/collector"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+            - name: varlogpods
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: varlogcontainers
+              mountPath: /var/log/containers
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: checkpoint
+              mountPath: /var/addon/splunk/otel_pos
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: config
+          configMap:
+            name: splunk-otel-collector-agent
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlogcontainers
+          hostPath:
+            path: /var/log/containers
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: checkpoint
+          hostPath:
+            path: /var/addon/splunk/otel_pos
+            type: DirectoryOrCreate
+---
+# Deployment: Cluster-level metrics aggregation & K8s event collection
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: splunk-otel-collector-cluster-receiver
+  namespace: splunk-monitoring
+  labels:
+    app.kubernetes.io/name: splunk-otel-collector
+    app.kubernetes.io/component: cluster-receiver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: splunk-otel-collector
+      app.kubernetes.io/component: cluster-receiver
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: splunk-otel-collector
+        app.kubernetes.io/component: cluster-receiver
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8888"
+    spec:
+      serviceAccountName: splunk-otel-collector
+      containers:
+        - name: otel-collector
+          image: quay.io/signalfx/splunk-otel-collector:0.96.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - /otelcol
+            - --config=/conf/cluster-receiver.yaml
+          ports:
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
+          env:
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: SPLUNK_HEC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: splunk-otel-collector
+                  key: splunk_hec_token
+            - name: SPLUNK_HEC_ENDPOINT
+              value: "https://splunk-hec.ai-curator.internal:8088/services/collector"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: config
+          configMap:
+            name: splunk-otel-collector-cluster-receiver
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: splunk-otel-collector-cluster-receiver
+  namespace: splunk-monitoring
+data:
+  cluster-receiver.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      # Kubernetes cluster-level metrics
+      k8s_cluster:
+        auth_type: serviceAccount
+        collection_interval: 30s
+        node_conditions_to_report:
+          - Ready
+          - MemoryPressure
+          - DiskPressure
+          - PIDPressure
+        allocatable_types_to_report:
+          - cpu
+          - memory
+          - storage
+
+      # Kubernetes events
+      k8s_events:
+        auth_type: serviceAccount
+        namespaces: [ai-curator, splunk-monitoring, monitoring, istio-system]
+
+    processors:
+      batch:
+        send_batch_size: 8192
+        timeout: 5s
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 256
+        spike_limit_mib: 64
+      resource:
+        attributes:
+          - key: deployment.environment
+            value: production
+            action: upsert
+          - key: service.namespace
+            value: ai-curator
+            action: upsert
+
+    exporters:
+      splunk_hec/metrics:
+        token: "${env:SPLUNK_HEC_TOKEN}"
+        endpoint: "${env:SPLUNK_HEC_ENDPOINT}"
+        source: "otel-k8s-cluster"
+        sourcetype: "otel:metrics"
+        index: "ai_curator_metrics"
+        tls:
+          insecure_skip_verify: false
+      splunk_hec/events:
+        token: "${env:SPLUNK_HEC_TOKEN}"
+        endpoint: "${env:SPLUNK_HEC_ENDPOINT}"
+        source: "otel-k8s-cluster"
+        sourcetype: "kube:events"
+        index: "ai_curator_logs"
+        tls:
+          insecure_skip_verify: false
+
+    service:
+      extensions: [health_check]
+      telemetry:
+        logs:
+          level: info
+        metrics:
+          address: 0.0.0.0:8888
+      pipelines:
+        metrics:
+          receivers: [k8s_cluster]
+          processors: [memory_limiter, resource, batch]
+          exporters: [splunk_hec/metrics]
+        logs:
+          receivers: [k8s_events]
+          processors: [memory_limiter, resource, batch]
+          exporters: [splunk_hec/events]
+---
+# Service: Expose OTEL Collector for app instrumentation
+apiVersion: v1
+kind: Service
+metadata:
+  name: splunk-otel-collector
+  namespace: splunk-monitoring
+  labels:
+    app.kubernetes.io/name: splunk-otel-collector
+spec:
+  selector:
+    app.kubernetes.io/name: splunk-otel-collector
+    app.kubernetes.io/component: agent
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+    - name: metrics
+      port: 8888
+      targetPort: 8888
+      protocol: TCP
+  type: ClusterIP
+---
+# NetworkPolicy: Allow Splunk OTEL to scrape ai-curator namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-splunk-otel-scraping
+  namespace: ai-curator
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: splunk-monitoring
+      ports:
+        - protocol: TCP
+          port: 3000
+---
+# NetworkPolicy: Allow Splunk OTEL egress to Splunk HEC
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: splunk-otel-egress
+  namespace: splunk-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: splunk-otel-collector
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 8088
+        - protocol: TCP
+          port: 443
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: ai-curator
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+---
+# PodDisruptionBudget: Ensure minimum collector availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: splunk-otel-collector-agent
+  namespace: splunk-monitoring
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: splunk-otel-collector
+      app.kubernetes.io/component: agent

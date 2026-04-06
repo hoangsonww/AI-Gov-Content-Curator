@@ -49,6 +49,8 @@ pipeline {
         GITHUB_TOKEN = credentials('github-token')
         SLACK_CHANNEL = '#deployments'
         DOCKER_BUILDKIT = '1'
+        SPLUNK_HEC_URL = credentials('splunk-hec-url')
+        SPLUNK_HEC_TOKEN = credentials('splunk-hec-token')
     }
 
     options {
@@ -416,9 +418,25 @@ pipeline {
     post {
         always {
             cleanWs()
+            script {
+                notifySplunk('COMPLETED', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    strategy: params.DEPLOYMENT_STRATEGY,
+                    build_tag: env.BUILD_TAG,
+                    result: currentBuild.result ?: 'SUCCESS',
+                    duration: currentBuild.durationString
+                ])
+            }
         }
         success {
             script {
+                notifySplunk('SUCCESS', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    strategy: params.DEPLOYMENT_STRATEGY,
+                    build_tag: env.BUILD_TAG
+                ])
                 notifySlack('SUCCESS', """
                     ✅ Deployment to ${params.ENVIRONMENT} successful!
                     Platform: ${params.PLATFORM}
@@ -429,6 +447,12 @@ pipeline {
         }
         failure {
             script {
+                notifySplunk('FAILURE', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    build_url: env.BUILD_URL,
+                    build_tag: env.BUILD_TAG
+                ])
                 notifySlack('FAILURE', """
                     ❌ Deployment to ${params.ENVIRONMENT} failed!
                     Platform: ${params.PLATFORM}
@@ -438,6 +462,11 @@ pipeline {
         }
         unstable {
             script {
+                notifySplunk('UNSTABLE', [
+                    environment: params.ENVIRONMENT,
+                    platform: params.PLATFORM,
+                    build_tag: env.BUILD_TAG
+                ])
                 notifySlack('UNSTABLE', """
                     ⚠️  Deployment to ${params.ENVIRONMENT} unstable
                     Platform: ${params.PLATFORM}
@@ -469,4 +498,37 @@ def notifySlack(String status, String message) {
         color: color,
         message: message
     )
+}
+
+def notifySplunk(String status, Map eventData) {
+    def payload = [
+        time: System.currentTimeMillis() / 1000,
+        source: 'jenkins',
+        sourcetype: 'jenkins:deployment',
+        index: 'ai_curator_deployments',
+        host: env.NODE_NAME ?: 'jenkins',
+        event: [
+            status: status,
+            job_name: env.JOB_NAME,
+            build_number: env.BUILD_NUMBER,
+            build_url: env.BUILD_URL,
+            git_commit: env.GIT_COMMIT_SHORT,
+            timestamp: new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone('UTC'))
+        ] + eventData
+    ]
+
+    try {
+        def jsonPayload = groovy.json.JsonOutput.toJson(payload)
+        httpRequest(
+            url: "${env.SPLUNK_HEC_URL}/services/collector/event",
+            httpMode: 'POST',
+            contentType: 'APPLICATION_JSON',
+            customHeaders: [[name: 'Authorization', value: "Splunk ${env.SPLUNK_HEC_TOKEN}"]],
+            requestBody: jsonPayload,
+            validResponseCodes: '200',
+            quiet: true
+        )
+    } catch (Exception e) {
+        echo "Warning: Failed to send event to Splunk: ${e.message}"
+    }
 }

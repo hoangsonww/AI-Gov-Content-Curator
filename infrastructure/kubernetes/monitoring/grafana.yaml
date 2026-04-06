@@ -15,6 +15,16 @@ data:
         editable: false
         jsonData:
           timeInterval: 15s
+      - name: Splunk
+        type: grafana-splunk-datasource
+        access: proxy
+        url: "${SPLUNK_API_ENDPOINT:-https://splunk.ai-curator.internal:8089}"
+        editable: false
+        jsonData:
+          authenticationType: token
+          tlsSkipVerify: true
+        secureJsonData:
+          token: "${SPLUNK_API_TOKEN}"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -130,6 +140,46 @@ data:
               }
             ],
             "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24}
+          },
+          {
+            "id": 8,
+            "title": "Splunk OTEL - Exported Log Records/sec",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(otelcol_exporter_sent_log_records_total{job=\"splunk-otel-collector\"}[5m])",
+                "legendFormat": "{{pod}} sent"
+              },
+              {
+                "expr": "rate(otelcol_exporter_send_failed_log_records_total{job=\"splunk-otel-collector\"}[5m])",
+                "legendFormat": "{{pod}} failed"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+          },
+          {
+            "id": 9,
+            "title": "Splunk OTEL - Queue Utilization",
+            "type": "gauge",
+            "targets": [
+              {
+                "expr": "otelcol_exporter_queue_size{job=\"splunk-otel-collector\"} / otelcol_exporter_queue_capacity{job=\"splunk-otel-collector\"}",
+                "legendFormat": "{{pod}}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+          },
+          {
+            "id": 10,
+            "title": "Splunk OTEL - Collector Resource Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"splunk-monitoring\"}[5m])) by (pod)",
+                "legendFormat": "{{pod}} CPU"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 40}
           }
         ],
         "time": {

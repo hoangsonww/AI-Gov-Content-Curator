@@ -70,11 +70,21 @@ deploy_infrastructure() {
 
     # Deploy monitoring stack
     echo -e "${YELLOW}Deploying Prometheus and Grafana...${NC}"
-    kubectl apply -f infrastructure/kubernetes/monitoring/
+    kubectl apply -f infrastructure/kubernetes/monitoring/prometheus.yaml
+    kubectl apply -f infrastructure/kubernetes/monitoring/grafana.yaml
+
+    # Deploy Splunk OTEL Collector
+    echo -e "${YELLOW}Deploying Splunk OTEL Collector...${NC}"
+    kubectl apply -f infrastructure/kubernetes/monitoring/splunk-otel-collector.yaml
 
     # Deploy Istio gateway and virtual services
     echo -e "${YELLOW}Deploying Istio configuration...${NC}"
     kubectl apply -f infrastructure/kubernetes/istio/
+
+    # Wait for Splunk collector readiness
+    echo -e "${YELLOW}Waiting for Splunk OTEL Collector to be ready...${NC}"
+    kubectl rollout status daemonset/splunk-otel-collector-agent -n splunk-monitoring --timeout=120s || true
+    kubectl rollout status deployment/splunk-otel-collector-cluster-receiver -n splunk-monitoring --timeout=120s || true
 
     echo -e "${GREEN}Infrastructure deployment complete${NC}"
 }
