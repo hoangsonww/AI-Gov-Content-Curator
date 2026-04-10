@@ -102,6 +102,24 @@ function App({ Component, pageProps }: AppProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+  const updateAnalyticsState = () => {
+    const stored = localStorage.getItem("cookieConsent");
+
+    setAnalyticsEnabled(stored === "accepted");
+  };
+
+  // run on mount
+  updateAnalyticsState();
+
+  // listen for changes
+  window.addEventListener("cookieConsentUpdated", updateAnalyticsState);
+
+  return () => {
+    window.removeEventListener("cookieConsentUpdated", updateAnalyticsState);
+  };
+  }, []);
+
   const toggleTheme = (selected: ThemeKey) => {
     localStorage.setItem("theme", selected);
     if (selected === "system") {
@@ -120,10 +138,11 @@ function App({ Component, pageProps }: AppProps) {
   };
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
 
   return (
     <Layout theme={theme} toggleTheme={toggleTheme}>
-      <Analytics />
+      {analyticsEnabled && <Analytics />}
       <Component {...pageProps} />
       {showScroll && (
         <button
