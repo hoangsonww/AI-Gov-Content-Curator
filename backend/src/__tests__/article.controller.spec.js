@@ -296,7 +296,7 @@ describe("Article Controller", () => {
       req = { query: {} };
       await getAllSources(req, res);
 
-      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(Article.distinct).toHaveBeenCalledWith("source");
       expect(res.json).toHaveBeenCalledWith({
         data: ["bbc", "cnn", "theguardian"],
         total: 3,
@@ -316,7 +316,7 @@ describe("Article Controller", () => {
       req = { query: { q: "bbc" } };
       await getAllSources(req, res);
 
-      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(Article.distinct).toHaveBeenCalledWith("source");
       expect(res.json).toHaveBeenCalledWith({
         data: ["bbc"],
         total: 1,
@@ -338,7 +338,7 @@ describe("Article Controller", () => {
       req = { query: { page: "2", limit: "2" } };
       await getAllSources(req, res);
 
-      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(Article.distinct).toHaveBeenCalledWith("source");
       expect(res.json).toHaveBeenCalledWith({
         data: ["cbs", "cnn"],
         total: 5,
@@ -358,7 +358,7 @@ describe("Article Controller", () => {
       req = { query: {} };
       await getAllSources(req, res);
 
-      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(Article.distinct).toHaveBeenCalledWith("source");
       expect(res.json).toHaveBeenCalledWith({
         data: ["bbc", "cnn", "not-a-valid-url"],
         total: 3,
@@ -373,7 +373,7 @@ describe("Article Controller", () => {
       req = { query: {} };
       await getAllSources(req, res);
 
-      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(Article.distinct).toHaveBeenCalledWith("source");
       expect(res.json).toHaveBeenCalledWith({
         data: [],
         total: 0,

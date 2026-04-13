@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState } from 'react';
-import TopicSelection from '../../components/TopicSelection';
-import SourceSelection from '../../components/SourceSelection';
-import AlertsSetup from '../../components/AlertsSetup';
-import PersonalizedFeed from '../../components/PersonalizedFeed';
-import OnboardingStart from '../../components/OnboardingStart';
-import { getTopics, getSources } from '../../services/api';
+import TopicSelection from '../components/TopicSelection';
+import SourceSelection from '../components/SourceSelection';
+import AlertsSetup from '../components/AlertsSetup';
+import PersonalizedFeed from '../components/PersonalizedFeed';
+import OnboardingStart from '../components/OnboardingStart';
+import { getTopics, getSources } from '../services/api';
 
 type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly';
 

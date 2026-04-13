@@ -116,8 +116,14 @@ export default function Comments({ articleId }: CommentsProps) {
   const iconAssign = useRef<Record<string, number>>({});
   const iconCounter = useRef(0);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const [token, setToken] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+    setMounted(true);
+  }, []);
+
   const myId = useMemo(() => {
     if (!token) return null;
     try {
@@ -490,7 +496,14 @@ export default function Comments({ articleId }: CommentsProps) {
       </p>
 
       {/* new comment box */}
-      {!token ? (
+      {!mounted ? (
+        <div className="login-prompt">
+          <Link href="/auth/login" legacyBehavior>
+            <a className="login-link">Log in</a>
+          </Link>{" "}
+          to add your thoughts!
+        </div>
+      ) : !token ? (
         <div className="login-prompt">
           <Link href="/auth/login" legacyBehavior>
             <a className="login-link">Log in</a>

@@ -100,6 +100,10 @@ export default function AuthDropdown({
     setTimeout(() => window.location.reload(), 1000);
   };
 
+  const handleOpenSettings = () => {
+    router.push('/settings');
+  }
+
   // Highlight icon when on any auth route
   const authPaths = ["/auth/login", "/auth/register", "/auth/reset-password"];
   const isAuthRoute = authPaths.includes(router.pathname);
@@ -120,12 +124,20 @@ export default function AuthDropdown({
         <div className="auth-dropdown">
           <div className="auth-section">
             {isLoggedIn ? (
-              <button
-                className="auth-option logout-option"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              <div>
+                <button
+                  className="auth-option logout-option"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+                <button
+                  className="auth-option logout-option"
+                  onClick={handleOpenSettings}
+                >
+                  Settings
+                </button>
+              </div>
             ) : (
               <>
                 <Link href="/auth/login" legacyBehavior>
