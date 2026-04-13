@@ -1,8 +1,8 @@
 import { Article } from "../pages/home";
 
 // We may want to set this to an environment variable or another config.
-// For now, we'll keep it hard-coded.
-export const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
+// For local development use HTTP, for production use HTTPS
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export interface BiasAnalysis {
   politicalLeaning: {
@@ -608,6 +608,53 @@ export async function getTopics(
 }
 
 /**
+ * Fetches sources from the API.
+ * Supports searching the sources list using the 'q' query parameter.
+ * Also supports pagination with 'page' and 'limit' query parameters.
+ *
+ * @param q The search query to filter sources (optional).
+ * @param page The page number (default: 1).
+ * @param limit The number of sources per page (default: 10).
+ * @param retries Number of retry attempts (default: 3).
+ * @param delay Delay between retries in milliseconds (default: 1000).
+ * @returns An object containing 'data' (an array of sources) and 'total' (the total count of sources).
+ */
+export async function getSources(
+  q: string = "",
+  page: number = 1,
+  limit: number = 10,
+  retries: number = 3,
+  delay: number = 1000,
+): Promise<{ data: string[]; total: number }> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const url = new URL(`${BASE_URL}/articles/sources`);
+      if (q) url.searchParams.set("q", q);
+      url.searchParams.set("page", page.toString());
+      url.searchParams.set("limit", limit.toString());
+      const res = await fetch(url.toString());
+      if (!res.ok) {
+        console.error(
+          `Attempt ${attempt}: Error fetching sources: ${res.statusText}`,
+        );
+        if (attempt === retries) return { data: [], total: 0 };
+      } else {
+        const result = await res.json();
+        return { data: result.data || [], total: result.total || 0 };
+      }
+    } catch (error) {
+      console.error(
+        `Attempt ${attempt}: Network error while fetching sources:`,
+        error,
+      );
+      if (attempt === retries) return { data: [], total: 0 };
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return { data: [], total: 0 };
+}
+
+/**
  * Fetches articles filtered by a specific topic using the API endpoint.
  *
  * @param topic The topic to filter articles by.
@@ -725,3 +772,103 @@ export async function analyzeArticleBias(
     return null;
   }
 }
+
+/**
+ * Sets user preferences from the onboarding quiz.
+ *
+ * @param token - User's authentication token.
+ * @param preferences - Object containing topics, sources, alertFrequency, and notifyOnNewStories.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
+ * @returns Success status or null if an error occurs.
+ */
+export const setUserPreferences = async (
+  token: string,
+  preferences: {
+    topics: string[];
+    sources: string[];
+    alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+    notifyOnNewStories: boolean;
+  },
+  retries = 3,
+  delay = 1000,
+): Promise<boolean> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/users/preferences`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify(preferences),
+      });
+
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: ${await res.text()}`);
+        if (attempt === retries) return false;
+      } else {
+        const response = await res.json();
+        console.log("Preferences saved successfully:", response);
+        return true;
+      }
+    } catch (error: any) {
+      console.error(
+        `Attempt ${attempt}: ${error.message || "Failed to set user preferences."}`,
+      );
+      if (attempt === retries) return false;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return false;
+};
+
+/**
+ * Gets user preferences for the logged-in user.
+ *
+ * @param token - User's authentication token.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
+ * @returns User preferences object or null if not set.
+ */
+export const getUserPreferences = async (
+  token: string,
+  retries = 3,
+  delay = 1000,
+): Promise<{
+  topics: string[];
+  sources: string[];
+  alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+  notifyOnNewStories: boolean;
+} | null> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/users/preferences`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      });
+
+      if (!res.ok) {
+        if (res.status === 404) {
+          // Preferences not set yet
+          return null;
+        }
+        console.error(`Attempt ${attempt}: ${await res.text()}`);
+        if (attempt === retries) return null;
+      } else {
+        const response = await res.json();
+        return response.preferences || null;
+      }
+    } catch (error: any) {
+      console.error(
+        `Attempt ${attempt}: ${error.message || "Failed to get user preferences."}`,
+      );
+      if (attempt === retries) return null;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return null;
+};

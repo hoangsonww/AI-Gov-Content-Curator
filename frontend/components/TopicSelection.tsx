@@ -13,41 +13,36 @@ const TopicSelection: React.FC<TopicSelectionProps> = ({ topics, selectedTopics,
   const canProceed = selectedTopics.length >= 3;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold">Select 3+ Topics</h2>
-        <p className="text-sm text-gray-500">Customize your feed by choosing interests</p>
+    <div className="onboarding-full-height">
+      <div className="onboarding-center">
+        <h2 className="onboarding-title">Select 3+ Topics</h2>
+        <p className="onboarding-subtitle">Customize your feed by choosing interests</p>
       </div>
 
       {/* Scrollable Grid Container */}
-      <div className="flex-1 overflow-y-auto px-2 mb-6 custom-scrollbar">
-        <div className="grid grid-cols-3 gap-4">
+      <div className="onboarding-scrollable">
+        <div className="onboarding-grid-3">
           {topics.map((topic) => {
             const isSelected = selectedTopics.includes(topic);
             return (
               <button
                 key={topic}
                 onClick={() => onToggle(topic)}
-                className={`relative flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-200 
-                  ${isSelected 
-                    ? 'border-blue-600 bg-blue-50 shadow-sm' 
-                    : 'border-gray-100 bg-white hover:border-gray-300'}`}
+                className={`onboarding-item ${isSelected ? 'onboarding-item-selected' : 'onboarding-item-unselected'}`}
               >
                 {/* Visual Check Indicator */}
                 {isSelected && (
-                  <div className="absolute top-2 right-2 text-blue-600">
-                    <CheckCircle size={16} fill="currentColor" className="text-white" />
+                  <div className="onboarding-item-check">
+                    <CheckCircle size={16} fill="currentColor" className="onboarding-text-white" />
                   </div>
                 )}
-                
+
                 {/* Placeholder for Icon (as seen in wireframe) */}
-                <div className={`w-12 h-12 rounded-full mb-2 flex items-center justify-center 
-                  ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
+                <div className={`onboarding-item-icon ${isSelected ? 'onboarding-item-icon-selected' : 'onboarding-item-icon-unselected'}`}>
                   {topic[0].toUpperCase()}
                 </div>
-                
-                <span className={`text-xs font-semibold text-center truncate w-full 
-                  ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
+
+                <span className={`onboarding-item-text ${isSelected ? 'onboarding-item-text-selected' : 'onboarding-item-text-unselected'}`}>
                   {topic}
                 </span>
               </button>
@@ -57,21 +52,18 @@ const TopicSelection: React.FC<TopicSelectionProps> = ({ topics, selectedTopics,
       </div>
 
       {/* Action Footer */}
-      <div className="mt-auto pt-4 space-y-3 border-t border-gray-100">
+      <div className="onboarding-footer onboarding-space-y-3">
         <button
           onClick={onNext}
           disabled={!canProceed}
-          className={`w-full py-4 rounded-xl font-bold transition-colors
-            ${canProceed 
-              ? 'bg-black text-white hover:bg-gray-800' 
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+          className={`onboarding-btn-primary ${!canProceed ? 'onboarding-btn-primary:disabled' : ''}`}
         >
           {canProceed ? 'Continue' : 'Select 3 more'}
         </button>
-        
-        <button 
+
+        <button
           onClick={onSkip}
-          className="w-full py-2 text-sm font-medium text-gray-500 hover:text-gray-800"
+          className="onboarding-btn-text"
         >
           Skip for now
         </button>

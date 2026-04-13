@@ -144,3 +144,77 @@ export const getAllUsers = async (_req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+/**
+ * Set user preferences from onboarding quiz
+ *
+ * @param req The request object containing preferences data in the body
+ * @param res The response object to send the updated user preferences
+ */
+export const setUserPreferences = async (req: Request, res: Response) => {
+  const { topics, sources, alertFrequency, notifyOnNewStories } = req.body;
+
+  // Validate that if topics is provided, it must be an array
+  if (topics !== undefined && (!Array.isArray(topics))) {
+    return res.status(400).json({ error: "Topics must be an array if provided" });
+  }
+
+  // Validate that if sources is provided, it must be an array
+  if (sources !== undefined && (!Array.isArray(sources))) {
+    return res.status(400).json({ error: "Sources must be an array if provided" });
+  }
+
+  // Alert frequency is still required
+  if (!alertFrequency || !['hourly', 'daily', 'weekly', 'monthly'].includes(alertFrequency)) {
+    return res.status(400).json({ error: "Alert frequency must be one of: hourly, daily, weekly, monthly" });
+  }
+
+  try {
+    const userId = (req as any).user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Update user preferences
+    user.preferences = {
+      topics: topics || [],
+      sources: sources || [],
+      alertFrequency: alertFrequency as 'hourly' | 'daily' | 'weekly' | 'monthly',
+      notifyOnNewStories: notifyOnNewStories ?? false,
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Preferences updated successfully",
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    console.error("Error setting user preferences:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Get user preferences for the logged-in user
+ *
+ * @param req The request object containing user information
+ * @param res The response object to send the user preferences
+ */
+export const getUserPreferences = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (!user.preferences) {
+      return res.status(404).json({ error: "Preferences not set" });
+    }
+
+    return res.status(200).json({
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    console.error("Error getting user preferences:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

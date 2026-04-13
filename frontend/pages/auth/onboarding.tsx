@@ -6,6 +6,7 @@ import SourceSelection from '../../components/SourceSelection';
 import AlertsSetup from '../../components/AlertsSetup';
 import PersonalizedFeed from '../../components/PersonalizedFeed';
 import OnboardingStart from '../../components/OnboardingStart';
+import { getTopics, getSources } from '../../services/api';
 
 type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly';
 
@@ -19,52 +20,65 @@ const OnboardingQuiz = () => {
   const [topics, setTopics] = useState<string[]>([]);
   const [sources, setSources] = useState<string[]>([]);
 
+  // Fallback hardcoded topics for later use or when API fails
+  const getPlaceholderTopics = (): string[] => {
+    return [
+      "Technology",
+      "Politics",
+      "Health",
+      "Business",
+      "Science",
+      "Sports",
+      "Entertainment",
+      "Environment",
+      "Education",
+      "World",
+    ];
+  };
 
-  // Placeholder for fetching topics from API / back-end
+  // Fallback hardcoded sources for later use or when API fails
+  const getPlaceholderSources = (): string[] => {
+    return [
+      "BBC",
+      "CNN",
+      "The White House",
+      "Fox News",
+      "The Guardian",
+      "AP News"
+    ];
+  };
+
+  // Fetch topics from API
   const fetchTopics = async () => {
     try {
-      // TODO: Replace this placeholder with real API call, e.g. GET /api/topics
-      const placeholderTopics = [
-        "Technology",
-        "Politics",
-        "Health",
-        "Business",
-        "Science",
-        "Sports",
-        "Entertainment",
-        "Environment",
-        "Education",
-        "World",
-      ];
-      // simulate network latency
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setTopics(placeholderTopics);
+      const result = await getTopics("", 1, 100);
+      if (result.data && result.data.length > 0) {
+        setTopics(result.data);
+      } else {
+        // Fallback to hardcoded topics if API returns empty
+        setTopics(getPlaceholderTopics());
+      }
     } catch (error) {
-      console.error("Failed to fetch topics", error);
-      // fallback: using a small set
-      setTopics(["Technology", "News", "Science"]);
+      console.error("Failed to fetch topics from API", error);
+      // Fallback to hardcoded topics
+      setTopics(getPlaceholderTopics());
     }
   };
 
-  // Placeholder for fetching topics from API / back-end
+  // Fetch sources from API
   const fetchSources = async () => {
     try {
-      // TODO: Replace this placeholder with real API call, e.g. GET /api/topics
-      const placeholderSources = [
-        "BBC",
-        "CNN",
-        "The White House",
-        "Fox News",
-        "The Guardian",
-        "AP News"
-      ];
-      // simulate network latency
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setSources(placeholderSources);
+      const result = await getSources("", 1, 100);
+      if (result.data && result.data.length > 0) {
+        setSources(result.data);
+      } else {
+        // Fallback to hardcoded sources if API returns empty
+        setSources(getPlaceholderSources());
+      }
     } catch (error) {
-      console.error("Failed to fetch topics", error);
-      // fallback: using a small set
-      setSources(["BBC", "CNN", "WION"]);
+      console.error("Failed to fetch sources from API", error);
+      // Fallback to hardcoded sources
+      setSources(getPlaceholderSources());
     }
   };
 
@@ -122,17 +136,17 @@ const OnboardingQuiz = () => {
   const skip = () => setStep(5); // Direct jump to feed
 
   return (
-    <div className="w-full h-screen flex flex-col bg-white border border-gray-200">
+    <div className="onboarding-page">
       {/* Progress Bar (Visible on Screens 2-4) */}
       {step >= 2 && step <= 4 && (
-        <div className="w-full bg-gray-100 h-2">
-          <div className={`bg-blue-600 h-2 transition-all duration-300`} 
+        <div className="onboarding-progress-container">
+          <div className="onboarding-progress-bar"
                style={{ width: `${(step - 1) * 33.3}%` }} />
         </div>
       )}
 
       {/* Screen Rendering */}
-      <main className="flex-1 p-6">
+      <main className="onboarding-main-content">
         {step === 1 && <OnboardingStart onNext={nextStep} onSkip={skip} />}
         {step === 2 && <TopicSelection topics={topics} selectedTopics={selectedTopics} onToggle={toggleTopic} onNext={nextStep} onSkip={skip} />}
         {step === 3 && <SourceSelection sources={sources} selectedSources={selectedSources} onToggle={toggleSource} onNext={nextStep} onBack={prevStep} onSkip={skip} />}

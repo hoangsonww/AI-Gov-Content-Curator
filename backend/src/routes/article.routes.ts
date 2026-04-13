@@ -7,6 +7,7 @@ import {
   getAllTopics,
   getArticlesByTopic,
   getSimilarArticles,
+  getAllSources,
 } from "../controllers/article.controller";
 
 const router = Router();
@@ -246,6 +247,58 @@ router.get("/search", searchArticles);
  */
 router.get("/topics", getAllTopics);
 
+/**
+ * @swagger
+ * /api/articles/sources:
+ *   get:
+ *     tags: [Articles]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     summary: Retrieve a paginated list of distinct sources across all articles
+ *     description: Returns a paginated list of unique sources from the articles in the database, with optional search filtering.
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Search query to filter sources.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Number of sources per page.
+ *     responses:
+ *       200:
+ *         description: A paginated list of distinct sources.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of sources matching the search criteria.
+ *                 page:
+ *                   type: integer
+ *                   description: Current page number.
+ *                 limit:
+ *                   type: integer
+ *                   description: Number of sources per page.
+ *       500:
+ *         description: Failed to fetch sources.
+ */
+router.get("/sources", getAllSources);
 /**
  * @swagger
  * /api/articles/topic/{topic}:

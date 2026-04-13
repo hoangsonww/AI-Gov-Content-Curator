@@ -38,6 +38,27 @@ import mongoose, { Schema, Document } from "mongoose";
  *           description: Array of favorited article IDs
  *           items:
  *             type: string
+ *         preferences:
+ *           type: object
+ *           description: User's onboarding preferences
+ *           properties:
+ *             topics:
+ *               type: array
+ *               description: Array of user's interested topics
+ *               items:
+ *                 type: string
+ *             sources:
+ *               type: array
+ *               description: Array of user's preferred sources
+ *               items:
+ *                 type: string
+ *             alertFrequency:
+ *               type: string
+ *               enum: [hourly, daily, weekly, monthly]
+ *               description: Preferred alert frequency
+ *             notifyOnNewStories:
+ *               type: boolean
+ *               description: Whether user wants instant notifications on new stories
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -56,6 +77,12 @@ export interface IUser extends Document {
   verificationToken?: string;
   resetPasswordToken?: string;
   favorites: string[]; // Array of Article IDs
+  preferences?: {
+    topics: string[];
+    sources: string[];
+    alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+    notifyOnNewStories: boolean;
+  };
 }
 
 const UserSchema: Schema = new Schema(
@@ -67,6 +94,12 @@ const UserSchema: Schema = new Schema(
     verificationToken: { type: String },
     resetPasswordToken: { type: String },
     favorites: [{ type: String }],
+    preferences: {
+      topics: [{ type: String }],
+      sources: [{ type: String }],
+      alertFrequency: { type: String, enum: ['hourly', 'daily', 'weekly', 'monthly'] },
+      notifyOnNewStories: { type: Boolean, default: false },
+    },
   },
   { timestamps: true },
 );

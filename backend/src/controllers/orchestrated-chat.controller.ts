@@ -15,7 +15,7 @@ import {
   chatRequestSchema,
   articleProcessRequestSchema,
   batchProcessRequestSchema,
-} from "@synthoraai/orchestration";
+} from "../../../orchestration/src/index";
 
 // ---------------------------------------------------------------------------
 // Singleton instances (created once, reused across requests)

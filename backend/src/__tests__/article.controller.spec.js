@@ -18,6 +18,7 @@ const {
   searchArticles,
   getAllTopics,
   getArticlesByTopic,
+  getAllSources,
 } = require("../controllers/article.controller");
 
 describe("Article Controller", () => {
@@ -278,6 +279,118 @@ describe("Article Controller", () => {
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({
         error: "Failed to fetch articles by topic",
+      });
+    });
+  });
+
+  describe("getAllSources()", () => {
+    it("200 extracts unique domain names from URLs", async () => {
+      const sources = [
+        "https://www.bbc.com/news/articles/c05dpr1m71go",
+        "https://www.bbc.com/news/articles/different",
+        "https://www.cnn.com/article/1",
+        "https://theguardian.co.uk/news/article",
+      ];
+      Article.distinct.mockResolvedValue(sources);
+
+      req = { query: {} };
+      await getAllSources(req, res);
+
+      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(res.json).toHaveBeenCalledWith({
+        data: ["bbc", "cnn", "theguardian"],
+        total: 3,
+        page: 1,
+        limit: 20,
+      });
+    });
+
+    it("200 filters sources by search query", async () => {
+      const sources = [
+        "https://www.bbc.com/news",
+        "https://www.cnn.com/news",
+        "https://www.foxnews.com/news",
+      ];
+      Article.distinct.mockResolvedValue(sources);
+
+      req = { query: { q: "bbc" } };
+      await getAllSources(req, res);
+
+      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(res.json).toHaveBeenCalledWith({
+        data: ["bbc"],
+        total: 1,
+        page: 1,
+        limit: 20,
+      });
+    });
+
+    it("200 applies pagination", async () => {
+      const sources = [
+        "https://www.bbc.com/news",
+        "https://www.cnn.com/news",
+        "https://www.cbs.com/news",
+        "https://www.abc.com/news",
+        "https://www.nbc.com/news",
+      ];
+      Article.distinct.mockResolvedValue(sources);
+
+      req = { query: { page: "2", limit: "2" } };
+      await getAllSources(req, res);
+
+      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(res.json).toHaveBeenCalledWith({
+        data: ["cbs", "cnn"],
+        total: 5,
+        page: 2,
+        limit: 2,
+      });
+    });
+
+    it("200 handles malformed URLs gracefully", async () => {
+      const sources = [
+        "https://www.bbc.com/news",
+        "not-a-valid-url",
+        "https://www.cnn.com/news",
+      ];
+      Article.distinct.mockResolvedValue(sources);
+
+      req = { query: {} };
+      await getAllSources(req, res);
+
+      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(res.json).toHaveBeenCalledWith({
+        data: ["bbc", "cnn", "not-a-valid-url"],
+        total: 3,
+        page: 1,
+        limit: 20,
+      });
+    });
+
+    it("200 handles empty sources list", async () => {
+      Article.distinct.mockResolvedValue([]);
+
+      req = { query: {} };
+      await getAllSources(req, res);
+
+      expect(Article.distinct).toHaveBeenCalledWith("sources");
+      expect(res.json).toHaveBeenCalledWith({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+      });
+    });
+
+    it("500 on error", async () => {
+      Article.distinct.mockRejectedValue(new Error("fail"));
+
+      req = { query: {} };
+      await getAllSources(req, res);
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({
+        error: "Failed to fetch sources",
       });
     });
   });

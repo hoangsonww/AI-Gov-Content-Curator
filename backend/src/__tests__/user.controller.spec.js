@@ -1,3 +1,13 @@
+jest.mock("../models/user.model", () => ({
+  findById: jest.fn(),
+  find: jest.fn(),
+}));
+
+jest.mock("../models/article.model", () => ({
+  find: jest.fn(),
+  countDocuments: jest.fn(),
+}));
+
 const User = require("../models/user.model");
 const Article = require("../models/article.model");
 const {
@@ -7,10 +17,9 @@ const {
   validateTokenController,
   searchFavoriteArticles,
   getAllUsers,
+  setUserPreferences,
+  getUserPreferences,
 } = require("../controllers/user.controller");
-
-jest.mock("../models/user.model");
-jest.mock("../models/article.model");
 
 describe("Favorite Controller", () => {
   let req, res;
@@ -266,6 +275,214 @@ describe("Favorite Controller", () => {
       await getAllUsers(req, res);
       expect(console.error).toHaveBeenCalledWith(
         "Error retrieving all users:",
+        err,
+      );
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+    });
+  });
+
+  describe("setUserPreferences", () => {
+    it("400 if alertFrequency missing", async () => {
+      req = {
+        user: { id: "u1" },
+        body: { topics: ["tech", "policy"], sources: ["Reuters"] },
+      };
+      await setUserPreferences(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Alert frequency must be one of: hourly, daily, weekly, monthly",
+      });
+    });
+
+    it("400 if alertFrequency invalid", async () => {
+      req = {
+        user: { id: "u1" },
+        body: {
+          topics: ["tech"],
+          sources: ["Reuters"],
+          alertFrequency: "invalid",
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Alert frequency must be one of: hourly, daily, weekly, monthly",
+      });
+    });
+
+    it("400 if topics not array when provided", async () => {
+      req = {
+        user: { id: "u1" },
+        body: {
+          topics: "tech",
+          sources: ["Reuters"],
+          alertFrequency: "daily",
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Topics must be an array if provided",
+      });
+    });
+
+    it("400 if sources not array when provided", async () => {
+      req = {
+        user: { id: "u1" },
+        body: {
+          topics: ["tech"],
+          sources: "Reuters",
+          alertFrequency: "daily",
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Sources must be an array if provided",
+      });
+    });
+
+    it("404 if user not found", async () => {
+      User.findById.mockResolvedValue(null);
+      req = {
+        user: { id: "u1" },
+        body: {
+          topics: ["tech"],
+          sources: ["Reuters"],
+          alertFrequency: "daily",
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "User not found" });
+    });
+
+    it("200 updates preferences on success", async () => {
+      const user = {
+        preferences: null,
+        save: jest.fn().mockResolvedValue(true),
+      };
+      User.findById.mockResolvedValue(user);
+      req = {
+        user: { id: "u1" },
+        body: {
+          topics: ["tech", "policy"],
+          sources: ["Reuters", "AP"],
+          alertFrequency: "daily",
+          notifyOnNewStories: true,
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(user.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Preferences updated successfully",
+        preferences: {
+          topics: ["tech", "policy"],
+          sources: ["Reuters", "AP"],
+          alertFrequency: "daily",
+          notifyOnNewStories: true,
+        },
+      });
+    });
+
+    it("200 allows empty topics and sources", async () => {
+      const user = {
+        preferences: null,
+        save: jest.fn().mockResolvedValue(true),
+      };
+      User.findById.mockResolvedValue(user);
+      req = {
+        user: { id: "u1" },
+        body: {
+          alertFrequency: "weekly",
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(user.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Preferences updated successfully",
+        preferences: {
+          topics: [],
+          sources: [],
+          alertFrequency: "weekly",
+          notifyOnNewStories: false,
+        },
+      });
+    });
+
+    it("500 on error", async () => {
+      const err = new Error("db fail");
+      User.findById.mockRejectedValue(err);
+      console.error = jest.fn();
+      req = {
+        user: { id: "u1" },
+        body: {
+          topics: ["tech"],
+          alertFrequency: "daily",
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(console.error).toHaveBeenCalledWith(
+        "Error setting user preferences:",
+        err,
+      );
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+    });
+  });
+
+  describe("getUserPreferences", () => {
+    it("404 if user not found", async () => {
+      User.findById.mockResolvedValue(null);
+      req = { user: { id: "u1" } };
+      await getUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "User not found" });
+    });
+
+    it("404 if preferences not set", async () => {
+      const user = { preferences: null };
+      User.findById.mockResolvedValue(user);
+      req = { user: { id: "u1" } };
+      await getUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "Preferences not set" });
+    });
+
+    it("200 returns preferences on success", async () => {
+      const preferences = {
+        topics: ["tech", "policy"],
+        sources: ["Reuters"],
+        alertFrequency: "daily",
+        notifyOnNewStories: true,
+      };
+      const user = { preferences };
+      User.findById.mockResolvedValue(user);
+      req = { user: { id: "u1" } };
+      await getUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ preferences });
+    });
+
+    it("500 on error", async () => {
+      const err = new Error("db fail");
+      User.findById.mockRejectedValue(err);
+      console.error = jest.fn();
+      req = { user: { id: "u1" } };
+      await getUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(console.error).toHaveBeenCalledWith(
+        "Error getting user preferences:",
         err,
       );
       expect(res.status).toHaveBeenCalledWith(500);

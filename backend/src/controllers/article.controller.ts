@@ -189,6 +189,70 @@ export const getAllTopics = async (req: Request, res: Response) => {
 };
 
 /**
+ * Get a list of all distinct sources across all articles.
+ * Extracts unique domain names from source URLs.
+ *
+ * @param req The request object.
+ * @param res The response object to send the distinct sources.
+ */
+export const getAllSources = async (req: Request, res: Response) => {
+  try {
+    const { q = "", page = 1, limit = 20 } = req.query;
+
+    // Fetch distinct sources from the Article collection.
+    const allSources = await Article.distinct("source");
+
+    // Extract unique domain names from URLs
+    const uniqueDomains = new Set<string>();
+    
+    allSources.forEach((source: string) => {
+      try {
+        const url = new URL(source);
+        // Remove 'www.' prefix and extract domain name without TLD
+        const domain = url.hostname.replace(/^www\./, '');
+        // Remove the TLD extension (everything after the last dot)
+        const domainName = domain.split('.')[0];
+        uniqueDomains.add(domainName);
+      } catch {
+        // If URL parsing fails, add the source as-is
+        uniqueDomains.add(source);
+      }
+    });
+
+    // Convert Set to Array and sort
+    const domainArray = Array.from(uniqueDomains);
+
+    // Filter sources by search query if provided
+    const filteredSources = q
+      ? domainArray.filter((source: string) =>
+          source.toLowerCase().includes((q as string).toLowerCase()),
+        )
+      : domainArray;
+
+    // Sort sources alphabetically
+    filteredSources.sort((a: string, b: string) => a.localeCompare(b));
+
+    // Apply pagination
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+
+    const paginatedSources = filteredSources.slice(startIndex, endIndex);
+
+    res.json({
+      data: paginatedSources,
+      total: filteredSources.length,
+      page: pageNum,
+      limit: limitNum,
+    });
+  } catch (error) {
+    console.error("Error fetching sources:", error);
+    res.status(500).json({ error: "Failed to fetch sources" });
+  }
+};
+
+/**
  * Get a list of articles filtered by a specific topic.
  *
  * The function uses an aggregation pipeline to normalize each article’s topics by

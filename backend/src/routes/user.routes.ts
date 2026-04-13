@@ -6,6 +6,8 @@ import {
   validateTokenController,
   searchFavoriteArticles,
   getAllUsers,
+  setUserPreferences,
+  getUserPreferences,
 } from "../controllers/user.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -280,5 +282,121 @@ router.get("/favorites/search", authenticate, searchFavoriteArticles);
  *         description: Token is missing or invalid
  */
 router.get("/validate-token", authenticate, validateTokenController);
+
+/**
+ * @swagger
+ * /api/users/preferences:
+ *   post:
+ *     tags: [Preferences]
+ *     summary: Set user preferences from onboarding quiz
+ *     description: Save user's topic interests, preferred sources, alert frequency, and notification preferences. Topics and sources are optional if the user skipped those steps.
+ *     security:
+ *       - ApiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               topics:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of user's interested topics (optional if skipped)
+ *                 example: ["Climate Change", "Technology"]
+ *               sources:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of user's preferred sources (optional if skipped)
+ *                 example: ["BBC", "Reuters"]
+ *               alertFrequency:
+ *                 type: string
+ *                 enum: [hourly, daily, weekly, monthly]
+ *                 description: Preferred alert frequency
+ *                 example: "daily"
+ *               notifyOnNewStories:
+ *                 type: boolean
+ *                 description: Whether user wants instant notifications on new stories
+ *                 example: true
+ *             required:
+ *               - alertFrequency
+ *     responses:
+ *       200:
+ *         description: Preferences updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                 preferences:
+ *                   type: object
+ *                   properties:
+ *                     topics:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     sources:
+ *                       type: string
+ *                     alertFrequency:
+ *                       type: string
+ *                     notifyOnNewStories:
+ *                       type: boolean
+ *       400:
+ *         description: Missing or invalid required fields
+ *       401:
+ *         description: Token is missing or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/preferences", authenticate, setUserPreferences);
+
+/**
+ * @swagger
+ * /api/users/preferences:
+ *   get:
+ *     tags: [Preferences]
+ *     summary: Get user preferences
+ *     description: Retrieve the current user's preferences from onboarding quiz
+ *     security:
+ *       - ApiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: User preferences retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 preferences:
+ *                   type: object
+ *                   properties:
+ *                     topics:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     sources:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     alertFrequency:
+ *                       type: string
+ *                       enum: [hourly, daily, weekly, monthly]
+ *                     notifyOnNewStories:
+ *                       type: boolean
+ *       401:
+ *         description: Token is missing or invalid
+ *       404:
+ *         description: User not found or preferences not set
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/preferences", authenticate, getUserPreferences);
 
 export default router;
