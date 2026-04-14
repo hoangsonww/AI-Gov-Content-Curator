@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { getTopics } from "../services/api";
 
-interface TopicDropdownProps {
-  selectedTopic: string;
-  onChange: (topic: string) => void;
+interface SourceDropdownProps {
+  selectedSource: string;
+  onChange: (source: string) => void;
 }
 
 // @ts-ignore
-const TopicDropdown: React.FC<TopicDropdownProps> = ({
-  selectedTopic,
+const SourceDropdown: React.FC<SourceDropdownProps> = ({
+  selectedSource,
   onChange,
 }) => {
   const [allTopics, setAllTopics] = useState<string[]>([]);
@@ -36,7 +36,7 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
         setHasMore(result.data.length === 20);
         setInitialLoad(false);
       } catch (err) {
-        console.error("Error fetching topics:", err);
+        console.error("Error fetching sources:", err);
         setInitialLoad(false);
       } finally {
         setLoading(false);
@@ -108,8 +108,8 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
     }
   }, [showDropdown]);
 
-  const handleSelect = (topic: string) => {
-    onChange(topic);
+  const handleSelect = (source: string) => {
+    onChange(source);
     setShowDropdown(false);
   };
 
@@ -119,7 +119,7 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
         className="dropdown-header"
         onClick={() => setShowDropdown((prev) => !prev)}
       >
-        <span className="dropdown-text">{selectedTopic || "All Topics"}</span>
+        <span className="dropdown-text">{selectedSource || "All Sources"}</span>
         <span className="dropdown-arrow">{showDropdown ? "▲" : "▼"}</span>
       </div>
       {showDropdown && (
@@ -131,24 +131,28 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
             type="text"
             className="dropdown-search"
             placeholder="Search topics..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            // value={search}
+            // onChange={(e) => setSearch(e.target.value)}
             onClick={(e) => e.stopPropagation()}
           />
           <ul className="dropdown-list">
-            {allTopics.map((topic, index) => (
+            <li onClick={() => handleSelect("google.com")}>google.com</li>
+            <li onClick={() => handleSelect("finance.yahoo.com")}>
+              finance.yahoo.com
+            </li>
+            {/* {allTopics.map((topic, index) => (
               <li key={`${topic}-${index}`} onClick={() => handleSelect(topic)}>
                 {topic}
               </li>
-            ))}
+            ))} */}
             {loading && (
               <li className="dropdown-loading">
                 <div className="spinner"></div>
-                <span>Loading topics...</span>
+                <span>Loading sources...</span>
               </li>
             )}
             {!loading && !initialLoad && allTopics.length === 0 && (
-              <li className="no-match">No matching topics</li>
+              <li className="no-match">No matching sources</li>
             )}
           </ul>
         </div>
@@ -157,4 +161,4 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
   );
 };
 
-export default TopicDropdown;
+export default SourceDropdown;

@@ -1,4 +1,7 @@
 /* Minimal CSS reset */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 *,
 *::before,
 *::after {

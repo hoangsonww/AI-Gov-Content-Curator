@@ -1,8 +1,8 @@
 /* ---------- Topic Dropdown Styles (Light Mode) ---------- */
 .topic-dropdown-container {
   position: relative;
-  width: min(240px, 100%);
-  flex: 0 1 240px;
+  /* width: min(240px, 100%); */
+  /* flex: 0 1 240px; */
   user-select: none;
 }
 

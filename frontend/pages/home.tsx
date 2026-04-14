@@ -9,6 +9,8 @@ import ArticleSearch from "../components/ArticleSearch";
 import TopicDropdown from "../components/TopicDropdown";
 import RecommendedArticles from "../components/RecommendedArticles";
 import { getTopArticles, getLatestArticles } from "../services/api";
+import SourceDropdown from "../components/SourceDropdown";
+import DateDropdown from "../components/DateDropdown";
 
 export interface Article {
   _id: string;
@@ -33,6 +35,8 @@ export default function HomePage({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
+  const [selectedSource, setSelectedSource] = useState("");
+  const [selectedDate, setSelectedDate] = useState("month");
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -82,9 +86,7 @@ export default function HomePage({
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 router.push(
-                  `/home?q=${encodeURIComponent(
-                    e.target.value,
-                  )}&topic=${encodeURIComponent(selectedTopic)}`,
+                  `/home?q=${encodeURIComponent(e.target.value)}&topic=${encodeURIComponent(selectedTopic)}&source=${encodeURIComponent(selectedSource)}&tbs=qdr:${encodeURIComponent(selectedDate)}`,
                   undefined,
                   { shallow: true },
                 );
@@ -92,21 +94,45 @@ export default function HomePage({
               className="search-input"
             />
           </div>
-          {/* @ts-ignore */}
+        </div>
+        {/* @ts-ignore */}
+        <div className="flex items-center gap-3">
+          <div className="text-xl font-semibold">Filters: </div>
           <TopicDropdown
             selectedTopic={selectedTopic}
             onChange={(topic) => {
               setSelectedTopic(topic);
               router.push(
-                `/home?q=${encodeURIComponent(
-                  searchQuery,
-                )}&topic=${encodeURIComponent(topic)}`,
+                `/home?q=${encodeURIComponent(searchQuery)}&topic=${encodeURIComponent(topic)}&source=${encodeURIComponent(selectedSource)}&tbs=qdr:${encodeURIComponent(selectedDate)}`,
                 undefined,
                 { shallow: true },
               );
             }}
           />
+          <SourceDropdown
+            selectedSource={selectedSource}
+            onChange={(source) => {
+              setSelectedSource(source);
+              router.push(
+                `/home?q=${encodeURIComponent(searchQuery)}&topic=${encodeURIComponent(selectedTopic)}&source=${encodeURIComponent(source)}&tbs=qdr:${encodeURIComponent(selectedDate)}`,
+                undefined,
+                { shallow: true },
+              );
+            }}
+          />
+          <DateDropdown
+            selectedDate={selectedDate}
+            onChange={(date) => {
+              setSelectedDate(date);
+              router.push(
+                `/home?q=${encodeURIComponent(searchQuery)}&topic=${encodeURIComponent(selectedTopic)}&source=${encodeURIComponent(selectedSource)}&tbs=qdr:${encodeURIComponent(date)}`,
+                undefined,
+                { shallow: true },
+              );
+            }}
+          ></DateDropdown>
         </div>
+
         {isSearchActive ? (
           // @ts-ignore
           <ArticleSearch

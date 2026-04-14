@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { getTopics } from "../services/api";
 
-interface TopicDropdownProps {
-  selectedTopic: string;
-  onChange: (topic: string) => void;
+interface DateDropdownProps {
+  selectedDate: string;
+  onChange: (source: string) => void;
 }
 
 // @ts-ignore
-const TopicDropdown: React.FC<TopicDropdownProps> = ({
-  selectedTopic,
+const DateDropdown: React.FC<DateDropdownProps> = ({
+  selectedDate,
   onChange,
 }) => {
   const [allTopics, setAllTopics] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const [dropdownValue, setDropdownValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -36,7 +37,7 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
         setHasMore(result.data.length === 20);
         setInitialLoad(false);
       } catch (err) {
-        console.error("Error fetching topics:", err);
+        console.error("Error fetching sources:", err);
         setInitialLoad(false);
       } finally {
         setLoading(false);
@@ -108,18 +109,29 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
     }
   }, [showDropdown]);
 
-  const handleSelect = (topic: string) => {
-    onChange(topic);
+  const handleSelect = (selectedDate: string) => {
+    handleDropdownValueUpdate(selectedDate);
+    onChange(selectedDate);
     setShowDropdown(false);
   };
 
+  const handleDropdownValueUpdate = (selectedDate: string) => {
+    if (selectedDate == "all") {
+      setDropdownValue("All");
+    } else if (selectedDate == "m") {
+      setDropdownValue("Month");
+    } else if (selectedDate == "w") {
+      setDropdownValue("Week");
+    }
+  };
+
   return (
-    <div className="topic-dropdown-container w-60" ref={containerRef}>
+    <div className="topic-dropdown-container w-40" ref={containerRef}>
       <div
         className="dropdown-header"
         onClick={() => setShowDropdown((prev) => !prev)}
       >
-        <span className="dropdown-text">{selectedTopic || "All Topics"}</span>
+        <span className="dropdown-text">{dropdownValue || "Date posted"}</span>
         <span className="dropdown-arrow">{showDropdown ? "▲" : "▼"}</span>
       </div>
       {showDropdown && (
@@ -130,26 +142,13 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
           <input
             type="text"
             className="dropdown-search"
-            placeholder="Search topics..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
             onClick={(e) => e.stopPropagation()}
           />
           <ul className="dropdown-list">
-            {allTopics.map((topic, index) => (
-              <li key={`${topic}-${index}`} onClick={() => handleSelect(topic)}>
-                {topic}
-              </li>
-            ))}
-            {loading && (
-              <li className="dropdown-loading">
-                <div className="spinner"></div>
-                <span>Loading topics...</span>
-              </li>
-            )}
-            {!loading && !initialLoad && allTopics.length === 0 && (
-              <li className="no-match">No matching topics</li>
-            )}
+            {/* <li onClick={() => handleSelect("all")}>All time</li> */}
+            <li onClick={() => handleSelect("m")}>Past month</li>
+            <li onClick={() => handleSelect("w")}>Past week</li>
           </ul>
         </div>
       )}
@@ -157,4 +156,4 @@ const TopicDropdown: React.FC<TopicDropdownProps> = ({
   );
 };
 
-export default TopicDropdown;
+export default DateDropdown;
