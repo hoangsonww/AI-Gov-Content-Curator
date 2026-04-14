@@ -267,6 +267,7 @@ As soon as you receive a task (verbally or in writing) or come up with an idea:
 6. Once the task is complete, push the branch to the remote repository and create a pull request (PR) in GitHub.
    - Name the PR with a descriptive title that includes the Jira issue key (e.g., `feat(ui): implement new feature [AICC-123`).
    - Before you commit your changes, make sure to run any applicable tests and ensure that the code is properly formatted and linted.
+   - **Note**: If your changes do not involve any AI functionalities (e.g. chatbot, crawler), then set `GOOGLE_AI_API_KEY=dummy` in your `backend/.env` file to bypass the git hooks that check for AI-related environment variables. This will allow you to commit and push your changes without needing access to the actual API keys, while still maintaining the integrity of the development workflow.
 7. Assign the PR to the appropriate team member for code review.
    - Move the Jira task to the **Code Review** column.
 8. Make any necessary changes based on feedback from the code review.
@@ -1323,6 +1324,9 @@ npm run test:watch
 # Generate a coverage report
 npm run test:coverage
 ```
+
+> [!NOTE]
+> If your changes do not involve AI functionality, you'll need to set `GOOGLE_AI_API_KEY=dummy` in `backend/.env` to prevent tests from failing due to missing API keys.
 
 ### Frontend
 
