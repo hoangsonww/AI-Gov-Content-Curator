@@ -4,17 +4,17 @@ This document explains how SynthoraAI uses **MCP (Model Context Protocol)** and 
 
 ## Contents
 
-- Overview
-- Why MCP and ACP both exist
-- End-to-end architecture
-- MCP surface (tools/resources/prompts)
-- ACP protocol model
-- Redis-backed ACP runtime model
-- Production preflight and readiness gates
-- Security and operational guardrails
-- Deployment patterns
-- Failure handling and fallback behavior
-- Validation checklist
+- [Overview](#overview)
+- [Why MCP and ACP both exist](#why-mcp-and-acp-both-exist)
+- [End-to-end architecture](#end-to-end-architecture)
+- [MCP surface (current)](#mcp-surface-current)
+- [ACP protocol model](#acp-protocol-model)
+- [Redis-backed ACP runtime model](#redis-backed-acp-runtime-model)
+- [Production preflight and readiness gates](#production-preflight-and-readiness-gates)
+- [Security and operational guardrails](#security-and-operational-guardrails)
+- [Deployment patterns](#deployment-patterns)
+- [Failure handling and fallback behavior](#failure-handling-and-fallback-behavior)
+- [Validation checklist](#validation-checklist)
 
 ## Overview
 
@@ -303,6 +303,7 @@ sequenceDiagram
 ---
 
 For service-level details, see:
-- `agentic_ai/README.md`
-- `mcp_server/README.md`
-- `ARCHITECTURE.md`
+- [agentic_ai/README.md](agentic_ai/README.md)
+- [mcp_server/README.md](mcp_server/README.md)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [AGENTIC-AI.md](AGENTIC-AI.md)
