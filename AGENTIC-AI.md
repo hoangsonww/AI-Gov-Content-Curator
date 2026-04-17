@@ -1,6 +1,6 @@
 # 🤖 SynthoraAI Agentic Pipeline, MCP & ACP
 
-> Comprehensive technical reference for the multi-agent content processing pipeline, Model Context Protocol server, and Agent Communication Protocol layer powering SynthoraAI's government article curation platform.
+Comprehensive technical reference for the multi-agent content processing pipeline, Model Context Protocol server, and Agent Communication Protocol layer powering SynthoraAI's government article curation platform.
 
 ---
 

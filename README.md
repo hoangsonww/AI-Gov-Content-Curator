@@ -72,6 +72,7 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![LangChain](https://img.shields.io/badge/LangChain-121212?style=flat&logo=chainlink&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-FF4785?style=flat&logo=graphql&logoColor=white)
 ![Model Context Protocol (MCP)](https://img.shields.io/badge/Model%20Context%20Protocol-000?style=flat&logo=modelcontextprotocol&logoColor=white)
+![Agent Communication Protocol (ACP)](https://img.shields.io/badge/Agent%20Communication%20Protocol-fff?style=flat&logo=amp&logoColor=black)
 ![Splunk](https://img.shields.io/badge/Splunk-000000?style=flat&logo=splunk&logoColor=white)
 ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-7B5EA7?style=flat&logo=opentelemetry&logoColor=white)
 ![Kinesis Firehose](https://img.shields.io/badge/Kinesis%20Firehose-FF9900?style=flat&logo=kinopoisk&logoColor=white)
