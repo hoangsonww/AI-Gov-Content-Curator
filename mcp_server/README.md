@@ -11,13 +11,14 @@ This package exposes the Agentic AI pipeline through MCP primitives (tools, reso
 3. [Package Layout](#package-layout)
 4. [MCP Primitive Catalog](#mcp-primitive-catalog)
 5. [Runtime Model](#runtime-model)
-6. [Configuration](#configuration)
-7. [Run Locally](#run-locally)
-8. [MCP Client Integration](#mcp-client-integration)
-9. [Operational Notes](#operational-notes)
-10. [Testing](#testing)
-11. [Migration Notes](#migration-notes)
-12. [Troubleshooting](#troubleshooting)
+6. [ACP Runtime Model](#acp-runtime-model)
+7. [Configuration](#configuration)
+8. [Run Locally](#run-locally)
+9. [MCP Client Integration](#mcp-client-integration)
+10. [Operational Notes](#operational-notes)
+11. [Testing](#testing)
+12. [Migration Notes](#migration-notes)
+13. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -50,6 +51,7 @@ flowchart LR
 
     Runtime --> Pipeline[AgenticPipeline]
     Runtime --> JobStore[ProcessingJobStore]
+    Runtime --> ACPStore[ACP Store: Redis or Memory]
 
     Pipeline --> Agents[Analyzer / Summarizer / Classifier / Sentiment / Quality]
 ```
@@ -118,6 +120,17 @@ Source of truth is `mcp_server/catalog.py`.
 - `diagnose_provider_configuration`
 - `run_preflight_checks`
 
+#### ACP tools
+
+- `acp_register_agent`
+- `acp_unregister_agent`
+- `acp_heartbeat`
+- `acp_send_message`
+- `acp_fetch_inbox`
+- `acp_acknowledge_message`
+- `acp_list_agents`
+- `acp_get_message`
+
 ### Resources
 
 - `config://pipeline`
@@ -131,6 +144,9 @@ Source of truth is `mcp_server/catalog.py`.
 - `jobs://stats`
 - `jobs://recent`
 - `topics://available`
+- `acp://agents`
+- `acp://stats`
+- `acp://messages/recent`
 
 ### Prompts
 
@@ -144,10 +160,11 @@ Source of truth is `mcp_server/catalog.py`.
 
 ## Runtime Model
 
-`ServerRuntime` (`runtime.py`) initializes two shared objects:
+`ServerRuntime` (`runtime.py`) initializes three shared objects:
 
 - `pipeline`: an `AgenticPipeline` instance, marked unavailable if startup fails.
 - `jobs`: a `ProcessingJobStore` with bounded history and TTL.
+- `acp`: ACP store selected by `ACP_BACKEND` (`redis` in production, `memory` fallback outside strict mode).
 
 ### Job store behavior
 
@@ -164,6 +181,27 @@ Guardrails are controlled by settings:
 - `mcp_max_job_history`
 - `mcp_job_ttl_seconds`
 
+## ACP Runtime Model
+
+```mermaid
+flowchart LR
+    Start[ServerRuntime boot] --> ACPEnabled{ACP_ENABLED?}
+    ACPEnabled -->|No| ACPDisabled[ACP checks report disabled]
+    ACPEnabled -->|Yes| Backend{ACP_BACKEND}
+    Backend -->|redis| RedisInit[Init RedisACPStore]
+    Backend -->|memory| MemInit[Init InMemoryACPStore]
+    RedisInit --> StrictProd{ENVIRONMENT=production?}
+    StrictProd -->|Yes + Redis unavailable| FailFast[RuntimeError fail-fast]
+    StrictProd -->|No / available| ACPReady[ACP ready]
+    MemInit --> ACPReady
+```
+
+ACP operational preflight (`acp_preflight`) performs:
+- Optional Redis ping (when Redis backend selected)
+- Agent registration roundtrip
+- Message send -> inbox fetch -> acknowledgment
+- Cleanup/unregister
+
 ## Configuration
 
 All config is loaded from `agentic_ai/config/settings.py` (`.env` support via `agentic_ai/.env` and `.env`).
@@ -178,6 +216,19 @@ All config is loaded from `agentic_ai/config/settings.py` (`.env` support via `a
 - `MCP_MAX_BATCH_ITEMS` (default `25`)
 - `MCP_MAX_JOB_HISTORY` (default `1000`)
 - `MCP_JOB_TTL_SECONDS` (default `86400`)
+- `ACP_ENABLED` (default `true`)
+- `ACP_BACKEND` (default `redis`, options: `redis`, `memory`)
+- `ACP_REDIS_KEY_PREFIX` (default `synthora:acp`)
+- `ACP_MAX_AGENTS` (default `200`)
+- `ACP_MAX_MESSAGES` (default `5000`)
+- `ACP_MESSAGE_TTL_SECONDS` (default `3600`)
+- `ACP_AGENT_TTL_SECONDS` (default `900`)
+- `ACP_MAX_PAYLOAD_CHARS` (default `20000`)
+- `ACP_MAX_METADATA_ENTRIES` (default `50`)
+- `ACP_MAX_CAPABILITIES` (default `32`)
+
+When `ENVIRONMENT=production` and `ACP_ENABLED=true`, setting `ACP_BACKEND=redis` is strict:
+if Redis dependencies/backend are unavailable at startup, runtime initialization fails fast.
 
 ### Provider readiness
 
@@ -308,6 +359,14 @@ Optional compile check:
 
 ```bash
 python -m py_compile $(find mcp_server -name '*.py')
+```
+
+ACP-focused tests:
+
+```bash
+PYTHONPATH=. pytest -q \
+  agentic_ai/tests/test_mcp_server_acp_store.py \
+  agentic_ai/tests/test_mcp_server_runtime_acp_backend.py
 ```
 
 ## Migration Notes

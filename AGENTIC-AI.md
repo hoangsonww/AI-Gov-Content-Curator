@@ -1,64 +1,52 @@
-# 🤖 SynthoraAI Agentic Pipeline & MCP Server
+# 🤖 SynthoraAI Agentic Pipeline, MCP & ACP
 
-> Comprehensive technical reference for the multi-agent content processing pipeline and Model Context Protocol server powering SynthoraAI's government article curation platform.
+> Comprehensive technical reference for the multi-agent content processing pipeline, Model Context Protocol server, and Agent Communication Protocol layer powering SynthoraAI's government article curation platform.
 
 ---
 
 ## Table of Contents
 
-- [🤖 SynthoraAI Agentic Pipeline \& MCP Server](#-synthoraai-agentic-pipeline--mcp-server)
-  - [Table of Contents](#table-of-contents)
-  - [System Overview](#system-overview)
-  - [Design Philosophy](#design-philosophy)
-  - [High-Level Architecture](#high-level-architecture)
-  - [Pipeline Architecture](#pipeline-architecture)
-    - [LangGraph State Machine](#langgraph-state-machine)
-    - [Assembly Line Flow](#assembly-line-flow)
-    - [Conditional Routing \& Quality Loop](#conditional-routing--quality-loop)
-  - [Agent Deep Dive](#agent-deep-dive)
-    - [Base Agent Framework](#base-agent-framework)
-    - [1. Content Analyzer](#1-content-analyzer)
-    - [2. Summarizer](#2-summarizer)
-    - [3. Classifier](#3-classifier)
-    - [4. Sentiment Analyzer](#4-sentiment-analyzer)
-    - [5. Quality Checker](#5-quality-checker)
-  - [State Management](#state-management)
-    - [AgentState Schema](#agentstate-schema)
-    - [PipelineStage Enum](#pipelinestage-enum)
-    - [State Flow Through Nodes](#state-flow-through-nodes)
-  - [MCP Server Architecture](#mcp-server-architecture)
-    - [Server Bootstrap](#server-bootstrap)
-    - [Runtime Container](#runtime-container)
-    - [Job Store](#job-store)
-    - [Registration Pattern](#registration-pattern)
-  - [Complete Tool Catalog](#complete-tool-catalog)
-    - [Processing Tools (8)](#processing-tools-8)
-    - [Analysis Tools (6)](#analysis-tools-6)
-    - [Operations Tools (6)](#operations-tools-6)
-  - [Resources Catalog](#resources-catalog)
-  - [Prompts Catalog](#prompts-catalog)
-  - [Configuration Reference](#configuration-reference)
-    - [Settings Class](#settings-class)
-    - [Environment Variables](#environment-variables)
-    - [Feature Flags](#feature-flags)
-  - [LLM Provider System](#llm-provider-system)
-  - [Deployment](#deployment)
-    - [Local Development](#local-development)
-    - [Docker Deployment](#docker-deployment)
-    - [AWS Lambda](#aws-lambda)
-    - [Azure Functions](#azure-functions)
-  - [Integration with SynthoraAI](#integration-with-synthoraai)
-  - [Monitoring \& Observability](#monitoring--observability)
-  - [Extension Guide](#extension-guide)
-    - [Adding a New Agent](#adding-a-new-agent)
-    - [Adding a New MCP Tool](#adding-a-new-mcp-tool)
-    - [Adding a New MCP Resource](#adding-a-new-mcp-resource)
-    - [Adding a New MCP Prompt](#adding-a-new-mcp-prompt)
-  - [Security Model](#security-model)
-  - [Error Handling \& Recovery](#error-handling--recovery)
-  - [Performance Characteristics](#performance-characteristics)
-  - [Directory Structure](#directory-structure)
-  - [Related Documentation](#related-documentation)
+- [System Overview](#system-overview)
+- [Design Philosophy](#design-philosophy)
+- [High-Level Architecture](#high-level-architecture)
+- [Pipeline Architecture](#pipeline-architecture)
+  - [LangGraph State Machine](#langgraph-state-machine)
+  - [Assembly Line Flow](#assembly-line-flow)
+  - [Conditional Routing \& Quality Loop](#conditional-routing--quality-loop)
+- [Agent Deep Dive](#agent-deep-dive)
+- [State Management](#state-management)
+- [MCP Server Architecture](#mcp-server-architecture)
+  - [ACP Layer](#acp-layer)
+  - [Server Bootstrap](#server-bootstrap)
+  - [Runtime Container](#runtime-container)
+  - [Job Store](#job-store)
+  - [Registration Pattern](#registration-pattern)
+- [Complete Tool Catalog](#complete-tool-catalog)
+  - [Processing Tools (8)](#processing-tools-8)
+  - [Analysis Tools (6)](#analysis-tools-6)
+  - [Operations Tools (6)](#operations-tools-6)
+  - [ACP Tools (8)](#acp-tools-8)
+- [Resources Catalog](#resources-catalog)
+- [Prompts Catalog](#prompts-catalog)
+- [Configuration Reference](#configuration-reference)
+- [LLM Provider System](#llm-provider-system)
+- [Deployment](#deployment)
+  - [Local Development](#local-development)
+  - [Docker Deployment](#docker-deployment)
+  - [AWS Lambda](#aws-lambda)
+  - [Azure Functions](#azure-functions)
+- [Integration with SynthoraAI](#integration-with-synthoraai)
+- [Monitoring \& Observability](#monitoring--observability)
+- [Extension Guide](#extension-guide)
+  - [Adding a New Agent](#adding-a-new-agent)
+  - [Adding a New MCP Tool](#adding-a-new-mcp-tool)
+  - [Adding a New MCP Resource](#adding-a-new-mcp-resource)
+  - [Adding a New MCP Prompt](#adding-a-new-mcp-prompt)
+- [Security Model](#security-model)
+- [Error Handling \& Recovery](#error-handling--recovery)
+- [Performance Characteristics](#performance-characteristics)
+- [Directory Structure](#directory-structure)
+- [Related Documentation](#related-documentation)
 
 ---
 
@@ -66,7 +54,7 @@
 
 The SynthoraAI Agentic Pipeline is a **multi-agent content processing system** built on [LangGraph](https://github.com/langchain-ai/langgraph) and [LangChain](https://github.com/langchain-ai/langchain). It processes government-focused articles through a sequence of specialized AI agents — analyzing content, generating summaries, classifying topics, evaluating sentiment, and validating output quality — all orchestrated as a compiled state machine with automatic retry loops.
 
-The pipeline is exposed to external AI clients (Claude Desktop, VS Code Copilot, Cursor, etc.) via a **Model Context Protocol (MCP) server** built on [FastMCP](https://github.com/jlowin/fastmcp), providing 20 tools, 11 resources, and 7 prompt templates over stdio transport.
+The pipeline is exposed to external AI clients (Claude Desktop, VS Code Copilot, Cursor, etc.) via a **Model Context Protocol (MCP) server** built on [FastMCP](https://github.com/jlowin/fastmcp), providing 28 tools, 14 resources, and 7 prompt templates over stdio transport. It also includes an **ACP (Agent Communication Protocol)** layer for durable inter-agent messaging.
 
 ```mermaid
 graph TB
@@ -79,8 +67,8 @@ graph TB
 
     subgraph "MCP Server Layer"
         MCP["FastMCP Server<br/>stdio transport"]
-        Tools["20 Tools"]
-        Resources["11 Resources"]
+        Tools["28 Tools"]
+        Resources["14 Resources"]
         Prompts["7 Prompts"]
     end
 
@@ -88,6 +76,7 @@ graph TB
         Runtime["ServerRuntime"]
         Pipeline["AgenticPipeline<br/>LangGraph StateGraph"]
         JobStore["ProcessingJobStore<br/>async in-memory"]
+        ACPStore["ACP Store<br/>Redis/Memory"]
     end
 
     subgraph "Agent Layer"
@@ -108,7 +97,7 @@ graph TB
     Claude & VSCode & Cursor & Custom -->|JSON-RPC| MCP
     MCP --> Tools & Resources & Prompts
     Tools & Resources --> Runtime
-    Runtime --> Pipeline & JobStore
+    Runtime --> Pipeline & JobStore & ACPStore
     Pipeline --> CA & SUM & CLS & SA & QC
     CA & SUM & CLS & SA & QC --> Google & OpenAI & Anthropic & Cohere
 ```
@@ -623,10 +612,31 @@ class ServerRuntime:
     ready: bool                        # True if pipeline loaded
     startup_error: str | None          # Error message if degraded
     jobs: ProcessingJobStore           # In-memory job tracker
+    acp: ACPStoreProtocol              # ACP backend (Redis/Memory)
+    acp_backend: str                   # Selected backend name
     started_at: str                    # ISO timestamp
 ```
 
 **Degraded mode:** If the pipeline fails to initialize (e.g., missing API keys), `ready = False`. The MCP server still starts — health/diagnostic tools work, but processing tools return `service_unavailable` errors.
+
+### ACP Layer
+
+ACP provides inter-agent message delivery semantics on top of MCP tool invocation.
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending
+    pending --> delivered: acp_fetch_inbox()
+    delivered --> acknowledged: acp_acknowledge_message()
+    pending --> expired: TTL prune
+    delivered --> expired: TTL prune
+    acknowledged --> expired: retention prune
+```
+
+Production backend policy:
+- `ACP_BACKEND=redis` is default.
+- In `ENVIRONMENT=production` with ACP enabled, Redis is strict fail-fast.
+- `make mcp-preflight` executes ACP operational roundtrip checks.
 
 ### Job Store
 
@@ -722,6 +732,19 @@ flowchart LR
 | 19 | `diagnose_provider_configuration` | — | Provider readiness without exposing secrets |
 | 20 | `run_preflight_checks` | `sample_content?` | Production readiness validation suite |
 
+### ACP Tools (8)
+
+| # | Tool | Parameters | Description |
+|---|------|-----------|-------------|
+| 21 | `acp_register_agent` | `agent_id`, `display_name?`, `capabilities?`, `metadata?` | Register/refresh agent identity |
+| 22 | `acp_unregister_agent` | `agent_id` | Remove agent registration |
+| 23 | `acp_heartbeat` | `agent_id` | Refresh liveness timestamp |
+| 24 | `acp_send_message` | `sender_id`, `recipient_id`, `payload`, `message_type?`, `conversation_id?`, `priority?`, `ttl_seconds?` | Send agent-to-agent envelope |
+| 25 | `acp_fetch_inbox` | `agent_id`, `limit?`, `include_acknowledged?` | Pull recipient inbox messages |
+| 26 | `acp_acknowledge_message` | `agent_id`, `message_id` | Ack delivery completion |
+| 27 | `acp_list_agents` | — | List registered ACP agents |
+| 28 | `acp_get_message` | `message_id` | Fetch message envelope by id |
+
 ---
 
 ## Resources Catalog
@@ -741,6 +764,9 @@ MCP resources provide **read-only passive data** for AI client context:
 | 9 | `jobs://stats` | Job aggregate statistics (total, success rate) |
 | 10 | `jobs://recent` | Latest 20 processing jobs |
 | 11 | `topics://available` | Available topic categories (15 topics) |
+| 12 | `acp://agents` | Registered ACP agents |
+| 13 | `acp://stats` | ACP queue and lifecycle stats |
+| 14 | `acp://messages/recent` | Recent ACP message envelopes |
 
 ---
 
@@ -783,6 +809,13 @@ All configuration is managed by a **Pydantic BaseSettings** class (`agentic_ai/c
 | `MCP_MAX_BATCH_ITEMS` | `25` | Max batch processing size |
 | `MCP_MAX_JOB_HISTORY` | `1000` | In-memory job retention |
 | `MCP_JOB_TTL_SECONDS` | `86400` | Job TTL (24 hours) |
+| `ACP_ENABLED` | `true` | Enable ACP tools/resources |
+| `ACP_BACKEND` | `redis` | ACP backend (`redis` or `memory`) |
+| `ACP_MAX_AGENTS` | `200` | Max registered agents |
+| `ACP_MAX_MESSAGES` | `5000` | Max retained ACP envelopes |
+| `ACP_MESSAGE_TTL_SECONDS` | `3600` | Message TTL |
+| `ACP_AGENT_TTL_SECONDS` | `900` | Agent heartbeat TTL |
+| `ACP_MAX_PAYLOAD_CHARS` | `20000` | Serialized payload size limit |
 | **LLM** | | |
 | `DEFAULT_LLM_PROVIDER` | `"google"` | Provider: google, openai, anthropic, cohere |
 | `DEFAULT_MODEL` | `"gemini-1.5-flash"` | Model name |
@@ -1151,7 +1184,9 @@ agentic_ai/
 │   └── function_app.py       # Azure Functions handler
 ├── tests/
 │   ├── test_mcp_server_job_store.py
-│   └── test_mcp_server_validation.py
+│   ├── test_mcp_server_validation.py
+│   ├── test_mcp_server_acp_store.py
+│   └── test_mcp_server_runtime_acp_backend.py
 ├── .env.example
 ├── docker-compose.yml
 ├── Dockerfile
@@ -1163,7 +1198,10 @@ mcp_server/
 ├── __init__.py
 ├── __main__.py               # Entry point: python -m mcp_server
 ├── app.py                    # AgenticMCPServer composition root
-├── runtime.py                # ServerRuntime (pipeline + job store)
+├── runtime.py                # ServerRuntime (pipeline + job store + acp)
+├── acp_models.py             # ACP Pydantic models
+├── acp_store.py              # In-memory ACP implementation + protocol
+├── acp_redis_store.py        # Redis-backed ACP implementation
 ├── job_store.py              # ProcessingJobStore (async in-memory)
 ├── models.py                 # Pydantic models (ArticleProcessRequest, ProcessingStatus)
 ├── validation.py             # Input validation & sanitization
@@ -1177,12 +1215,14 @@ mcp_server/
 │   ├── common.py             # Shared helpers (ensure_runtime_ready, parse_article_request)
 │   ├── processing.py         # 8 processing tools
 │   ├── analysis.py           # 6 analysis tools
-│   └── operations.py         # 6 operations tools
+│   ├── operations.py         # 6 operations tools
+│   └── acp.py                # 8 ACP tools
 ├── resources/
 │   ├── __init__.py           # register_resources()
 │   ├── config.py             # 4 config resources
 │   ├── runtime.py            # 4 runtime resources
-│   └── jobs.py               # 3 job resources
+│   ├── jobs.py               # 3 job resources
+│   └── acp.py                # 3 ACP resources
 ├── prompts/
 │   ├── __init__.py           # register_prompts()
 │   ├── summarization.py      # 2 summarization prompts
@@ -1199,6 +1239,7 @@ mcp_server/
 |----------|-------------|
 | [`agentic_ai/README.md`](agentic_ai/README.md) | Detailed pipeline setup, usage, and cloud deployment guide |
 | [`mcp_server/README.md`](mcp_server/README.md) | MCP server implementation reference and tool documentation |
+| [`MCP-ACP.md`](MCP-ACP.md) | Comprehensive MCP + ACP protocol and runtime architecture |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Full system architecture including agentic pipeline context |
 | [`RAG_CHATBOT.md`](RAG_CHATBOT.md) | RAG chatbot system that consumes pipeline-enriched data |
 | [`CHATBOT_GUARDRAILS.md`](CHATBOT_GUARDRAILS.md) | Content safety guardrails for AI-generated responses |

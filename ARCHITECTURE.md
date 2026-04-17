@@ -158,7 +158,7 @@ flowchart LR
 - **AI integrations:** Anthropic (Claude) and Google Generative AI power the dual-provider chat orchestration; Google Generative AI powers direct summarization, topic extraction, and conversational experiences
 - **Chat orchestration:** The TypeScript `orchestration/` package provides intent-based routing across 16 specialized agents with automatic provider failover, grounding validation, and cost tracking
 - **Article processing pipeline:** The Python `agentic_ai/` pipeline enriches articles through 5 LangGraph agents (analyze, summarize, classify, sentiment, quality check), exposed via a FastAPI HTTP bridge
-- **MCP integration:** The `mcp_server/` package exposes the pipeline as 20 tools, 11 resources, and 7 prompts for Claude Code and IDE integration
+- **MCP + ACP integration:** The `mcp_server/` package exposes the pipeline as 28 tools, 14 resources, and 7 prompts for Claude Code and IDE integration, and provides ACP-backed inter-agent messaging for multi-replica operations
 - **Vector search:** Pinecone provides semantic search capabilities for the AI chat features
 - **Caching layer:** Redis accelerates hot API responses and reduces database load
 - **Observability:** Splunk OTEL Collector (DaemonSet) collects logs, metrics, and traces from all services via filelog, OTLP, hostmetrics, and kubeletstats receivers — enriched with K8s metadata, redacted for secrets, and exported to Splunk HEC; metrics are also federated to Prometheus for Grafana dashboards
@@ -883,10 +883,36 @@ flowchart LR
 **Features:**
 - **Multi-agent Workflows:** Modular agents for fetching, summarizing, tagging
 - **MCP Interface:** Structured tools/resources/prompts with diagnostics and readiness checks
+- **ACP Interface:** Agent registration, heartbeat, inbox routing, and acknowledgment lifecycle for cross-agent communication
 - **Bias Detection:** Specialized prompts and sentiment/bias analysis workflows
 - **Deployment:** Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs
 
 See `agentic_ai/README.md` and `mcp_server/` for detailed runtime, tool surface, and deployment instructions. For a comprehensive reference of all AI/ML components, LLM providers, agents, cost controls, and Mermaid diagrams, see [`AI_ML.md`](AI_ML.md).
+
+### MCP + ACP Runtime Topology
+
+```mermaid
+flowchart LR
+    IDE[Claude Code / IDE Host] -->|MCP JSON-RPC over stdio| MCPServer[mcp_server FastMCP]
+    MCPServer --> Runtime[ServerRuntime]
+    Runtime --> Pipeline[AgenticPipeline]
+    Runtime --> JobStore[ProcessingJobStore]
+    Runtime --> ACPStore[ACP Store]
+
+    ACPStore -->|production| Redis[(Redis ACP backend)]
+    ACPStore -->|dev fallback| Memory[(In-memory ACP backend)]
+
+    subgraph ACPFlow[ACP Message Lifecycle]
+      A[acp_register_agent] --> B[acp_send_message]
+      B --> C[acp_fetch_inbox]
+      C --> D[acp_acknowledge_message]
+    end
+
+    MCPServer --> A
+    MCPServer --> B
+    MCPServer --> C
+    MCPServer --> D
+```
 
 ### Python Orchestration Layer (`agentic_ai/orchestration/`)
 
@@ -2338,6 +2364,7 @@ flowchart LR
 ## References & Further Reading
 
 - **Project README:** [README.md](README.md)
+- **MCP + ACP Deep Dive:** [MCP-ACP.md](MCP-ACP.md)
 - **AI/ML Details:** [AI_ML.md](AI_ML.md)
 - **Deployment Guide:** [infrastructure/DEPLOYMENT.md](infrastructure/DEPLOYMENT.md)
 - **Infrastructure README:** [infrastructure/README.md](infrastructure/README.md)

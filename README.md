@@ -12,7 +12,7 @@ This monorepo, multi-services project is organized into seven main components:
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
 - **Agentic AI Pipeline:** Sophisticated multi-agent system for advanced content processing using LangGraph and LangChain, with a FastAPI HTTP bridge for cross-service integration.
 - **Chat Orchestration:** TypeScript-based dual-provider (Anthropic + Google) chat layer with 16 specialized agents, intent routing, grounding validation, and cost tracking.
-- **MCP Server:** Model Context Protocol server exposing the agentic pipeline as 20 tools, 11 resources, and 7 prompts for IDE and AI-assistant integration.
+- **MCP Server + ACP Layer:** Model Context Protocol server exposing the agentic pipeline as 28 tools, 14 resources, and 7 prompts, plus a production-grade Agent Communication Protocol (ACP) for agent-to-agent messaging with Redis-backed multi-replica support.
 
 <p align="center">
   <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator Logo" width="30%">
@@ -211,7 +211,7 @@ Additionally, there are **3 advanced AI components:**
 2. **Orchestration Layer:**
    - **Python** (`agentic_ai/orchestration/`): Enterprise article processing orchestration atop the LangGraph pipeline — content supervision, cost budgeting, error recovery with circuit breaking, dead-letter queuing, and concurrent batch processing. Exposed via a FastAPI HTTP bridge (`agentic_ai/api.py` on port 8100) for cross-service integration.
    - **TypeScript** (`orchestration/`): Dual-provider LLM chat layer — unified Anthropic + Google client, intent-based agent routing (16 agents), grounding validation, prompt caching, cost tracking, and structured observability. Integrated into the backend via `/api/orchestrator/*` endpoints. See `orchestration/README.md`.
-3. **MCP Server** (`mcp_server/`): Model Context Protocol server exposing the agentic pipeline over stdio — 20 tools, 11 resources, 7 prompts for Claude Code and IDE integration. Configured via `.mcp.json`.
+3. **MCP Server + ACP Layer** (`mcp_server/`): Model Context Protocol server exposing the agentic pipeline over stdio — 28 tools, 14 resources, and 7 prompts for Claude Code and IDE integration. Includes ACP with Redis-backed agent registry and inter-agent message routing for production multi-replica deployments. Configured via `.mcp.json`.
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
 
@@ -842,6 +842,9 @@ graph LR
 
 - **🔄 Assembly Line Processing**: LangGraph-based state machine with conditional routing
 - **🔌 MCP Server**: Model Context Protocol server for standardized AI interactions
+- **🛰️ ACP Layer**: Agent Communication Protocol for inter-agent messaging (`register -> heartbeat -> send -> inbox -> ack`)
+- **📬 Durable Agent Comms**: Redis-backed ACP store for multi-replica deployments with TTL, retention, and liveness pruning
+- **🧪 Operational Preflight**: Live ACP roundtrip checks are part of `make mcp-preflight`
 - **☁️ Cloud-Ready**: Production configs for AWS Lambda and Azure Functions
 - **📊 Quality Assurance**: Built-in quality checking with automatic retry mechanisms
 - **⚡ Production-Ready**: Comprehensive logging, monitoring, and error handling
@@ -868,6 +871,12 @@ The pipeline uses an **assembly line architecture** where articles flow through 
 - **Prometheus**: Metrics and monitoring
 - **Splunk + OpenTelemetry**: Centralized log aggregation, distributed tracing, and enterprise observability via OTEL Collector
 - **MCP Python SDK (FastMCP)**: Model Context Protocol server implementation
+- **ACP Store Backends**: Redis (production) + in-memory fallback (non-production)
+
+**MCP + ACP Surface:**
+- **MCP:** 28 tools, 14 resources, 7 prompts
+- **ACP Tools:** `acp_register_agent`, `acp_unregister_agent`, `acp_heartbeat`, `acp_send_message`, `acp_fetch_inbox`, `acp_acknowledge_message`, `acp_list_agents`, `acp_get_message`
+- **ACP Resources:** `acp://agents`, `acp://stats`, `acp://messages/recent`
 
 **Cloud Deployment:**
 - **AWS**: Lambda, API Gateway, S3, SQS, Secrets Manager, CloudWatch, Kinesis Firehose → Splunk HEC
@@ -894,9 +903,17 @@ pip install -r requirements.txt
 # Configure environment
 cp .env.example .env
 # Edit .env with your API keys
+# For production ACP, set:
+# ACP_ENABLED=true
+# ACP_BACKEND=redis
+# REDIS_HOST=<redis-host>
+# REDIS_PORT=6379
 
 # Run the MCP server
 PYTHONPATH=.. python -m mcp_server
+
+# Run production-readiness preflight (includes live ACP checks)
+make mcp-preflight
 ```
 
 **Use Programmatically:**
@@ -951,6 +968,8 @@ For comprehensive documentation including:
 - Integration examples
 
 **Please see the complete documentation: [agentic_ai/README.md](agentic_ai/README.md)**
+
+For full MCP + ACP protocol and runtime diagrams, see **[MCP-ACP.md](MCP-ACP.md)**.
 
 > [!TIP]
 > For a comprehensive reference of all AI/ML components — the three orchestration layers, 21 agents, LLM providers, cost controls, grounding rules, and 15+ Mermaid architecture diagrams — see **[AI_ML.md](AI_ML.md)**.

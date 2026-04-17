@@ -61,6 +61,7 @@ def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
         providers = get_provider_configuration()
         limits = get_limits_config()
         feature_flags = get_feature_flags()
+        acp = await runtime.acp_preflight()
 
         checks = {
             "default_provider_configured": providers["default_provider_ready"],
@@ -68,6 +69,7 @@ def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
             "pipeline_compiled": runtime.ready and runtime.pipeline is not None and hasattr(runtime.pipeline, "app"),
             "job_store_available": hasattr(runtime, "jobs"),
             "limits_valid": limits["max_content_chars"] > 0 and limits["max_batch_items"] > 0,
+            "acp_operational": acp["ready"],
         }
 
         sample_check: dict[str, Any] = {}
@@ -94,5 +96,6 @@ def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
             "providers": providers,
             "limits": limits,
             "feature_flags": feature_flags,
+            "acp": acp,
             "sample_content": sample_check,
         }

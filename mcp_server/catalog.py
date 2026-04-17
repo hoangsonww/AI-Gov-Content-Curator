@@ -22,6 +22,14 @@ TOOL_CATALOG: list[str] = [
     "get_server_capabilities",
     "diagnose_provider_configuration",
     "run_preflight_checks",
+    "acp_register_agent",
+    "acp_unregister_agent",
+    "acp_heartbeat",
+    "acp_send_message",
+    "acp_fetch_inbox",
+    "acp_acknowledge_message",
+    "acp_list_agents",
+    "acp_get_message",
 ]
 
 RESOURCE_CATALOG: list[str] = [
@@ -36,6 +44,9 @@ RESOURCE_CATALOG: list[str] = [
     "jobs://stats",
     "jobs://recent",
     "topics://available",
+    "acp://agents",
+    "acp://stats",
+    "acp://messages/recent",
 ]
 
 PROMPT_CATALOG: list[str] = [
