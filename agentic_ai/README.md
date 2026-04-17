@@ -17,6 +17,7 @@ A sophisticated, production-ready Agentic AI system built with LangGraph and Lan
   - [4. Sentiment Analyzer Agent](#4-sentiment-analyzer-agent)
   - [5. Quality Checker Agent](#5-quality-checker-agent)
 - [🔌 MCP Server](#-mcp-server)
+  - [ACP Layer](#acp-layer)
   - [Available Tools](#available-tools)
   - [Resources](#resources)
   - [Prompts](#prompts)
@@ -76,6 +77,7 @@ The SynthoraAI Agentic AI Pipeline is an advanced content processing system that
 - **🤖 Multi-Agent Architecture**: Specialized agents for content analysis, summarization, classification, sentiment analysis, and quality checking
 - **🔄 Assembly Line Processing**: LangGraph-based pipeline with state management and conditional routing
 - **🔌 MCP Server**: Model Context Protocol server for standardized AI interactions
+- **🛰️ ACP (Agent Communication Protocol)**: Production-grade inter-agent messaging (register, heartbeat, send, inbox, ack) backed by Redis for multi-replica safety
 - **☁️ Cloud-Ready**: Production deployment configurations for AWS Lambda and Azure Functions
 - **📊 Quality Assurance**: Built-in quality checking with automatic retry mechanisms
 - **⚡ Production-Ready**: Comprehensive logging, monitoring, error handling, and observability
@@ -272,6 +274,32 @@ The Model Context Protocol (MCP) server provides a standardized interface for AI
 
 For more details, see [mcp_server/README.md](../mcp_server/README.md).
 
+### ACP Layer
+
+ACP complements MCP by enabling durable inter-agent communication with explicit lifecycle semantics.
+
+```mermaid
+sequenceDiagram
+    participant AgentA as Agent A
+    participant MCP as MCP ACP Tools
+    participant Store as ACP Store (Redis/Memory)
+    participant AgentB as Agent B
+
+    AgentA->>MCP: acp_register_agent(agent-a)
+    AgentB->>MCP: acp_register_agent(agent-b)
+    AgentA->>MCP: acp_send_message(agent-a -> agent-b)
+    MCP->>Store: persist envelope
+    AgentB->>MCP: acp_fetch_inbox(agent-b)
+    MCP->>Store: mark delivered
+    AgentB->>MCP: acp_acknowledge_message(message_id)
+    MCP->>Store: mark acknowledged
+```
+
+ACP production behavior:
+- `ACP_BACKEND=redis` is the default.
+- In `ENVIRONMENT=production` with `ACP_ENABLED=true`, Redis backend is strict and fail-fast.
+- Preflight validates ACP operational readiness via live roundtrip checks.
+
 ### Server Package Layout
 
 The MCP server is organized as a package instead of a monolithic file:
@@ -281,6 +309,8 @@ The MCP server is organized as a package instead of a monolithic file:
 - `mcp_server/resources/`: MCP resource registrations
 - `mcp_server/prompts/`: MCP prompt registrations
 - `mcp_server/runtime.py`: runtime container (pipeline + job store)
+- `mcp_server/acp_store.py`: in-memory ACP implementation + protocol
+- `mcp_server/acp_redis_store.py`: Redis-backed ACP implementation
 - `mcp_server/job_store.py`: async-safe in-memory job retention
 - `mcp_server/models.py`: request/status schemas
 - `mcp_server/validation.py`: payload and metadata guardrails
@@ -301,6 +331,10 @@ The MCP server now exposes an enterprise-focused tool surface across three domai
 - **Operations/diagnostics tools**
 - `check_pipeline_health`, `get_pipeline_graph`, `get_runtime_readiness`
 - `get_server_capabilities`, `diagnose_provider_configuration`, `run_preflight_checks`
+- **ACP tools**
+- `acp_register_agent`, `acp_unregister_agent`, `acp_heartbeat`
+- `acp_send_message`, `acp_fetch_inbox`, `acp_acknowledge_message`
+- `acp_list_agents`, `acp_get_message`
 
 Use `get_server_capabilities` at runtime as the source of truth for current tool inventory.
 
@@ -309,6 +343,7 @@ Use `get_server_capabilities` at runtime as the source of truth for current tool
 - `config://pipeline`, `config://limits`, `config://providers`, `config://features`
 - `runtime://health`, `runtime://readiness`, `runtime://capabilities`, `runtime://pipeline/graph`
 - `jobs://stats`, `jobs://recent`, `topics://available`
+- `acp://agents`, `acp://stats`, `acp://messages/recent`
 
 ### Prompts
 
@@ -476,6 +511,7 @@ make mcp-preflight
 ```
 
 This command exits non-zero when runtime is not ready (for example, missing provider credentials).
+It also exits non-zero when ACP operational checks fail.
 
 #### Use the Pipeline Programmatically
 
@@ -616,6 +652,18 @@ MCP_MAX_METADATA_ENTRIES=50
 MCP_MAX_METADATA_VALUE_CHARS=2000
 MCP_MAX_JOB_HISTORY=1000
 MCP_JOB_TTL_SECONDS=86400
+
+# ACP Runtime Guardrails
+ACP_ENABLED=true
+ACP_BACKEND=redis
+ACP_MAX_AGENTS=200
+ACP_MAX_MESSAGES=5000
+ACP_MESSAGE_TTL_SECONDS=3600
+ACP_AGENT_TTL_SECONDS=900
+ACP_REDIS_KEY_PREFIX=synthora:acp
+ACP_MAX_PAYLOAD_CHARS=20000
+ACP_MAX_METADATA_ENTRIES=50
+ACP_MAX_CAPABILITIES=32
 
 # Monitoring
 ENABLE_METRICS=true

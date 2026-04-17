@@ -252,6 +252,7 @@ class AgenticPipeline:
 
             # Determine if we should continue or retry
             if quality_result["score"] < 0.7 and state["iteration"] < settings.max_iterations:
+                state["iteration"] = state.get("iteration", 0) + 1
                 state["should_continue"] = True
                 state["next_stage"] = "content_analysis"  # Retry from content analysis
                 state["messages"].append(

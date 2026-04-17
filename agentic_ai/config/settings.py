@@ -40,6 +40,16 @@ class Settings(BaseSettings):
     mcp_max_batch_items: int = Field(default=25, description="Max items allowed per batch tool call")
     mcp_max_job_history: int = Field(default=1000, description="Max in-memory processing job records")
     mcp_job_ttl_seconds: int = Field(default=86400, description="Job retention TTL in seconds")
+    acp_enabled: bool = Field(default=True, description="Enable ACP agent-to-agent communication primitives")
+    acp_backend: str = Field(default="redis", description="ACP backend: redis or memory")
+    acp_max_agents: int = Field(default=200, description="Max registered ACP agents")
+    acp_max_messages: int = Field(default=5000, description="Max in-memory ACP messages")
+    acp_message_ttl_seconds: int = Field(default=3600, description="ACP message TTL in seconds")
+    acp_agent_ttl_seconds: int = Field(default=900, description="ACP agent heartbeat TTL in seconds")
+    acp_redis_key_prefix: str = Field(default="synthora:acp", description="Redis key prefix for ACP records")
+    acp_max_payload_chars: int = Field(default=20000, description="Max ACP payload serialized size")
+    acp_max_metadata_entries: int = Field(default=50, description="Max ACP metadata keys")
+    acp_max_capabilities: int = Field(default=32, description="Max ACP capabilities entries per agent")
 
     # LLM Configuration
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")

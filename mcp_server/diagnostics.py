@@ -20,6 +20,13 @@ def get_limits_config() -> dict[str, Any]:
         "max_batch_items": settings.mcp_max_batch_items,
         "max_iterations": settings.max_iterations,
         "agent_timeout_seconds": settings.agent_timeout,
+        "acp_max_agents": settings.acp_max_agents,
+        "acp_max_messages": settings.acp_max_messages,
+        "acp_message_ttl_seconds": settings.acp_message_ttl_seconds,
+        "acp_agent_ttl_seconds": settings.acp_agent_ttl_seconds,
+        "acp_max_payload_chars": settings.acp_max_payload_chars,
+        "acp_max_metadata_entries": settings.acp_max_metadata_entries,
+        "acp_max_capabilities": settings.acp_max_capabilities,
     }
 
 
@@ -49,6 +56,7 @@ def get_feature_flags() -> dict[str, bool]:
         "classification": settings.enable_classification,
         "human_in_loop": settings.enable_human_in_loop,
         "metrics": settings.enable_metrics,
+        "acp": settings.acp_enabled,
     }
 
 
@@ -57,6 +65,7 @@ def get_server_capabilities() -> dict[str, Any]:
         "service": settings.mcp_server_name,
         "version": settings.mcp_server_version,
         "environment": settings.environment,
+        "acp_backend": settings.acp_backend,
         "tools": TOOL_CATALOG,
         "resources": RESOURCE_CATALOG,
         "prompts": PROMPT_CATALOG,
@@ -87,6 +96,7 @@ def get_pipeline_component_status(runtime: ServerRuntime) -> dict[str, bool]:
 
 async def build_health_report(runtime: ServerRuntime) -> dict[str, Any]:
     stats = await runtime.jobs.stats()
+    acp_stats = await runtime.acp.stats()
     component_status = get_pipeline_component_status(runtime)
     provider_configuration = get_provider_configuration()
 
@@ -110,6 +120,7 @@ async def build_health_report(runtime: ServerRuntime) -> dict[str, Any]:
             "total": stats["total_jobs"],
             "success_rate": stats["success_rate"],
         },
+        "acp": acp_stats,
         "providers": provider_configuration,
         "limits": get_limits_config(),
         "features": get_feature_flags(),

@@ -1,4 +1,4 @@
-.PHONY: help install test lint format clean docker-build docker-up docker-down deploy-aws deploy-azure mcp-preflight
+.PHONY: help install test lint format clean docker-build docker-up docker-down deploy-aws deploy-azure mcp-preflight acp-integration
 
 # Default target
 .DEFAULT_GOAL := help
@@ -21,12 +21,12 @@ test-watch: ## Run tests in watch mode
 	PYTHONPATH=..:$$PYTHONPATH pytest tests/ -v --looponfail
 
 lint: ## Run linting
-	flake8 agentic_ai/ tests/
-	mypy agentic_ai/
+	flake8 . tests/
+	mypy .
 
 format: ## Format code
-	black agentic_ai/ tests/
-	isort agentic_ai/ tests/
+	black . tests/
+	isort . tests/
 
 clean: ## Clean generated files
 	find . -type d -name __pycache__ -exec rm -rf {} +
@@ -56,7 +56,10 @@ run-mcp: ## Run MCP server locally
 	PYTHONPATH=..:$$PYTHONPATH python -m mcp_server
 
 mcp-preflight: ## Run local MCP runtime readiness check
-	PYTHONPATH=..:$$PYTHONPATH python -c "from mcp_server.runtime import ServerRuntime; import json; runtime=ServerRuntime(); print(json.dumps(runtime.readiness(), indent=2)); raise SystemExit(0 if runtime.ready else 1)"
+	PYTHONPATH=..:$$PYTHONPATH python -c "import asyncio, json; from mcp_server.runtime import ServerRuntime; runtime=ServerRuntime(); readiness=runtime.readiness(); acp=asyncio.run(runtime.acp_preflight()); report={'runtime': readiness, 'acp': acp, 'ready': readiness['ready'] and acp['ready']}; print(json.dumps(report, indent=2)); raise SystemExit(0 if report['ready'] else 1)"
+
+acp-integration: ## Run ACP backend integration checks
+	PYTHONPATH=..:$$PYTHONPATH pytest tests/test_mcp_server_runtime_acp_backend.py -v
 
 run-pipeline: ## Run pipeline example
 	python examples/run_pipeline.py

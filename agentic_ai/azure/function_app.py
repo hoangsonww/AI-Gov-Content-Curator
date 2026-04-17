@@ -10,6 +10,7 @@ import asyncio
 from typing import Dict, Any, Optional
 
 import azure.functions as func
+from azure.storage.blob import BlobServiceClient
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,6 +24,32 @@ logger = logging.getLogger(__name__)
 
 # Initialize pipeline (singleton for warm starts)
 pipeline = None
+
+
+def _store_processing_result(result: Dict[str, Any], article_id: str) -> None:
+    """
+    Store queue processing result in Azure Blob Storage when configured.
+    """
+    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+    container = os.getenv("AZURE_RESULTS_CONTAINER", "agentic-results")
+    if not connection_string:
+        logger.warning(
+            "AZURE_STORAGE_CONNECTION_STRING is not configured; skipping result persistence",
+            extra={"article_id": article_id},
+        )
+        return
+
+    blob_service = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service.get_container_client(container)
+    try:
+        container_client.create_container()
+    except Exception:
+        pass
+
+    blob_name = f"results/{article_id}.json"
+    payload = json.dumps(result).encode("utf-8")
+    blob_client = container_client.get_blob_client(blob_name)
+    blob_client.upload_blob(payload, overwrite=True)
 
 
 def _run_async(coro):
@@ -144,8 +171,8 @@ def queue_process(msg: func.QueueMessage) -> None:
 
         logger.info(f"Queue processing completed for article: {message_data.get('article_id')}")
 
-        # Store result in blob storage or database
-        # TODO: Implement result storage
+        article_id = str(message_data.get("article_id", "unknown"))
+        _store_processing_result(result, article_id)
 
     except Exception as e:
         logger.error(f"Queue processing failed: {str(e)}", exc_info=True)
