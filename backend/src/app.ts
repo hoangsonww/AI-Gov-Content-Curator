@@ -14,6 +14,7 @@ import commentRoutes from "./routes/comment.routes";
 import ratingRoutes from "./routes/rating.routes";
 import biasRoutes from "./routes/bias.routes";
 import orchestratorRoutes from "./routes/orchestrated-chat.routes";
+import consentRoutes from "./routes/consent.routes";
 
 import swaggerDocs from "./swagger/swagger";
 
@@ -150,6 +151,7 @@ app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/bias", biasRoutes);
 app.use("/api/orchestrator", orchestratorRoutes);
+app.use("/api/consent", consentRoutes);
 
 /* ───────────── 404 & error handling ───────────── */
 
