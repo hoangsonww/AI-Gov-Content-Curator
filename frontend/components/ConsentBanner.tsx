@@ -1,12 +1,31 @@
 "use client";
 import { useEffect, useState } from "react";
+import { getUserRegion } from "../utils/getRegion";
 
 const ConsentBanner: React.FC = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookieConsent");
-    if (!consent) setVisible(true);
+    const initConsent = async () => {
+      const stored = localStorage.getItem("cookieConsent");
+
+
+      if (stored === "accepted" || stored === "rejected") {
+        return;
+      }
+
+      try {
+        await getUserRegion();
+
+        setVisible(true);
+      } catch (error) {
+        console.error("Region detection failed:", error);
+
+        setVisible(true);
+      }
+    };
+
+    initConsent();
   }, []);
 
   const handleConsent = (value: "accepted" | "rejected") => {
