@@ -28,19 +28,31 @@ const ConsentBanner: React.FC = () => {
     initConsent();
   }, []);
 
-  const handleConsent = (value: "accepted" | "rejected") => {
-    localStorage.setItem("cookieConsent", value);
+  const handleConsent = async (value: "accepted" | "rejected") => {
+  localStorage.setItem("cookieConsent", value);
+  localStorage.setItem(
+    "cookieConsentUpdatedAt",
+    new Date().toISOString()
+  );
 
-    localStorage.setItem(
-      "cookieConsentUpdatedAt",
-      new Date().toISOString()
-    );
+  try {
+    await fetch("/api/consent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        consent: value,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to log consent to server:", error);
+  }
 
-    // notify app
-    window.dispatchEvent(new Event("cookieConsentUpdated"));
+  // notify app
+  window.dispatchEvent(new Event("cookieConsentUpdated"));
 
-    setVisible(false);
-  };
+  setVisible(false);
+};
 
   if (!visible) return null;
 
