@@ -34,32 +34,23 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
 }
 
-.consent-buttons button:first-child {
+.accept-btn {
   background-color: #4caf50;
   color: white;
 }
 
-.consent-buttons button:first-child:hover {
+.accept-btn:hover {
   background-color: #45a049;
 }
 
-.consent-buttons button:nth-child(2) {
+.reject-btn {
   background-color: #f44336;
   color: white;
 }
 
-.consent-buttons button:nth-child(2):hover {
+.reject-btn:hover {
   background-color: #da190b;
-}
-
-.consent-buttons button:last-child {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.consent-buttons button:last-child:hover {
-  background-color: #e0e0e0;
 }

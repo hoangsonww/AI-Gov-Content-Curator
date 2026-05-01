@@ -50,10 +50,11 @@ const ConsentBanner: React.FC = () => {
         <p>We use cookies to improve your experience.</p>
 
         <div className="consent-buttons">
-          <button onClick={() => handleConsent("accepted")}>
+          <button className="accept-btn" onClick={() => handleConsent("accepted")}>
             Accept All
           </button>
-          <button onClick={() => handleConsent("rejected")}>
+
+          <button className="reject-btn" onClick={() => handleConsent("rejected")}>
             Reject All
           </button>
         </div>
