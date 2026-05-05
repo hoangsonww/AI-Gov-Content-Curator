@@ -182,6 +182,11 @@ export const setUserPreferences = async (req: Request, res: Response) => {
       notifyOnNewStories: notifyOnNewStories ?? false,
     };
 
+    if(!user.isOnboarded){
+        user.isOnboarded = true;
+    }
+  
+
     await user.save();
 
     return res.status(200).json({
@@ -204,9 +209,10 @@ export const getUserPreferences = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     const user = await User.findById(userId);
+    
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!user.preferences) {
+    if (!user.isOnboarded) {
       return res.status(404).json({ error: "Preferences not set" });
     }
 
@@ -215,6 +221,72 @@ export const getUserPreferences = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error getting user preferences:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Update user first week engagement with new interaction
+ *
+ * @param req The request object containing interaction data in the body
+ * @param res The response object indicating success or failure
+ */
+export const updateFirstWeekEngagement = async (req: Request, res: Response) => {
+  const { action } = req.body;
+
+  // Validate the action
+  if (action === undefined)  {
+    return res.status(400).json({ error: "Action must be provided" });
+  }
+
+  try {
+    const userId = (req as any).user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Update user preferences
+    switch (action) {
+      case "favorite":
+        user.firstWeekInteractions.article_favs += 1;
+        break;
+      case "rate":
+        user.firstWeekInteractions.article_ratings += 1;
+        break;
+      case "view":
+        user.firstWeekInteractions.article_views += 1;
+        break;
+      case "click_topic":
+        user.firstWeekInteractions.topic_clicks += 1;
+        break;
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Engagement statistics updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating engagement statistics:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Get signup date for the logged-in user
+ *
+ * @param req The request object containing user information
+ * @param res The response object to send the signup date
+ */
+export const getSignupDate = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const signupDate = user.createdAt ;
+    return res.json(signupDate);
+  } catch (error) {
+    console.error("Error retrieving signup date:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

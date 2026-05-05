@@ -38,6 +38,26 @@ import mongoose, { Schema, Document } from "mongoose";
  *           description: Array of favorited article IDs
  *           items:
  *             type: string
+ *         isOnboarded:
+ *           type: boolean
+ *           description: Indicates if the user has completed the onboarding quiz
+ *           default: false
+ *         firstWeekInteractions:
+ *           type: object
+ *           description: User's first week interaction stats
+ *           properties:
+ *             article_views:
+ *               type: number
+ *               description: Number of articles viewed in the first week
+ *             article_favs:
+ *               type: number
+ *               description: Number of articles favorited in the first week
+ *             article_ratings:
+ *               type: number
+ *               description: Number of articles rated in the first week
+ *             topic_clicks:
+ *               type: number
+ *               description: Number of topics clicked in the first week
  *         preferences:
  *           type: object
  *           description: User's onboarding preferences
@@ -77,6 +97,14 @@ export interface IUser extends Document {
   verificationToken?: string;
   resetPasswordToken?: string;
   favorites: string[]; // Array of Article IDs
+  isOnboarded: boolean;
+  createdAt: string;
+  firstWeekInteractions : {
+    article_views: number,
+    article_favs: number,
+    article_ratings: number,
+    topic_clicks: number,
+  }
   preferences?: {
     topics: string[];
     sources: string[];
@@ -94,6 +122,13 @@ const UserSchema: Schema = new Schema(
     verificationToken: { type: String },
     resetPasswordToken: { type: String },
     favorites: [{ type: String }],
+    isOnboarded: { type: Boolean, default: false },
+    firstWeekInteractions : {
+      article_views: [{type : Number, default: 0}],
+      article_favs: [{type : Number, default: 0}],
+      article_ratings: [{type : Number, default: 0}],
+      topic_clicks: [{type : Number, default: 0}],
+    },
     preferences: {
       topics: [{ type: String }],
       sources: [{ type: String }],

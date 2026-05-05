@@ -11,6 +11,7 @@ const STATIC_URLS = [
   `${SITE_URL}/home`,
   `${SITE_URL}/auth/login`,
   `${SITE_URL}/auth/register`,
+  `${SITE_URL}/onboarding`,
   `${SITE_URL}/auth/reset-password`,
   `${SITE_URL}/favorites/favorites`,
   `${SITE_URL}/newsletter`,

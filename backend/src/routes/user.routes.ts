@@ -8,6 +8,8 @@ import {
   getAllUsers,
   setUserPreferences,
   getUserPreferences,
+  updateFirstWeekEngagement,
+  getSignupDate
 } from "../controllers/user.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -398,5 +400,75 @@ router.post("/preferences", authenticate, setUserPreferences);
  *         description: Internal server error
  */
 router.get("/preferences", authenticate, getUserPreferences);
+
+/**
+ * @swagger
+ * /api/users/engagement:
+ *   post:
+ *     tags: [Engagement]
+ *     summary: Update user first week engagement based on interaction
+ *     description: Save user's first week article views, article favs, articles ratings and topic clicks
+ *     security:
+ *       - ApiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *                action:
+ *                  type: string
+ *                  description: Interaction performed
+ *     responses:
+ *       200:
+ *         description: Interactions updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *       400:
+ *         description: Missing or invalid required fields
+ *       401:
+ *         description: Token is missing or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/engagement", authenticate, updateFirstWeekEngagement);
+
+/**
+ * @swagger
+ * /api/users/signup-date:
+ *   get:
+ *     summary: Retrieve sign up date for logged-in user
+ *     tags: [Signup]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved sign up date
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                   signupDate:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Timestamp when the user signed up.
+ *       401:
+ *         description: No token provided or invalid token
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/signup-date", authenticate, getSignupDate);
 
 export default router;

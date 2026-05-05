@@ -872,3 +872,85 @@ export const getUserPreferences = async (
   }
   return null;
 };
+
+/**
+ * Fetches signup date for the logged-in user.
+ *
+ * @param token - User's authentication token.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
+ * @returns Sign up date for user.
+ */
+export const fetchSignupDate = async (
+  token: string,
+  retries = 3,
+  delay = 1000,
+): Promise<string | null> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/users/signup-date`, {
+        headers: { Authorization: token },
+      });
+
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: ${await res.text()}`);
+        if (attempt === retries) return null;
+      } else {
+        const data = await res.json();
+        return data.signupDate || null;
+      }
+    } catch (error: any) {
+      console.error(
+        `Attempt ${attempt}: ${error.message || "Failed to fetch sign up date."}`,
+      );
+      if (attempt === retries) return null;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return null;
+};
+
+/**
+ * Updates first week engagement from the user interaction.
+ *
+ * @param token - User's authentication token.
+ * @param action - String containing user action.
+ * @param retries - Number of retry attempts (default: 3).
+ * @param delay - Delay between retries in milliseconds (default: 1000).
+ * @returns Success status or null if an error occurs.
+ */
+export const updateFirstWeekEngagement = async (
+  token: string,
+  action : string,
+  retries = 3,
+  delay = 1000,
+): Promise<boolean> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/users/engagement`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify(action),
+      });
+
+      if (!res.ok) {
+        console.error(`Attempt ${attempt}: ${await res.text()}`);
+        if (attempt === retries) return false;
+      } else {
+        const response = await res.json();
+        console.log("Interaction saved successfully:", response);
+        return true;
+      }
+    } catch (error: any) {
+      console.error(
+        `Attempt ${attempt}: ${error.message || "Failed to save interaction."}`,
+      );
+      if (attempt === retries) return false;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return false;
+};

@@ -4,8 +4,9 @@
  */
 
 import { Article } from "../pages/home";
+import { fetchSignupDate, updateFirstWeekEngagement } from "./api";
 
-interface UserInteraction {
+export interface UserInteraction {
   articleId: string;
   action: "view" | "favorite" | "rate" | "click_topic";
   timestamp: number;
@@ -68,7 +69,7 @@ function saveUserProfile(profile: UserProfile) {
 /**
  * Track user interaction
  */
-export function trackInteraction(
+export async function trackInteraction(
   articleId: string,
   action: UserInteraction["action"],
   metadata?: { rating?: number; topic?: string },
@@ -91,6 +92,39 @@ export function trackInteraction(
 
   profile.lastUpdated = Date.now();
   saveUserProfile(profile);
+
+  try {
+    const signupDate = await getSignupDate();
+    const now = Date.now()
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+    // Convert string to date object, then to milliseconds
+    if (signupDate) {
+      const signupTime = new Date(signupDate).getTime();
+      const isFirstWeek = (now - signupTime) < oneWeek;
+      if (isFirstWeek) {
+        const token = localStorage.getItem("token");
+        if (token){
+          try {
+            const  engagementSaved = await updateFirstWeekEngagement(token, action)
+            if (engagementSaved){
+              console.log('Updated first week engagement.')
+            } else {
+              console.log('Failed to update first week engagement.')
+            }
+          } catch (e) {
+            console.error('Failed to update first week engagement', e)
+          }
+        } else {
+            console.log('Token not found. Failed to update first week engagement.')
+          }
+      } 
+    } else {
+      console.log('Signup date not found. Failed to update first week engagement.')
+    }
+  } catch(e) {
+    console.error('Failed to update first week engagement.')
+  }
 }
 
 /**
@@ -258,4 +292,37 @@ export function debugUserProfile() {
   console.log("Top Topics:", getTopTopics(10));
   console.log("Interaction Count:", profile.interactionHistory.length);
   return profile;
+}
+
+/**
+ * Get user signupDate from localStorage
+ */
+async function getSignupDate(): Promise<string | null> {
+  const stored = localStorage.getItem("signup_date");
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error("Failed to fetch signup date", e);
+      return null;
+    }
+  }
+
+  const token = localStorage.getItem("token");
+  if (token){
+    try {
+    const signupDate  = await fetchSignupDate(token);
+    if (signupDate){
+      localStorage.setItem("signup_date", signupDate)
+    }
+    return signupDate
+    } catch (e) {
+      console.error("Failed to fetch signup date", e);
+      return null;
+    }
+  } else {
+    console.log("Token not found. Failed to fetch signup date");
+    return null;
+  }
+  
 }

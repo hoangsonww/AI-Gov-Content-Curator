@@ -36,7 +36,7 @@ export default function Login() {
         }
       } else {
         // Fallback to home if token not found
-        toast("Login successful! Redirecting to Home... 🔐");
+        toast("Token not found! Redirecting to Home... 🔐");
         router.push("/home");
       }
     } catch (err: any) {
