@@ -465,7 +465,8 @@ describe("Favorite Controller", () => {
         alertFrequency: "daily",
         notifyOnNewStories: true,
       };
-      const user = { preferences };
+      const isOnboarded = true;
+      const user = { preferences, isOnboarded };
       User.findById.mockResolvedValue(user);
       req = { user: { id: "u1" } };
       await getUserPreferences(req, res);
