@@ -63,6 +63,7 @@
     "start:crawler": "cd crawler && npm run start",
     "lint": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\"",
     "format": "npm run lint",
+    "test": "cd backend && npm run tests",
     "prepare": "husky install || true"
   },
   "dependencies": {
