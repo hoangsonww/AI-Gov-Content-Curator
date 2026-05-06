@@ -357,12 +357,12 @@
   background: linear-gradient(120deg, #1f8a70, #4ac49a);
   color: #071923;
   border: none;
-  box-shadow: 0 16px 32px rgba(31, 138, 112, 0.35);
+  box-shadow: 8px 16px 32px rgba(31, 138, 112, 0.35);
 }
 
 .landing-page .btn.chat:hover {
   transform: translateY(-2px);
-  box-shadow: 0 22px 42px rgba(31, 138, 112, 0.45);
+  box-shadow: 10px 22px 42px rgba(31, 138, 112, 0.45);
 }
 
 .landing-page .btn.secondary {
@@ -373,7 +373,7 @@
 
 .landing-page .btn.secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 36px rgba(10, 23, 39, 0.2);
+  box-shadow: 8px 18px 36px rgba(10, 23, 39, 0.2);
 }
 
 .landing-page .btn.tertiary {
@@ -385,6 +385,7 @@
 .landing-page .btn.tertiary:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.2);
+  box-shadow: 8px 14px 30px rgba(255, 255, 255, 0.08);
 }
 
 .landing-page .btn.outline {
@@ -396,6 +397,7 @@
 .landing-page .btn.outline:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.18);
+  box-shadow: 8px 14px 30px rgba(255, 255, 255, 0.08);
 }
 
 .landing-page .hero-badges {
