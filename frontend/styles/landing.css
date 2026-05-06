@@ -410,10 +410,36 @@
   margin-bottom: 0.5rem;
 }
 
-.landing-page .badge-row {
-  display: flex;
-  flex-wrap: wrap;
+.landing-page .badge-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 10%,
+    #000 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 10%,
+    #000 90%,
+    transparent 100%
+  );
+}
+
+.landing-page .badge-marquee-track {
+  display: inline-flex;
   gap: 0.5rem;
+  white-space: nowrap;
+  animation: badge-scroll 22s linear infinite;
+  width: max-content;
+  will-change: transform;
+}
+
+.landing-page .badge-marquee-track--reverse {
+  animation-name: badge-scroll-reverse;
+  animation-duration: 26s;
 }
 
 .landing-page .badge {
@@ -1268,6 +1294,24 @@
   }
 }
 
+@keyframes badge-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes badge-scroll-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @keyframes float {
   0%,
   100% {
@@ -1333,8 +1377,7 @@
   }
 
   .landing-page .hero-actions,
-  .landing-page .hero-metrics,
-  .landing-page .badge-row {
+  .landing-page .hero-metrics {
     justify-content: center;
   }
 
@@ -1396,7 +1439,8 @@
     transition-duration: 0.01ms !important;
   }
 
-  .landing-page .ticker-track {
+  .landing-page .ticker-track,
+  .landing-page .badge-marquee-track {
     animation: none !important;
     transform: none !important;
   }
