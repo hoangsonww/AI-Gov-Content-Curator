@@ -139,9 +139,9 @@ export default function TranslateDropdown({
               ref={slotRef}
             />
             <div className="translate-help">
-              If the language list is slow to load or translation is unavailable,
-              please wait a few seconds or reload the page. Please check your
-              Internet connection if the problem persists.
+              If the language list is slow to load or translation is
+              unavailable, please wait a few seconds or reload the page. Please
+              check your Internet connection if the problem persists.
             </div>
           </>
         )}
