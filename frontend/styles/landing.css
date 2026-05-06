@@ -277,6 +277,8 @@
 .landing-page .hero-copy {
   opacity: 0;
   animation: fadeUp 0.9s ease forwards;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .landing-page .hero-title {
