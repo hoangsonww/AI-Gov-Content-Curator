@@ -277,6 +277,9 @@
 .landing-page .hero-copy {
   opacity: 0;
   animation: fadeUp 0.9s ease forwards;
+  min-width: 0;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .landing-page .hero-title {
@@ -342,24 +345,24 @@
   background: linear-gradient(90deg, #f4b860, #f08f4f);
   color: #0b1a2b;
   border: none;
-  box-shadow: 0 14px 30px rgba(240, 143, 79, 0.35);
+  box-shadow: 4px 6px 16px rgba(240, 143, 79, 0.35);
 }
 
 .landing-page .btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(240, 143, 79, 0.45);
+  box-shadow: 6px 8px 20px rgba(240, 143, 79, 0.45);
 }
 
 .landing-page .btn.chat {
   background: linear-gradient(120deg, #1f8a70, #4ac49a);
   color: #071923;
   border: none;
-  box-shadow: 0 16px 32px rgba(31, 138, 112, 0.35);
+  box-shadow: 4px 6px 16px rgba(31, 138, 112, 0.35);
 }
 
 .landing-page .btn.chat:hover {
   transform: translateY(-2px);
-  box-shadow: 0 22px 42px rgba(31, 138, 112, 0.45);
+  box-shadow: 6px 8px 20px rgba(31, 138, 112, 0.45);
 }
 
 .landing-page .btn.secondary {
@@ -370,7 +373,7 @@
 
 .landing-page .btn.secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 36px rgba(10, 23, 39, 0.2);
+  box-shadow: 4px 6px 16px rgba(10, 23, 39, 0.2);
 }
 
 .landing-page .btn.tertiary {
@@ -382,6 +385,7 @@
 .landing-page .btn.tertiary:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.2);
+  box-shadow: 4px 6px 16px rgba(255, 255, 255, 0.08);
 }
 
 .landing-page .btn.outline {
@@ -393,6 +397,7 @@
 .landing-page .btn.outline:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.18);
+  box-shadow: 4px 6px 16px rgba(255, 255, 255, 0.08);
 }
 
 .landing-page .hero-badges {
@@ -410,10 +415,36 @@
   margin-bottom: 0.5rem;
 }
 
-.landing-page .badge-row {
-  display: flex;
-  flex-wrap: wrap;
+.landing-page .badge-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 10%,
+    #000 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 10%,
+    #000 90%,
+    transparent 100%
+  );
+}
+
+.landing-page .badge-marquee-track {
+  display: inline-flex;
   gap: 0.5rem;
+  white-space: nowrap;
+  animation: badge-scroll 22s linear infinite;
+  width: max-content;
+  will-change: transform;
+}
+
+.landing-page .badge-marquee-track--reverse {
+  animation-name: badge-scroll-reverse;
+  animation-duration: 26s;
 }
 
 .landing-page .badge {
@@ -1268,6 +1299,24 @@
   }
 }
 
+@keyframes badge-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes badge-scroll-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @keyframes float {
   0%,
   100% {
@@ -1333,8 +1382,7 @@
   }
 
   .landing-page .hero-actions,
-  .landing-page .hero-metrics,
-  .landing-page .badge-row {
+  .landing-page .hero-metrics {
     justify-content: center;
   }
 
@@ -1396,7 +1444,8 @@
     transition-duration: 0.01ms !important;
   }
 
-  .landing-page .ticker-track {
+  .landing-page .ticker-track,
+  .landing-page .badge-marquee-track {
     animation: none !important;
     transform: none !important;
   }

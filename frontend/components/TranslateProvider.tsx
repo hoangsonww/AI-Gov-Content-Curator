@@ -10,6 +10,7 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/router";
+import { useCookieConsent } from "./CookieConsentProvider";
 
 const SCRIPT_ID = "google-translate-script";
 const STORAGE_LANG_KEY = "app-translate-language";
@@ -45,6 +46,7 @@ declare global {
 
 export function TranslateProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { categories } = useCookieConsent();
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [language, setLanguageState] = useState(DEFAULT_LANG);
@@ -72,15 +74,19 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [language]);
 
-  const setGoogTransCookie = useCallback((lang: string) => {
-    if (typeof window === "undefined") return;
-    const value = `/auto/${lang}`;
-    document.cookie = `googtrans=${value};path=/`;
-    const host = window.location.hostname;
-    if (host && host !== "localhost") {
-      document.cookie = `googtrans=${value};domain=${host};path=/`;
-    }
-  }, []);
+  const setGoogTransCookie = useCallback(
+    (lang: string) => {
+      if (typeof window === "undefined") return;
+      if (!categories.translation) return;
+      const value = `/auto/${lang}`;
+      document.cookie = `googtrans=${value};path=/`;
+      const host = window.location.hostname;
+      if (host && host !== "localhost") {
+        document.cookie = `googtrans=${value};domain=${host};path=/`;
+      }
+    },
+    [categories.translation],
+  );
 
   const applyLanguage = useCallback(
     (lang: string) => {
@@ -113,6 +119,8 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Only load Google Translate when translation cookies are accepted
+    if (!categories.translation) return;
 
     const clearReadyTimeout = () => {
       if (readyTimeoutRef.current) {
@@ -185,7 +193,7 @@ export function TranslateProvider({ children }: { children: React.ReactNode }) {
     return () => {
       clearReadyTimeout();
     };
-  }, []);
+  }, [categories.translation]);
 
   useEffect(() => {
     if (!ready || typeof window === "undefined") return;

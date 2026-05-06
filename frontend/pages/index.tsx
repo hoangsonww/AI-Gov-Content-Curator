@@ -64,8 +64,24 @@ const heroBadges = {
     "Vector search",
     "Entity extraction",
     "Bias analysis",
+    "Topic clustering",
+    "Sentiment scoring",
+    "Auto-tagging",
+    "Source ranking",
+    "Trend detection",
   ],
-  deploy: ["AWS", "Terraform", "Kubernetes", "Blue/green deploys", "CI/CD"],
+  deploy: [
+    "AWS",
+    "Terraform",
+    "Kubernetes",
+    "Blue/green deploys",
+    "CI/CD",
+    "Docker",
+    "Vercel Edge",
+    "MongoDB Atlas",
+    "Pinecone",
+    "GitHub Actions",
+  ],
 };
 
 const heroMetrics = [
@@ -463,22 +479,28 @@ export default function LandingPage() {
               <div className="hero-badges reveal">
                 <div className="hero-badge-group reveal">
                   <span className="badge-label">AI engine</span>
-                  <div className="badge-row">
-                    {heroBadges.ai.map((badge) => (
-                      <span key={badge} className="badge reveal">
-                        {badge}
-                      </span>
-                    ))}
+                  <div className="badge-marquee">
+                    <div className="badge-marquee-track">
+                      {heroBadges.ai.concat(heroBadges.ai).map((badge, i) => (
+                        <span key={`ai-${i}`} className="badge">
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="hero-badge-group reveal">
                   <span className="badge-label">Deployment</span>
-                  <div className="badge-row">
-                    {heroBadges.deploy.map((badge) => (
-                      <span key={badge} className="badge alt reveal">
-                        {badge}
-                      </span>
-                    ))}
+                  <div className="badge-marquee">
+                    <div className="badge-marquee-track badge-marquee-track--reverse">
+                      {heroBadges.deploy
+                        .concat(heroBadges.deploy)
+                        .map((badge, i) => (
+                          <span key={`dep-${i}`} className="badge alt">
+                            {badge}
+                          </span>
+                        ))}
+                    </div>
                   </div>
                 </div>
               </div>

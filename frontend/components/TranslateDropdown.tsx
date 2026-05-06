@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { MdGTranslate } from "react-icons/md";
 import Tooltip from "./Tooltip";
 import { useTranslate } from "./TranslateProvider";
+import { useCookieConsent } from "./CookieConsentProvider";
 
 interface TranslateDropdownProps {
   open: boolean;
@@ -19,6 +20,8 @@ export default function TranslateDropdown({
   variant = "desktop",
 }: TranslateDropdownProps) {
   const { ready, error, language, resetLanguage } = useTranslate();
+  const { categories, openPreferences } = useCookieConsent();
+  const translationBlocked = !categories.translation;
   const containerRef = useRef<HTMLDivElement>(null);
   const isActive = language !== "en";
   const panelId =
@@ -110,19 +113,38 @@ export default function TranslateDropdown({
           </button>
         </div>
 
-        {error && (
+        {error && !translationBlocked && (
           <div className="translate-status error">Translation unavailable.</div>
         )}
 
-        <div
-          className={`translate-element-slot${ready && !error ? " ready" : ""}`}
-          ref={slotRef}
-        />
-        <div className="translate-help">
-          If the language list is slow to load or translation is unavailable,
-          please wait a few seconds or reload the page. Please check your
-          Internet connection if the problem persists.
-        </div>
+        {translationBlocked ? (
+          <div className="translate-blocked">
+            <p className="translate-blocked-text">
+              Translation requires cookie consent. Enable the
+              &ldquo;Translation&rdquo; category in your cookie preferences to
+              use this feature.
+            </p>
+            <button
+              type="button"
+              className="translate-blocked-btn"
+              onClick={openPreferences}
+            >
+              Open Cookie Preferences
+            </button>
+          </div>
+        ) : (
+          <>
+            <div
+              className={`translate-element-slot${ready && !error ? " ready" : ""}`}
+              ref={slotRef}
+            />
+            <div className="translate-help">
+              If the language list is slow to load or translation is
+              unavailable, please wait a few seconds or reload the page. Please
+              check your Internet connection if the problem persists.
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
