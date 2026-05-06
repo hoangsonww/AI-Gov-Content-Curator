@@ -278,7 +278,8 @@
   opacity: 0;
   animation: fadeUp 0.9s ease forwards;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .landing-page .hero-title {
