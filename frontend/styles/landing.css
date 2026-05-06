@@ -345,12 +345,12 @@
   background: linear-gradient(90deg, #f4b860, #f08f4f);
   color: #0b1a2b;
   border: none;
-  box-shadow: 0 14px 30px rgba(240, 143, 79, 0.35);
+  box-shadow: 8px 14px 30px rgba(240, 143, 79, 0.35);
 }
 
 .landing-page .btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(240, 143, 79, 0.45);
+  box-shadow: 10px 20px 40px rgba(240, 143, 79, 0.45);
 }
 
 .landing-page .btn.chat {
