@@ -1,4 +1,9 @@
-# Root Dockerfile
+# Root Dockerfile for SynthoraAI monorepo
+# This Dockerfile is designed for CI/CD pipelines to build and test the entire monorepo.
+# It installs all dependencies, builds all workspaces, and runs tests for the backend,
+# crawler, and frontend (including E2E tests with Playwright).
+
+# Use Node.js 18 on Debian Bullseye for better compatibility with Playwright and other dependencies.
 FROM node:18-bullseye
 
 # Create app dir
