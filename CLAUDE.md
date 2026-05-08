@@ -3,7 +3,7 @@
 This repository is a monorepo for an AI-assisted government article curation platform.
 The main services are:
 
-- `backend/`: Express + TypeScript API, MongoDB, JWT auth, Gemini, Pinecone.
+- `backend/`: Express + TypeScript API, MongoDB, JWT auth (email+password and WebAuthn passkeys via `@simplewebauthn/server`), Gemini, Pinecone.
 - `frontend/`: Next.js Pages Router app for article browsing, auth UX, comments, ratings, and chat.
 - `crawler/`: scheduled ingestion pipeline using Axios/Cheerio/Puppeteer, Gemini, MongoDB, Pinecone.
 - `newsletters/`: scheduled Resend-based digest sender backed by MongoDB.
@@ -21,7 +21,7 @@ The main services are:
 - Prefer the root `package.json` scripts, workspace `package.json` scripts, and `bin/aicc.js` over older `shell/` wrappers when both exist.
 - Treat README files as helpful but not fully authoritative. Check current code, `package.json`, `vercel.json`, Dockerfiles, and actual routes before making assumptions.
 - Be careful with live-side effects. The crawler can hit external sites and APIs. The newsletter job can send email and mutate subscriber state. Cleanup scripts delete or rewrite records.
-- Security-sensitive areas need extra review: `backend/src/controllers/auth.controller.ts`, auth middleware, password reset flows, newsletter unsubscribe logic, and infra secrets.
+- Security-sensitive areas need extra review: `backend/src/controllers/auth.controller.ts`, `backend/src/controllers/passkey.controller.ts`, `backend/src/services/auth-token.service.ts` (shared JWT issuance), `backend/src/services/webauthn.service.ts` (RP config), auth middleware, password reset flows, newsletter unsubscribe logic, and infra secrets.
 
 ## Canonical Commands
 

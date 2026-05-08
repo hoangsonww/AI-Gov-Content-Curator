@@ -425,7 +425,7 @@ The **Backend** is responsible for storing articles and serving them via RESTful
 - **Scheduled Updates:**  
   A serverless function (triggered twice daily at 6:00 AM and 6:00 PM UTC) fetches and processes new articles, so that the system remains up-to-date!
 - **User Authentication:**  
-  Supports user registration, login, and JWT-based authentication for secure access to the system.
+  Supports email + password registration, login, and JWT-based authentication, **plus passwordless passkey (WebAuthn / FIDO2) sign-in**. Users can sign up with a passkey only, add additional passkeys to an existing account, and manage them (list / rename / delete) at `/account/passkeys`. Both flows issue the same JWT, so the rest of the system is unchanged.
 - **Favorite Articles:**  
   Authenticated users can mark articles as favorites for quick access.
 - **Newsletter Subscription:**  
@@ -493,6 +493,15 @@ AICC_API_URL=https://ai-content-curator-backend.vercel.app/
 RESEND_API_KEY=<your_resend_api_key>
 RESEND_FROM="AI Curator <your_email>"
 UNSUBSCRIBE_BASE_URL=<your_unsubscribe_base_url>
+
+# Auth
+JWT_SECRET=<long_random_string>
+
+# WebAuthn / Passkey configuration
+# RP_ID MUST equal the FRONTEND apex domain (eTLD+1), not the backend's host.
+RP_ID=localhost
+RP_NAME=SynthoraAI
+RP_ORIGIN=http://localhost:3000,https://synthoraai.vercel.app
 ```
 
 Refer to the `.env.example` file for more details on each variable.
@@ -669,7 +678,7 @@ The **Frontend** is built with Next.js and React, providing a modern, mobile-res
   The UI is optimized for both desktop and mobile devices.
 
 - **Authentication:**  
-  Users can register, log in, and receive a JWT token for secure access to the system. Tokens are stored in HTTP-only cookies for security.
+  Users can register and log in with email + password, or sign in with a **passkey** (Face ID, Touch ID, Windows Hello, or a hardware key) for a faster, passwordless experience. New accounts may be created passkey-only. The frontend stores the issued JWT in `localStorage` and sends it on the `Authorization` header for protected routes.
 
 - **Chatbot Q&A Feature:**
   Users can ask questions about specific articles, powered by RAG (Retrieval-Augmented Generation) using Google Generative AI. The sitewide chat supports inline message editing with conversation branching—edit any prior message and the conversation forks from that point with fresh AI responses.

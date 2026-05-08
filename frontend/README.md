@@ -66,8 +66,9 @@ flowchart LR
     Landing[Landing / Home] --> Detail[Article Detail]
     Detail --> Related[Related Articles]
     Landing --> Search[Search Results]
-    Landing --> Auth[Login / Register]
+    Landing --> Auth[Login / Register / Passkey sign-in]
     Auth --> Profile[Profile / Favorites]
+    Auth --> Passkeys["Manage Passkeys (/account/passkeys)"]
     Landing --> Newsletter[Newsletter Signup]
 ```
 
@@ -166,6 +167,14 @@ A high-level look at the project structure:
 - The `/ai_chat` page provides a full-featured conversational interface with multiple conversations, local storage persistence, and real-time SSE streaming.
 - Users can edit any previously sent message by clicking the pencil icon. Editing truncates the conversation at that point (removing all later messages) and re-sends with only the preceding history, effectively branching the conversation.
 - Keyboard shortcuts: Enter to submit the edit, Escape to cancel. The edit UI adapts to both desktop and mobile viewports.
+
+6. **Passkey (WebAuthn / FIDO2) Sign-In**
+
+- The login page exposes a "Sign in with a passkey" button when `window.PublicKeyCredential` is available — discoverable / usernameless flow, no email needed.
+- The register page offers "Sign up with a passkey instead" so brand-new users can create an account with no password at all.
+- `/account/passkeys` (linked from the auth dropdown when logged in) lets users add, rename, and delete passkeys. Multiple passkeys per account are supported (phone, laptop, hardware key).
+- Passkey calls go through `services/api.ts` (`loginWithPasskey`, `signupWithPasskey`, `registerPasskey`, `listPasskeys`, `renamePasskey`, `deletePasskey`) and dynamically import `@simplewebauthn/browser` to keep the lib out of the SSR bundle.
+- Both password and passkey paths issue the same JWT and store it as `localStorage["token"]`, so existing auth-aware components don't change.
 
 ---
 

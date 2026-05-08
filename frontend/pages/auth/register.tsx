@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
-import { registerUser } from "../../services/api";
+import { MdVisibility, MdVisibilityOff, MdKey } from "react-icons/md";
+import {
+  registerUser,
+  signupWithPasskey,
+  isPasskeySupported,
+} from "../../services/api";
 import { toast } from "react-toastify";
 
 export default function Register() {
@@ -14,7 +18,13 @@ export default function Register() {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [passkeySupported, setPasskeySupported] = useState<boolean>(false);
+  const [passkeyLoading, setPasskeyLoading] = useState<boolean>(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setPasskeySupported(isPasskeySupported());
+  }, []);
 
   const toggleVisibility = () => setPasswordVisible((prev) => !prev);
 
@@ -37,6 +47,26 @@ export default function Register() {
         err instanceof Error ? err.message : "An unknown error occurred",
       );
       toast("Could not register user. Please try again.");
+    }
+  };
+
+  const handlePasskeySignup = async () => {
+    setError("");
+    if (!email) {
+      setError("Enter your email above before creating a passkey account.");
+      return;
+    }
+    setPasskeyLoading(true);
+    try {
+      await signupWithPasskey(email, name || undefined);
+      toast("Account created with passkey 🔑");
+      router.push("/home");
+    } catch (err: any) {
+      if (err?.name === "NotAllowedError") return;
+      setError(err.message || "Passkey signup failed.");
+      toast("Could not create passkey account.");
+    } finally {
+      setPasskeyLoading(false);
     }
   };
 
@@ -128,6 +158,64 @@ export default function Register() {
             Register
           </button>
         </form>
+        {passkeySupported && (
+          <>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                margin: "1.25rem 0",
+                color: "var(--muted-text, #888)",
+                fontSize: "0.85rem",
+              }}
+            >
+              <span
+                style={{
+                  flex: 1,
+                  height: 1,
+                  background: "currentColor",
+                  opacity: 0.3,
+                }}
+              />
+              <span>or skip the password</span>
+              <span
+                style={{
+                  flex: 1,
+                  height: 1,
+                  background: "currentColor",
+                  opacity: 0.3,
+                }}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn submit-btn"
+              onClick={handlePasskeySignup}
+              disabled={passkeyLoading}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+              }}
+              aria-label="Sign up with a passkey"
+            >
+              <MdKey size={20} />
+              {passkeyLoading ? "Waiting…" : "Sign up with a passkey instead"}
+            </button>
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: "var(--muted-text, #888)",
+                textAlign: "center",
+                marginTop: "0.5rem",
+              }}
+            >
+              Uses Face ID, Touch ID, Windows Hello, or a hardware key.
+            </p>
+          </>
+        )}
         <div className="form-links">
           <p>
             Already have an account?{" "}

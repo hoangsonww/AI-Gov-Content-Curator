@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
-import { loginUser } from "../../services/api";
+import { MdVisibility, MdVisibilityOff, MdKey } from "react-icons/md";
+import {
+  loginUser,
+  loginWithPasskey,
+  isPasskeySupported,
+} from "../../services/api";
 import { toast } from "react-toastify";
 
 export default function Login() {
@@ -12,19 +16,42 @@ export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [passkeySupported, setPasskeySupported] = useState<boolean>(false);
+  const [passkeyLoading, setPasskeyLoading] = useState<boolean>(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setPasskeySupported(isPasskeySupported());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     try {
-      const data = await loginUser(email, password);
+      await loginUser(email, password);
       setMessage("");
       toast("Login successful! Redirecting to Home... 🔐");
       router.push("/home");
     } catch (err: any) {
       setError(err.message);
       toast("Could not login user. Please try again.");
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    setError("");
+    setPasskeyLoading(true);
+    try {
+      await loginWithPasskey();
+      toast("Signed in with passkey 🔑");
+      router.push("/home");
+    } catch (err: any) {
+      // User-cancelled WebAuthn prompts surface as NotAllowedError — stay quiet.
+      if (err?.name === "NotAllowedError") return;
+      setError(err.message || "Passkey sign-in failed.");
+      toast("Could not sign in with passkey.");
+    } finally {
+      setPasskeyLoading(false);
     }
   };
 
@@ -82,6 +109,54 @@ export default function Login() {
             Login
           </button>
         </form>
+        {passkeySupported && (
+          <>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                margin: "1.25rem 0",
+                color: "var(--muted-text, #888)",
+                fontSize: "0.85rem",
+              }}
+            >
+              <span
+                style={{
+                  flex: 1,
+                  height: 1,
+                  background: "currentColor",
+                  opacity: 0.3,
+                }}
+              />
+              <span>or</span>
+              <span
+                style={{
+                  flex: 1,
+                  height: 1,
+                  background: "currentColor",
+                  opacity: 0.3,
+                }}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn submit-btn"
+              onClick={handlePasskeyLogin}
+              disabled={passkeyLoading}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+              }}
+              aria-label="Sign in with a passkey"
+            >
+              <MdKey size={20} />
+              {passkeyLoading ? "Waiting…" : "Sign in with a passkey"}
+            </button>
+          </>
+        )}
         <div className="form-links">
           <p>
             Don't have an account?{" "}

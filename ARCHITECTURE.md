@@ -1650,20 +1650,33 @@ graph TB
 
 **JWT-Based Authentication:**
 - **Algorithm:** HS256 (HMAC with SHA-256)
-- **Token expiry:** 24 hours
-- **Refresh tokens:** 7 days
-- **Middleware:** `auth.middleware.ts`
+- **Token expiry:** 72 hours
+- **Middleware:** `auth.middleware.ts` — reads raw token from `Authorization` header (no `Bearer` prefix)
+- **Issuance helper:** `services/auth-token.service.ts` (`signJwt(user)`) — single source of truth used by both password login and passkey verification.
+
+**Two sign-in paths, one token:**
+1. **Email + password** — `/api/auth/register` → `/api/auth/login`. Bcrypt-hashed password.
+2. **Passkey (WebAuthn / FIDO2)** — `/api/auth/passkey/*`. Uses `@simplewebauthn/server` v11. Discoverable / usernameless authentication via resident credentials. Passkeys may be added to a passworded account, or a brand-new account may be created passkey-only (`/api/auth/passkey/signup/*`).
+
+Both paths issue an identical JWT. The `User.password` field is **optional**; a Mongoose pre-save validator enforces that every account has at least one credential (password or `hasPasskeys=true`). Account recovery for passkey-only users is the existing `/api/auth/reset-password` flow, which doubles as "set initial password".
+
+**RP ID:** must equal the **frontend** apex domain (`synthoraai.vercel.app` in prod, `localhost` in dev) because the browser binds credentials to the origin running `navigator.credentials.create/get`. Configured via `RP_ID`, `RP_NAME`, `RP_ORIGIN` env vars.
+
+**Challenge state:** stored in a `WebAuthnChallenge` Mongo collection with a TTL index on `expiresAt` (5-minute expiry) and a unique index on `challenge`. Rows are deleted on successful verify, preventing replay within the TTL window.
 
 **Protected Routes:**
 - Comments CRUD
 - Favorites management
 - Ratings submission
 - User profile updates
+- Passkey CRUD (`GET /api/auth/passkey`, `PATCH /api/auth/passkey/:id`, `DELETE /api/auth/passkey/:id`)
+- Passkey registration begin/verify (adding a passkey to an existing account)
 
 **Public Routes:**
 - Article list/detail
 - AI chat (rate-limited)
 - Health checks
+- All passkey signup and authentication endpoints (the WebAuthn ceremony itself is the credential)
 
 ### Secrets Management
 
@@ -1863,6 +1876,9 @@ aws cloudwatch get-metric-statistics \
 | `RESEND_API_KEY` | Yes (newsletter) | Email delivery API key | `re_...` |
 | `NEWS_API_KEY` | Yes (crawler) | News API key | `...` |
 | `JWT_SECRET` | Yes (backend) | JWT signing secret | `random-256-bit-string` |
+| `RP_ID` | Yes (backend) | WebAuthn Relying Party ID — **frontend** apex domain (eTLD+1) | `synthoraai.vercel.app` / `localhost` |
+| `RP_NAME` | Yes (backend) | Human-readable RP name shown in browser passkey prompts | `SynthoraAI` |
+| `RP_ORIGIN` | Yes (backend) | Comma-separated allowlist of accepted frontend origins | `https://synthoraai.vercel.app,http://localhost:3000` |
 | `REDIS_URL` | No | Redis connection URL | `redis://...` |
 
 **Frontend:**
@@ -1923,12 +1939,49 @@ aws cloudwatch get-metric-statistics \
 {
   _id: ObjectId,
   email: string (unique),
-  passwordHash: string,
-  role: 'user' | 'admin',
-  favorites: ObjectId[] (article refs),
+  password?: string,                  // bcrypt hash; OPTIONAL — passkey-only accounts have none
+  name?: string,
+  isVerified: boolean,
+  verificationToken?: string,
+  resetPasswordToken?: string,
+  hasPasskeys?: boolean,              // denormalized flag, maintained on register/delete passkey
+  favorites: string[],                // article IDs
   createdAt: Date,
-  lastLogin: Date
+  updatedAt: Date,
 }
+// Pre-save validator: every user must have at least one of `password` or `hasPasskeys=true`.
+```
+
+**Passkeys (`passkey.model.ts`):**
+```typescript
+{
+  _id: ObjectId,
+  userId: ObjectId,                   // ref User; indexed
+  credentialId: string,                // base64url, UNIQUE indexed — primary lookup at auth time
+  publicKey: Buffer,                   // COSE public key from authenticator
+  counter: number,
+  transports?: AuthenticatorTransport[],
+  deviceType: 'singleDevice' | 'multiDevice',
+  backedUp: boolean,
+  nickname: string,                    // user-editable, e.g. "iPhone 15"
+  aaguid?: string,
+  lastUsedAt?: Date,
+  createdAt: Date,
+  updatedAt: Date,
+}
+```
+
+**WebAuthn Challenges (`webauthn-challenge.model.ts`):**
+```typescript
+{
+  _id: ObjectId,
+  challenge: string,                   // base64url, UNIQUE indexed
+  type: 'registration' | 'authentication',
+  userId?: ObjectId,                   // present for adding-a-passkey-to-existing-account
+  email?: string,                      // present for passkey-only signup (no User row yet)
+  expiresAt: Date,                     // TTL index, expireAfterSeconds: 0 (5-min lifetime)
+}
+// Rows are deleted on successful verify to prevent replay within the TTL window.
 ```
 
 **Comments (`comment.model.ts`):**

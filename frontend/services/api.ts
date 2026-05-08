@@ -303,6 +303,139 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
+/* ───────────── Passkey (WebAuthn) ───────────── */
+
+/**
+ * Returns true when the current browser exposes the WebAuthn API.
+ */
+export const isPasskeySupported = (): boolean => {
+  return (
+    typeof window !== "undefined" &&
+    typeof (window as any).PublicKeyCredential !== "undefined"
+  );
+};
+
+const authHeader = (): Record<string, string> => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  return token ? { Authorization: token } : {};
+};
+
+const postJson = async (path: string, body: any, withAuth = false) => {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(withAuth ? authHeader() : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Request failed. Please retry.");
+  return data;
+};
+
+/**
+ * Sign in with a passkey. Discoverable / usernameless flow.
+ * Stores the JWT in localStorage on success — exact same key as loginUser.
+ */
+export const loginWithPasskey = async () => {
+  const { startAuthentication } = await import("@simplewebauthn/browser");
+  const options = await postJson("/auth/passkey/authenticate/begin", {});
+  const response = await startAuthentication({ optionsJSON: options });
+  const data = await postJson("/auth/passkey/authenticate/verify", {
+    response,
+  });
+  if (data?.token) localStorage.setItem("token", data.token);
+  return data;
+};
+
+/**
+ * Sign up with a passkey only (no password). Creates a new account and
+ * stores the JWT.
+ */
+export const signupWithPasskey = async (
+  email: string,
+  name?: string,
+  nickname?: string,
+) => {
+  const { startRegistration } = await import("@simplewebauthn/browser");
+  const options = await postJson("/auth/passkey/signup/begin", {
+    email,
+    name,
+  });
+  const response = await startRegistration({ optionsJSON: options });
+  const data = await postJson("/auth/passkey/signup/verify", {
+    email,
+    response,
+    nickname,
+  });
+  if (data?.token) localStorage.setItem("token", data.token);
+  return data;
+};
+
+/**
+ * Add a passkey to the currently logged-in account.
+ */
+export const registerPasskey = async (nickname?: string) => {
+  const { startRegistration } = await import("@simplewebauthn/browser");
+  const options = await postJson("/auth/passkey/register/begin", {}, true);
+  const response = await startRegistration({ optionsJSON: options });
+  return postJson(
+    "/auth/passkey/register/verify",
+    { response, nickname },
+    true,
+  );
+};
+
+export interface PasskeySummary {
+  id: string;
+  nickname: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  deviceType: "singleDevice" | "multiDevice";
+  backedUp: boolean;
+}
+
+/**
+ * List the current user's passkeys.
+ */
+export const listPasskeys = async (): Promise<PasskeySummary[]> => {
+  const res = await fetch(`${BASE_URL}/auth/passkey`, {
+    headers: { ...authHeader() },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Failed to load passkeys");
+  return data;
+};
+
+/**
+ * Rename a passkey.
+ */
+export const renamePasskey = async (id: string, nickname: string) => {
+  const res = await fetch(`${BASE_URL}/auth/passkey/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ nickname }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Failed to rename passkey");
+  return data;
+};
+
+/**
+ * Delete a passkey.
+ */
+export const deletePasskey = async (id: string) => {
+  const res = await fetch(`${BASE_URL}/auth/passkey/${id}`, {
+    method: "DELETE",
+    headers: { ...authHeader() },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Failed to delete passkey");
+  return data;
+};
+
 /**
  * Registers a new user.
  * @param name - User's name
