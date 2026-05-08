@@ -27,45 +27,51 @@ export default function AuthDropdown({
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Check token validity, retrying up to 5 times on error with exponential backoff
+  // Check token validity. Validates ONCE on mount, then again only every 5
+  // minutes — never more frequently. The previous 500ms poll caused Vercel's
+  // edge bot/WAF to start returning 403 to busy tabs.
+  //
+  // Cross-tab login/logout is picked up via the `storage` event so the menu
+  // stays in sync without polling.
   useEffect(() => {
     let cancelled = false;
+    const REVALIDATE_MS = 5 * 60 * 1000;
 
-    async function poll() {
+    const checkOnce = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
         if (!cancelled) setIsLoggedIn(false);
-      } else {
-        let valid = false;
-        // try up to 5 attempts
-        for (let attempt = 0; attempt < 5; attempt++) {
-          try {
-            valid = await validateToken(token);
-            break;
-          } catch (err) {
-            // on error, wait 2^attempt * 500ms
-            const delay = Math.pow(2, attempt) * 500;
-            await new Promise((res) => setTimeout(res, delay));
-          }
-        }
-
+        return;
+      }
+      try {
+        const valid = await validateToken(token);
+        if (cancelled) return;
         if (!valid) {
           localStorage.removeItem("token");
-          if (!cancelled) setIsLoggedIn(false);
-        } else if (!cancelled) {
+          setIsLoggedIn(false);
+        } else {
           setIsLoggedIn(true);
         }
+      } catch {
+        // Network blip — keep current state, don't wipe the token.
       }
+    };
 
-      if (!cancelled) {
-        // schedule next poll
-        setTimeout(poll, 500);
-      }
-    }
+    checkOnce();
+    const interval = setInterval(checkOnce, REVALIDATE_MS);
 
-    poll();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "token") checkOnce();
+    };
+    const onFocus = () => checkOnce();
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", onFocus);
+
     return () => {
       cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onFocus);
     };
   }, []);
 

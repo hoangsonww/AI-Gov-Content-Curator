@@ -56,17 +56,17 @@ export default function PasskeysPage() {
     setError("");
     setAdding(true);
     try {
-      const defaultName =
-        typeof navigator !== "undefined" &&
-        /iphone|ipad|ipod/i.test(navigator.userAgent)
-          ? "iPhone / iPad"
-          : /android/i.test(navigator?.userAgent || "")
-            ? "Android device"
-            : /mac/i.test(navigator?.userAgent || "")
-              ? "Mac"
-              : /windows/i.test(navigator?.userAgent || "")
-                ? "Windows device"
-                : "Passkey";
+      const ua =
+        (typeof navigator !== "undefined" && navigator.userAgent) || "";
+      const defaultName = /iphone|ipad|ipod/i.test(ua)
+        ? "iPhone / iPad"
+        : /android/i.test(ua)
+          ? "Android device"
+          : /mac/i.test(ua)
+            ? "Mac"
+            : /windows/i.test(ua)
+              ? "Windows device"
+              : "Passkey";
       await registerPasskey(defaultName);
       toast("Passkey added 🔑");
       await refresh();
@@ -133,68 +133,30 @@ export default function PasskeysPage() {
         )}
         {error && <p className="error-msg">{error}</p>}
 
-        <button
-          type="button"
-          className="btn submit-btn"
-          onClick={handleAdd}
-          disabled={!supported || adding}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.5rem",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <MdKey size={20} />
-          {adding ? "Waiting…" : "Add a passkey"}
-        </button>
+        <div className="passkey-add-cta">
+          <button
+            type="button"
+            className="passkey-btn"
+            onClick={handleAdd}
+            disabled={!supported || adding}
+            aria-label="Add a passkey"
+          >
+            <MdKey size={18} className="passkey-icon" aria-hidden />
+            {adding ? "Waiting…" : "Add a passkey"}
+          </button>
+        </div>
 
         {loading ? (
-          <p style={{ textAlign: "center", color: "var(--muted-text, #888)" }}>
-            Loading passkeys…
-          </p>
+          <p className="passkey-empty">Loading passkeys…</p>
         ) : passkeys.length === 0 ? (
-          <p style={{ textAlign: "center", color: "var(--muted-text, #888)" }}>
-            You haven't added any passkeys yet.
-          </p>
+          <p className="passkey-empty">You haven't added any passkeys yet.</p>
         ) : (
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.75rem",
-            }}
-          >
+          <ul className="passkey-list">
             {passkeys.map((pk) => (
-              <li
-                key={pk.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "0.85rem 1rem",
-                  borderRadius: 8,
-                  border:
-                    "1px solid var(--border-color, rgba(127,127,127,0.25))",
-                  gap: "0.75rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    flex: 1,
-                    minWidth: 0,
-                  }}
-                >
+              <li key={pk.id} className="passkey-row">
+                <div className="passkey-row-main">
                   <MdKey size={22} aria-hidden />
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="passkey-row-info">
                     {editingId === pk.id ? (
                       <input
                         autoFocus
@@ -212,18 +174,11 @@ export default function PasskeysPage() {
                         style={{ width: "100%" }}
                       />
                     ) : (
-                      <strong
-                        style={{
-                          display: "block",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <strong className="passkey-row-name">
                         {pk.nickname}
                       </strong>
                     )}
-                    <small style={{ color: "var(--muted-text, #888)" }}>
+                    <small className="passkey-row-meta">
                       Added {new Date(pk.createdAt).toLocaleDateString()}
                       {pk.lastUsedAt &&
                         ` · last used ${new Date(pk.lastUsedAt).toLocaleDateString()}`}
@@ -233,27 +188,25 @@ export default function PasskeysPage() {
                     </small>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div className="passkey-row-actions">
                   {editingId === pk.id ? (
                     <>
                       <button
                         type="button"
-                        className="btn"
+                        className="passkey-icon-btn"
                         onClick={() => handleRename(pk.id)}
                         aria-label="Save"
-                        style={{ padding: "0.4rem 0.6rem" }}
                       >
                         <MdCheck size={18} />
                       </button>
                       <button
                         type="button"
-                        className="btn"
+                        className="passkey-icon-btn"
                         onClick={() => {
                           setEditingId(null);
                           setEditingValue("");
                         }}
                         aria-label="Cancel"
-                        style={{ padding: "0.4rem 0.6rem" }}
                       >
                         <MdClose size={18} />
                       </button>
@@ -262,22 +215,20 @@ export default function PasskeysPage() {
                     <>
                       <button
                         type="button"
-                        className="btn"
+                        className="passkey-icon-btn"
                         onClick={() => {
                           setEditingId(pk.id);
                           setEditingValue(pk.nickname);
                         }}
                         aria-label="Rename"
-                        style={{ padding: "0.4rem 0.6rem" }}
                       >
                         <MdEdit size={18} />
                       </button>
                       <button
                         type="button"
-                        className="btn"
+                        className="passkey-icon-btn danger"
                         onClick={() => handleDelete(pk.id, pk.nickname)}
                         aria-label="Delete"
-                        style={{ padding: "0.4rem 0.6rem" }}
                       >
                         <MdDelete size={18} />
                       </button>

@@ -322,6 +322,42 @@
   margin-bottom: 2rem;
 }
 
+/*
+ * Safari fix: the global .reveal animation uses `filter: blur(8px)` plus
+ * `will-change: opacity, filter`, which keeps the parent on a filter
+ * compositor layer permanently. When a child button's box-shadow grows
+ * and the button lifts on hover, Safari re-rasterizes the entire filtered
+ * region every frame — causing the whole .hero-actions container plus
+ * all 5 buttons to appear to shake.
+ *
+ * Override .reveal for hero-actions ONLY: no filter, no will-change.
+ * Use a plain opacity + translate reveal instead, which doesn't allocate
+ * a filter layer and so doesn't pathologically interact with child hover
+ * transforms.
+ */
+.landing-page .hero-actions.reveal {
+  filter: none;
+  will-change: auto;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.landing-page .hero-actions.reveal.visible {
+  animation: heroActionsReveal 0.7s ease forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes heroActionsReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .landing-page .btn {
   display: inline-flex;
   align-items: center;
@@ -349,7 +385,7 @@
 }
 
 .landing-page .btn.primary:hover {
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   box-shadow: 6px 8px 20px rgba(240, 143, 79, 0.45);
 }
 
@@ -361,7 +397,7 @@
 }
 
 .landing-page .btn.chat:hover {
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   box-shadow: 6px 8px 20px rgba(31, 138, 112, 0.45);
 }
 
@@ -372,7 +408,7 @@
 }
 
 .landing-page .btn.secondary:hover {
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   box-shadow: 4px 6px 16px rgba(10, 23, 39, 0.2);
 }
 
@@ -383,7 +419,7 @@
 }
 
 .landing-page .btn.tertiary:hover {
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 4px 6px 16px rgba(255, 255, 255, 0.08);
 }
@@ -395,7 +431,7 @@
 }
 
 .landing-page .btn.outline:hover {
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   background: rgba(255, 255, 255, 0.18);
   box-shadow: 4px 6px 16px rgba(255, 255, 255, 0.08);
 }

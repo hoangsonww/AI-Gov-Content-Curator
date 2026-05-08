@@ -645,7 +645,7 @@ export const toggleFavoriteArticle = async (
  */
 export const validateToken = async (
   token: string,
-  retries: number = 3,
+  retries: number = 2,
 ): Promise<boolean> => {
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
@@ -658,39 +658,39 @@ export const validateToken = async (
 
       if (res.ok) {
         const data = await res.json();
-        return data.valid === true; // Ensure response contains `{ valid: true }`
+        return data.valid === true;
       }
 
-      console.error(
-        `Token validation failed (Attempt ${attempt}/${retries}):`,
-        await res.text(),
-      );
-
-      // If last attempt, remove token
-      if (attempt === retries) {
+      // 401 means the JWT itself is bad — definitive. Drop it.
+      if (res.status === 401) {
         localStorage.removeItem("token");
         return false;
       }
 
-      // Wait before retrying (exponential backoff: 200ms, 400ms, 600ms)
-      await delay(200 * attempt);
+      // 403 / 429 / 5xx are usually transient (Vercel edge throttling, WAF,
+      // upstream blip). Don't drop the token; treat as "still valid for now"
+      // so we don't force a re-login on every flaky request.
+      if (res.status === 403 || res.status === 429 || res.status >= 500) {
+        return true;
+      }
+
+      console.warn(
+        `Token validation got unexpected ${res.status} (attempt ${attempt}/${retries})`,
+      );
+
+      if (attempt === retries) return true; // be conservative; don't log user out
+      await delay(300 * attempt);
     } catch (error: any) {
-      console.error(
-        `Error validating token (Attempt ${attempt}/${retries}):`,
-        error.message || "Unknown error.",
+      console.warn(
+        `Network error validating token (attempt ${attempt}/${retries}):`,
+        error?.message || "Unknown error.",
       );
-
-      // If last attempt, remove token
-      if (attempt === retries) {
-        localStorage.removeItem("token");
-        return false;
-      }
-
+      if (attempt === retries) return true; // network blip — keep session
       await delay(500 * attempt);
     }
   }
 
-  return false; // Should never reach here
+  return true;
 };
 
 /**
