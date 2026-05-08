@@ -1,16 +1,13 @@
 # SynthoraAI - AI Article Content Curator Backend (work in progress)
 
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org)
-[![Express](https://img.shields.io/badge/Express.js-000?style=flat&logo=express&logoColor=white)](https://expressjs.com)
-[![Next.js](https://img.shields.io/badge/Next.js-000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org)
-[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com)
-[![Mongoose](https://img.shields.io/badge/Mongoose-8D99AE?style=flat&logo=mongoose&logoColor=white)](https://mongoosejs.com)
-[![Axios](https://img.shields.io/badge/Axios-%23007ACC.svg?style=flat&logo=axios&logoColor=white)](https://github.com/axios/axios)
-[![Cheerio](https://img.shields.io/badge/Cheerio-%23E34F26.svg?style=flat&logo=cheerio&logoColor=white)](https://cheerio.js.org)
-[![Puppeteer](https://img.shields.io/badge/Puppeteer-%23FF5722.svg?style=flat&logo=puppeteer&logoColor=white)](https://pptr.dev)
-[![Google Generative AI](https://img.shields.io/badge/Google%20Generative%20AI-4285F4?style=flat&logo=google&logoColor=white)](https://developers.generativeai.google)
-[![Vercel](https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white)](https://vercel.com)
-[![Cron](https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=cron&logoColor=white)](https://en.wikipedia.org/wiki/Cron)
+Backend API service for the AI Article Content Curator project. This service is responsible for:
+- Ingesting article URLs from government homepage sources and public APIs (e.g., NewsAPI, fetched by an external crawler service).
+- Processing article content using AI summarization (Google Generative AI - Gemini).
+- Storing article data (URL, title, full content, AI summary, source info, fetch timestamp) in MongoDB via Mongoose.
+- Authentication and user management for government staff access. Includes password-based and passkey-based authentication flows, email verification, and password reset functionality.
+- Exposing RESTful API endpoints (built with Express.js running within a Next.js project) for the frontend to retrieve article lists and details.
+- A serverless function (deployed on Vercel and scheduled via cron) periodically fetches and processes new articles (running twice daily at 6:00 AM and 6:00 PM UTC).
+- And more...
 
 **Currently live at: [https://ai-content-curator-backend.vercel.app/](https://ai-content-curator-backend.vercel.app/).**
 
@@ -51,6 +48,9 @@ The **Government Content Curator Backend** is a robust API service designed to s
 
 - **Scheduled Updates:**  
   A serverless function, deployed on Vercel and scheduled via cron, periodically fetches and processes new articles (running twice daily at 6:00 AM and 6:00 PM UTC).
+
+- **Authentication & User Management:**  
+  Implements both password-based and passkey-based authentication flows, email verification, and password reset functionality to manage government staff access.
 
 > **Note:** The actual crawling logic has been decoupled and placed in a separate [crawler directory](../crawler/README.md). This backend focuses on storing, summarizing, and serving content.
 
