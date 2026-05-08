@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 
 import articleRoutes from "./routes/article.routes";
 import authRoutes from "./routes/auth.routes";
+import passkeyRoutes from "./routes/passkey.routes";
 import userRoutes from "./routes/user.routes";
 import newsletterRoutes from "./routes/newsletter.routes";
 import chatRoutes from "./routes/chat.routes";
@@ -141,6 +142,8 @@ app.get("/health", (_req: Request, res: Response) => {
 
 app.use("/api/comments", commentRoutes);
 app.use("/api/articles", articleRoutes);
+// Mount passkey routes BEFORE generic /api/auth so the more specific prefix is matched first.
+app.use("/api/auth/passkey", passkeyRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);

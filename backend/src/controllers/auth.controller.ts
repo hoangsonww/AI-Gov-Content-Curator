@@ -1,23 +1,8 @@
 import { Request, Response } from "express";
-import User, { IUser } from "../models/user.model";
+import User from "../models/user.model";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
-const JWT_EXPIRES_IN = "72h"; // 3 days
-
-/**
- * Generate a JWT token for the user
- *
- * @param user The user object
- * @return The generated JWT token
- */
-const generateToken = (user: IUser) => {
-  return jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
-};
+import { signJwt } from "../services/auth-token.service";
 
 /**
  * Register a new user
@@ -27,6 +12,8 @@ const generateToken = (user: IUser) => {
  */
 export const register = async (req: Request, res: Response) => {
   const { email, password, name } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ error: "Email and password are required" });
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -45,7 +32,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     await user.save();
-    const token = generateToken(user);
+    const token = signJwt(user);
 
     res.setHeader("Authorization", token);
     return res.status(201).json({
@@ -75,10 +62,17 @@ export const login = async (req: Request, res: Response) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
+    if (!user.password) {
+      return res.status(400).json({
+        error:
+          'This account uses passkey sign-in. Use "Sign in with a passkey" or reset your password to set one.',
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-    const token = generateToken(user);
+    const token = signJwt(user);
     res.setHeader("Authorization", token);
 
     return res.json({
@@ -148,7 +142,8 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
 };
 
 /**
- * Confirm reset password - update the user's password
+ * Confirm reset password - update the user's password. Doubles as
+ * "set initial password" for passkey-only accounts that lose all devices.
  *
  * @param req The request object containing email, token, and new password
  * @param res The response object to send the status of the password reset

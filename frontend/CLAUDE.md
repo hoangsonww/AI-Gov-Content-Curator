@@ -8,7 +8,8 @@ This app uses the Next.js Pages Router, not the App Router.
 - Shared UI and most logic live under `components/`.
 - Data access lives under `services/`.
 - Styling is mostly global CSS and `styled-jsx`, not a Tailwind-first design system.
-- The heaviest and most fragile surfaces are `pages/home.tsx`, `pages/articles/[id].tsx`, `pages/ai_chat.tsx`, auth pages, favorites, and translation/theme behavior.
+- The heaviest and most fragile surfaces are `pages/home.tsx`, `pages/articles/[id].tsx`, `pages/ai_chat.tsx`, auth pages (`pages/auth/*`, `pages/account/passkeys.tsx`), favorites, and translation/theme behavior.
+- Passkey UI is gated by `isPasskeySupported()` from `services/api.ts` — buttons render only after client-side hydration (SSR returns false). Don't move the check into module top-level or it'll break SSR.
 
 ## Guardrails
 

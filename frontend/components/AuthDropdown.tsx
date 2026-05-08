@@ -101,7 +101,12 @@ export default function AuthDropdown({
   };
 
   // Highlight icon when on any auth route
-  const authPaths = ["/auth/login", "/auth/register", "/auth/reset-password"];
+  const authPaths = [
+    "/auth/login",
+    "/auth/register",
+    "/auth/reset-password",
+    "/account/passkeys",
+  ];
   const isAuthRoute = authPaths.includes(router.pathname);
 
   return (
@@ -120,12 +125,26 @@ export default function AuthDropdown({
         <div className="auth-dropdown">
           <div className="auth-section">
             {isLoggedIn ? (
-              <button
-                className="auth-option logout-option"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              <>
+                <Link href="/account/passkeys" legacyBehavior>
+                  <a
+                    className={`auth-option${
+                      router.pathname === "/account/passkeys"
+                        ? " active-auth-option"
+                        : ""
+                    }`}
+                    onClick={toggle}
+                  >
+                    Manage Passkeys
+                  </a>
+                </Link>
+                <button
+                  className="auth-option logout-option"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <>
                 <Link href="/auth/login" legacyBehavior>

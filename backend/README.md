@@ -99,10 +99,24 @@ flowchart LR
 - **Express.js API Endpoints:**  
   The backend provides the following RESTful endpoints (running within a Next.js environment):
 
-  | **Method** | **Endpoint**        | **Description**                                                                       |
-  | ---------- | ------------------- | ------------------------------------------------------------------------------------- |
-  | GET        | `/api/articles`     | Returns a paginated list of articles. Accepts `page`, `limit`, `source` query params. |
-  | GET        | `/api/articles/:id` | Retrieves detailed information about a single article by its ID.                      |
+  | **Method** | **Endpoint**                              | **Auth** | **Description**                                                                       |
+  | ---------- | ----------------------------------------- | -------- | ------------------------------------------------------------------------------------- |
+  | GET        | `/api/articles`                           | —        | Returns a paginated list of articles. Accepts `page`, `limit`, `source` query params. |
+  | GET        | `/api/articles/:id`                       | —        | Retrieves detailed information about a single article by its ID.                      |
+  | POST       | `/api/auth/register`                      | —        | Email + password signup. Returns user + JWT.                                          |
+  | POST       | `/api/auth/login`                         | —        | Email + password login. Returns user + JWT.                                           |
+  | GET        | `/api/auth/verify-email`                  | —        | Email verification via token (`?email&token`).                                        |
+  | POST       | `/api/auth/reset-password`                | —        | Request a password-reset token.                                                       |
+  | POST       | `/api/auth/confirm-reset-password`        | —        | Confirm reset and set a new password (also doubles as "set initial password" for passkey-only accounts). |
+  | POST       | `/api/auth/passkey/signup/begin`          | —        | Start passkey-only signup (no User row created yet).                                  |
+  | POST       | `/api/auth/passkey/signup/verify`         | —        | Finish passkey signup. Creates User + Passkey atomically and issues JWT.              |
+  | POST       | `/api/auth/passkey/authenticate/begin`    | —        | Begin discoverable / usernameless passkey login.                                      |
+  | POST       | `/api/auth/passkey/authenticate/verify`   | —        | Finish passkey login. Returns user + JWT identical to password login.                 |
+  | POST       | `/api/auth/passkey/register/begin`        | JWT      | Begin adding a passkey to the current account.                                        |
+  | POST       | `/api/auth/passkey/register/verify`       | JWT      | Persist a newly registered passkey.                                                   |
+  | GET        | `/api/auth/passkey`                       | JWT      | List the caller's passkeys.                                                           |
+  | PATCH      | `/api/auth/passkey/:id`                   | JWT      | Rename a passkey.                                                                     |
+  | DELETE     | `/api/auth/passkey/:id`                   | JWT      | Delete a passkey (refuses if it would orphan a passwordless account).                 |
 
 ### Request Lifecycle
 
@@ -179,6 +193,19 @@ sequenceDiagram
    NEWS_API_KEY=your_newsapi_key
    PORT=3000
    CRAWL_URLS=https://www.whitehouse.gov/briefing-room/,https://www.congress.gov/,https://www.state.gov/press-releases/,https://www.bbc.com/news,https://www.nytimes.com/
+
+   # Auth
+   JWT_SECRET=replace_with_a_long_random_string
+
+   # WebAuthn / Passkey configuration
+   # RP_ID MUST equal the FRONTEND apex domain (eTLD+1), not the backend's host.
+   # Production: synthoraai.vercel.app — vercel.app is on the Public Suffix
+   # List, so the subdomain itself is the registrable domain.
+   # Local dev: localhost.
+   RP_ID=localhost
+   RP_NAME=SynthoraAI
+   # Comma-separated allowlist of full origins the frontend will be served from.
+   RP_ORIGIN=http://localhost:3000,https://synthoraai.vercel.app
    ```
 
 ### Run Locally

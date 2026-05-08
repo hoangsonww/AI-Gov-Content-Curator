@@ -11,7 +11,10 @@ Work here when the task touches API routes, controllers, models, auth, scheduled
 
 ## Guardrails
 
-- Do not weaken auth or reset-password flows without explicit justification.
+- Do not weaken auth, passkey, or reset-password flows without explicit justification. Both password and passkey paths funnel through `services/auth-token.service.ts` for JWT issuance — don't reintroduce inline `jwt.sign` in controllers.
+- The `User.password` field is OPTIONAL (passkey-only accounts have no password). A pre-save validator requires every user to have at least `password` or `hasPasskeys=true`. Don't remove this validator.
+- WebAuthn challenge state lives in the `WebAuthnChallenge` collection with a Mongo TTL index. Don't add ad-hoc challenge storage.
+- `RP_ID` MUST equal the frontend apex domain, not the backend's host.
 - Preserve API shapes unless the frontend is updated in the same change.
 - Prefer schema and controller fixes over ad hoc response reshaping in random files.
 - Be aware that build and deploy assumptions are inconsistent here. Check Docker, TypeScript output, and Vercel handlers together when touching runtime wiring.
