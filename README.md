@@ -403,6 +403,12 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/newsletter-example.png" alt="Daily Newsletter Example" width="100%">
 </p>
 
+### 12. Passkey Management Page
+
+<p align="center">
+  <img src="frontend/img/passkeys.png" alt="Passkey Management Page" width="100%">
+</p>
+
 _more pages and features are available in the app - we encourage you to explore!_
 
 ---

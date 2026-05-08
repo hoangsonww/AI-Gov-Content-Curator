@@ -28,13 +28,13 @@ export default function ResetPassword() {
       const data = await requestPasswordReset(email);
       setResetToken(data.resetToken || "");
       setMessage("");
-      toast("Reset token sent successfully 🚀");
+      toast("You have been verified 🚀");
       setStep(2);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred.",
       );
-      toast("Could not send reset token. Please try again.");
+      toast("Could not verify email. Please try again.");
     }
   };
 
@@ -51,7 +51,7 @@ export default function ResetPassword() {
     try {
       await confirmPasswordReset(email, resetToken, newPassword);
       setMessage("Password reset successfully. Redirecting to login...");
-      toast("Reset token sent successfully 🎉");
+      toast("Password reset successfully. Redirecting to login...");
       setTimeout(() => router.push("/auth/login"), 2000);
     } catch (err) {
       setError(
@@ -89,7 +89,7 @@ export default function ResetPassword() {
               />
             </div>
             <button type="submit" className="btn submit-btn">
-              Send Reset Token
+              Verify Email
             </button>
           </form>
         )}

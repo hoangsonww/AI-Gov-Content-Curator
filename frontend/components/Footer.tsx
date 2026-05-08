@@ -19,14 +19,6 @@ export default function Footer() {
         <button className="footer-manage-cookies" onClick={openPreferences}>
           Manage Cookies
         </button>
-        {region === "optout" && (
-          <>
-            {" · "}
-            <button className="footer-manage-cookies" onClick={openPreferences}>
-              Do Not Sell or Share My Personal Information
-            </button>
-          </>
-        )}
       </p>
     </footer>
   );
