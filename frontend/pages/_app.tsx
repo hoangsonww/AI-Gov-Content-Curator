@@ -30,6 +30,7 @@ import "../styles/rating.css";
 import "../styles/biasAnalysis.css";
 import "../styles/translate.css";
 import "../styles/cookie-banner.css";
+import "../styles/passkey.css";
 import Layout from "../components/Layout";
 import CookieBanner from "../components/CookieBanner";
 import {

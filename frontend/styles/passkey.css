@@ -1,0 +1,210 @@
+/* ---------- Passkey UI ---------- */
+
+/* Inline-flex pill button used for "Sign in with a passkey",
+   "Sign up with a passkey", and "Add a passkey". Auto-width,
+   not stretched by parent flex containers. */
+.passkey-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1px solid var(--card-border, rgba(127, 127, 127, 0.35));
+  background: var(--bg-color, #fff);
+  color: var(--text-color, #1a1a1a);
+  cursor: pointer;
+  /* Pre-promote to GPU layer so hover transform doesn't flicker (Safari fix). */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.passkey-btn:hover:not(:disabled) {
+  transform: translate3d(0, -1px, 0);
+  border-color: var(--accent-color, #4a6cf7);
+  box-shadow: 0 4px 14px rgba(74, 108, 247, 0.18);
+}
+
+.passkey-btn:active:not(:disabled) {
+  transform: translate3d(0, 0, 0);
+}
+
+.passkey-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.passkey-btn .passkey-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* Wrapper that horizontally centers a passkey CTA on its own row. */
+.passkey-cta-row {
+  display: flex;
+  justify-content: center;
+  margin: 1.25rem 0 0.5rem;
+}
+
+/* "or" divider used on auth pages between password form and passkey CTA. */
+.passkey-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.75rem;
+  color: var(--muted-text, #888);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.passkey-divider::before,
+.passkey-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--card-border, rgba(127, 127, 127, 0.3));
+}
+
+.passkey-hint {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted-text, #888);
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* ---------- /account/passkeys list ---------- */
+
+.passkey-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.passkey-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--card-border, rgba(127, 127, 127, 0.25));
+  background: var(--card-bg, transparent);
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.passkey-row:hover {
+  border-color: var(--accent-color, #4a6cf7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.passkey-row-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.passkey-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.passkey-row-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.passkey-row-meta {
+  color: var(--muted-text, #888);
+  font-size: 0.8rem;
+}
+
+.passkey-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Square icon-only buttons inside each row (rename, save, cancel). */
+.passkey-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--card-border, rgba(127, 127, 127, 0.35));
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.passkey-icon-btn:hover:not(:disabled) {
+  background: rgba(127, 127, 127, 0.08);
+  border-color: var(--accent-color, #4a6cf7);
+}
+
+/* Destructive variant for delete. */
+.passkey-icon-btn.danger {
+  color: #c5302a;
+  border-color: rgba(197, 48, 42, 0.4);
+}
+
+.passkey-icon-btn.danger:hover:not(:disabled) {
+  background: #c5302a;
+  border-color: #c5302a;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(197, 48, 42, 0.3);
+}
+
+[data-theme="dark"] .passkey-icon-btn.danger {
+  color: #ff7a72;
+  border-color: rgba(255, 122, 114, 0.4);
+}
+
+[data-theme="dark"] .passkey-icon-btn.danger:hover:not(:disabled) {
+  background: #c5302a;
+  border-color: #c5302a;
+  color: #fff;
+}
+
+.passkey-empty {
+  text-align: center;
+  color: var(--muted-text, #888);
+  margin: 1rem 0;
+}
+
+/* Add-passkey CTA on the management page — centered, auto-width. */
+.passkey-add-cta {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}

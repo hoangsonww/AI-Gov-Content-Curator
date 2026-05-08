@@ -111,50 +111,21 @@ export default function Login() {
         </form>
         {passkeySupported && (
           <>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-                margin: "1.25rem 0",
-                color: "var(--muted-text, #888)",
-                fontSize: "0.85rem",
-              }}
-            >
-              <span
-                style={{
-                  flex: 1,
-                  height: 1,
-                  background: "currentColor",
-                  opacity: 0.3,
-                }}
-              />
+            <div className="passkey-divider">
               <span>or</span>
-              <span
-                style={{
-                  flex: 1,
-                  height: 1,
-                  background: "currentColor",
-                  opacity: 0.3,
-                }}
-              />
             </div>
-            <button
-              type="button"
-              className="btn submit-btn"
-              onClick={handlePasskeyLogin}
-              disabled={passkeyLoading}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "0.5rem",
-              }}
-              aria-label="Sign in with a passkey"
-            >
-              <MdKey size={20} />
-              {passkeyLoading ? "Waiting…" : "Sign in with a passkey"}
-            </button>
+            <div className="passkey-cta-row">
+              <button
+                type="button"
+                className="passkey-btn"
+                onClick={handlePasskeyLogin}
+                disabled={passkeyLoading}
+                aria-label="Sign in with a passkey"
+              >
+                <MdKey size={18} className="passkey-icon" aria-hidden />
+                {passkeyLoading ? "Waiting…" : "Sign in with a passkey"}
+              </button>
+            </div>
           </>
         )}
         <div className="form-links">
