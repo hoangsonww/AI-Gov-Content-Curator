@@ -1,0 +1,73 @@
+# YAML 1.2
+# This CITATION.cff file describes how to cite this software.
+# Schema reference: https://citation-file-format.github.io/
+cff-version: 1.2.0
+message: "If you use SynthoraAI (AI Government Content Curator) in your research, teaching, or other work, please cite it using the metadata below."
+title: "SynthoraAI: AI Government Content Curator"
+abstract: >-
+  SynthoraAI is an open-source, AI-assisted government and news article
+  curation platform. It ingests articles via a scheduled crawler,
+  generates concise summaries with AI, stores them in MongoDB, and
+  exposes them through a TypeScript Express API and a Next.js frontend.
+  Additional capabilities include passwordless passkey (WebAuthn /
+  FIDO2) authentication, retrieval-augmented chat over the article
+  corpus using Pinecone vector search, bias analysis, related article
+  recommendations, comments and ratings, a Resend-powered newsletter
+  pipeline, an MCP server, and a LangGraph agentic AI orchestration
+  layer.
+type: software
+authors:
+  - family-names: "Nguyen"
+    given-names: "Son (David)"
+    alias: "hoangsonww"
+    email: "hoangson091104@gmail.com"
+    affiliation: "University of North Carolina at Chapel Hill"
+    orcid: "https://orcid.org/0009-0002-7806-068X"
+repository-code: "https://github.com/hoangsonww/AI-Gov-Content-Curator"
+url: "https://synthoraai.vercel.app"
+license: MIT
+version: "1.1.0"
+date-released: "2025-02-28"
+keywords:
+  - artificial intelligence
+  - large language models
+  - retrieval augmented generation
+  - rag
+  - news aggregation
+  - government transparency
+  - content curation
+  - article summarization
+  - vector search
+  - pinecone
+  - gemini
+  - google generative ai
+  - mongodb
+  - express
+  - typescript
+  - next.js
+  - webauthn
+  - passkeys
+  - langgraph
+  - mcp
+  - model context protocol
+  - agentic ai
+identifiers:
+  - type: url
+    value: "https://github.com/hoangsonww/AI-Gov-Content-Curator"
+    description: "Source code repository"
+  - type: url
+    value: "https://synthoraai.vercel.app"
+    description: "Live deployment"
+preferred-citation:
+  type: software
+  title: "SynthoraAI: AI Government Content Curator"
+  authors:
+    - family-names: "Nguyen"
+      given-names: "Son (David)"
+      alias: "hoangsonww"
+      email: "hoangson091104@gmail.com"
+      orcid: "https://orcid.org/0009-0002-7806-068X"
+  year: 2025
+  version: "1.1.0"
+  url: "https://github.com/hoangsonww/AI-Gov-Content-Curator"
+  license: MIT
