@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Related Articles Carousel - Setup and Test Script
+# This script helps you set up and test the Related Articles Carousel feature.
+# It checks environment variables, vectorizes articles, and tests the API endpoint.
+# Run this script from the project root directory where backend/, crawler/, and frontend/ are located.
 
 set -e
 
@@ -70,12 +73,12 @@ case $choice in
         echo "You can find article IDs by browsing to http://localhost:3000/api/articles"
         echo ""
         read -p "Enter an article ID (or press Enter to skip): " article_id
-        
+
         if [ -n "$article_id" ]; then
             echo ""
             echo "Testing endpoint: /api/articles/$article_id/similar"
             echo ""
-            
+
             # Check if backend is running
             if curl -s http://localhost:3000/api/articles/$article_id/similar > /dev/null 2>&1; then
                 echo "Response:"
