@@ -46,6 +46,8 @@ Additionally, the project includes a set of shell scripts and a Makefile for aut
 ![Vercel](https://img.shields.io/badge/Vercel-000?style=flat&logo=vercel&logoColor=white)
 ![Cron](https://img.shields.io/badge/Cron-%232C3E50.svg?style=flat&logo=timescale&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-%23000000.svg?style=flat&logo=JSON%20web%20tokens&logoColor=white)
+![WebAuthn](https://img.shields.io/badge/WebAuthn-000?style=flat&logo=webauthn&logoColor=white)
+![Passkeys](https://img.shields.io/badge/Passkeys-000?style=flat&logo=passport&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
