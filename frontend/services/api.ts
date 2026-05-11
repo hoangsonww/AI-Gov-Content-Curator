@@ -4,6 +4,33 @@ import { Article } from "../pages/home";
 // For now, we'll keep it hard-coded.
 export const BASE_URL = "https://ai-content-curator-backend.vercel.app/api";
 
+/**
+ * Auth token helpers. All token reads/writes should go through these so that
+ * same-tab listeners (e.g. AuthDropdown) can react immediately — the native
+ * `storage` event only fires in OTHER tabs, so we emit a custom `auth:change`
+ * event for the current tab.
+ */
+export const AUTH_EVENT = "auth:change";
+
+export const setAuthToken = (token: string): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("token", token);
+  window.dispatchEvent(new CustomEvent(AUTH_EVENT, { detail: { token } }));
+};
+
+export const clearAuthToken = (): void => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("token");
+  window.dispatchEvent(
+    new CustomEvent(AUTH_EVENT, { detail: { token: null } }),
+  );
+};
+
+export const getAuthToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+};
+
 export interface BiasAnalysis {
   politicalLeaning: {
     position:
@@ -293,7 +320,7 @@ export const loginUser = async (email: string, password: string) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Login failed. Please retry.");
 
-    localStorage.setItem("token", data.token);
+    if (data?.token) setAuthToken(data.token);
 
     return data;
   } catch (error: any) {
@@ -346,7 +373,7 @@ export const loginWithPasskey = async () => {
   const data = await postJson("/auth/passkey/authenticate/verify", {
     response,
   });
-  if (data?.token) localStorage.setItem("token", data.token);
+  if (data?.token) setAuthToken(data.token);
   return data;
 };
 
@@ -370,7 +397,7 @@ export const signupWithPasskey = async (
     response,
     nickname,
   });
-  if (data?.token) localStorage.setItem("token", data.token);
+  if (data?.token) setAuthToken(data.token);
   return data;
 };
 
@@ -663,7 +690,7 @@ export const validateToken = async (
 
       // 401 means the JWT itself is bad — definitive. Drop it.
       if (res.status === 401) {
-        localStorage.removeItem("token");
+        clearAuthToken();
         return false;
       }
 

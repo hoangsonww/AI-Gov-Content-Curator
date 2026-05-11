@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { MdPerson } from "react-icons/md";
-import { validateToken } from "../services/api";
+import { validateToken, clearAuthToken, AUTH_EVENT } from "../services/api";
 import { toast } from "react-toastify";
 import Tooltip from "./Tooltip";
 
@@ -27,30 +27,37 @@ export default function AuthDropdown({
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Check token validity. Validates ONCE on mount, then again only every 5
-  // minutes — never more frequently. The previous 500ms poll caused Vercel's
-  // edge bot/WAF to start returning 403 to busy tabs.
+  // Check token validity. Validates once on mount, then every 5 minutes —
+  // never more frequently (the prior 500ms poll caused Vercel's edge to
+  // return 403 to busy tabs).
   //
-  // Cross-tab login/logout is picked up via the `storage` event so the menu
-  // stays in sync without polling.
+  // For instant UI updates on the SAME tab after login/logout, we listen for
+  // the `auth:change` CustomEvent that setAuthToken/clearAuthToken dispatch.
+  // The native `storage` event only fires in OTHER tabs, so without this the
+  // dropdown would only catch up on focus or the next 5-min tick.
   useEffect(() => {
     let cancelled = false;
     const REVALIDATE_MS = 5 * 60 * 1000;
 
+    const applyTokenPresence = (token: string | null) => {
+      if (cancelled) return;
+      setIsLoggedIn(!!token);
+    };
+
     const checkOnce = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
-        if (!cancelled) setIsLoggedIn(false);
+        applyTokenPresence(null);
         return;
       }
+      // Optimistic — show logged-in immediately, then verify in the background.
+      applyTokenPresence(token);
       try {
         const valid = await validateToken(token);
         if (cancelled) return;
         if (!valid) {
-          localStorage.removeItem("token");
+          clearAuthToken();
           setIsLoggedIn(false);
-        } else {
-          setIsLoggedIn(true);
         }
       } catch {
         // Network blip — keep current state, don't wipe the token.
@@ -63,14 +70,22 @@ export default function AuthDropdown({
     const onStorage = (e: StorageEvent) => {
       if (e.key === "token") checkOnce();
     };
+    const onAuthChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ token: string | null }>).detail;
+      // Reflect the change instantly; verify in the background.
+      applyTokenPresence(detail?.token ?? localStorage.getItem("token"));
+      checkOnce();
+    };
     const onFocus = () => checkOnce();
     window.addEventListener("storage", onStorage);
+    window.addEventListener(AUTH_EVENT, onAuthChange);
     window.addEventListener("focus", onFocus);
 
     return () => {
       cancelled = true;
       clearInterval(interval);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener(AUTH_EVENT, onAuthChange);
       window.removeEventListener("focus", onFocus);
     };
   }, []);
@@ -100,7 +115,7 @@ export default function AuthDropdown({
 
   const handleLogout = () => {
     toast("Logged out successfully 🚪");
-    localStorage.removeItem("token");
+    clearAuthToken();
     setIsLoggedIn(false);
     toggle();
     setTimeout(() => window.location.reload(), 1000);
