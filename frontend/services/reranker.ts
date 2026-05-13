@@ -58,7 +58,7 @@ function getUserProfile(): UserProfile {
 /**
  * Save user profile to localStorage
  */
-function saveUserProfile(profile: UserProfile) {
+export function saveUserProfile(profile: UserProfile) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
   } catch (e) {
@@ -130,7 +130,7 @@ export async function trackInteraction(
 /**
  * Update user preferences based on interaction history
  */
-function updatePreferences(profile: UserProfile, articles: Article[]) {
+export function updatePreferences(profile: UserProfile, articles: Article[]) {
   const articleMap = new Map(articles.map((a) => [a._id, a]));
 
   // Reset preferences
@@ -241,10 +241,6 @@ export function rerankArticles(articles: Article[]): Article[] {
   if (profile.interactionHistory.length === 0) {
     return articles; // No personalization, return original order
   }
-
-  // Update preferences based on current articles
-  profile = updatePreferences(profile, articles);
-  saveUserProfile(profile);
 
   // Calculate scores and sort
   const scoredArticles = articles.map((article) => ({

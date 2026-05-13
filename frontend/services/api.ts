@@ -851,7 +851,7 @@ export const getUserPreferences = async (
         },
       });
 
-      if (!res.ok) {
+      if (!res.ok && !(res.status == 304)) {
         if (res.status === 404) {
           // Preferences not set yet
           return null;

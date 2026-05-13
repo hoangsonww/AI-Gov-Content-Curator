@@ -263,7 +263,8 @@ export const updateFirstWeekEngagement = async (req: Request, res: Response) => 
     await user.save();
 
     return res.status(200).json({
-      message: "Engagement statistics updated successfully",
+      message: "Engagement metrics updated successfully",
+      firstWeekInteractions : user.firstWeekInteractions,
     });
   } catch (error) {
     console.error("Error updating engagement statistics:", error);
@@ -284,7 +285,7 @@ export const getSignupDate = async (req: Request, res: Response) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const signupDate = user.createdAt ;
-    return res.json(signupDate);
+    return res.status(200).json({signupDate});
   } catch (error) {
     console.error("Error retrieving signup date:", error);
     res.status(500).json({ error: "Internal server error" });

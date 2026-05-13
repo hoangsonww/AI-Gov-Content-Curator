@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Article } from "../pages/home";
 import ArticleCarousel from "./ArticleCarousel";
-import { rerankArticles, getTopTopics } from "../services/reranker";
+import { rerankArticles, getTopTopics, updatePreferences, saveUserProfile } from "../services/reranker";
+import { getUserPreferences } from "../services/api";
 
 interface RecommendedArticlesProps {
   allArticles: Article[];
@@ -13,6 +14,7 @@ export default function RecommendedArticles({
   const [recommendedArticles, setRecommendedArticles] = useState<Article[]>([]);
   const [topTopics, setTopTopics] = useState<string[]>([]);
   const [hasInteractions, setHasInteractions] = useState(false);
+  const [hasPreferences, setHasPreferences] = useState(false);
 
   useEffect(() => {
     // Get user's top topics
@@ -22,9 +24,10 @@ export default function RecommendedArticles({
     // Check if user has any interaction history
     const profile = localStorage.getItem("user_profile");
     let hasHistory = false;
+    let parsed = null
     if (profile) {
       try {
-        const parsed = JSON.parse(profile);
+        parsed = JSON.parse(profile);
         hasHistory =
           parsed.interactionHistory && parsed.interactionHistory.length > 0;
       } catch (e) {
@@ -32,6 +35,11 @@ export default function RecommendedArticles({
       }
     }
     setHasInteractions(hasHistory);
+    if (hasHistory && parsed) {
+      // Update preferences based on current articles
+      const new_profile = updatePreferences(parsed, allArticles);
+      saveUserProfile(new_profile);
+    }
 
     // Show recommendations for everyone (personalized or popular)
     if (allArticles && allArticles.length > 0) {
@@ -44,6 +52,41 @@ export default function RecommendedArticles({
         setRecommendedArticles(allArticles.slice(0, 6));
       }
     }
+
+  // --- PART 2: ASYNC LOGIC (RUNS IN BACKGROUND) ---
+  // Get user preferences from onboarding quiz and use it 
+  // to filter articles based on source and topic
+  const loadPreferencesAndFilter = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token || hasHistory) return; // Only need preferences for new users
+
+      const prefsResult = await getUserPreferences(token);
+      console.log("Recommendation preferences:", prefsResult)
+      if (prefsResult && allArticles?.length > 0) {
+        setTopTopics(prefsResult.topics);
+        setHasPreferences(true);
+        const currentTopics = new Set(prefsResult.topics || []);
+        const currentSources = new Set(prefsResult.sources || []);
+        console.log("Recommendation topics:", currentTopics)
+        console.log("Recommendation sources:", currentSources)
+        // RE-FILTER now that we have prefs
+        const filtered = allArticles.filter(article => 
+          article.topics?.some(t => currentTopics.has(t)) || 
+          currentSources.has(article.source)
+        );
+
+        if (filtered.length > 0) {
+          setRecommendedArticles(filtered.slice(0, 6));
+        }
+      }
+    } catch (err) {
+      console.error('Error refining recommendations:', err);
+    }
+  };
+
+  loadPreferencesAndFilter();
+
   }, [allArticles]);
 
   // Don't show if no articles
@@ -55,7 +98,7 @@ export default function RecommendedArticles({
     <div className="recommended-articles-section">
       <div className="recommended-header">
         <h2 className="recommended-title">
-          {hasInteractions ? (
+          {(hasInteractions || hasPreferences) ? (
             <>
               Recommended For You <span className="title-emoji">🎯</span>
             </>

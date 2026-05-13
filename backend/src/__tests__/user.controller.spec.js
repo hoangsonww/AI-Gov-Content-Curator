@@ -19,6 +19,8 @@ const {
   getAllUsers,
   setUserPreferences,
   getUserPreferences,
+  updateFirstWeekEngagement,
+  getSignupDate,
 } = require("../controllers/user.controller");
 
 describe("Favorite Controller", () => {
@@ -248,38 +250,60 @@ describe("Favorite Controller", () => {
       expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
     });
   });
+});
 
-  describe("getAllUsers", () => {
-    it("returns list of users", async () => {
-      const users = [{ _id: "u1", username: "x", name: "X" }];
-      const chain = {
-        select: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(users),
-      };
-      User.find.mockReturnValue(chain);
-      req = {};
-      await getAllUsers(req, res);
-      expect(User.find).toHaveBeenCalledWith();
-      expect(chain.select).toHaveBeenCalledWith("_id username name");
-      expect(chain.sort).toHaveBeenCalledWith({ username: 1 });
-      expect(res.json).toHaveBeenCalledWith({ data: users });
-    });
+describe("getAllUsers", () => {
+  let req, res;
 
-    it("500 on error", async () => {
-      const err = new Error("oops");
-      User.find.mockImplementation(() => {
-        throw err;
-      });
-      console.error = jest.fn();
-      req = {};
-      await getAllUsers(req, res);
-      expect(console.error).toHaveBeenCalledWith(
-        "Error retrieving all users:",
-        err,
-      );
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it("returns list of users", async () => {
+    const users = [{ _id: "u1", username: "x", name: "X" }];
+    const chain = {
+      select: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockResolvedValue(users),
+    };
+    User.find.mockReturnValue(chain);
+    req = {};
+    await getAllUsers(req, res);
+    expect(User.find).toHaveBeenCalledWith();
+    expect(chain.select).toHaveBeenCalledWith("_id username name");
+    expect(chain.sort).toHaveBeenCalledWith({ username: 1 });
+    expect(res.json).toHaveBeenCalledWith({ data: users });
+  });
+
+  it("500 on error", async () => {
+    const err = new Error("oops");
+    User.find.mockImplementation(() => {
+      throw err;
     });
+    console.error = jest.fn();
+    req = {};
+    await getAllUsers(req, res);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error retrieving all users:",
+      err,
+    );
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+  });
+});
+
+describe("Preferences Controller", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
   });
 
   describe("setUserPreferences", () => {
@@ -490,4 +514,121 @@ describe("Favorite Controller", () => {
       expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
     });
   });
+
+  describe("updateFirstWeekEngagement", () => {
+    it("400 if action missing", async () => {
+      req = {
+        user: { id : "u1" },
+        body: {}
+      };
+      await updateFirstWeekEngagement(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Action must be provided",
+      });
+    });
+
+    it("404 if user not found", async () => {
+      User.findById.mockResolvedValue(null);
+      req = {
+        user: { id: "u1" },
+        body: {
+          action: "view"
+        },
+      };
+      await updateFirstWeekEngagement(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "User not found" });
+    });
+
+    it("200 updates engagement metrics on success", async () => {
+      const user = {
+        firstWeekInteractions : {
+          article_views: 0,
+          article_favs: 0,
+          article_ratings: 0,
+          topic_clicks: 0,
+        },
+        save: jest.fn().mockResolvedValue(true),
+      };
+      User.findById.mockResolvedValue(user);
+      req = {
+        user: { id: "u1" },
+        body: {
+          action: "view"
+        },
+      };
+      await updateFirstWeekEngagement(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(user.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Engagement metrics updated successfully",
+        firstWeekInteractions : {
+          article_views: 1,
+          article_favs: 0,
+          article_ratings: 0,
+          topic_clicks: 0,
+        },
+      });
+    });
+
+    it("500 on error", async () => {
+      const err = new Error("db fail");
+      User.findById.mockRejectedValue(err);
+      console.error = jest.fn();
+      req = {
+        user: { id: "u1" },
+        body: {
+          action: "view"
+        }
+      };
+      await updateFirstWeekEngagement(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating engagement statistics:",
+        err,
+      );
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+    });
+  });
+
+    describe("getSignupDate", () => {
+    it("404 if user not found", async () => {
+      User.findById.mockResolvedValue(null);
+      req = { user: { id: "u1" } };
+      await getSignupDate(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "User not found" });
+    });
+
+    it("200 returns signup date on success", async () => {
+      const user = { createdAt: new Date().toISOString().split('T')[0]};
+      User.findById.mockResolvedValue(user);
+      req = { user: { id: "u1" } };
+      await getSignupDate(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ signupDate: user.createdAt });
+    });
+
+    it("500 on error", async () => {
+      const err = new Error("db fail");
+      User.findById.mockRejectedValue(err);
+      console.error = jest.fn();
+      req = { user: { id: "u1" } };
+      await getSignupDate(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(console.error).toHaveBeenCalledWith(
+        "Error retrieving signup date:",
+        err,
+      );
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+    });
+  });
 });
+
