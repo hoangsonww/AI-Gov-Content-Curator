@@ -6,6 +6,54 @@ here. Format loosely follows [Keep a Changelog]; versions track
 
 ## [Unreleased]
 
+### Fixed (fourth pass — Docker build + runtime verification)
+- **Dockerfile**: an inline comment on the `ARG INSTALL_PROFILE` line
+  caused `dockerfile parse error: ARG names can not be blank`. The image
+  could not build at all. Comment moved to its own line.
+- **`.dockerignore` was never applied**: the build context is the repo
+  root, so BuildKit looked for `<context>/.dockerignore`, not
+  `agentic_ai/.dockerignore`. Renamed to `agentic_ai/Dockerfile.dockerignore`
+  (BuildKit honours `<dockerfile>.dockerignore`).
+- **Circuit breaker was broken on asyncio**: `pybreaker.call_async` is
+  Tornado-based (`@gen.coroutine`) and raised `NameError: name 'gen' is
+  not defined` whenever the breaker was exercised with `pybreaker`
+  installed (i.e. in CI / the built image). Replaced with a
+  self-contained `CircuitBreaker` in `mcp_server/resilience.py` —
+  identical sync + async behaviour, no third-party dependency,
+  CLOSED/OPEN/HALF_OPEN with reset timeout. `pybreaker` removed from
+  dependencies. Coverage of `resilience.py` rose substantially (the
+  breaker path is now actually testable).
+- **docker-compose**: `deploy.resources.*.memory` used Kubernetes-style
+  `Gi`/`Mi` suffixes, which Compose rejects (`invalid suffix`). Changed
+  to Compose units (`2g`, `512m`, ...).
+- **docker-compose**: `${VAR:?}` on profiled services (mongodb, grafana)
+  broke `docker compose up` for the core services, because Compose
+  interpolates every service eagerly regardless of active profile.
+  Profiled services now use `:-` local-dev defaults.
+- **MCP server is no longer deployed as a daemon**: an MCP stdio server
+  exits cleanly on stdin EOF, so running it as a long-lived container
+  (compose service / k8s Deployment) produced a restart/crash loop. The
+  k8s `agentic-ai-mcp` Deployment and the Helm `mcp` sub-deployment were
+  removed; the compose `mcp` service moved behind an `mcp` profile and
+  is run on demand (`docker compose --profile mcp run --rm mcp`). The
+  MCP server is launched on demand by an MCP client — the shared image
+  still ships `python -m mcp_server`. Only the FastAPI `api` is a
+  deployed workload.
+- **`mcp_server/` had no ruff config**: running ruff with a working
+  directory other than `agentic_ai/` fell back to ruff defaults for
+  `mcp_server/`. Added `mcp_server/ruff.toml` that extends
+  `agentic_ai/pyproject.toml`.
+
+### Verified (fourth pass)
+- Built the `mcp`, `api`, and `dev` image targets; ran the full test
+  suite (72 passing) inside the `dev` image.
+- Booted the MCP server and the FastAPI service in containers — health
+  endpoints, `/metrics`, structured logs, and graceful degradation all
+  confirmed.
+- Brought up the compose stack (`api` + `redis`); verified the ACP
+  Redis backend end-to-end (`redis_ping`, inbox round-trip, ack) and the
+  on-demand `mcp` profile.
+
 ### Fixed (third pass — correctness + infra reconciliation)
 - `mcp_server/runtime.py`: Redis password is a `SecretStr` — it was
   passed to the Redis client directly, which would have authenticated

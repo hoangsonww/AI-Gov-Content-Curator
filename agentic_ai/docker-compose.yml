@@ -1,19 +1,24 @@
 # Compose v2 — `version:` is intentionally omitted (obsolete in v2).
 #
+# This stack is for LOCAL DEVELOPMENT. Production deploys via the Helm
+# chart / Kubernetes manifests under infrastructure/.
+#
 # Usage:
+#   # default: FastAPI api + redis
 #   docker compose -f agentic_ai/docker-compose.yml --env-file agentic_ai/.env up -d
+#   # run the MCP stdio server on demand (interactive):
+#   docker compose -f agentic_ai/docker-compose.yml --profile mcp run --rm mcp
 #
 # Secret management:
-#   Set GOOGLE_AI_API_KEY, OPENAI_API_KEY, etc. in the env-file (NOT in this
-#   compose file) or as Docker Swarm / Compose secrets. Values referenced
-#   here use `${VAR:?error}` so compose fails fast if a required value is
-#   missing in production.
+#   Provider keys (GOOGLE_AI_API_KEY, ...) come from the --env-file, never
+#   this file. The MongoDB/Grafana credentials below carry local-only
+#   defaults; production storage + dashboards run outside compose.
 #
 # Profiles:
-#   default  → mcp + redis only (minimum dependencies)
-#   api      → adds FastAPI HTTP container
-#   monitoring → adds prometheus + grafana + otel-collector
-#   storage    → adds mongodb (optional; not required by MCP server)
+#   default    → api + redis (the deployable HTTP service + its store)
+#   mcp        → MCP stdio server; use `compose run`, not `up` (on-demand)
+#   monitoring → prometheus + grafana + otel-collector
+#   storage    → mongodb (optional; not required by the api or MCP server)
 
 x-common-env: &common-env
   ENVIRONMENT: ${ENVIRONMENT:-development}
@@ -38,23 +43,36 @@ x-default-resources: &default-resources
     resources:
       limits:
         cpus: "2.0"
-        memory: 2Gi
+        memory: 2g
       reservations:
         cpus: "0.5"
-        memory: 512Mi
+        memory: 512m
 
 services:
+  # MCP server — stdio transport. It is NOT a long-running daemon: an MCP
+  # client (Claude Code, etc.) launches it on demand and owns its
+  # stdin/stdout. It is therefore behind the `mcp` profile and is meant to
+  # be used with `docker compose run`, not `up`:
+  #
+  #   docker compose --profile mcp run --rm mcp
+  #
+  # stdin_open + tty keep the process alive when started interactively;
+  # no `restart` policy (a stdio server exiting on EOF is normal, not a
+  # crash). For an always-on networked service, use the `api` service.
   mcp:
+    profiles: ["mcp"]
     build:
       context: ..
       dockerfile: agentic_ai/Dockerfile
       target: mcp
       args:
         INSTALL_PROFILE: ${INSTALL_PROFILE:-base}
-    image: synthora/mcp:${IMAGE_TAG:-local}
+    image: synthora/agentic-ai:${IMAGE_TAG:-local}
     container_name: synthora-mcp
     user: "10001:10001"
     read_only: true
+    stdin_open: true
+    tty: true
     tmpfs:
       - /tmp:size=64M
     security_opt:
@@ -68,15 +86,6 @@ services:
         condition: service_healthy
     networks:
       - synthora-net
-    restart: unless-stopped
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - "python -c 'import mcp_server; print(\"ok\")' || exit 1"
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     <<: *default-resources
     logging:
       driver: json-file
@@ -84,15 +93,16 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # FastAPI HTTP service — the always-on, networked deployable service.
+  # In the default profile, so `docker compose up` starts api + redis.
   api:
-    profiles: ["api"]
     build:
       context: ..
       dockerfile: agentic_ai/Dockerfile
       target: api
       args:
         INSTALL_PROFILE: ${INSTALL_PROFILE:-base}
-    image: synthora/api:${IMAGE_TAG:-local}
+    image: synthora/agentic-ai:${IMAGE_TAG:-local}
     container_name: synthora-api
     user: "10001:10001"
     read_only: true
@@ -149,18 +159,22 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 384Mi
+          memory: 384m
         reservations:
           cpus: "0.1"
-          memory: 64Mi
+          memory: 64m
 
   mongodb:
     profiles: ["storage"]
     image: mongo:7
     container_name: synthora-mongodb
+    # Local-development credentials. Compose interpolates every service
+    # eagerly (even inactive profiles), so these use :- defaults rather
+    # than :? to keep `docker compose up` working for the core services.
+    # Production storage runs outside compose — never reuse these values.
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:?MONGO_USERNAME is required}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?MONGO_PASSWORD is required}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-synthora}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-synthora-local-only}
     networks:
       - synthora-net
     restart: unless-stopped
@@ -201,9 +215,12 @@ services:
     image: grafana/grafana:11.2.2
     container_name: synthora-grafana
     user: "472:472"
+    # Local-development credentials only. The Grafana port is bound to
+    # 127.0.0.1. Set GRAFANA_PASSWORD in an env-file to override; this
+    # compose stack is not a production deployment surface.
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD is required}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_AUTH_ANONYMOUS_ENABLED: "false"
     ports:

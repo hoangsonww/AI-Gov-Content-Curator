@@ -42,9 +42,8 @@ python-dotenv>=1.0.0,<2.0
 prometheus-client>=0.19.0,<1.0
 structlog>=24.1.0,<26.0
 
-# Resilience
+# Resilience (circuit breaker is in-process; see mcp_server/resilience.py)
 tenacity>=8.2.0,<10.0
-pybreaker>=1.0.2,<2.0
 
 # OpenTelemetry
 opentelemetry-api>=1.24.0,<2.0

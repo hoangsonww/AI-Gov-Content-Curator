@@ -237,7 +237,7 @@ build-images: ## Build all Docker images locally
 	@cd ../frontend && docker build -t ghcr.io/hoangsonww/ai-curator-frontend:${IMAGE_TAG} .
 	@cd ../crawler && docker build -t ghcr.io/hoangsonww/ai-curator-crawler:${IMAGE_TAG} .
 	@cd ../newsletters && docker build -t ghcr.io/hoangsonww/ai-curator-newsletters:${IMAGE_TAG} .
-	@cd .. && docker build -f agentic_ai/Dockerfile --target mcp -t ghcr.io/hoangsonww/ai-curator-agentic-ai:${IMAGE_TAG} .
+	@cd .. && docker build -f agentic_ai/Dockerfile --target api -t ghcr.io/hoangsonww/ai-curator-agentic-ai:${IMAGE_TAG} .
 
 push-images: ## Push Docker images to registry
 	@echo "${GREEN}Pushing Docker images...${RESET}"
@@ -251,9 +251,9 @@ push-images: ## Push Docker images to registry
 ## Agentic AI subsystem
 ##
 
-agentic-ai-build: ## Build the agentic-ai image (api + mcp share one image)
+agentic-ai-build: ## Build the agentic-ai image (api target; also runs `python -m mcp_server`)
 	@echo "${GREEN}Building agentic-ai image...${RESET}"
-	@cd .. && docker build -f agentic_ai/Dockerfile --target mcp \
+	@cd .. && docker build -f agentic_ai/Dockerfile --target api \
 		-t ghcr.io/hoangsonww/ai-curator-agentic-ai:${IMAGE_TAG} .
 
 agentic-ai-k8s-deploy: ## Deploy agentic-ai via kustomize

@@ -107,9 +107,6 @@ async def test_guarded_call_success(reset_circuit_breakers, fresh_metrics_regist
 
 
 async def test_guarded_call_breaker_opens(reset_circuit_breakers, fresh_metrics_registry):
-    # The circuit-open path requires pybreaker; the no-op fallback never trips.
-    pytest.importorskip("pybreaker")
-
     @guarded_call(
         name="g.break",
         timeout_s=1.0,
@@ -127,6 +124,49 @@ async def test_guarded_call_breaker_opens(reset_circuit_breakers, fresh_metrics_
     # Third call should be short-circuited by the breaker.
     with pytest.raises(CircuitOpenError):
         await broken()
+
+
+async def test_guarded_call_breaker_half_open_recovers(
+    reset_circuit_breakers, fresh_metrics_registry
+):
+    """After the reset timeout, a successful trial closes the breaker."""
+    state = {"fail": True}
+
+    @guarded_call(
+        name="g.recover",
+        max_attempts=1,
+        breaker_fail_max=1,
+        breaker_reset_timeout_s=0,  # immediate half-open eligibility
+    )
+    async def flaky() -> str:
+        if state["fail"]:
+            raise TransientUpstreamError("down")
+        return "ok"
+
+    with pytest.raises(TransientUpstreamError):
+        await flaky()  # trips breaker (fail_max=1)
+
+    # reset_timeout=0 → next call is admitted as a HALF_OPEN trial.
+    state["fail"] = False
+    assert await flaky() == "ok"
+
+    breaker = get_breaker("g.recover")
+    assert breaker.state == "closed"
+
+
+async def test_circuit_breaker_ignores_non_countable_errors(reset_circuit_breakers):
+    """Validation-style errors must not trip the breaker."""
+    from mcp_server.resilience import CircuitBreaker
+
+    breaker = CircuitBreaker("nc", fail_max=1)
+
+    def bad() -> None:
+        raise ValueError("not a transient error")
+
+    for _ in range(5):
+        with pytest.raises(ValueError):
+            breaker.call(bad)
+    assert breaker.state == "closed"
 
 
 async def test_get_breaker_returns_cached(reset_circuit_breakers):

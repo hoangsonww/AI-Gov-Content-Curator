@@ -36,7 +36,7 @@ All in `mcp_server/`:
 | `errors.py`          | Typed exceptions with retryable classification.               |
 | `security.py`        | Secret redaction, sanitization, rate limiter, constant-time. |
 | `observability.py`   | OTel traces + Prometheus metrics + LLM cost recording.        |
-| `resilience.py`      | tenacity retries + pybreaker circuit breaker + timeouts.      |
+| `resilience.py`      | tenacity retries + in-process circuit breaker + timeouts.    |
 | `health.py`          | Liveness / readiness / deep health.                           |
 | `middleware.py`      | `tool_middleware()` wrapper applied around every MCP tool.    |
 | `cost.py`            | Per-provider/model cost estimation.                           |

@@ -22,7 +22,8 @@ ARG PYTHON_IMAGE=python:3.11-slim-bookworm
 ARG APP_USER=synthora
 ARG APP_UID=10001
 ARG APP_GID=10001
-ARG INSTALL_PROFILE=base   # base | all   (cloud-aws+azure+gcp = all)
+# INSTALL_PROFILE: "base" (default) or "all" (adds cloud-aws+azure+gcp).
+ARG INSTALL_PROFILE=base
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1 — builder. Compile wheels and install into an isolated prefix.

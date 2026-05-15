@@ -8,11 +8,15 @@ kubectl apply -k infrastructure/kubernetes/agentic-ai
 
 ## Topology
 
-- **agentic-ai-api** — FastAPI HTTP service. Horizontally scaled via
-  HPA. Replicas serve `/process`, `/analyze`, `/batch`, `/healthz`,
-  `/readyz`, `/metrics`.
-- **agentic-ai-mcp** — MCP server using stdio. Single replica;
-  horizontal scale-out requires HTTP transport (ADR 0002).
+- **agentic-ai-api** — FastAPI HTTP service, the only deployed workload.
+  Horizontally scaled via HPA. Serves `/process`, `/analyze`, `/batch`,
+  `/healthz`, `/readyz`, `/metrics`.
+
+The **MCP server is not deployed here.** It uses stdio transport
+(ADR 0002) and is launched on demand by an MCP client — it is not a
+long-running cluster workload. The shared image
+(`ghcr.io/hoangsonww/ai-curator-agentic-ai`) still ships
+`python -m mcp_server` for clients that run it in a container.
 
 ## Security defaults
 
@@ -20,7 +24,7 @@ kubectl apply -k infrastructure/kubernetes/agentic-ai
   `seccompProfile: RuntimeDefault`.
 - `automountServiceAccountToken: false`.
 - NetworkPolicy limits ingress to mesh + monitoring, egress to DNS,
-  Redis, OTel collector, and HTTPS to the public internet (LLM
+  Redis, OTLP telemetry, and HTTPS to the public internet (LLM
   providers) excluding RFC1918.
 - Secrets sourced from a secret manager. The `secret.yaml` here is a
   template; replace via External Secrets Operator / Sealed Secrets.
@@ -28,8 +32,8 @@ kubectl apply -k infrastructure/kubernetes/agentic-ai
 ## Observability
 
 - Prometheus `ServiceMonitor` (`kube-prometheus-stack` release label).
-- OTel collector targeted at
-  `otel-collector.monitoring.svc.cluster.local:4317`.
+- Pods export OTLP traces to the node-local Splunk OTel Collector
+  DaemonSet via `http://$(HOST_IP):4317` (downward-API host IP).
 
 ## Overrides
 

@@ -17,12 +17,16 @@ resources:
   - configmap.yaml
   - secret.yaml
   - deployment-api.yaml
-  - deployment-mcp.yaml
   - service.yaml
   - hpa.yaml
   - pdb.yaml
   - networkpolicy.yaml
   - servicemonitor.yaml
+
+# Note: there is no MCP Deployment. The MCP server uses stdio transport
+# (ADR 0002) and is launched on demand by an MCP client — it is not a
+# long-running cluster workload. The shared image still ships
+# `python -m mcp_server` for clients that run it in a container.
 
 images:
   - name: ghcr.io/hoangsonww/ai-curator-agentic-ai

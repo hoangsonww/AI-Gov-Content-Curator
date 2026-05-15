@@ -171,11 +171,14 @@ ECS/Argo services.
 
 - **agentic-ai-api**: FastAPI HTTP service (`/process`, `/analyze`,
   `/batch`, `/healthz`, `/readyz`, `/metrics`). Scaled by HPA (2–10).
-- **agentic-ai-mcp**: MCP stdio server, single replica by design
-  (stdio transport — see `agentic_ai/docs/adr/0002-mcp-transport.md`).
+  This is the only deployed cluster workload.
+- **MCP server**: stdio transport (see
+  `agentic_ai/docs/adr/0002-mcp-transport.md`). Launched on demand by an
+  MCP client — **not** a Deployment. The same image ships
+  `python -m mcp_server` for clients that containerize it.
 
-Both run from one image (`ghcr.io/hoangsonww/ai-curator-agentic-ai`),
-non-root (UID 10001), read-only root filesystem, dropped capabilities.
+The API runs from `ghcr.io/hoangsonww/ai-curator-agentic-ai`, non-root
+(UID 10001), read-only root filesystem, dropped capabilities.
 
 ### Manifests
 

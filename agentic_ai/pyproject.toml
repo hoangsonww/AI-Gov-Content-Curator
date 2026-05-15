@@ -56,9 +56,10 @@ dependencies = [
   "prometheus-client>=0.19.0,<1.0",
   "structlog>=24.1.0,<26.0",
 
-  # Resilience
+  # Resilience. The circuit breaker is implemented in-process
+  # (mcp_server/resilience.py); pybreaker is intentionally not used —
+  # its only async entry point is Tornado-based, not asyncio.
   "tenacity>=8.2.0,<10.0",
-  "pybreaker>=1.0.2,<2.0",
 
   # Observability (OpenTelemetry)
   "opentelemetry-api>=1.24.0,<2.0",
@@ -220,7 +221,6 @@ module = [
   "chromadb.*",
   "pinecone.*",
   "cohere.*",
-  "pybreaker",
   "faiss",
   "google.generativeai",
   "azure.*",

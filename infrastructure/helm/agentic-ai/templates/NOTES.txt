@@ -11,9 +11,8 @@ Probes:
   metrics   -> /metrics
 {{- end }}
 
-{{- if .Values.mcp.enabled }}
-MCP server: stdio transport, accessed via `kubectl exec`.
-{{- end }}
+MCP server: stdio transport (ADR 0002). Not a cluster workload — an MCP
+client launches `python -m mcp_server` on demand using this same image.
 
 Verify rollout:
   kubectl -n {{ .Release.Namespace }} rollout status deploy {{ include "agentic-ai.fullname" . }}-api

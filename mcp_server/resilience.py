@@ -1,8 +1,8 @@
 """Retry, timeout, and circuit-breaker primitives.
 
-Combines `tenacity` (retry with jitter) and `pybreaker` (circuit breaker)
-into helpers that callers can apply uniformly to every external call —
-LLM providers, Redis, HTTP egress, vector DBs.
+Combines `tenacity` (retry with jitter) with a self-contained circuit
+breaker into helpers that callers apply uniformly to every external
+call — LLM providers, Redis, HTTP egress, vector DBs.
 
 Design:
 - Retries are only attempted for exceptions in `RETRYABLE_ERROR_TYPES`
@@ -12,6 +12,11 @@ Design:
 - Timeouts use `asyncio.wait_for` for async paths and `concurrent.futures`
   for sync — the API is uniform: pass `timeout_s`.
 - Every retry attempt and breaker state change is emitted as a metric.
+
+The circuit breaker is implemented in-process (no third-party dep): the
+widely used `pybreaker` ships only a Tornado-based `call_async`, which
+is unusable from asyncio. A purpose-built breaker keeps sync + async
+behaviour identical and fully under test.
 """
 
 from __future__ import annotations
@@ -20,6 +25,7 @@ import asyncio
 import contextlib
 import functools
 import logging
+import threading
 import time
 from collections.abc import Callable
 from typing import Any, TypeVar, cast
@@ -32,15 +38,6 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential_jitter,
 )
-
-try:
-    from pybreaker import CircuitBreaker, CircuitBreakerError
-
-    _PYBREAKER_AVAILABLE = True
-except Exception:  # pragma: no cover - optional dep guard
-    CircuitBreaker = None  # type: ignore[assignment,misc]
-    CircuitBreakerError = Exception  # type: ignore[assignment,misc]
-    _PYBREAKER_AVAILABLE = False
 
 from .errors import (
     RETRYABLE_ERROR_TYPES,
@@ -56,37 +53,133 @@ T = TypeVar("T")
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-# ─── Circuit breaker registry ─────────────────────────────────────────────
+# ─── Circuit breaker ──────────────────────────────────────────────────────
 
-_breakers: dict[str, Any] = {}
+# State values double as the Prometheus gauge value.
+_STATE_CLOSED = 0
+_STATE_HALF_OPEN = 1
+_STATE_OPEN = 2
+_STATE_NAMES = {_STATE_CLOSED: "closed", _STATE_HALF_OPEN: "half_open", _STATE_OPEN: "open"}
 
 
-class _BreakerListener:
-    """Capture state transitions for metrics + logs."""
+class CircuitBreaker:
+    """Per-resource circuit breaker, safe for sync and asyncio callers.
 
-    def __init__(self, name: str) -> None:
+    - CLOSED: calls pass through; consecutive failures are counted; on the
+      `fail_max`-th failure the breaker trips to OPEN.
+    - OPEN: calls fail fast with `CircuitOpenError` until `reset_timeout_s`
+      has elapsed, then the next call is allowed through as a HALF_OPEN
+      trial.
+    - HALF_OPEN: a single trial call is allowed; success closes the
+      breaker, failure re-opens it and restarts the timer.
+
+    Only exceptions in `count_exc` count as failures (transient/upstream).
+    Validation-style errors pass through without tripping the breaker.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        *,
+        fail_max: int = 5,
+        reset_timeout_s: float = 30.0,
+        count_exc: tuple[type[BaseException], ...] = RETRYABLE_ERROR_TYPES,
+    ) -> None:
         self.name = name
+        self.fail_max = max(1, fail_max)
+        self.reset_timeout_s = float(reset_timeout_s)
+        self._count_exc = count_exc
+        self._state = _STATE_CLOSED
+        self._fail_count = 0
+        self._opened_at = 0.0
+        self._lock = threading.Lock()
+        self._publish_state()
 
-    def state_change(self, cb: Any, old_state: Any, new_state: Any) -> None:
-        state_name = getattr(new_state, "name", str(new_state)).lower()
-        mapping = {"closed": 0, "half_open": 1, "open": 2, "half-open": 1}
-        with contextlib.suppress(Exception):  # pragma: no cover - best-effort
-            metrics().circuit_state.labels(name=self.name).set(mapping.get(state_name, 0))
+    # -- state helpers ----------------------------------------------------
+
+    @property
+    def state(self) -> str:
+        return _STATE_NAMES[self._state]
+
+    def _publish_state(self) -> None:
+        with contextlib.suppress(Exception):  # best-effort metric
+            metrics().circuit_state.labels(name=self.name).set(self._state)
+
+    def _transition(self, new_state: int) -> None:
+        if new_state == self._state:
+            return
+        old = _STATE_NAMES[self._state]
+        self._state = new_state
+        if new_state == _STATE_OPEN:
+            self._opened_at = time.monotonic()
+        if new_state == _STATE_CLOSED:
+            self._fail_count = 0
         logger.warning(
             "circuit.state_change",
             breaker=self.name,
-            old_state=getattr(old_state, "name", str(old_state)),
-            new_state=state_name,
+            old_state=old,
+            new_state=_STATE_NAMES[new_state],
         )
+        self._publish_state()
 
-    def failure(self, cb: Any, exc: BaseException) -> None:
-        logger.warning("circuit.failure", breaker=self.name, error=str(exc))
+    def _before_call(self) -> None:
+        """Raise `CircuitOpenError` if the breaker is open; else admit."""
+        with self._lock:
+            if self._state == _STATE_OPEN:
+                if time.monotonic() - self._opened_at >= self.reset_timeout_s:
+                    self._transition(_STATE_HALF_OPEN)
+                else:
+                    metrics().errors_total.labels(code="circuit_open").inc()
+                    raise CircuitOpenError(
+                        f"Circuit '{self.name}' is open",
+                        context={"breaker": self.name},
+                    )
 
-    def success(self, cb: Any) -> None:
-        pass
+    def _on_success(self) -> None:
+        with self._lock:
+            self._fail_count = 0
+            if self._state != _STATE_CLOSED:
+                self._transition(_STATE_CLOSED)
 
-    def before_call(self, cb: Any, func: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
-        pass
+    def _on_failure(self, exc: BaseException) -> None:
+        if not isinstance(exc, self._count_exc):
+            return  # non-countable error — leave the breaker untouched
+        with self._lock:
+            logger.warning("circuit.failure", breaker=self.name, error=str(exc))
+            if self._state == _STATE_HALF_OPEN:
+                self._transition(_STATE_OPEN)
+                return
+            self._fail_count += 1
+            if self._fail_count >= self.fail_max:
+                self._transition(_STATE_OPEN)
+
+    # -- call wrappers ----------------------------------------------------
+
+    def call(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+        self._before_call()
+        try:
+            result = func(*args, **kwargs)
+        except BaseException as exc:
+            self._on_failure(exc)
+            raise
+        self._on_success()
+        return result
+
+    async def call_async(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+        self._before_call()
+        try:
+            result = await func(*args, **kwargs)
+        except BaseException as exc:
+            self._on_failure(exc)
+            raise
+        self._on_success()
+        return result
+
+
+# ─── Circuit breaker registry ─────────────────────────────────────────────
+
+_breakers: dict[str, CircuitBreaker] = {}
+_breakers_lock = threading.Lock()
 
 
 def get_breaker(
@@ -94,40 +187,19 @@ def get_breaker(
     *,
     fail_max: int = 5,
     reset_timeout_s: int = 30,
-) -> Any:
-    """Get or create a named circuit breaker. Cached per name."""
-    if name in _breakers:
-        return _breakers[name]
-
-    if not _PYBREAKER_AVAILABLE:
-        breaker: Any = _NoopBreaker(name)
-    else:
-        breaker = CircuitBreaker(
-            fail_max=fail_max,
-            reset_timeout=reset_timeout_s,
-            listeners=[_BreakerListener(name)],
-            name=name,
-        )
-        metrics().circuit_state.labels(name=name).set(0)
-
-    _breakers[name] = breaker
+) -> CircuitBreaker:
+    """Get or create a named circuit breaker. Cached + shared per name."""
+    breaker = _breakers.get(name)
+    if breaker is not None:
+        return breaker
+    with _breakers_lock:
+        breaker = _breakers.get(name)
+        if breaker is None:
+            breaker = CircuitBreaker(
+                name, fail_max=fail_max, reset_timeout_s=float(reset_timeout_s)
+            )
+            _breakers[name] = breaker
     return breaker
-
-
-class _NoopBreaker:
-    """Fallback when pybreaker is not installed (tests, lean installs)."""
-
-    def __init__(self, name: str) -> None:
-        self.name = name
-
-    def __call__(self, func: F) -> F:
-        return func
-
-    async def call_async(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-        return await func(*args, **kwargs)
-
-    def call(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-        return func(*args, **kwargs)
 
 
 # ─── Retry helpers ────────────────────────────────────────────────────────
@@ -282,6 +354,10 @@ def guarded_call(
     breaker = get_breaker(name, fail_max=breaker_fail_max, reset_timeout_s=breaker_reset_timeout_s)
 
     def wrap(fn: F) -> F:
+        # Order: breaker (outer) → retry (middle) → timeout (inner). A
+        # tripped breaker short-circuits before any retry is attempted.
+        # The breaker raises `CircuitOpenError` itself, so callers see a
+        # typed error without extra translation here.
         if asyncio.iscoroutinefunction(fn):
 
             @with_retries(operation=name, max_attempts=max_attempts, retry_on=retry_on)
@@ -297,14 +373,7 @@ def guarded_call(
 
             @functools.wraps(fn)
             async def guarded(*args: Any, **kwargs: Any) -> Any:
-                try:
-                    return await breaker.call_async(retried, *args, **kwargs)
-                except CircuitBreakerError as exc:
-                    metrics().errors_total.labels(code="circuit_open").inc()
-                    raise CircuitOpenError(
-                        f"Circuit '{name}' is open",
-                        context={"breaker": name},
-                    ) from exc
+                return await breaker.call_async(retried, *args, **kwargs)
 
             return cast(F, guarded)
 
@@ -320,14 +389,7 @@ def guarded_call(
 
         @functools.wraps(fn)
         def guarded_sync(*args: Any, **kwargs: Any) -> Any:
-            try:
-                return breaker.call(retried_sync, *args, **kwargs)
-            except CircuitBreakerError as exc:
-                metrics().errors_total.labels(code="circuit_open").inc()
-                raise CircuitOpenError(
-                    f"Circuit '{name}' is open",
-                    context={"breaker": name},
-                ) from exc
+            return breaker.call(retried_sync, *args, **kwargs)
 
         return cast(F, guarded_sync)
 

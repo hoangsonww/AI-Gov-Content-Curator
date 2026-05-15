@@ -36,16 +36,9 @@ api:
     enabled: true
     minAvailable: 1
 
-mcp:
-  enabled: true
-  replicaCount: 1
-  resources:
-    requests:
-      cpu: 200m
-      memory: 512Mi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
+# No `mcp` block: the MCP server uses stdio transport (ADR 0002) and is
+# launched on demand by an MCP client, not deployed as a cluster
+# workload. The shared image still supports `python -m mcp_server`.
 
 securityContext:
   pod:

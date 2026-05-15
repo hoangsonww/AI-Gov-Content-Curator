@@ -29,8 +29,11 @@ Production overrides should be supplied via `--values` files (e.g.
 | Component | Notes                                                  |
 | --------- | ------------------------------------------------------ |
 | api       | FastAPI HTTP service, HPA, PDB, ServiceMonitor.        |
-| mcp       | MCP stdio server, replicas=1 by design (ADR 0002).     |
 | networkPolicy | Limits ingress to mesh + monitoring; egress allowlist. |
+
+The MCP server uses stdio transport (ADR 0002) and is launched on demand
+by an MCP client — it is not part of this chart. The container image
+still ships `python -m mcp_server`.
 
 ## Secrets
 
