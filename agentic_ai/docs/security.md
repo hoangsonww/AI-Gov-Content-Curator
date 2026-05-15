@@ -68,29 +68,32 @@
 
 ## CVE posture
 
-Trivy scans the image in CI (`agentic-ai-ci.yml`). Current posture:
+Trivy scans the image in CI (`agentic-ai-ci.yml`); `pip-audit` audits
+the dependency manifest. Current posture:
 
-**Python dependencies** — kept on CVE-patched releases. Lower bounds in
-`pyproject.toml` / `requirements/base.txt` are raised whenever a CVE is
-disclosed (e.g. `langchain-core>=0.3.85` for the CVE-2025-68664 RCE).
+**Python dependencies — zero known vulnerabilities.** Both Trivy and
+`pip-audit` report no CVEs. The stack is on the **langchain 1.x line**;
+the migration off 0.3.x cleared the full set of langchain/langgraph/
+langsmith CVEs (an RCE, deserialization, XXE, path-traversal, and
+prompt-injection class). Only the packages the code imports are
+installed — the unused `langchain` meta-package, `langchain-community`,
+`langchain-text-splitters`, and the raw provider SDKs were removed, both
+shrinking the surface and dropping `langchain-community`'s CVEs.
+`langchain-cohere` has no langchain-1.x release and is therefore not
+installed; the Cohere provider returns automatically once upstream
+ships a 1.x package.
 
-Three residual HIGH findings are accepted and recorded in
-`.trivyignore` with rationale — all are fixed only in the langchain
-**1.x** line (a separate, tracked migration) and all are unreachable
-given how this codebase uses the libraries:
-
-| CVE            | Package              | Why not exploitable here            |
-| -------------- | -------------------- | ----------------------------------- |
-| CVE-2026-34070 | langchain-core       | `load_prompt` is never called       |
-| CVE-2025-64439 | langgraph-checkpoint | graph compiled without a checkpointer |
-| CVE-2026-45134 | langsmith            | hub prompt pulls are never used     |
+Dependency lower bounds in `pyproject.toml` / `requirements/base.txt`
+are pinned to CVE-patched releases and must be raised whenever a new CVE
+is disclosed. `.trivyignore` currently has no Python entries.
 
 **OS packages** — the Debian base carries CVEs with no upstream fix
 available yet (`FixedVersion` empty). These are common to every
 Debian-slim Python image; mitigated by the container hardening above
-(non-root, read-only fs, dropped caps, minimal installed package set).
-Refresh the pinned base-image digest regularly to pick up Debian
-patches as they ship.
+(non-root, read-only fs, dropped caps, minimal installed package set —
+build tooling is stripped). Refresh the pinned base-image digest
+regularly to pick up Debian patches as they ship. A distroless /
+Chainguard base would clear most of these and is a tracked follow-up.
 
 ## Reporting a vulnerability
 

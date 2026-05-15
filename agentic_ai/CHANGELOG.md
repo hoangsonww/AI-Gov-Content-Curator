@@ -6,6 +6,44 @@ here. Format loosely follows [Keep a Changelog]; versions track
 
 ## [Unreleased]
 
+### Changed (sixth pass — langchain 1.x migration + static-analysis gates)
+- **Migrated the whole langchain stack to the 1.x line** — langchain-core
+  1.x, langgraph 1.x, langchain-openai/anthropic/google-genai 1.x+,
+  langsmith 0.8.x. This clears **every** residual langchain-stack CVE:
+  Trivy and `pip-audit` now both report **zero** Python vulnerabilities
+  (down from 35 HIGH/CRITICAL at the start of the hardening work).
+  Verified by building all image targets and running the full suite
+  (77 passing) on the 1.x dependency set, plus per-provider LLM
+  construction smoke tests.
+- Removed unused direct dependencies that nothing imports: the
+  `langchain` meta-package, `langchain-community` (a CVE carrier),
+  `langchain-text-splitters`, and the raw provider SDKs (`openai`,
+  `anthropic`, `google-generativeai`, `cohere` — pulled transitively by
+  the `langchain-*` integration packages). Runtime image: 850MB → 355MB
+  across the hardening work.
+- Provider integration packages are now imported lazily (per selected
+  provider) in `base_agent`, so an image only needs the SDK for the
+  provider it runs. The Cohere provider is unavailable on the 1.x stack
+  until upstream ships `langchain-cohere` 1.x — the lazy `ChatCohere`
+  branch re-enables it automatically when the package returns; selecting
+  cohere meanwhile raises a clear `ConfigurationError`.
+- Regenerated `requirements.lock.txt` — fully hash-pinned against the
+  1.x `base.txt`.
+- `.trivyignore` emptied — its 3 prior entries are fixed by the 1.x
+  migration.
+
+### Fixed (sixth pass)
+- `bandit` B104 (bind-all interfaces) on `api_host` — added a `# nosec`
+  with rationale (intentional for containers; real boundary is the
+  NetworkPolicy / loopback-bound compose port). bandit: 0 HIGH/MEDIUM.
+- mypy: the new hardening core (`errors`, `security`, `observability`,
+  `resilience`, `health`, `middleware`, `cost`, `logging_config`,
+  `app`) and `base_agent` are now `--strict`-clean. FastMCP's untyped
+  decorators and the legacy `orchestration/` + concrete agents are
+  grandfathered via documented `pyproject.toml` overrides; strict checks
+  remain in force for everything else. `mcp_server/` gained no config
+  drift — it shares `pyproject.toml` via `mcp_server/ruff.toml`.
+
 ### Fixed (fifth pass — pipeline correctness + image hardening)
 - **Pipeline exponential blowup (severe)**: `AgentState.messages` and
   `.errors` were declared `Annotated[list, operator.add]` reducer

@@ -55,7 +55,7 @@ _CONFIGURED = False
 _TRACER_NAME = "synthora-mcp"
 
 
-def _build_resource() -> Resource:  # type: ignore[name-defined]
+def _build_resource() -> Resource:
     from agentic_ai.config.settings import settings
 
     attrs: dict[str, Any] = {
@@ -142,10 +142,10 @@ class _NoopSpan:
 
 
 class _NoopTracer:
-    def start_as_current_span(self, *_a: Any, **_kw: Any) -> _NoopSpan:  # type: ignore[override]
+    def start_as_current_span(self, *_a: Any, **_kw: Any) -> _NoopSpan:
         return _NoopSpan()
 
-    def start_span(self, *_a: Any, **_kw: Any) -> _NoopSpan:  # type: ignore[override]
+    def start_span(self, *_a: Any, **_kw: Any) -> _NoopSpan:
         return _NoopSpan()
 
 
@@ -155,7 +155,7 @@ class _NoopTracer:
 def _registry() -> CollectorRegistry:
     if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
         registry = CollectorRegistry()
-        multiprocess.MultiProcessCollector(registry)
+        multiprocess.MultiProcessCollector(registry)  # type: ignore[no-untyped-call]
         return registry
     return CollectorRegistry(auto_describe=True)
 
@@ -395,15 +395,17 @@ def record_llm_call(
 
 # Convenience: SpanKind export so callers don't need to import opentelemetry.
 # Resolved at import; safe because SpanKind values are static constants.
+SPAN_KIND_CLIENT: Any = None
+SPAN_KIND_SERVER: Any = None
+SPAN_KIND_INTERNAL: Any = None
+SPAN_KIND_PRODUCER: Any = None
+SPAN_KIND_CONSUMER: Any = None
 if _OTEL_AVAILABLE:
     SPAN_KIND_CLIENT = SpanKind.CLIENT
     SPAN_KIND_SERVER = SpanKind.SERVER
     SPAN_KIND_INTERNAL = SpanKind.INTERNAL
     SPAN_KIND_PRODUCER = SpanKind.PRODUCER
     SPAN_KIND_CONSUMER = SpanKind.CONSUMER
-else:  # pragma: no cover - import fallback
-    SPAN_KIND_CLIENT = SPAN_KIND_SERVER = SPAN_KIND_INTERNAL = None
-    SPAN_KIND_PRODUCER = SPAN_KIND_CONSUMER = None
 
 
 def metrics_text() -> bytes:

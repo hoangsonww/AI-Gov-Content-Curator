@@ -23,12 +23,13 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import structlog
-from langchain_anthropic import ChatAnthropic
-from langchain_cohere import ChatCohere
 from langchain_core.language_models import BaseChatModel
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
 
+# Provider integration packages are imported lazily, per selected
+# provider, inside `_get_default_llm`. This keeps each provider's SDK
+# optional: an image that only uses Google does not need the OpenAI /
+# Anthropic / Cohere packages installed, which trims the dependency
+# surface (and, for cohere, the CVEs its transitive deps carry).
 from mcp_server.errors import (
     ConfigurationError,
     PermanentUpstreamError,
@@ -77,6 +78,11 @@ def _classify_provider_error(exc: BaseException) -> BaseException:
 class BaseAgent(ABC):
     """Abstract base class for all agents."""
 
+    # Each concrete agent builds its own LCEL chain (`prompt | llm |
+    # parser`) in its constructor; declared here so `_run_chain` is
+    # type-checkable on the base class.
+    chain: Any
+
     def __init__(self, name: str, llm: BaseChatModel | None = None):
         self.name = name
         self.llm = llm or self._get_default_llm()
@@ -93,11 +99,27 @@ class BaseAgent(ABC):
         "cohere": "COHERE_API_KEY",
     }
 
+    # Maps provider -> the pip package that supplies its integration.
+    # `langchain-cohere` has no langchain-1.x release, so it is not part
+    # of the default install; selecting cohere raises a clear error.
+    _PROVIDER_PACKAGE = {
+        "google": "langchain-google-genai",
+        "openai": "langchain-openai",
+        "anthropic": "langchain-anthropic",
+        "cohere": "langchain-cohere (no langchain-1.x release available)",
+    }
+
     def _get_default_llm(self) -> BaseChatModel:
         provider = settings.default_llm_provider
+        if provider not in self._PROVIDER_KEY_ENV:
+            raise ConfigurationError(
+                f"Unsupported LLM provider: {provider}. "
+                "Supported providers: google, openai, anthropic, cohere"
+            )
+
         key = settings.get_provider_key(provider)
         if key is None:
-            env_var = self._PROVIDER_KEY_ENV.get(provider, f"{provider.upper()}_API_KEY")
+            env_var = self._PROVIDER_KEY_ENV[provider]
             raise ConfigurationError(f"{env_var} is required when DEFAULT_LLM_PROVIDER={provider}")
 
         timeout = settings.llm_request_timeout_seconds
@@ -106,37 +128,55 @@ class BaseAgent(ABC):
             "max_tokens": settings.max_tokens,
         }
 
-        if provider == "google":
-            return ChatGoogleGenerativeAI(
-                model=settings.default_model,
-                google_api_key=key,
-                timeout=timeout,
-                **common,
-            )
-        if provider == "openai":
-            return ChatOpenAI(
-                model=settings.default_model,
-                api_key=key,
-                timeout=timeout,
-                **common,
-            )
-        if provider == "anthropic":
-            return ChatAnthropic(
-                model=settings.default_model,
-                anthropic_api_key=key,
-                timeout=timeout,
-                **common,
-            )
-        if provider == "cohere":
-            return ChatCohere(
-                model=settings.default_model,
-                cohere_api_key=key,
-                **common,
-            )
-        raise ConfigurationError(
-            f"Unsupported LLM provider: {provider}. "
-            "Supported providers: google, openai, anthropic, cohere"
-        )
+        # Import the selected provider lazily so the others' packages stay
+        # optional. A missing package surfaces as a clear ConfigurationError.
+        # The provider classes are all BaseChatModel subclasses; the
+        # explicit annotation pins the return type (mypy treats the
+        # integration packages as untyped — see pyproject mypy overrides).
+        try:
+            llm: BaseChatModel
+            if provider == "google":
+                from langchain_google_genai import ChatGoogleGenerativeAI
+
+                llm = ChatGoogleGenerativeAI(
+                    model=settings.default_model,
+                    google_api_key=key,
+                    timeout=timeout,
+                    **common,
+                )
+            elif provider == "openai":
+                from langchain_openai import ChatOpenAI
+
+                llm = ChatOpenAI(
+                    model=settings.default_model,
+                    api_key=key,
+                    timeout=timeout,
+                    **common,
+                )
+            elif provider == "anthropic":
+                from langchain_anthropic import ChatAnthropic
+
+                llm = ChatAnthropic(
+                    model=settings.default_model,
+                    anthropic_api_key=key,
+                    timeout=timeout,
+                    **common,
+                )
+            else:  # provider == "cohere"
+                from langchain_cohere import ChatCohere
+
+                llm = ChatCohere(
+                    model=settings.default_model,
+                    cohere_api_key=key,
+                    **common,
+                )
+            return llm
+        except ImportError as exc:
+            pkg = self._PROVIDER_PACKAGE[provider]
+            raise ConfigurationError(
+                f"DEFAULT_LLM_PROVIDER={provider} requires the '{pkg}' "
+                f"package, which is not installed: {exc}"
+            ) from exc
 
     # ── LLM call: the single resilience point ───────────────────────────
 

@@ -255,7 +255,7 @@ def with_retries(
                         with attempt_obj:
                             try:
                                 result = await fn(*args, **kwargs)
-                            except retry_on as exc:  # type: ignore[misc]
+                            except retry_on as exc:
                                 last_exc = exc
                                 logger.warning(
                                     "retry.attempt",
@@ -268,7 +268,7 @@ def with_retries(
                                 operation=op_name, outcome="success"
                             ).inc()
                             return result
-                except retry_on:  # type: ignore[misc]
+                except retry_on:
                     metrics().retries_total.labels(operation=op_name, outcome="failure").inc()
                     raise
                 # Unreachable but keeps mypy happy.
@@ -293,7 +293,7 @@ def with_retries(
                     with attempt_obj:
                         try:
                             result = fn(*args, **kwargs)
-                        except retry_on as exc:  # type: ignore[misc]
+                        except retry_on as exc:
                             logger.warning(
                                 "retry.attempt",
                                 operation=op_name,
@@ -303,7 +303,7 @@ def with_retries(
                             raise
                         metrics().retries_total.labels(operation=op_name, outcome="success").inc()
                         return result
-            except retry_on:  # type: ignore[misc]
+            except retry_on:
                 metrics().retries_total.labels(operation=op_name, outcome="failure").inc()
                 raise
             return None  # pragma: no cover

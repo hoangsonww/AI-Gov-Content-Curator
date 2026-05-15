@@ -36,7 +36,10 @@ class Settings(BaseSettings):
     log_json: bool = Field(default=True)
 
     # ── API ────────────────────────────────────────────────────────────
-    api_host: str = Field(default="0.0.0.0")  # noqa: S104  bind-all is intentional for containers
+    # Bind-all is intentional: the process runs in a container; the real
+    # network boundary is the k8s NetworkPolicy / the 127.0.0.1-bound
+    # compose port. noqa = ruff (S104), nosec = bandit (B104).
+    api_host: str = Field(default="0.0.0.0")  # noqa: S104  # nosec B104
     api_port: int = Field(default=8000, ge=1, le=65535)
     api_workers: int = Field(default=4, ge=1, le=64)
 

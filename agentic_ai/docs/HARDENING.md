@@ -136,16 +136,30 @@ Existing modules updated:
 - Lint baseline clean: `ruff check` + `ruff format` pass on
   `agentic_ai/` + `mcp_server/`.
 
+## Done
+
+- **LangChain 1.x migration — complete.** The stack runs on
+  langchain-core 1.x / langgraph 1.x / langsmith 0.8.x. This cleared
+  every langchain-stack CVE; Trivy and `pip-audit` both report zero
+  Python vulnerabilities. The unused `langchain` meta-package,
+  `langchain-community`, and `langchain-text-splitters` were dropped.
+- **mypy** — the new hardening core (`errors`, `security`,
+  `observability`, `resilience`, `health`, `middleware`, `cost`,
+  `logging_config`, `app`) is `--strict`-clean. Structural noise from
+  FastMCP's untyped decorators is scoped out via per-module overrides;
+  legacy `orchestration/` + concrete agents are grandfathered at a
+  relaxed level (documented in `pyproject.toml`).
+
 ## Known follow-ups
 
-- mypy strict baseline — fix remaining `Any`s; flip `continue-on-error`
-  off in CI once clean.
+- mypy strict — finish typing the legacy surfaces (`tools/`,
+  `acp_store`, `core/pipeline` legacy nodes) and flip the CI
+  `continue-on-error` off.
 - Coverage ratchet — currently a 30% gate (~55% actual). Raise it as the
   legacy `orchestration/` and cloud adapters gain tests.
-- LangChain 1.x migration — clears the 3 residual HIGH CVEs
-  (`CVE-2026-34070`, `CVE-2025-64439`, `CVE-2026-45134`) that are fixed
-  only on the 1.x line. Tracked in `.trivyignore` with non-exploitability
-  rationale; the migration is a separate, test-gated effort.
+- Cohere provider — unavailable on the 1.x stack until upstream ships a
+  `langchain-cohere` 1.x release; the lazy `ChatCohere` branch in
+  `base_agent` re-enables it automatically when the package returns.
 - Distributed rate limiter — current `TokenBucketRateLimiter` is
   in-process; swap with Redis Lua for multi-replica HTTP deployments.
 - ECS Fargate task definition — the Terraform module provisions ECR +

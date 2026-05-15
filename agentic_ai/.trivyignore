@@ -2,24 +2,13 @@
 # Each entry MUST have a rationale. Review on every dependency bump.
 # Auto-discovered by Trivy when scanning with this directory as the
 # working dir (or via TRIVY_IGNOREFILE).
-
-# ── Residual langchain-stack HIGHs ──────────────────────────────────────
-# These three are fixed only in the langchain 1.x major line. The project
-# is on the langchain 0.3.x line (a deliberate, tested baseline); the
-# 1.x migration is tracked separately. All three are unreachable given
-# how this codebase uses the libraries:
-
-# CVE-2026-34070 — path traversal in langchain-core's legacy `load_prompt`.
-# Not exploitable: prompts are built with `ChatPromptTemplate.from_messages`
-# in-code; `load_prompt` is never called.
-CVE-2026-34070
-
-# CVE-2025-64439 — RCE in langgraph-checkpoint's JsonPlusSerializer "json"
-# mode. Not exploitable: the pipeline compiles its graph WITHOUT a
-# checkpointer, so JsonPlusSerializer is never instantiated.
-CVE-2025-64439
-
-# CVE-2026-45134 — langsmith deserializes untrusted manifests on public
-# hub prompt pulls. Not exploitable: the code never pulls hub prompts;
-# langsmith is used only as an optional tracing exporter.
-CVE-2026-45134
+#
+# Currently EMPTY for Python packages: the langchain 1.x migration
+# cleared every previously-residual langchain-stack CVE. `pip-audit`
+# and `trivy` both report zero Python vulnerabilities.
+#
+# OS-package CVEs in the Debian base have no upstream fix available
+# (`FixedVersion` empty) and are not listed here — they are mitigated by
+# the container hardening (non-root, read-only fs, dropped caps, minimal
+# package set) and tracked in docs/security.md. Add an entry here only
+# with a written, reviewed rationale.

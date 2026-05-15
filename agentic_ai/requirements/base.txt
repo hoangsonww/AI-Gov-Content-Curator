@@ -1,24 +1,25 @@
 # Core runtime dependencies. Resolved from pyproject.toml.
 # For reproducible installs use: pip install -r requirements.lock.txt
 
-# Core LangChain / LangGraph
-# Lower bounds raised to CVE-patched releases (see docs/security.md).
-langchain>=0.3.30,<0.4
-langchain-core>=0.3.85,<0.4
-langchain-community>=0.3.27,<0.4
-langchain-text-splitters>=0.3.9,<0.4
-langchain-google-genai>=1.0.0,<3.0
-langchain-openai>=0.1.0,<0.4
-langchain-anthropic>=0.1.0,<0.4
-langchain-cohere>=0.1.0,<0.4
-langgraph>=0.2.76,<0.4
-langsmith>=0.2.11,<0.5
+# Core LangChain / LangGraph — on the langchain 1.x line.
+# Only packages the code imports are declared; the `langchain`
+# meta-package, `langchain-community`, and `langchain-text-splitters`
+# are absent (nothing imports them). Lower bounds are CVE-patched 1.x
+# releases. `langchain-cohere` has no 1.x release and transitively
+# requires langchain-community — it stays in the optional, legacy-only
+# `providers-cohere` extra. See docs/security.md.
+langchain-core>=1.2.22,<2
+langchain-google-genai>=4.0.0,<5
+langchain-openai>=1.1.14,<2
+langchain-anthropic>=1.0.0,<2
+langgraph>=1.0.10,<2
+langsmith>=0.8.0,<1
 
-# LLM SDKs
-openai>=1.10.0,<2.0
-anthropic>=0.8.0,<1.0
-google-generativeai>=0.3.0,<1.0
-cohere>=4.37,<6.0
+# Raw provider SDKs (openai, anthropic, google-generativeai, cohere) are
+# NOT pinned directly — nothing imports them, and the `langchain-*`
+# integration packages above pull the correct SDK versions transitively.
+# Pinning them here only risks conflicts (langchain-openai 1.x needs
+# openai 2.x, etc.).
 
 # Vector stores are NOT in the base set — see requirements/vectorstores.txt
 # (chromadb pulls onnxruntime, ~200MB; nothing in the pipeline imports them).

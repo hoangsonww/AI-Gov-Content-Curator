@@ -22,26 +22,20 @@ classifiers = [
 
 dependencies = [
   # Pin lower bounds. Upper bounds are enforced via the lockfile.
-  # Lower bounds raised to CVE-patched releases — see docs/security.md:
-  #   langchain-core      CVE-2025-68664 (CRITICAL, RCE) → 0.3.85
-  #   langchain           CVE-2025-* → 0.3.30
-  #   langchain-community CVE-2025-6984 (XML) → 0.3.27
-  #   langchain-text-splitters CVE-2025-6985 (XXE) → 0.3.9
-  "langchain>=0.3.30,<0.4",
-  "langchain-core>=0.3.85,<0.4",
-  "langchain-community>=0.3.27,<0.4",
-  "langchain-text-splitters>=0.3.9,<0.4",
-  "langchain-google-genai>=1.0.0,<3.0",
-  "langchain-openai>=0.1.0,<0.4",
-  "langchain-anthropic>=0.1.0,<0.4",
-  "langchain-cohere>=0.1.0,<0.4",
-  "langgraph>=0.2.76,<0.4",
-  "langsmith>=0.2.11,<0.5",
+  # On the langchain 1.x line. Only packages the code imports are
+  # declared — the `langchain` meta-package, `langchain-community`, and
+  # `langchain-text-splitters` are absent (nothing imports them).
+  # Lower bounds are CVE-patched 1.x releases. See docs/security.md.
+  "langchain-core>=1.2.22,<2",
+  "langchain-google-genai>=4.0.0,<5",
+  "langchain-openai>=1.1.14,<2",
+  "langchain-anthropic>=1.0.0,<2",
+  "langgraph>=1.0.10,<2",
+  "langsmith>=0.8.0,<1",
 
-  "openai>=1.10.0,<2.0",
-  "anthropic>=0.8.0,<1.0",
-  "google-generativeai>=0.3.0,<1.0",
-  "cohere>=4.37,<6.0",
+  # Raw provider SDKs (openai/anthropic/google-generativeai/cohere) are
+  # not pinned directly — the langchain-* integration packages pull the
+  # correct versions transitively; a direct pin only risks conflicts.
 
   # Vector stores (chromadb, faiss, pinecone) are NOT in the base set —
   # the current pipeline + MCP server do not import them, and chromadb
@@ -89,6 +83,12 @@ vectorstores = [
   "chromadb>=0.4.0,<1.0",
   "faiss-cpu>=1.7.4,<2.0",
 ]
+# Note: the Cohere provider has no langchain-1.x integration package
+# (`langchain-cohere` is 0.x only and transitively requires the
+# deprecated `langchain-community`). It is therefore not installable
+# alongside the 1.x base. `base_agent` keeps the lazy ChatCohere branch
+# so support returns automatically once `langchain-cohere` ships a 1.x
+# release; until then `DEFAULT_LLM_PROVIDER=cohere` raises a clear error.
 cloud-aws = [
   "boto3>=1.34.0,<2.0",
   "botocore>=1.34.0,<2.0",
@@ -230,7 +230,10 @@ module = [
   "langchain_cohere.*",
   "langgraph.*",
   "langsmith.*",
+  "mcp.*",
+  "opentelemetry.exporter.*",
   "chromadb.*",
+  "langchain_experimental.*",
   "pinecone.*",
   "cohere.*",
   "faiss",
@@ -241,6 +244,52 @@ module = [
   "aws_lambda_powertools.*",
 ]
 ignore_missing_imports = true
+
+# The langchain provider-integration packages ship `py.typed`, but their
+# pydantic models use field aliases (`model`, `*_api_key`) that mypy
+# flags as unexpected kwargs even though they are valid at runtime.
+# Skip following them so calls into them are treated as untyped rather
+# than producing false positives.
+[[tool.mypy.overrides]]
+module = [
+  "langchain_openai.*",
+  "langchain_anthropic.*",
+  "langchain_cohere.*",
+  "langchain_google_genai.*",
+]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+# FastMCP's `@mcp.tool()` / resource / prompt decorators are untyped, so
+# `disallow_untyped_decorators` (part of `strict`) flags every registered
+# primitive. That is a third-party-library limitation, not a defect in
+# our code — relax just that one check for the registration modules.
+[[tool.mypy.overrides]]
+module = [
+  "mcp_server.tools.*",
+  "mcp_server.resources.*",
+  "mcp_server.prompts.*",
+]
+disallow_untyped_decorators = false
+
+# The `orchestration/` subsystem and the concrete agent implementations
+# predate the typed-core hardening. They are grandfathered at a relaxed
+# (non-strict) level until they get their own typing pass; the strict
+# checks remain in force for everything else. Tracked in docs/HARDENING.md.
+[[tool.mypy.overrides]]
+module = [
+  "agentic_ai.orchestration.*",
+  "agentic_ai.agents.classifier",
+  "agentic_ai.agents.content_analyzer",
+  "agentic_ai.agents.sentiment_analyzer",
+  "agentic_ai.agents.summarizer",
+  "agentic_ai.agents.quality_checker",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_any_generics = false
+disallow_untyped_decorators = false
+warn_return_any = false
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Pytest
