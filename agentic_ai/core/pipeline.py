@@ -3,11 +3,10 @@ Assembly Line Architecture for Agentic AI Pipeline using LangGraph.
 This implements a sophisticated multi-agent system with state management.
 """
 
-import operator
 import time
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Annotated, Any, TypedDict
+from typing import Any, TypedDict
 
 import structlog
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
@@ -64,9 +63,19 @@ class AgentState(TypedDict):
     sentiment: dict[str, float] | None
     quality_score: float | None
 
-    # Messages and errors
-    messages: Annotated[list[BaseMessage], operator.add]
-    errors: Annotated[list[str], operator.add]
+    # Messages and errors.
+    #
+    # These are plain LastValue channels — NOT `Annotated[..., operator.add]`
+    # reducers. Every node mutates the SAME list in place (e.g.
+    # `state["messages"].append(...)`) and returns the whole state. With an
+    # `operator.add` reducer LangGraph would concatenate the node's returned
+    # (already-accumulated) list onto the channel's existing value, doubling
+    # both lists on every super-step — exponential blowup that wedges the
+    # pipeline within a handful of quality-retry iterations. The graph is a
+    # strictly linear assembly line (no fan-out/fan-in), so LastValue is
+    # both correct and the right reducer here.
+    messages: list[BaseMessage]
+    errors: list[str]
 
     # Decisions and routing
     should_continue: bool
@@ -340,6 +349,15 @@ class AgenticPipeline:
 
         # Top-level deadline. Loosely bounded; per-stage timeouts give finer control.
         deadline_s = float(settings.agent_timeout) * max(1, settings.max_iterations)
+
+        # LangGraph counts every node execution against `recursion_limit`.
+        # The quality gate can loop content_analysis → ... → quality_check
+        # up to `max_iterations` times, and each loop runs 5 stage nodes
+        # (+ intake + output + edge super-steps). The default limit of 25
+        # is far below that, so a low-quality article would raise
+        # GraphRecursionError instead of terminating gracefully. Size the
+        # limit to the worst case with headroom.
+        recursion_limit = max(25, settings.max_iterations * 6 + 15)
         start = time.monotonic()
         status = "completed"
 
@@ -354,7 +372,10 @@ class AgenticPipeline:
         ):
             try:
                 final_state = await with_async_timeout(
-                    self.app.ainvoke(initial_state),
+                    self.app.ainvoke(
+                        initial_state,
+                        config={"recursion_limit": recursion_limit},
+                    ),
                     timeout_s=deadline_s,
                     operation="pipeline.process_article",
                 )

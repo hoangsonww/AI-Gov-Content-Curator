@@ -1,3 +1,4 @@
+-r vectorstores.txt
 -r cloud-aws.txt
 -r cloud-azure.txt
 -r cloud-gcp.txt

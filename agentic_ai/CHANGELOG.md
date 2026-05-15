@@ -6,6 +6,64 @@ here. Format loosely follows [Keep a Changelog]; versions track
 
 ## [Unreleased]
 
+### Fixed (fifth pass — pipeline correctness + image hardening)
+- **Pipeline exponential blowup (severe)**: `AgentState.messages` and
+  `.errors` were declared `Annotated[list, operator.add]` reducer
+  channels, but every node mutates the shared list in place and returns
+  the *whole* accumulated state. LangGraph applied the reducer as
+  `channel = old + returned`, doubling both lists on every super-step.
+  A low-quality article (which loops the quality gate) wedged the
+  pipeline within a few iterations — per-stage time grew 8→16s and the
+  run never finished. Changed both to plain `LastValue` channels (the
+  graph is a strictly linear assembly line, so LastValue is correct).
+  Low-quality run time: 90s+ timeout → 0.02s.
+- **Quality-retry loop hit LangGraph's recursion limit**: each retry
+  costs 5 graph steps and the default `recursion_limit` is 25, so a
+  low-quality article raised `GraphRecursionError` long before reaching
+  `max_iterations`. `process_article` now passes an explicit
+  `recursion_limit` sized to `max_iterations * 6 + 15`.
+- **CRITICAL CVE — langchain-core RCE (CVE-2025-68664)**: dependency
+  lower bounds raised to CVE-patched releases — `langchain-core>=0.3.85`
+  (was 0.3.63), `langchain>=0.3.30`, `langchain-community>=0.3.27`,
+  added explicit `langchain-text-splitters>=0.3.9` (XXE). Trivy: Python
+  HIGH/CRITICAL findings 35 → 3.
+- **Build tooling stripped from the runtime image**: `pip`, `setuptools`,
+  `wheel` (and the `wheel` / `jaraco.context` copies they vendor) are
+  removed from both the venv and the base image's system site-packages
+  in the runtime stage — the runtime never installs packages. Verified
+  the app imports + boots without them. Eliminated their CVEs.
+- **Base image pinned by digest** for reproducible, supply-chain-checked
+  builds.
+- **`google-generativeai` import FutureWarning** broke the test suite
+  under `filterwarnings = error` whenever the package emitted its
+  deprecation warning (seen in the container, not locally). Added a
+  scoped `(?s)`-flagged message filter.
+
+### Changed (fifth pass)
+- Vector stores (`chromadb`, `faiss-cpu`, `pinecone-client`) moved out
+  of the base dependency set into an opt-in `vectorstores` extra —
+  nothing in the pipeline or MCP server imports them, and `chromadb`
+  alone pulls onnxruntime (~200MB). Also dropped the unused `pandas`
+  direct dependency. Runtime image: 850MB → 586MB.
+- Added `.trivyignore` recording the 3 residual HIGH CVEs (langchain
+  1.x-only fixes) with per-CVE non-exploitability rationale.
+- `docs/security.md`: new CVE-posture section.
+
+### Added (fifth pass)
+- `tests/test_pipeline.py` — end-to-end pipeline tests with stubbed
+  agents: happy path, low-quality retry loop termination, per-stage
+  failure capture, metrics emission, graph visualization.
+  `core/pipeline.py` coverage 34% → 92%; overall 39% → 55%.
+
+### Verified (fifth pass)
+- Built `mcp` / `api` / `dev` targets; ran the full suite (77 passing)
+  inside the `dev` image and locally.
+- Trivy scan of the image: 0 Python CRITICAL, 3 documented HIGH
+  residuals; OS CVEs have no upstream fix (mitigated by container
+  hardening).
+- Booted the API container + compose stack; health, `/metrics`, ACP
+  Redis backend all confirmed.
+
 ### Fixed (fourth pass — Docker build + runtime verification)
 - **Dockerfile**: an inline comment on the `ARG INSTALL_PROFILE` line
   caused `dockerfile parse error: ARG names can not be blank`. The image

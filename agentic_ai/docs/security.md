@@ -54,10 +54,43 @@
 ## Container hardening
 
 - Multi-stage build; final image only carries the venv + app code.
+- Base image pinned by digest (`python:3.11-slim-bookworm@sha256:...`)
+  for reproducible, supply-chain-verifiable builds.
+- Build tooling (`pip`, `setuptools`, `wheel`) is stripped from the
+  runtime image — the runtime never installs packages, and removing it
+  eliminates that tooling's CVEs (and its vendored deps).
+- Vector-store deps (`chromadb`, `faiss`, `pinecone`) are an opt-in
+  extra, not in the base image — smaller surface, ~250MB lighter.
 - Non-root user (`synthora`, UID/GID 10001), `no-new-privileges`,
   dropped capabilities, read-only root filesystem, writable `/tmp`
   mounted as size-limited tmpfs.
 - Multi-arch (`amd64` + `arm64`) builds via Docker Buildx.
+
+## CVE posture
+
+Trivy scans the image in CI (`agentic-ai-ci.yml`). Current posture:
+
+**Python dependencies** — kept on CVE-patched releases. Lower bounds in
+`pyproject.toml` / `requirements/base.txt` are raised whenever a CVE is
+disclosed (e.g. `langchain-core>=0.3.85` for the CVE-2025-68664 RCE).
+
+Three residual HIGH findings are accepted and recorded in
+`.trivyignore` with rationale — all are fixed only in the langchain
+**1.x** line (a separate, tracked migration) and all are unreachable
+given how this codebase uses the libraries:
+
+| CVE            | Package              | Why not exploitable here            |
+| -------------- | -------------------- | ----------------------------------- |
+| CVE-2026-34070 | langchain-core       | `load_prompt` is never called       |
+| CVE-2025-64439 | langgraph-checkpoint | graph compiled without a checkpointer |
+| CVE-2026-45134 | langsmith            | hub prompt pulls are never used     |
+
+**OS packages** — the Debian base carries CVEs with no upstream fix
+available yet (`FixedVersion` empty). These are common to every
+Debian-slim Python image; mitigated by the container hardening above
+(non-root, read-only fs, dropped caps, minimal installed package set).
+Refresh the pinned base-image digest regularly to pick up Debian
+patches as they ship.
 
 ## Reporting a vulnerability
 

@@ -140,10 +140,17 @@ Existing modules updated:
 
 - mypy strict baseline — fix remaining `Any`s; flip `continue-on-error`
   off in CI once clean.
-- Coverage ratchet — currently 30% gate (~40% actual). Raise as the
-  legacy `orchestration/`, `agents/`, and cloud adapters gain tests.
+- Coverage ratchet — currently a 30% gate (~55% actual). Raise it as the
+  legacy `orchestration/` and cloud adapters gain tests.
+- LangChain 1.x migration — clears the 3 residual HIGH CVEs
+  (`CVE-2026-34070`, `CVE-2025-64439`, `CVE-2026-45134`) that are fixed
+  only on the 1.x line. Tracked in `.trivyignore` with non-exploitability
+  rationale; the migration is a separate, test-gated effort.
 - Distributed rate limiter — current `TokenBucketRateLimiter` is
   in-process; swap with Redis Lua for multi-replica HTTP deployments.
 - ECS Fargate task definition — the Terraform module provisions ECR +
   secrets + KMS + optional Helm release; a Fargate service is not yet
   modeled.
+- Distroless / Chainguard base image — would clear most of the
+  unfixable Debian OS CVEs; deferred (breaks the curl healthcheck +
+  needs reworking tini/shell assumptions).

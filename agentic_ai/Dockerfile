@@ -18,7 +18,10 @@
 #   docker buildx build --platform linux/amd64,linux/arm64 \
 #       -f agentic_ai/Dockerfile --target mcp -t synthora/mcp:latest .
 
-ARG PYTHON_IMAGE=python:3.11-slim-bookworm
+# Base image pinned by digest for reproducible, supply-chain-verifiable
+# builds. Refresh the digest deliberately (it captures the latest Debian
+# security patches): docker buildx imagetools inspect python:3.11-slim-bookworm
+ARG PYTHON_IMAGE=python:3.11-slim-bookworm@sha256:cd67330292a51e2963156f74ff340455d66b2172e9190e99f40dff9357471177
 ARG APP_USER=synthora
 ARG APP_UID=10001
 ARG APP_GID=10001
@@ -55,7 +58,11 @@ COPY agentic_ai/pyproject.toml ./pyproject.toml
 # Install into /opt/venv for a clean, copyable runtime tree.
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
-RUN python -m pip install --upgrade pip setuptools wheel
+# Pin build tooling to CVE-patched versions (wheel CVE-2026-24049).
+RUN python -m pip install --upgrade \
+      "pip>=25.0" \
+      "setuptools>=78.1.1" \
+      "wheel>=0.46.2"
 
 # Resolve profile → requirements file.
 RUN if [ "${INSTALL_PROFILE}" = "all" ]; then \
@@ -67,6 +74,14 @@ RUN if [ "${INSTALL_PROFILE}" = "all" ]; then \
         echo "Installing base only"; \
         pip install -r requirements/base.txt ; \
     fi
+
+# Build tooling is not needed at runtime — remove it from the venv so it
+# does not ship in the runtime image (smaller surface; drops the `wheel`
+# package entirely). `pip` is kept for diagnostics; the runtime fs is
+# read-only so it cannot be used to mutate the image.
+RUN pip uninstall -y wheel 2>/dev/null || true \
+ && find /opt/venv -name "__pycache__" -type d -prune -exec rm -rf {} + \
+ && find /opt/venv -name "*.pyc" -delete
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 — runtime base. Minimal OS, non-root user, venv copied in.
@@ -100,6 +115,26 @@ RUN groupadd --system --gid ${APP_GID} ${APP_USER} \
 
 # Copy compiled venv from builder.
 COPY --from=builder /opt/venv /opt/venv
+
+# Strip build tooling from BOTH the runtime venv and the base image's
+# system site-packages. pip/setuptools/wheel are only needed to *install*
+# packages; the runtime never does. Removing them eliminates their (and
+# their vendored deps') CVEs — pip/setuptools vendor `wheel` and
+# `jaraco.context` — and shrinks the image. The `dev` target re-copies
+# the full venv from `dev-builder`, so dev tooling is unaffected.
+RUN set -eux; \
+    for sp in /opt/venv/lib/python*/site-packages /usr/local/lib/python*/site-packages; do \
+        rm -rf "$sp"/pip "$sp"/pip-* "$sp"/pip/* \
+               "$sp"/setuptools "$sp"/setuptools-* \
+               "$sp"/_distutils_hack "$sp"/distutils-precedence.pth \
+               "$sp"/wheel "$sp"/wheel-* \
+               "$sp"/pkg_resources 2>/dev/null || true; \
+    done; \
+    rm -rf /usr/local/bin/pip /usr/local/bin/pip3 /usr/local/bin/pip3.* \
+           /usr/local/bin/wheel /opt/venv/bin/pip /opt/venv/bin/pip3* 2>/dev/null || true; \
+    find /opt/venv /usr/local/lib/python* -name "__pycache__" -type d -prune \
+         -exec rm -rf {} + 2>/dev/null || true; \
+    find /opt/venv -name "*.pyc" -delete 2>/dev/null || true
 
 # Application code. Owned by the non-root user.
 WORKDIR /app

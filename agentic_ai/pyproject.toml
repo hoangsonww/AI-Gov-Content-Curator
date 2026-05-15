@@ -22,24 +22,31 @@ classifiers = [
 
 dependencies = [
   # Pin lower bounds. Upper bounds are enforced via the lockfile.
-  "langchain>=0.1.0,<0.4",
-  "langchain-core>=0.1.0,<0.4",
-  "langchain-community>=0.0.10,<0.4",
+  # Lower bounds raised to CVE-patched releases — see docs/security.md:
+  #   langchain-core      CVE-2025-68664 (CRITICAL, RCE) → 0.3.85
+  #   langchain           CVE-2025-* → 0.3.30
+  #   langchain-community CVE-2025-6984 (XML) → 0.3.27
+  #   langchain-text-splitters CVE-2025-6985 (XXE) → 0.3.9
+  "langchain>=0.3.30,<0.4",
+  "langchain-core>=0.3.85,<0.4",
+  "langchain-community>=0.3.27,<0.4",
+  "langchain-text-splitters>=0.3.9,<0.4",
   "langchain-google-genai>=1.0.0,<3.0",
   "langchain-openai>=0.1.0,<0.4",
   "langchain-anthropic>=0.1.0,<0.4",
   "langchain-cohere>=0.1.0,<0.4",
-  "langgraph>=0.0.20,<0.3",
-  "langsmith>=0.0.77,<0.3",
+  "langgraph>=0.2.76,<0.4",
+  "langsmith>=0.2.11,<0.5",
 
   "openai>=1.10.0,<2.0",
   "anthropic>=0.8.0,<1.0",
   "google-generativeai>=0.3.0,<1.0",
   "cohere>=4.37,<6.0",
 
-  "pinecone-client>=3.0.0,<6.0",
-  "chromadb>=0.4.0,<1.0",
-  "faiss-cpu>=1.7.4,<2.0",
+  # Vector stores (chromadb, faiss, pinecone) are NOT in the base set —
+  # the current pipeline + MCP server do not import them, and chromadb
+  # alone pulls onnxruntime (~200MB). Install the `vectorstores` extra
+  # if/when retrieval is added.
 
   "mcp>=1.2.0,<2.0",
 
@@ -50,7 +57,6 @@ dependencies = [
   "httpx>=0.26.0,<1.0",
 
   "numpy>=1.24.0,<3.0",
-  "pandas>=2.0.0,<3.0",
   "python-dotenv>=1.0.0,<2.0",
 
   "prometheus-client>=0.19.0,<1.0",
@@ -77,6 +83,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Retrieval / vector stores — opt-in; heavy (chromadb pulls onnxruntime).
+vectorstores = [
+  "pinecone-client>=3.0.0,<6.0",
+  "chromadb>=0.4.0,<1.0",
+  "faiss-cpu>=1.7.4,<2.0",
+]
 cloud-aws = [
   "boto3>=1.34.0,<2.0",
   "botocore>=1.34.0,<2.0",
@@ -114,7 +126,7 @@ all-cloud = [
   "synthora-agentic-ai[cloud-aws,cloud-azure,cloud-gcp]",
 ]
 all = [
-  "synthora-agentic-ai[cloud-aws,cloud-azure,cloud-gcp,dev]",
+  "synthora-agentic-ai[vectorstores,cloud-aws,cloud-azure,cloud-gcp,dev]",
 ]
 
 [project.scripts]
@@ -263,6 +275,12 @@ filterwarnings = [
   "ignore::DeprecationWarning",
   "ignore::PendingDeprecationWarning",
   "ignore::ResourceWarning",
+  # google-generativeai emits a multi-line FutureWarning on import (the
+  # package is being superseded by google-genai). Third-party, unrelated
+  # to our code. The `(?s)` inline flag makes `.` span the message's
+  # leading newline; `warnings.warn` uses a stacklevel that varies, so
+  # match by message rather than module.
+  "ignore:(?s).*google.*generativeai.*:FutureWarning",
 ]
 timeout = 30
 
