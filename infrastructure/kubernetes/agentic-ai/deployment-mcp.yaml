@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 20
       containers:
         - name: mcp
-          image: ghcr.io/synthora/agentic-ai:latest
+          image: ghcr.io/hoangsonww/ai-curator-agentic-ai:latest
           imagePullPolicy: IfNotPresent
           command: ["python", "-m", "mcp_server"]
           envFrom:
@@ -52,6 +52,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            # The Splunk OTel Collector runs as a node-local DaemonSet
+            # (splunk-otel-collector-agent); reach it via the host IP.
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://$(HOST_IP):4317"
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(POD_NAMESPACE)"
           resources:

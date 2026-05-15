@@ -3,9 +3,14 @@ kind: Kustomization
 
 namespace: ai-curator
 
-commonLabels:
-  app.kubernetes.io/name: agentic-ai
-  app.kubernetes.io/part-of: synthora
+# `labels` (not the deprecated `commonLabels`). includeSelectors is false:
+# every Deployment/Service here already declares explicit selectors, so we
+# only stamp metadata labels and never mutate immutable selector fields.
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/name: agentic-ai
+      app.kubernetes.io/part-of: synthora
 
 resources:
   - serviceaccount.yaml
@@ -20,5 +25,5 @@ resources:
   - servicemonitor.yaml
 
 images:
-  - name: ghcr.io/synthora/agentic-ai
+  - name: ghcr.io/hoangsonww/ai-curator-agentic-ai
     newTag: latest

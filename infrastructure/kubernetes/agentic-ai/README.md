@@ -36,5 +36,5 @@ kubectl apply -k infrastructure/kubernetes/agentic-ai
 To pin a specific image tag without editing the deployment manifest:
 
 ```bash
-kustomize edit set image ghcr.io/synthora/agentic-ai=ghcr.io/synthora/agentic-ai:v1.2.3
+kustomize edit set image ghcr.io/hoangsonww/ai-curator-agentic-ai=ghcr.io/hoangsonww/ai-curator-agentic-ai:v1.2.3
 ```

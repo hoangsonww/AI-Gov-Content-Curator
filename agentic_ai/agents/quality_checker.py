@@ -108,13 +108,14 @@ class QualityCheckerAgent(BaseAgent):
                 else "No sentiment analysis"
             )
 
-            result = self.chain.invoke(
+            result = self._run_chain(
                 {
                     "content_sample": content_sample,
                     "summary": summary_text,
                     "topics": topics_text,
                     "sentiment": sentiment_text,
-                }
+                },
+                op="agent.quality_checker.check_quality",
             )
 
             # Add overall score if not present

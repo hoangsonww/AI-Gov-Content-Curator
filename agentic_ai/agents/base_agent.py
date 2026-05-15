@@ -3,14 +3,20 @@ Base Agent class for all specialized agents in the pipeline.
 
 Production hardening:
 - Provider key sourced from `Settings.get_provider_key()` (SecretStr-aware).
-- Each agent's `process` is wrapped with retry + circuit breaker + timeout
-  via `mcp_server.resilience.guarded_call`.
-- Every invocation emits an OpenTelemetry span with provider/model/agent
-  attributes and Prometheus metrics for duration + outcome.
+- `_run_chain()` is the single resilience point: every LLM call made by
+  a subclass goes through retry + circuit breaker + timeout + telemetry.
+  Subclasses MUST call `self._run_chain(payload)` rather than
+  `self.chain.invoke(payload)` directly.
+- The circuit breaker is keyed per provider (`llm:<provider>`) and shared
+  across agents, so an outage in one provider trips the breaker for all
+  agents using it.
+- `invoke()` is an async adapter that runs the (sync) agent on a worker
+  thread under an OTel span; resilience already lives in `_run_chain`.
 """
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import time
 from abc import ABC, abstractmethod
@@ -29,7 +35,7 @@ from mcp_server.errors import (
     TimeoutError_,
     TransientUpstreamError,
 )
-from mcp_server.observability import metrics, record_llm_call, traced_async_span
+from mcp_server.observability import metrics, record_llm_call, traced_async_span, traced_span
 from mcp_server.resilience import guarded_call
 
 from ..config.settings import settings
@@ -132,98 +138,116 @@ class BaseAgent(ABC):
             "Supported providers: google, openai, anthropic, cohere"
         )
 
-    # ── Subclass contract ───────────────────────────────────────────────
+    # ── LLM call: the single resilience point ───────────────────────────
 
-    @abstractmethod
-    async def process(self, *args: Any, **kwargs: Any) -> Any:
-        """Process method to be implemented by subclasses.
+    def _run_chain(self, payload: dict[str, Any], *, op: str | None = None) -> Any:
+        """Invoke `self.chain` with retry + circuit breaker + timeout.
 
-        Subclass `process` will be wrapped by `invoke()` which adds tracing,
-        metrics, retries, and circuit breaking. Call `invoke()` from the
-        pipeline, not `process()` directly.
-        """
-        ...
+        This is the one place an LLM call actually happens. Every agent
+        method routes through here so resilience + telemetry are uniform
+        and impossible to forget.
 
-    # ── Public entry point used by the pipeline ─────────────────────────
-
-    async def invoke(self, *args: Any, **kwargs: Any) -> Any:
-        """Run the agent with full resilience + observability.
-
-        Wraps `process()` with:
-          - OTel span (agent name, provider, model)
-          - Prometheus duration + outcome metrics
-          - Retry on transient upstream errors
-          - Circuit breaker per-provider
-          - Per-call timeout (`agent_timeout`)
+        Raises a typed `TransientUpstreamError` / `PermanentUpstreamError`
+        / `TimeoutError_` / `CircuitOpenError` on failure — never a raw
+        provider exception.
         """
         provider = settings.default_llm_provider
-        breaker_name = f"agent:{self.name}:{provider}"
+        model = settings.default_model
+        op_name = op or f"agent.{self.name}.chain"
+        # Shared per-provider breaker: a provider outage trips every agent.
+        breaker_name = f"llm:{provider}"
 
         @guarded_call(
             name=breaker_name,
-            timeout_s=float(settings.agent_timeout),
+            timeout_s=settings.llm_request_timeout_seconds,
             max_attempts=settings.llm_max_attempts,
             breaker_fail_max=settings.llm_circuit_fail_max,
             breaker_reset_timeout_s=settings.llm_circuit_reset_seconds,
         )
-        async def _run() -> Any:
-            import asyncio
-            import inspect
-
+        def _call() -> Any:
             start = time.monotonic()
-            async with traced_async_span(
-                f"agent.{self.name}",
+            with traced_span(
+                op_name,
                 **{
                     "agent.name": self.name,
                     "llm.provider": provider,
-                    "llm.model": settings.default_model,
+                    "llm.model": model,
                 },
-            ) as span:
+            ):
                 try:
-                    if inspect.iscoroutinefunction(self.process):
-                        result = await self.process(*args, **kwargs)
-                    else:
-                        # Run sync agent code on a worker thread so the event
-                        # loop stays responsive for other concurrent jobs.
-                        result = await asyncio.to_thread(self.process, *args, **kwargs)
+                    result = self.chain.invoke(payload)
                 except Exception as raw:
-                    err = _classify_provider_error(raw)
                     record_llm_call(
                         provider=provider,
-                        model=settings.default_model,
+                        model=model,
                         status="error",
                         duration_s=time.monotonic() - start,
                     )
-                    metrics().agent_invocations_total.labels(
-                        agent=self.name,
-                        status="error",
-                    ).inc()
+                    err = _classify_provider_error(raw)
                     self._logger.warning(
-                        "agent.process_failed",
+                        "agent.llm_call_failed",
                         error_type=type(raw).__name__,
                         classified_as=type(err).__name__,
                         message=str(raw),
                     )
                     raise err from raw
 
-                duration = time.monotonic() - start
-                metrics().agent_duration_seconds.labels(agent=self.name).observe(duration)
-                metrics().agent_invocations_total.labels(
-                    agent=self.name,
-                    status="ok",
-                ).inc()
                 record_llm_call(
                     provider=provider,
-                    model=settings.default_model,
+                    model=model,
                     status="ok",
-                    duration_s=duration,
+                    duration_s=time.monotonic() - start,
                 )
-                if span is not None:
-                    with contextlib.suppress(Exception):
-                        span.set_attribute("agent.duration_ms", int(duration * 1000))
                 return result
 
-        return await _run()
+        return _call()
+
+    # ── Subclass contract ───────────────────────────────────────────────
+
+    @abstractmethod
+    def process(self, *args: Any, **kwargs: Any) -> Any:
+        """Primary work method implemented by subclasses.
+
+        Subclasses run LLM calls via `self._run_chain(...)`, which applies
+        resilience + telemetry. `process` itself is sync; use `invoke()`
+        for an async-friendly entry point.
+        """
+        ...
+
+    # ── Async adapter ────────────────────────────────────────────────────
+
+    async def invoke(self, *args: Any, **kwargs: Any) -> Any:
+        """Async adapter around `process()`.
+
+        Runs the (sync) agent on a worker thread so the event loop stays
+        responsive, under an OTel span with agent metrics. Resilience is
+        not re-applied here — it already lives in `_run_chain`.
+        """
+        start = time.monotonic()
+        async with traced_async_span(
+            f"agent.{self.name}",
+            **{
+                "agent.name": self.name,
+                "llm.provider": settings.default_llm_provider,
+                "llm.model": settings.default_model,
+            },
+        ) as span:
+            try:
+                if asyncio.iscoroutinefunction(self.process):
+                    result = await self.process(*args, **kwargs)
+                else:
+                    result = await asyncio.to_thread(self.process, *args, **kwargs)
+            except Exception:
+                metrics().agent_invocations_total.labels(agent=self.name, status="error").inc()
+                raise
+
+            duration = time.monotonic() - start
+            metrics().agent_duration_seconds.labels(agent=self.name).observe(duration)
+            metrics().agent_invocations_total.labels(agent=self.name, status="ok").inc()
+            if span is not None:
+                with contextlib.suppress(Exception):
+                    span.set_attribute("agent.duration_ms", int(duration * 1000))
+            return result
 
     # ── Error helper for subclasses ─────────────────────────────────────
 

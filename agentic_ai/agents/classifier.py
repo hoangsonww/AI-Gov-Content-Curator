@@ -90,11 +90,12 @@ class ClassifierAgent(BaseAgent):
 
             summary_info = f"Summary: {summary}" if summary else ""
 
-            result = self.chain.invoke(
+            result = self._run_chain(
                 {
                     "content": content[:3000],  # Limit for classification
                     "summary_info": summary_info,
-                }
+                },
+                op="agent.classifier.classify",
             )
 
             topics = result.get("topics", [])

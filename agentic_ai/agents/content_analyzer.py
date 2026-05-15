@@ -65,11 +65,12 @@ class ContentAnalyzerAgent(BaseAgent):
         try:
             logger.info("Analyzing content", content_length=len(content))
 
-            result = self.chain.invoke(
+            result = self._run_chain(
                 {
                     "content": content[:5000],  # Limit to first 5000 chars for analysis
                     "metadata": metadata or {},
-                }
+                },
+                op="agent.content_analyzer.analyze",
             )
 
             logger.info("Content analysis completed", main_topic=result.get("main_topic"))

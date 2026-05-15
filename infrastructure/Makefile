@@ -1,4 +1,4 @@
-.PHONY: help aws-deploy aws-rollback k8s-deploy k8s-rollback k8s-promote terraform-init terraform-plan terraform-apply terraform-destroy splunk-deploy splunk-status splunk-logs splunk-health splunk-restart splunk-remove splunk-update-token terraform-validate terraform-output aws-deploy-backend aws-deploy-frontend aws-rollback-backend aws-rollback-frontend aws-status k8s-install-tools k8s-deploy-infrastructure k8s-deploy-backend k8s-deploy-frontend k8s-deploy-all k8s-restart k8s-logs k8s-shell k8s-abort monitoring-dashboard monitoring-prometheus monitoring-alerts validate-health build-images push-images clean quick-deploy-aws quick-deploy-k8s full-deploy
+.PHONY: help aws-deploy aws-rollback k8s-deploy k8s-rollback k8s-promote terraform-init terraform-plan terraform-apply terraform-destroy splunk-deploy splunk-status splunk-logs splunk-health splunk-restart splunk-remove splunk-update-token terraform-validate terraform-output aws-deploy-backend aws-deploy-frontend aws-rollback-backend aws-rollback-frontend aws-status k8s-install-tools k8s-deploy-infrastructure k8s-deploy-backend k8s-deploy-frontend k8s-deploy-all k8s-restart k8s-logs k8s-shell k8s-abort monitoring-dashboard monitoring-prometheus monitoring-alerts validate-health build-images push-images clean quick-deploy-aws quick-deploy-k8s full-deploy agentic-ai-build agentic-ai-k8s-deploy agentic-ai-helm-deploy agentic-ai-status agentic-ai-validate
 
 # Colors
 RED    := $(shell tput -Txterm setaf 1)
@@ -237,6 +237,7 @@ build-images: ## Build all Docker images locally
 	@cd ../frontend && docker build -t ghcr.io/hoangsonww/ai-curator-frontend:${IMAGE_TAG} .
 	@cd ../crawler && docker build -t ghcr.io/hoangsonww/ai-curator-crawler:${IMAGE_TAG} .
 	@cd ../newsletters && docker build -t ghcr.io/hoangsonww/ai-curator-newsletters:${IMAGE_TAG} .
+	@cd .. && docker build -f agentic_ai/Dockerfile --target mcp -t ghcr.io/hoangsonww/ai-curator-agentic-ai:${IMAGE_TAG} .
 
 push-images: ## Push Docker images to registry
 	@echo "${GREEN}Pushing Docker images...${RESET}"
@@ -244,6 +245,36 @@ push-images: ## Push Docker images to registry
 	@docker push ghcr.io/hoangsonww/ai-curator-frontend:${IMAGE_TAG}
 	@docker push ghcr.io/hoangsonww/ai-curator-crawler:${IMAGE_TAG}
 	@docker push ghcr.io/hoangsonww/ai-curator-newsletters:${IMAGE_TAG}
+	@docker push ghcr.io/hoangsonww/ai-curator-agentic-ai:${IMAGE_TAG}
+
+##
+## Agentic AI subsystem
+##
+
+agentic-ai-build: ## Build the agentic-ai image (api + mcp share one image)
+	@echo "${GREEN}Building agentic-ai image...${RESET}"
+	@cd .. && docker build -f agentic_ai/Dockerfile --target mcp \
+		-t ghcr.io/hoangsonww/ai-curator-agentic-ai:${IMAGE_TAG} .
+
+agentic-ai-k8s-deploy: ## Deploy agentic-ai via kustomize
+	@echo "${GREEN}Deploying agentic-ai (kustomize)...${RESET}"
+	@kubectl apply -k kubernetes/agentic-ai
+
+agentic-ai-helm-deploy: ## Deploy agentic-ai via Helm
+	@echo "${GREEN}Deploying agentic-ai (Helm)...${RESET}"
+	@helm upgrade --install agentic-ai helm/agentic-ai \
+		--namespace ai-curator --create-namespace \
+		--set image.tag=${IMAGE_TAG}
+
+agentic-ai-status: ## Show agentic-ai rollout status
+	@kubectl -n ai-curator rollout status deploy/agentic-ai-api --timeout=120s
+	@kubectl -n ai-curator get deploy,svc,hpa,pdb -l app.kubernetes.io/name=agentic-ai
+
+agentic-ai-validate: ## Validate agentic-ai manifests + chart
+	@echo "${CYAN}Validating agentic-ai manifests...${RESET}"
+	@kubectl kustomize kubernetes/agentic-ai > /dev/null && echo "kustomize OK"
+	@helm lint helm/agentic-ai
+	@helm template agentic-ai helm/agentic-ai > /dev/null && echo "helm template OK"
 
 clean: ## Clean up temporary files (preserves .terraform.lock.hcl)
 	@echo "${YELLOW}Cleaning up...${RESET}"

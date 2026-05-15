@@ -1,13 +1,8 @@
 image:
-  repository: ghcr.io/synthora/agentic-ai
+  repository: ghcr.io/hoangsonww/ai-curator-agentic-ai
   tag: "" # defaults to .Chart.AppVersion
   pullPolicy: IfNotPresent
   pullSecrets: []
-
-imageMcp:
-  # Optional override; if empty uses the same image.
-  repository: ""
-  tag: ""
 
 nameOverride: ""
 fullnameOverride: ""
@@ -90,12 +85,24 @@ env:
   MAX_ITERATIONS: "10"
   RATE_LIMIT_REQUESTS: "100"
   RATE_LIMIT_WINDOW: "60"
-  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.monitoring.svc.cluster.local:4317
+  # OTEL_EXPORTER_OTLP_ENDPOINT is supplied per-pod from the downward API
+  # (see deployment templates + the `otel` block below), not here.
   OTEL_EXPORTER_OTLP_PROTOCOL: grpc
   OTEL_TRACES_SAMPLE_RATIO: "0.25"
   REDIS_HOST: redis
   REDIS_PORT: "6379"
   DAILY_COST_BUDGET_USD: "100.0"
+
+# OpenTelemetry export target.
+# - useNodeLocalCollector: send to the per-node OTel/Splunk DaemonSet via
+#   the pod's host IP (http://$HOST_IP:<otlpPort>). This matches the
+#   splunk-otel-collector-agent DaemonSet shipped in this repo.
+# - If useNodeLocalCollector is false, `endpoint` (when non-empty) is used
+#   verbatim — e.g. a ClusterIP gateway collector.
+otel:
+  useNodeLocalCollector: true
+  otlpPort: 4317
+  endpoint: ""
 
 # Existing K8s Secret to mount. If empty, the chart creates a placeholder
 # Secret from `secret` values; in production prefer external-secrets.

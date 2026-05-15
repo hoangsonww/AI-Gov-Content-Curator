@@ -26,11 +26,14 @@ spec:
       ports:
         - protocol: TCP
           port: 8000
-    # Prometheus scrape.
+    # Prometheus scrape from the monitoring namespace.
     - from:
         - namespaceSelector:
             matchLabels:
               name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              name: splunk-monitoring
       ports:
         - protocol: TCP
           port: 8000
@@ -51,17 +54,15 @@ spec:
       ports:
         - protocol: TCP
           port: 6379
-    # OTel collector.
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: monitoring
-      ports:
+    # OTel telemetry. The Splunk OTel Collector runs as a node-local
+    # DaemonSet, reached via the host IP (RFC1918) — so this rule is not
+    # namespace-scoped; it allows the OTLP ports to any destination.
+    - ports:
         - protocol: TCP
           port: 4317
         - protocol: TCP
           port: 4318
-    # LLM provider HTTPS egress.
+    # LLM provider HTTPS egress (public internet only; RFC1918 excluded).
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0

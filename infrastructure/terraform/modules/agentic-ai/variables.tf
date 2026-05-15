@@ -29,7 +29,7 @@ variable "tags" {
 variable "ecr_repository_name" {
   description = "ECR repository name for the agentic-ai image."
   type        = string
-  default     = "synthora/agentic-ai"
+  default     = "ai-curator-agentic-ai"
 }
 
 variable "ecr_image_scan_on_push" {

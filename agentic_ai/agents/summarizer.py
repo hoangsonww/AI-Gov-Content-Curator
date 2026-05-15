@@ -75,7 +75,10 @@ class SummarizerAgent(BaseAgent):
                 - Key entities: {', '.join(analyzed_content.get('entities', {}).get('people', [])[:3])}
                 """
 
-            summary = self.chain.invoke({"content": content, "context_info": context_info})
+            summary = self._run_chain(
+                {"content": content, "context_info": context_info},
+                op="agent.summarizer.summarize",
+            )
 
             logger.info("Summary generated", summary_length=len(summary))
             return summary.strip()

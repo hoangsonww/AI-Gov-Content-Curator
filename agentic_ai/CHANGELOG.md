@@ -6,6 +6,42 @@ here. Format loosely follows [Keep a Changelog]; versions track
 
 ## [Unreleased]
 
+### Fixed (third pass — correctness + infra reconciliation)
+- `mcp_server/runtime.py`: Redis password is a `SecretStr` — it was
+  passed to the Redis client directly, which would have authenticated
+  with the literal masked string. Now extracts `.get_secret_value()`.
+  Also wires `redis_tls`, connection/socket timeouts, and health checks.
+- Agents now route every LLM call through `BaseAgent._run_chain()`,
+  which applies retry + circuit breaker (shared per provider) + timeout
+  + telemetry. Previously the resilience primitives existed but the
+  pipeline called `chain.invoke()` directly, bypassing them.
+- `BaseAgent.invoke()` no longer double-wraps resilience (was up to 9
+  effective attempts); resilience lives solely in `_run_chain`.
+- `process()` abstract signature corrected to sync (matches subclasses).
+- Kubernetes + Helm: `OTEL_EXPORTER_OTLP_ENDPOINT` pointed at a
+  non-existent `otel-collector.monitoring` Service. The repo runs the
+  Splunk OTel Collector as a per-node DaemonSet — pods now export to
+  `http://$(HOST_IP):4317` via a downward-API `HOST_IP` env var.
+- NetworkPolicy OTel egress was namespace-scoped and would have blocked
+  node-local (RFC1918) collector traffic; now allows OTLP ports
+  cluster-wide. Added the missing Redis egress rule to the Helm
+  NetworkPolicy.
+- Container image name aligned to the repo convention
+  `ghcr.io/hoangsonww/ai-curator-agentic-ai` across k8s, Helm, Terraform.
+- `kustomization.yaml` migrated off deprecated `commonLabels`.
+
+### Added (third pass)
+- `infrastructure/Makefile`: `agentic-ai-build`, `agentic-ai-k8s-deploy`,
+  `agentic-ai-helm-deploy`, `agentic-ai-status`, `agentic-ai-validate`
+  targets; `build-images` / `push-images` include the agentic-ai image.
+- Helm `otel` values block (`useNodeLocalCollector`, `otlpPort`,
+  `endpoint`) for environments without a node-local collector.
+- `infrastructure/DEPLOYMENT.md`: an Agentic AI Subsystem section
+  (components, manifests, observability, deploy, rollback).
+- Hermetic test env — conftest force-clears provider keys so a
+  developer `.env` cannot make the suite non-deterministic.
+- `tests/test_mcp_integration.py` — boots the real MCP server.
+
 ### Added
 - Production hardening pass:
   - Cross-cutting modules: `errors`, `security`, `observability`,

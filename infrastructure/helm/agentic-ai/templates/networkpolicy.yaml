@@ -26,18 +26,25 @@ spec:
       ports:
         - { protocol: TCP, port: {{ .Values.api.containerPort }} }
   egress:
+    # DNS.
     - to:
         - namespaceSelector: {}
       ports:
         - { protocol: UDP, port: 53 }
         - { protocol: TCP, port: 53 }
+    # Redis.
     - to:
-        - namespaceSelector:
+        - podSelector:
             matchLabels:
-              name: monitoring
+              app.kubernetes.io/name: redis
       ports:
+        - { protocol: TCP, port: 6379 }
+    # OTel telemetry. Node-local DaemonSet collectors live on the host IP
+    # (RFC1918), so this rule is not namespace-scoped.
+    - ports:
         - { protocol: TCP, port: 4317 }
         - { protocol: TCP, port: 4318 }
+    # LLM provider HTTPS egress (public internet only).
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0

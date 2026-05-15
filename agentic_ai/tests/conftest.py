@@ -24,6 +24,21 @@ os.environ.setdefault("ACP_BACKEND", "memory")
 os.environ.setdefault("OTEL_EXPORTER_OTLP_ENDPOINT", "")
 os.environ.setdefault("OTEL_TRACES_SAMPLE_RATIO", "0")
 
+# Force a hermetic, credential-free environment. These are set
+# unconditionally (not setdefault) so a developer `.env` file or shell
+# export cannot make the test suite non-deterministic. pydantic-settings
+# precedence puts process env vars above the `.env` file, so an empty
+# value here wins. Tests that need a key set it explicitly via a context
+# manager (see test_settings.py).
+for _key in (
+    "GOOGLE_AI_API_KEY",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "COHERE_API_KEY",
+    "PINECONE_API_KEY",
+):
+    os.environ[_key] = ""
+
 
 @pytest.fixture(scope="session")
 def event_loop() -> Any:

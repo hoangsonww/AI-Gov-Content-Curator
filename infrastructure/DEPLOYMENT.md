@@ -157,6 +157,82 @@ graph TB
 - **Prometheus**: Metrics collection and alerting
 - **Grafana**: Dashboards and visualization
 - **External Secrets Operator**: Secrets synchronization
+- **Splunk OTel Collector**: Per-node DaemonSet (`splunk-monitoring`
+  namespace) receiving OTLP traces/metrics/logs on `:4317`
+
+---
+
+## Agentic AI Subsystem
+
+The Python agentic AI pipeline + MCP server deploy independently of the
+ECS/Argo services.
+
+### Components
+
+- **agentic-ai-api**: FastAPI HTTP service (`/process`, `/analyze`,
+  `/batch`, `/healthz`, `/readyz`, `/metrics`). Scaled by HPA (2–10).
+- **agentic-ai-mcp**: MCP stdio server, single replica by design
+  (stdio transport — see `agentic_ai/docs/adr/0002-mcp-transport.md`).
+
+Both run from one image (`ghcr.io/hoangsonww/ai-curator-agentic-ai`),
+non-root (UID 10001), read-only root filesystem, dropped capabilities.
+
+### Manifests
+
+| Path | Purpose |
+| ---- | ------- |
+| `kubernetes/agentic-ai/` | Raw manifests + `kustomization.yaml` |
+| `helm/agentic-ai/` | Helm chart (parameterized) |
+| `terraform/modules/agentic-ai/` | ECR + KMS + Secrets Manager + IAM |
+
+### Observability
+
+Pods export OTLP to the **node-local Splunk OTel Collector** via the
+downward-API host IP: `OTEL_EXPORTER_OTLP_ENDPOINT=http://$(HOST_IP):4317`.
+Prometheus scrapes `/metrics` on port 8000 (annotation + `ServiceMonitor`).
+
+### Deploy
+
+```bash
+# Validate manifests + chart (no cluster needed)
+make agentic-ai-validate
+
+# Build + push the image
+make agentic-ai-build IMAGE_TAG=v1.0.0
+make push-images IMAGE_TAG=v1.0.0
+
+# Deploy via kustomize ...
+make agentic-ai-k8s-deploy
+# ... or via Helm
+make agentic-ai-helm-deploy IMAGE_TAG=v1.0.0
+
+# Check rollout
+make agentic-ai-status
+```
+
+### Cloud foundations (Terraform)
+
+```bash
+# The agentic-ai module provisions ECR (KMS-encrypted, scan-on-push),
+# a KMS CMK, Secrets Manager entries, an IAM read policy, and a
+# CloudWatch log group. Optionally installs the Helm chart.
+module "agentic_ai" {
+  source      = "./modules/agentic-ai"
+  environment = "production"
+  region      = "us-east-1"
+}
+```
+
+Secrets must be populated out-of-band (Secrets Manager / External
+Secrets Operator) — never committed.
+
+### Rollback
+
+```bash
+kubectl -n ai-curator rollout undo deploy/agentic-ai-api
+# or, with Helm:
+helm rollback agentic-ai --namespace ai-curator
+```
 
 ---
 

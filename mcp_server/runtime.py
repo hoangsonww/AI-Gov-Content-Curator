@@ -112,12 +112,23 @@ class ServerRuntime:
             try:
                 from redis.asyncio import Redis
 
+                # redis_password is a SecretStr; extract the raw value.
+                redis_password = (
+                    settings.redis_password.get_secret_value()
+                    if settings.redis_password is not None
+                    else None
+                )
                 redis_client = Redis(
                     host=settings.redis_host,
                     port=settings.redis_port,
                     db=settings.redis_db,
-                    password=settings.redis_password,
+                    password=redis_password or None,
+                    ssl=settings.redis_tls,
                     decode_responses=True,
+                    socket_connect_timeout=5,
+                    socket_timeout=5,
+                    health_check_interval=30,
+                    retry_on_timeout=True,
                 )
                 self.acp_backend = "redis"
                 return RedisACPStore(

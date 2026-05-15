@@ -30,7 +30,11 @@ data:
   MAX_ITERATIONS: "10"
   RATE_LIMIT_REQUESTS: "100"
   RATE_LIMIT_WINDOW: "60"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  # OTEL_EXPORTER_OTLP_ENDPOINT is intentionally NOT set here. The cluster
+  # runs the Splunk OTel Collector as a per-node DaemonSet
+  # (splunk-otel-collector-agent), reached via the node's host IP. Each
+  # Deployment supplies OTEL_EXPORTER_OTLP_ENDPOINT=http://$(HOST_IP):4317
+  # from a downward-API fieldRef. See deployment-*.yaml.
   OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
   OTEL_TRACES_SAMPLE_RATIO: "0.25"
   ENABLE_METRICS: "true"

@@ -77,11 +77,12 @@ class SentimentAnalyzerAgent(BaseAgent):
 
             summary_info = f"Summary: {summary}" if summary else ""
 
-            result = self.chain.invoke(
+            result = self._run_chain(
                 {
                     "content": content[:4000],  # Limit for sentiment analysis
                     "summary_info": summary_info,
-                }
+                },
+                op="agent.sentiment_analyzer.analyze_sentiment",
             )
 
             logger.info(
