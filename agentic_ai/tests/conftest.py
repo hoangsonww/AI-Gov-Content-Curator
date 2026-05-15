@@ -38,15 +38,15 @@ def fresh_metrics_registry() -> Any:
     """Reset the metrics singleton between tests to avoid label leakage."""
     from mcp_server import observability
 
-    observability._metrics = None  # noqa: SLF001
+    observability._metrics = None
     yield observability.metrics()
-    observability._metrics = None  # noqa: SLF001
+    observability._metrics = None
 
 
 @pytest.fixture
 def reset_circuit_breakers() -> Any:
     from mcp_server import resilience
 
-    resilience._breakers.clear()  # noqa: SLF001
+    resilience._breakers.clear()
     yield
-    resilience._breakers.clear()  # noqa: SLF001
+    resilience._breakers.clear()

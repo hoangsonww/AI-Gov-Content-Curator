@@ -1,9 +1,10 @@
 """
 Pydantic models for MCP request and job state.
 """
+
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -34,8 +35,8 @@ class ProcessingStatus(BaseModel):
     article_id: str
     status: str  # pending, processing, completed, failed, not_found
     progress: float
-    current_stage: Optional[str] = None
+    current_stage: str | None = None
     started_at: str
-    completed_at: Optional[str] = None
-    result: Optional[dict[str, Any]] = None
-    error: Optional[str] = None
+    completed_at: str | None = None
+    result: dict[str, Any] | None = None
+    error: str | None = None

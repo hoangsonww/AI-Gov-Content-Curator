@@ -1,4 +1,5 @@
 """Analysis and classification prompts."""
+
 from __future__ import annotations
 
 

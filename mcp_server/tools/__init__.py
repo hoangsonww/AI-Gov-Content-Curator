@@ -1,4 +1,5 @@
 """Tool registration entrypoint."""
+
 from __future__ import annotations
 
 from .acp import register_acp_tools

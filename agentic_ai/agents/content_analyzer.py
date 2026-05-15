@@ -1,12 +1,14 @@
 """
 Content Analyzer Agent - Extracts structure and key information from articles.
 """
-from typing import Dict, Any, Optional
-from langchain_core.prompts import ChatPromptTemplate
+
+from typing import Any
+
+import structlog
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 from .base_agent import BaseAgent
-import structlog
 
 logger = structlog.get_logger()
 
@@ -19,8 +21,11 @@ class ContentAnalyzerAgent(BaseAgent):
         super().__init__(name="ContentAnalyzer")
 
         # Define the analysis prompt
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert content analyzer for government and news articles.
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """You are an expert content analyzer for government and news articles.
             Analyze the provided content and extract:
             1. Main topic and subtopics
             2. Key entities (people, organizations, locations)
@@ -38,13 +43,15 @@ class ContentAnalyzerAgent(BaseAgent):
             - tone: string (neutral, positive, negative, analytical, etc.)
             - word_count: integer
             - estimated_reading_time: integer (in minutes)
-            """),
-            ("user", "Analyze this content:\n\n{content}\n\nMetadata: {metadata}")
-        ])
+            """,
+                ),
+                ("user", "Analyze this content:\n\n{content}\n\nMetadata: {metadata}"),
+            ]
+        )
 
         self.chain = self.prompt | self.llm | JsonOutputParser()
 
-    def analyze(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def analyze(self, content: str, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Analyze article content.
 
@@ -58,10 +65,12 @@ class ContentAnalyzerAgent(BaseAgent):
         try:
             logger.info("Analyzing content", content_length=len(content))
 
-            result = self.chain.invoke({
-                "content": content[:5000],  # Limit to first 5000 chars for analysis
-                "metadata": metadata or {}
-            })
+            result = self.chain.invoke(
+                {
+                    "content": content[:5000],  # Limit to first 5000 chars for analysis
+                    "metadata": metadata or {},
+                }
+            )
 
             logger.info("Content analysis completed", main_topic=result.get("main_topic"))
             return result
@@ -70,6 +79,6 @@ class ContentAnalyzerAgent(BaseAgent):
             logger.error("Content analysis failed", error=str(e))
             return self._handle_error(e, {"content_length": len(content)})
 
-    def process(self, content: str, **kwargs) -> Dict[str, Any]:
+    def process(self, content: str, **kwargs) -> dict[str, Any]:
         """Process method implementation."""
         return self.analyze(content, kwargs.get("metadata"))

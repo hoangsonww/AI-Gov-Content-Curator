@@ -1,4 +1,5 @@
 """Operational and diagnostics MCP tools."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -12,6 +13,7 @@ from ..diagnostics import (
     get_provider_configuration,
     get_server_capabilities as get_server_capabilities_snapshot,
 )
+from ..middleware import tool_middleware
 from ..runtime import ServerRuntime
 from ..validation import validate_content_size
 from .common import ensure_runtime_ready, validation_error
@@ -19,11 +21,13 @@ from .common import ensure_runtime_ready, validation_error
 
 def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
     @mcp.tool()
+    @tool_middleware("check_pipeline_health", rate_limit=False)
     async def check_pipeline_health() -> dict[str, Any]:
         """Return runtime health status for the pipeline and job counts."""
         return await build_health_report(runtime)
 
     @mcp.tool()
+    @tool_middleware("get_pipeline_graph", rate_limit=False)
     async def get_pipeline_graph(format: str = "mermaid") -> dict[str, Any]:
         """Return pipeline graph in Mermaid format for observability and reviews."""
         normalized = format.strip().lower()
@@ -41,21 +45,25 @@ def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("get_server_capabilities", rate_limit=False)
     async def get_server_capabilities() -> dict[str, Any]:
         """Return complete MCP primitive inventory and runtime identity metadata."""
         return get_server_capabilities_snapshot()
 
     @mcp.tool()
+    @tool_middleware("get_runtime_readiness", rate_limit=False)
     async def get_runtime_readiness() -> dict[str, Any]:
         """Return runtime readiness including startup failure context when degraded."""
         return runtime.readiness()
 
     @mcp.tool()
+    @tool_middleware("diagnose_provider_configuration", rate_limit=False)
     async def diagnose_provider_configuration() -> dict[str, Any]:
         """Inspect model provider readiness without exposing raw secrets."""
         return get_provider_configuration()
 
     @mcp.tool()
+    @tool_middleware("run_preflight_checks", rate_limit=False)
     async def run_preflight_checks(sample_content: str = "") -> dict[str, Any]:
         """Run production readiness checks for limits, providers, and runtime prerequisites."""
         providers = get_provider_configuration()
@@ -66,7 +74,9 @@ def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
         checks = {
             "default_provider_configured": providers["default_provider_ready"],
             "any_provider_configured": bool(providers["configured_providers"]),
-            "pipeline_compiled": runtime.ready and runtime.pipeline is not None and hasattr(runtime.pipeline, "app"),
+            "pipeline_compiled": runtime.ready
+            and runtime.pipeline is not None
+            and hasattr(runtime.pipeline, "app"),
             "job_store_available": hasattr(runtime, "jobs"),
             "limits_valid": limits["max_content_chars"] > 0 and limits["max_batch_items"] > 0,
             "acp_operational": acp["ready"],

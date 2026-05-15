@@ -1,4 +1,5 @@
 """Summarization prompts."""
+
 from __future__ import annotations
 
 
@@ -15,7 +16,9 @@ Article:
 Summary:"""
 
     @mcp.prompt()
-    async def executive_brief_prompt(article_content: str, audience: str = "policy leadership") -> str:
+    async def executive_brief_prompt(
+        article_content: str, audience: str = "policy leadership"
+    ) -> str:
         """Prompt template for executive briefing style summaries."""
         return f"""Prepare an executive brief for {audience} based on the article below.
 

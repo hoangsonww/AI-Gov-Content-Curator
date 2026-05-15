@@ -5,11 +5,11 @@ Tracks per-model token usage, estimates costs from the PRICING table,
 enforces daily spending limits, and recommends the cheapest provider
 for a given task.
 """
+
 from __future__ import annotations
 
 import threading
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 import structlog
 
@@ -37,9 +37,7 @@ class CostBudgetManager:
 
     def __init__(self, daily_budget_usd: float = _DEFAULT_DAILY_BUDGET_USD) -> None:
         if daily_budget_usd <= 0:
-            raise ValueError(
-                f"daily_budget_usd must be positive, got {daily_budget_usd}"
-            )
+            raise ValueError(f"daily_budget_usd must be positive, got {daily_budget_usd}")
         self._daily_budget_usd: float = daily_budget_usd
         self._lock: threading.Lock = threading.Lock()
 
@@ -57,7 +55,7 @@ class CostBudgetManager:
     @staticmethod
     def _today_utc() -> str:
         """Return the current UTC date as an ISO-8601 date string."""
-        return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        return datetime.now(UTC).strftime("%Y-%m-%d")
 
     def _maybe_reset(self) -> None:
         """Reset daily counters if the UTC date has advanced.
@@ -147,7 +145,7 @@ class CostBudgetManager:
         input_tokens: int = 0,
         output_tokens: int = 0,
         cached_tokens: int = 0,
-        cost_usd: Optional[float] = None,
+        cost_usd: float | None = None,
     ) -> float:
         """Record actual token usage and update daily cost accumulators.
 
@@ -204,9 +202,7 @@ class CostBudgetManager:
                 "date": self._reset_date,
                 "total_usd": round(self._daily_total_usd, 6),
                 "budget_usd": self._daily_budget_usd,
-                "remaining_usd": round(
-                    max(0.0, self._daily_budget_usd - self._daily_total_usd), 6
-                ),
+                "remaining_usd": round(max(0.0, self._daily_budget_usd - self._daily_total_usd), 6),
                 "by_model": {
                     model: {
                         "cost_usd": round(cost, 6),
@@ -230,9 +226,7 @@ class CostBudgetManager:
         Returns:
             The same plan object with metadata hints added (no structural changes).
         """
-        budget_models = [
-            m for m, p in PRICING.items() if p.get("input", 999) <= 0.10
-        ]
+        budget_models = [m for m, p in PRICING.items() if p.get("input", 999) <= 0.10]
         for step in plan.steps:
             current_model = step.metadata.get("model")
             if current_model and current_model not in budget_models:
@@ -247,7 +241,7 @@ class CostBudgetManager:
 
     def get_recommended_provider(
         self,
-        required_capability: Optional[str] = None,
+        required_capability: str | None = None,
         max_cost_tier: str = "medium",
     ) -> ModelProvider:
         """Return the most cost-effective provider for a given context.

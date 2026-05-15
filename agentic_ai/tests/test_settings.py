@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 import pytest
 
@@ -43,16 +43,18 @@ def test_test_env_does_not_require_key() -> None:
 
 def test_production_requires_default_provider_key() -> None:
     Settings = _settings_class()
-    with env(
-        ENVIRONMENT="production",
-        DEFAULT_LLM_PROVIDER="openai",
-        OPENAI_API_KEY="",
-        ANTHROPIC_API_KEY="",
-        GOOGLE_AI_API_KEY="",
-        COHERE_API_KEY="",
+    with (
+        env(
+            ENVIRONMENT="production",
+            DEFAULT_LLM_PROVIDER="openai",
+            OPENAI_API_KEY="",
+            ANTHROPIC_API_KEY="",
+            GOOGLE_AI_API_KEY="",
+            COHERE_API_KEY="",
+        ),
+        pytest.raises(ValueError, match="OPENAI"),
     ):
-        with pytest.raises(ValueError, match="OPENAI"):
-            Settings()
+        Settings()
 
 
 def test_production_accepts_with_key() -> None:
@@ -67,7 +69,7 @@ def test_production_accepts_with_key() -> None:
 
 
 def test_log_level_uppercased() -> None:
-    Settings = _settings_class()
+    _settings_class()
     with env(ENVIRONMENT="test", LOG_LEVEL="info"):
         assert _settings_class()().log_level == "INFO"
 

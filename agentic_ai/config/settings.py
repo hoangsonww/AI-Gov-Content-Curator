@@ -6,11 +6,10 @@ must resolve, allow-listed providers, fail-fast on bad enum values.
 
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 Environment = Literal["development", "staging", "production", "test"]
 LLMProvider = Literal["google", "openai", "anthropic", "cohere"]
@@ -66,10 +65,10 @@ class Settings(BaseSettings):
     acp_max_capabilities: int = Field(default=32, ge=1, le=1_000)
 
     # ── LLM provider keys (SecretStr so they never serialize to logs) ──
-    openai_api_key: Optional[SecretStr] = Field(default=None)
-    anthropic_api_key: Optional[SecretStr] = Field(default=None)
-    google_ai_api_key: Optional[SecretStr] = Field(default=None)
-    cohere_api_key: Optional[SecretStr] = Field(default=None)
+    openai_api_key: SecretStr | None = Field(default=None)
+    anthropic_api_key: SecretStr | None = Field(default=None)
+    google_ai_api_key: SecretStr | None = Field(default=None)
+    cohere_api_key: SecretStr | None = Field(default=None)
 
     default_llm_provider: LLMProvider = Field(default="google")
     default_model: str = Field(default="gemini-1.5-flash")
@@ -83,8 +82,8 @@ class Settings(BaseSettings):
     llm_circuit_reset_seconds: int = Field(default=30, ge=1, le=3_600)
 
     # ── Vector Store ───────────────────────────────────────────────────
-    pinecone_api_key: Optional[SecretStr] = Field(default=None)
-    pinecone_environment: Optional[str] = Field(default=None)
+    pinecone_api_key: SecretStr | None = Field(default=None)
+    pinecone_environment: str | None = Field(default=None)
     pinecone_index_name: str = Field(default="synthora-ai")
 
     # ── MongoDB ────────────────────────────────────────────────────────
@@ -95,27 +94,27 @@ class Settings(BaseSettings):
     redis_host: str = Field(default="localhost")
     redis_port: int = Field(default=6379, ge=1, le=65535)
     redis_db: int = Field(default=0, ge=0, le=15)
-    redis_password: Optional[SecretStr] = Field(default=None)
+    redis_password: SecretStr | None = Field(default=None)
     redis_tls: bool = Field(default=False)
 
     # ── AWS ────────────────────────────────────────────────────────────
     aws_region: str = Field(default="us-east-1")
-    aws_access_key_id: Optional[SecretStr] = Field(default=None)
-    aws_secret_access_key: Optional[SecretStr] = Field(default=None)
-    aws_s3_bucket: Optional[str] = Field(default=None)
+    aws_access_key_id: SecretStr | None = Field(default=None)
+    aws_secret_access_key: SecretStr | None = Field(default=None)
+    aws_s3_bucket: str | None = Field(default=None)
 
     # ── Azure ──────────────────────────────────────────────────────────
-    azure_subscription_id: Optional[str] = Field(default=None)
-    azure_resource_group: Optional[str] = Field(default=None)
-    azure_storage_account: Optional[str] = Field(default=None)
-    azure_storage_key: Optional[SecretStr] = Field(default=None)
-    azure_app_insights_connection_string: Optional[SecretStr] = Field(default=None)
+    azure_subscription_id: str | None = Field(default=None)
+    azure_resource_group: str | None = Field(default=None)
+    azure_storage_account: str | None = Field(default=None)
+    azure_storage_key: SecretStr | None = Field(default=None)
+    azure_app_insights_connection_string: SecretStr | None = Field(default=None)
 
     # ── GCP ────────────────────────────────────────────────────────────
-    gcp_project_id: Optional[str] = Field(default=None)
+    gcp_project_id: str | None = Field(default=None)
     gcp_region: str = Field(default="us-central1")
-    gcp_storage_bucket: Optional[str] = Field(default=None)
-    google_application_credentials: Optional[str] = Field(default=None)
+    gcp_storage_bucket: str | None = Field(default=None)
+    google_application_credentials: str | None = Field(default=None)
 
     # ── Agent Configuration ────────────────────────────────────────────
     max_iterations: int = Field(default=10, ge=1, le=100)
@@ -129,7 +128,7 @@ class Settings(BaseSettings):
     # ── Monitoring / OTel ──────────────────────────────────────────────
     enable_metrics: bool = Field(default=True)
     metrics_port: int = Field(default=9090, ge=1, le=65535)
-    otel_exporter_otlp_endpoint: Optional[str] = Field(default=None)
+    otel_exporter_otlp_endpoint: str | None = Field(default=None)
     otel_exporter_otlp_protocol: Literal["grpc", "http/protobuf"] = Field(default="grpc")
     otel_traces_sample_ratio: float = Field(default=1.0, ge=0.0, le=1.0)
 
@@ -160,7 +159,7 @@ class Settings(BaseSettings):
         return value
 
     @model_validator(mode="after")
-    def _check_provider_key_present(self) -> "Settings":
+    def _check_provider_key_present(self) -> Settings:
         """In production, the default LLM provider must have its key set.
 
         Non-production environments may run without keys (e.g. unit tests
@@ -169,7 +168,7 @@ class Settings(BaseSettings):
         """
         if self.environment != "production":
             return self
-        provider_keys: dict[str, Optional[SecretStr]] = {
+        provider_keys: dict[str, SecretStr | None] = {
             "google": self.google_ai_api_key,
             "openai": self.openai_api_key,
             "anthropic": self.anthropic_api_key,
@@ -177,15 +176,18 @@ class Settings(BaseSettings):
         }
         key = provider_keys.get(self.default_llm_provider)
         if key is None or not key.get_secret_value().strip():
+            env_var = f"{self.default_llm_provider.upper()}_API_KEY"
+            if self.default_llm_provider == "google":
+                env_var = "GOOGLE_AI_API_KEY"
             raise ValueError(
-                f"DEFAULT_LLM_PROVIDER={self.default_llm_provider} requires its "
-                "API key to be set when ENVIRONMENT=production."
+                f"{env_var} is required when DEFAULT_LLM_PROVIDER="
+                f"{self.default_llm_provider} and ENVIRONMENT=production."
             )
         return self
 
     # ─── Convenience helpers ───────────────────────────────────────────
 
-    def get_provider_key(self, provider: str) -> Optional[str]:
+    def get_provider_key(self, provider: str) -> str | None:
         """Return the API key for a provider as a plain string, or None."""
         attr = {
             "google": "google_ai_api_key",
@@ -195,7 +197,7 @@ class Settings(BaseSettings):
         }.get(provider.lower())
         if attr is None:
             return None
-        secret: Optional[SecretStr] = getattr(self, attr, None)
+        secret: SecretStr | None = getattr(self, attr, None)
         if secret is None:
             return None
         value = secret.get_secret_value().strip()

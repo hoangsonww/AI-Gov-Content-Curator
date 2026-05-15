@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from mcp_server.errors import (
+    RETRYABLE_ERROR_TYPES,
     AuthorizationError,
     CircuitOpenError,
     ConfigurationError,
@@ -10,7 +11,6 @@ from mcp_server.errors import (
     MCPError,
     NotFoundError,
     PermanentUpstreamError,
-    RETRYABLE_ERROR_TYPES,
     ResourceExhaustedError,
     TimeoutError_,
     TransientUpstreamError,

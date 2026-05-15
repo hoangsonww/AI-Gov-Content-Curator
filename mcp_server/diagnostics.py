@@ -1,4 +1,5 @@
 """Shared diagnostics helpers for tools and resources."""
+
 from __future__ import annotations
 
 from typing import Any

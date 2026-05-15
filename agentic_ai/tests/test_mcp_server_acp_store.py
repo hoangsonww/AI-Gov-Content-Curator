@@ -30,7 +30,9 @@ async def test_acp_register_send_fetch_and_ack() -> None:
     assert acked.status == "acknowledged"
     assert acked.acknowledged_at is not None
 
-    filtered_inbox = await store.fetch_inbox(agent_id="agent-b", limit=10, include_acknowledged=False)
+    filtered_inbox = await store.fetch_inbox(
+        agent_id="agent-b", limit=10, include_acknowledged=False
+    )
     assert filtered_inbox == []
 
 

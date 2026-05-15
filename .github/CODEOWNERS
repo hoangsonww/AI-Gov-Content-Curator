@@ -1,0 +1,17 @@
+# Code ownership for review routing.
+# Entries here are scoped to the agentic AI subsystem and its
+# infrastructure. Add other paths as ownership is formalized.
+
+# Agentic AI Python subsystem
+/agentic_ai/                       @hoangsonww
+/mcp_server/                       @hoangsonww
+
+# Infrastructure for the agentic AI services
+/infrastructure/kubernetes/agentic-ai/      @hoangsonww
+/infrastructure/helm/agentic-ai/            @hoangsonww
+/infrastructure/terraform/modules/agentic-ai/ @hoangsonww
+
+# CI + repo automation
+/.github/workflows/agentic-ai-ci.yml        @hoangsonww
+/.github/workflows/codeql-agentic-ai.yml    @hoangsonww
+/.github/dependabot.yml                     @hoangsonww

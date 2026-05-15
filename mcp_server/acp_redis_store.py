@@ -1,4 +1,5 @@
 """Redis-backed ACP registry and inter-agent message store."""
+
 from __future__ import annotations
 
 import json
@@ -91,10 +92,7 @@ class RedisACPStore:
     async def list_agents(self) -> list[dict]:
         await self._prune()
         raw_map = await self.redis.hgetall(self._key("agents"))
-        agents: list[dict] = []
-        for raw in raw_map.values():
-            agents.append(json.loads(raw))
-        return agents
+        return [json.loads(raw) for raw in raw_map.values()]
 
     async def send_message(
         self,
@@ -114,7 +112,9 @@ class RedisACPStore:
         if not await self.redis.hexists(agents_key, recipient_id):
             raise ValueError(f"recipient agent '{recipient_id}' is not registered")
 
-        effective_ttl = ttl_seconds if ttl_seconds and ttl_seconds > 0 else self.default_message_ttl_seconds
+        effective_ttl = (
+            ttl_seconds if ttl_seconds and ttl_seconds > 0 else self.default_message_ttl_seconds
+        )
         created_at = utc_now()
         message = ACPMessageRecord(
             message_id=f"msg_{uuid4().hex}",
@@ -146,7 +146,9 @@ class RedisACPStore:
             return None
         return ACPMessageRecord(**json.loads(raw))
 
-    async def fetch_inbox(self, *, agent_id: str, limit: int, include_acknowledged: bool = False) -> list[dict]:
+    async def fetch_inbox(
+        self, *, agent_id: str, limit: int, include_acknowledged: bool = False
+    ) -> list[dict]:
         await self._prune()
         if not await self.redis.hexists(self._key("agents"), agent_id):
             raise ValueError(f"agent '{agent_id}' is not registered")
@@ -166,7 +168,9 @@ class RedisACPStore:
             if message.status == "pending":
                 message.status = "delivered"
                 message.delivered_at = utc_now_iso()
-                await self.redis.hset(messages_hash, message.message_id, json.dumps(message.model_dump()))
+                await self.redis.hset(
+                    messages_hash, message.message_id, json.dumps(message.model_dump())
+                )
             out.append(message.model_dump())
             if len(out) >= safe_limit:
                 break
@@ -263,8 +267,9 @@ class RedisACPStore:
         # Prune stale agents by heartbeat age.
         if self.agent_ttl_seconds > 0:
             stale_before = now_score - self.agent_ttl_seconds
-            stale_agents = await self.redis.zrangebyscore(self._key("agents:heartbeat"), "-inf", stale_before)
+            stale_agents = await self.redis.zrangebyscore(
+                self._key("agents:heartbeat"), "-inf", stale_before
+            )
             if stale_agents:
                 await self.redis.hdel(self._key("agents"), *stale_agents)
                 await self.redis.zrem(self._key("agents:heartbeat"), *stale_agents)
-

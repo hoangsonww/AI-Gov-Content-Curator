@@ -1,12 +1,13 @@
 """
 Runtime wiring for pipeline + job store.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from uuid import uuid4
 
 import structlog
-from uuid import uuid4
 
 from agentic_ai.config.settings import settings
 
@@ -27,7 +28,7 @@ class ServerRuntime:
     def __init__(self) -> None:
         self.logger = structlog.get_logger("mcp_server.runtime")
         self.started_at = utc_now_iso()
-        self.pipeline: "AgenticPipeline | None" = None
+        self.pipeline: AgenticPipeline | None = None
         self.ready = False
         self.startup_error: str | None = None
         self.acp_backend = settings.acp_backend
@@ -80,7 +81,11 @@ class ServerRuntime:
             )
             await self.acp.acknowledge_message(agent_id=recipient_id, message_id=message.message_id)
             checks["message_acknowledged"] = True
-            return {"enabled": True, "ready": all(bool(v) for v in checks.values()), "checks": checks}
+            return {
+                "enabled": True,
+                "ready": all(bool(v) for v in checks.values()),
+                "checks": checks,
+            }
         except Exception as exc:  # pragma: no cover - safety net for operations
             return {
                 "enabled": True,

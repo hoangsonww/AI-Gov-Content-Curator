@@ -1,8 +1,10 @@
 """Analysis-focused MCP tools."""
+
 from __future__ import annotations
 
 from typing import Any
 
+from ..middleware import tool_middleware
 from ..runtime import ServerRuntime
 from ..text_metrics import compute_text_metrics as build_text_metrics
 from ..validation import validate_content_size
@@ -17,12 +19,16 @@ def _render_summary_by_style(summary: str, style: str) -> str:
         return cleaned[:300].strip()
 
     if normalized == "bullet":
-        segments = [segment.strip() for segment in cleaned.replace("\n", " ").split(".") if segment.strip()]
+        segments = [
+            segment.strip() for segment in cleaned.replace("\n", " ").split(".") if segment.strip()
+        ]
         bullets = [f"- {segment}." for segment in segments[:7]]
         return "\n".join(bullets) if bullets else cleaned
 
     if normalized == "executive":
-        segments = [segment.strip() for segment in cleaned.replace("\n", " ").split(".") if segment.strip()]
+        segments = [
+            segment.strip() for segment in cleaned.replace("\n", " ").split(".") if segment.strip()
+        ]
         return " ".join([f"{segment}." for segment in segments[:3]])
 
     return cleaned
@@ -30,6 +36,7 @@ def _render_summary_by_style(summary: str, style: str) -> str:
 
 def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
     @mcp.tool()
+    @tool_middleware("analyze_content")
     async def analyze_content(content: str, analysis_type: str = "full") -> dict[str, Any]:
         """Run targeted analysis using one or more pipeline agents."""
         mode = analysis_type.strip().lower()
@@ -89,6 +96,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         )
 
     @mcp.tool()
+    @tool_middleware("analyze_sentiment")
     async def analyze_sentiment(content: str, summary: str = "") -> dict[str, Any]:
         """Analyze sentiment independently with optional summary context."""
         pipeline, readiness_error = ensure_runtime_ready(runtime)
@@ -105,6 +113,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         return pipeline.sentiment_analyzer.analyze_sentiment(content, summary=summary or None)
 
     @mcp.tool()
+    @tool_middleware("extract_topics")
     async def extract_topics(content: str, summary: str = "") -> dict[str, Any]:
         """Classify content into policy/news topics."""
         pipeline, readiness_error = ensure_runtime_ready(runtime)
@@ -125,6 +134,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("evaluate_quality")
     async def evaluate_quality(
         content: str,
         summary: str = "",
@@ -144,7 +154,9 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
             return validation_error("content", size_error)
 
         generated_summary = summary.strip() or pipeline.summarizer.summarize(content)
-        generated_topics = topics or pipeline.classifier.classify(content, summary=generated_summary)
+        generated_topics = topics or pipeline.classifier.classify(
+            content, summary=generated_summary
+        )
         generated_sentiment = sentiment or pipeline.sentiment_analyzer.analyze_sentiment(
             content,
             summary=generated_summary,
@@ -173,6 +185,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("compute_text_metrics", rate_limit=False)
     async def compute_text_metrics(content: str) -> dict[str, Any]:
         """Compute readability and size metrics for an article payload."""
         if not content.strip():
@@ -189,7 +202,11 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
 
     @mcp.tool()
     async def generate_summary(content: str, style: str = "standard") -> str:
-        """Generate article summary with style variants (standard/brief/bullet/executive)."""
+        """Generate article summary with style variants (standard/brief/bullet/executive).
+
+        Note: returns a plain string. Skipped middleware (which expects dict
+        return) so callers still get the documented contract.
+        """
         pipeline, readiness_error = ensure_runtime_ready(runtime)
         if readiness_error:
             return (

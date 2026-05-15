@@ -11,9 +11,10 @@ Production hardening:
 
 from __future__ import annotations
 
+import contextlib
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 import structlog
 from langchain_anthropic import ChatAnthropic
@@ -22,7 +23,6 @@ from langchain_core.language_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 
-from ..config.settings import settings
 from mcp_server.errors import (
     ConfigurationError,
     PermanentUpstreamError,
@@ -31,6 +31,8 @@ from mcp_server.errors import (
 )
 from mcp_server.observability import metrics, record_llm_call, traced_async_span
 from mcp_server.resilience import guarded_call
+
+from ..config.settings import settings
 
 logger = structlog.get_logger("agents.base")
 
@@ -58,7 +60,7 @@ def _classify_provider_error(exc: BaseException) -> BaseException:
     transient is treated as permanent so the retry policy doesn't burn
     attempts on a malformed prompt.
     """
-    if isinstance(exc, (TransientUpstreamError, PermanentUpstreamError, TimeoutError_)):
+    if isinstance(exc, TransientUpstreamError | PermanentUpstreamError | TimeoutError_):
         return exc
     msg = str(exc).lower()
     if any(k in msg for k in _TRANSIENT_KEYWORDS):
@@ -69,7 +71,7 @@ def _classify_provider_error(exc: BaseException) -> BaseException:
 class BaseAgent(ABC):
     """Abstract base class for all agents."""
 
-    def __init__(self, name: str, llm: Optional[BaseChatModel] = None):
+    def __init__(self, name: str, llm: BaseChatModel | None = None):
         self.name = name
         self.llm = llm or self._get_default_llm()
         self._logger = logger.bind(agent=name)
@@ -77,14 +79,20 @@ class BaseAgent(ABC):
 
     # ── LLM construction ────────────────────────────────────────────────
 
+    # Maps provider -> the env var that supplies its key.
+    _PROVIDER_KEY_ENV = {
+        "google": "GOOGLE_AI_API_KEY",
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "cohere": "COHERE_API_KEY",
+    }
+
     def _get_default_llm(self) -> BaseChatModel:
         provider = settings.default_llm_provider
         key = settings.get_provider_key(provider)
         if key is None:
-            raise ConfigurationError(
-                f"{provider.upper()}_API_KEY is required when "
-                f"DEFAULT_LLM_PROVIDER={provider}"
-            )
+            env_var = self._PROVIDER_KEY_ENV.get(provider, f"{provider.upper()}_API_KEY")
+            raise ConfigurationError(f"{env_var} is required when DEFAULT_LLM_PROVIDER={provider}")
 
         timeout = settings.llm_request_timeout_seconds
         common: dict[str, Any] = {
@@ -211,10 +219,8 @@ class BaseAgent(ABC):
                     duration_s=duration,
                 )
                 if span is not None:
-                    try:
+                    with contextlib.suppress(Exception):
                         span.set_attribute("agent.duration_ms", int(duration * 1000))
-                    except Exception:
-                        pass
                 return result
 
         return await _run()

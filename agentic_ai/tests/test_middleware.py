@@ -7,12 +7,11 @@ import pytest
 from mcp_server.errors import ValidationError
 from mcp_server.middleware import tool_middleware
 
-
 pytestmark = pytest.mark.asyncio
 
 
 async def test_middleware_passes_result_through(
-    fresh_metrics_registry,  # noqa: ARG001
+    fresh_metrics_registry,
 ) -> None:
     @tool_middleware("ok", rate_limit=False)
     async def ok_tool() -> dict[str, str]:
@@ -22,7 +21,7 @@ async def test_middleware_passes_result_through(
 
 
 async def test_middleware_converts_mcp_error_to_dict(
-    fresh_metrics_registry,  # noqa: ARG001
+    fresh_metrics_registry,
 ) -> None:
     @tool_middleware("bad", rate_limit=False)
     async def bad_tool() -> dict[str, str]:
@@ -35,7 +34,7 @@ async def test_middleware_converts_mcp_error_to_dict(
 
 
 async def test_middleware_handles_unhandled_exception(
-    fresh_metrics_registry,  # noqa: ARG001
+    fresh_metrics_registry,
 ) -> None:
     @tool_middleware("explode", rate_limit=False)
     async def exploder() -> dict[str, str]:

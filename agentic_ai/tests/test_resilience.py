@@ -18,13 +18,13 @@ from mcp_server.resilience import (
     with_retries,
 )
 
-
 pytestmark = pytest.mark.asyncio
 
 
 # ─── with_retries ────────────────────────────────────────────────────────
 
-async def test_with_retries_succeeds_first_try(reset_circuit_breakers, fresh_metrics_registry):  # noqa: ARG001
+
+async def test_with_retries_succeeds_first_try(reset_circuit_breakers, fresh_metrics_registry):
     calls = {"n": 0}
 
     @with_retries(operation="t", max_attempts=3)
@@ -36,7 +36,9 @@ async def test_with_retries_succeeds_first_try(reset_circuit_breakers, fresh_met
     assert calls["n"] == 1
 
 
-async def test_with_retries_recovers_after_transient_failure(reset_circuit_breakers, fresh_metrics_registry):  # noqa: ARG001
+async def test_with_retries_recovers_after_transient_failure(
+    reset_circuit_breakers, fresh_metrics_registry
+):
     calls = {"n": 0}
 
     @with_retries(operation="t2", max_attempts=3, initial_backoff_s=0.01, max_backoff_s=0.02)
@@ -50,7 +52,7 @@ async def test_with_retries_recovers_after_transient_failure(reset_circuit_break
     assert calls["n"] == 3
 
 
-async def test_with_retries_exhausts_and_reraises(reset_circuit_breakers, fresh_metrics_registry):  # noqa: ARG001
+async def test_with_retries_exhausts_and_reraises(reset_circuit_breakers, fresh_metrics_registry):
     @with_retries(operation="t3", max_attempts=2, initial_backoff_s=0.01, max_backoff_s=0.02)
     async def broken() -> None:
         raise TransientUpstreamError("always")
@@ -59,7 +61,9 @@ async def test_with_retries_exhausts_and_reraises(reset_circuit_breakers, fresh_
         await broken()
 
 
-async def test_with_retries_does_not_retry_non_transient(reset_circuit_breakers, fresh_metrics_registry):  # noqa: ARG001
+async def test_with_retries_does_not_retry_non_transient(
+    reset_circuit_breakers, fresh_metrics_registry
+):
     calls = {"n": 0}
 
     @with_retries(operation="t4", max_attempts=3, initial_backoff_s=0.01, max_backoff_s=0.02)
@@ -73,6 +77,7 @@ async def test_with_retries_does_not_retry_non_transient(reset_circuit_breakers,
 
 
 # ─── with_async_timeout ──────────────────────────────────────────────────
+
 
 async def test_timeout_completes_within_deadline() -> None:
     async def slow() -> str:
@@ -92,7 +97,8 @@ async def test_timeout_raises_when_exceeded() -> None:
 
 # ─── guarded_call (retry + breaker + timeout) ────────────────────────────
 
-async def test_guarded_call_success(reset_circuit_breakers, fresh_metrics_registry):  # noqa: ARG001
+
+async def test_guarded_call_success(reset_circuit_breakers, fresh_metrics_registry):
     @guarded_call(name="g.ok", timeout_s=1.0, max_attempts=3)
     async def fn(x: int) -> int:
         return x * 2
@@ -100,7 +106,10 @@ async def test_guarded_call_success(reset_circuit_breakers, fresh_metrics_regist
     assert await fn(3) == 6
 
 
-async def test_guarded_call_breaker_opens(reset_circuit_breakers, fresh_metrics_registry):  # noqa: ARG001
+async def test_guarded_call_breaker_opens(reset_circuit_breakers, fresh_metrics_registry):
+    # The circuit-open path requires pybreaker; the no-op fallback never trips.
+    pytest.importorskip("pybreaker")
+
     @guarded_call(
         name="g.break",
         timeout_s=1.0,
@@ -120,7 +129,7 @@ async def test_guarded_call_breaker_opens(reset_circuit_breakers, fresh_metrics_
         await broken()
 
 
-def test_get_breaker_returns_cached(reset_circuit_breakers):  # noqa: ARG001
+async def test_get_breaker_returns_cached(reset_circuit_breakers):
     b1 = get_breaker("cached")
     b2 = get_breaker("cached")
     assert b1 is b2

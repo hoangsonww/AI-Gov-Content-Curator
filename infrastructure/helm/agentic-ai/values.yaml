@@ -1,0 +1,134 @@
+image:
+  repository: ghcr.io/synthora/agentic-ai
+  tag: "" # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+imageMcp:
+  # Optional override; if empty uses the same image.
+  repository: ""
+  tag: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+api:
+  enabled: true
+  replicaCount: 2
+  args:
+    - "--host=0.0.0.0"
+    - "--port=8000"
+    - "--proxy-headers"
+    - "--forwarded-allow-ips=*"
+  containerPort: 8000
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  service:
+    type: ClusterIP
+    port: 80
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPU: 65
+    targetMemory: 75
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+mcp:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+securityContext:
+  pod:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    fsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  container:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ALL]
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: false
+
+env:
+  ENVIRONMENT: production
+  LOG_LEVEL: INFO
+  LOG_JSON: "true"
+  ACP_ENABLED: "true"
+  ACP_BACKEND: redis
+  DEFAULT_LLM_PROVIDER: google
+  DEFAULT_MODEL: gemini-1.5-flash
+  TEMPERATURE: "0.7"
+  MAX_TOKENS: "2000"
+  LLM_REQUEST_TIMEOUT_SECONDS: "60"
+  LLM_MAX_ATTEMPTS: "3"
+  LLM_CIRCUIT_FAIL_MAX: "5"
+  LLM_CIRCUIT_RESET_SECONDS: "30"
+  AGENT_TIMEOUT: "300"
+  MAX_ITERATIONS: "10"
+  RATE_LIMIT_REQUESTS: "100"
+  RATE_LIMIT_WINDOW: "60"
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.monitoring.svc.cluster.local:4317
+  OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+  OTEL_TRACES_SAMPLE_RATIO: "0.25"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  DAILY_COST_BUDGET_USD: "100.0"
+
+# Existing K8s Secret to mount. If empty, the chart creates a placeholder
+# Secret from `secret` values; in production prefer external-secrets.
+secretRef:
+  name: ""
+
+secret:
+  create: true
+  data:
+    GOOGLE_AI_API_KEY: ""
+    OPENAI_API_KEY: ""
+    ANTHROPIC_API_KEY: ""
+    COHERE_API_KEY: ""
+    PINECONE_API_KEY: ""
+    MONGODB_URI: ""
+    REDIS_PASSWORD: ""
+
+networkPolicy:
+  enabled: true
+
+serviceMonitor:
+  enabled: true
+  interval: 15s
+  scrapeTimeout: 10s
+  release: kube-prometheus-stack
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/component: api

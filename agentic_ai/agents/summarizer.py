@@ -1,12 +1,14 @@
 """
 Summarizer Agent - Generates concise summaries of articles.
 """
-from typing import Dict, Any, Optional
-from langchain_core.prompts import ChatPromptTemplate
+
+from typing import Any
+
+import structlog
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 from .base_agent import BaseAgent
-import structlog
 
 logger = structlog.get_logger()
 
@@ -19,8 +21,11 @@ class SummarizerAgent(BaseAgent):
         super().__init__(name="Summarizer")
 
         # Define the summarization prompt
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert summarizer specializing in government and news articles.
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """You are an expert summarizer specializing in government and news articles.
             Create a concise, accurate summary that:
             1. Captures the main points and key information
             2. Maintains factual accuracy
@@ -30,23 +35,24 @@ class SummarizerAgent(BaseAgent):
 
             Focus on the "who, what, when, where, why, and how" of the article.
             Avoid personal opinions or interpretations.
-            """),
-            ("user", """Article to summarize:
+            """,
+                ),
+                (
+                    "user",
+                    """Article to summarize:
 
             {content}
 
             {context_info}
 
-            Provide a clear, concise summary:""")
-        ])
+            Provide a clear, concise summary:""",
+                ),
+            ]
+        )
 
         self.chain = self.prompt | self.llm | StrOutputParser()
 
-    def summarize(
-        self,
-        content: str,
-        analyzed_content: Optional[Dict[str, Any]] = None
-    ) -> str:
+    def summarize(self, content: str, analyzed_content: dict[str, Any] | None = None) -> str:
         """
         Generate a summary of the article.
 
@@ -69,10 +75,7 @@ class SummarizerAgent(BaseAgent):
                 - Key entities: {', '.join(analyzed_content.get('entities', {}).get('people', [])[:3])}
                 """
 
-            summary = self.chain.invoke({
-                "content": content,
-                "context_info": context_info
-            })
+            summary = self.chain.invoke({"content": content, "context_info": context_info})
 
             logger.info("Summary generated", summary_length=len(summary))
             return summary.strip()

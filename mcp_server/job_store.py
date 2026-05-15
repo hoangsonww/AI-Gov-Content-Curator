@@ -1,7 +1,9 @@
 """In-memory processing job store with retention guardrails."""
+
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from collections import deque
 from datetime import datetime, timedelta
 
@@ -23,10 +25,8 @@ class ProcessingJobStore:
         async with self._lock:
             # Move updated jobs to the end so "recent" ordering reflects last activity.
             if job.article_id in self._jobs:
-                try:
+                with contextlib.suppress(ValueError):
                     self._order.remove(job.article_id)
-                except ValueError:
-                    pass
             self._order.append(job.article_id)
             self._jobs[job.article_id] = job
             await self._prune_locked()
@@ -58,7 +58,7 @@ class ProcessingJobStore:
 
             ordered_ids = list(self._order)
             if newest_first:
-                ordered_ids = list(reversed(ordered_ids))
+                ordered_ids.reverse()
 
             selected: list[dict] = []
             skipped = 0

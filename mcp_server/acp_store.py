@@ -1,4 +1,5 @@
 """In-memory ACP registry and message routing store."""
+
 from __future__ import annotations
 
 import asyncio
@@ -41,7 +42,9 @@ class ACPStoreProtocol(Protocol):
 
     async def get_message(self, message_id: str) -> ACPMessageRecord | None: ...
 
-    async def fetch_inbox(self, *, agent_id: str, limit: int, include_acknowledged: bool = False) -> list[dict]: ...
+    async def fetch_inbox(
+        self, *, agent_id: str, limit: int, include_acknowledged: bool = False
+    ) -> list[dict]: ...
 
     async def acknowledge_message(self, *, agent_id: str, message_id: str) -> ACPMessageRecord: ...
 
@@ -130,7 +133,9 @@ class InMemoryACPStore:
             if recipient_id not in self._agents:
                 raise ValueError(f"recipient agent '{recipient_id}' is not registered")
 
-            effective_ttl = ttl_seconds if ttl_seconds and ttl_seconds > 0 else self.default_message_ttl_seconds
+            effective_ttl = (
+                ttl_seconds if ttl_seconds and ttl_seconds > 0 else self.default_message_ttl_seconds
+            )
             created_at = utc_now()
             message = ACPMessageRecord(
                 message_id=f"msg_{uuid4().hex}",
@@ -156,7 +161,9 @@ class InMemoryACPStore:
             await self._prune_locked()
             return self._messages.get(message_id)
 
-    async def fetch_inbox(self, *, agent_id: str, limit: int, include_acknowledged: bool = False) -> list[dict]:
+    async def fetch_inbox(
+        self, *, agent_id: str, limit: int, include_acknowledged: bool = False
+    ) -> list[dict]:
         safe_limit = max(1, min(int(limit), 200))
         async with self._lock:
             await self._prune_locked()
@@ -218,9 +225,15 @@ class InMemoryACPStore:
             return {
                 "registered_agents": len(self._agents),
                 "total_messages": len(self._messages),
-                "pending_messages": len([m for m in self._messages.values() if m.status == "pending"]),
-                "delivered_messages": len([m for m in self._messages.values() if m.status == "delivered"]),
-                "acknowledged_messages": len([m for m in self._messages.values() if m.status == "acknowledged"]),
+                "pending_messages": len(
+                    [m for m in self._messages.values() if m.status == "pending"]
+                ),
+                "delivered_messages": len(
+                    [m for m in self._messages.values() if m.status == "delivered"]
+                ),
+                "acknowledged_messages": len(
+                    [m for m in self._messages.values() if m.status == "acknowledged"]
+                ),
             }
 
     async def _prune_locked(self) -> None:
@@ -260,4 +273,3 @@ class InMemoryACPStore:
 
 # Backward-compatible alias used by tests/importers.
 ACPStore = InMemoryACPStore
-

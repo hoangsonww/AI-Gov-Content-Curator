@@ -1,4 +1,5 @@
 """Configuration resources for MCP clients."""
+
 from __future__ import annotations
 
 from typing import Any

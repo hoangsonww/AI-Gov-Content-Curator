@@ -5,12 +5,13 @@ Articles that fail all recovery attempts are persisted in this queue
 for later inspection, replay, or purge.  The queue is in-process only
 (no external store); it is thread-safe via :class:`threading.Lock`.
 """
+
 from __future__ import annotations
 
 import threading
 import uuid
-from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any, Optional
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
@@ -22,7 +23,7 @@ logger = structlog.get_logger(__name__)
 
 def _utc_now() -> str:
     """Return the current UTC timestamp as an ISO-8601 string."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class DeadLetterEntry:
@@ -43,8 +44,8 @@ class DeadLetterEntry:
         self,
         article_id: str,
         failure_reason: str,
-        error_context: Optional[dict[str, Any]] = None,
-        original_payload: Optional[dict[str, Any]] = None,
+        error_context: dict[str, Any] | None = None,
+        original_payload: dict[str, Any] | None = None,
     ) -> None:
         self.entry_id: str = str(uuid.uuid4())
         self.article_id: str = article_id
@@ -53,7 +54,7 @@ class DeadLetterEntry:
         self.original_payload: dict[str, Any] = original_payload or {}
         self.created_at: str = _utc_now()
         self.replay_count: int = 0
-        self.last_replayed_at: Optional[str] = None
+        self.last_replayed_at: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise entry to a plain dictionary."""
@@ -97,8 +98,8 @@ class DeadLetterQueue:
         self,
         article_id: str,
         failure_reason: str,
-        error_context: Optional[dict[str, Any]] = None,
-        original_payload: Optional[dict[str, Any]] = None,
+        error_context: dict[str, Any] | None = None,
+        original_payload: dict[str, Any] | None = None,
     ) -> str:
         """Insert a failed article into the dead-letter queue.
 
@@ -154,7 +155,7 @@ class DeadLetterQueue:
         with self._lock:
             return [entry.to_dict() for entry in self._entries.values()]
 
-    def get(self, entry_id: str) -> Optional[dict[str, Any]]:
+    def get(self, entry_id: str) -> dict[str, Any] | None:
         """Retrieve a single entry by its identifier.
 
         Args:

@@ -29,10 +29,12 @@ _rate_limiter: TokenBucketRateLimiter | None = None
 
 
 def _get_limiter() -> TokenBucketRateLimiter:
-    global _rate_limiter  # noqa: PLW0603
+    global _rate_limiter
     if _rate_limiter is None:
         _rate_limiter = TokenBucketRateLimiter(
-            rate_per_sec=max(1.0, settings.rate_limit_requests / max(1, settings.rate_limit_window)),
+            rate_per_sec=max(
+                1.0, settings.rate_limit_requests / max(1, settings.rate_limit_window)
+            ),
             burst=max(1, settings.rate_limit_requests),
         )
     return _rate_limiter

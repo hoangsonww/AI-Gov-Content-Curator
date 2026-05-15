@@ -1,4 +1,5 @@
 """Prompt registration entrypoint."""
+
 from __future__ import annotations
 
 from .analysis import register_analysis_prompts

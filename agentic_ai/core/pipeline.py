@@ -2,34 +2,37 @@
 Assembly Line Architecture for Agentic AI Pipeline using LangGraph.
 This implements a sophisticated multi-agent system with state management.
 """
-from typing import Dict, Any, List, Optional, TypedDict, Annotated
-from enum import Enum
+
 import operator
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from enum import Enum
+from typing import Annotated, Any, TypedDict
 
-from langgraph.graph import StateGraph, END
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+import structlog
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langgraph.graph import END, StateGraph
 
-from ..config.settings import settings
-from ..agents.content_analyzer import ContentAnalyzerAgent
-from ..agents.summarizer import SummarizerAgent
-from ..agents.classifier import ClassifierAgent
-from ..agents.sentiment_analyzer import SentimentAnalyzerAgent
-from ..agents.quality_checker import QualityCheckerAgent
 from mcp_server.observability import metrics, traced_async_span, traced_span
 from mcp_server.resilience import with_async_timeout
-import structlog
+
+from ..agents.classifier import ClassifierAgent
+from ..agents.content_analyzer import ContentAnalyzerAgent
+from ..agents.quality_checker import QualityCheckerAgent
+from ..agents.sentiment_analyzer import SentimentAnalyzerAgent
+from ..agents.summarizer import SummarizerAgent
+from ..config.settings import settings
 
 logger = structlog.get_logger("agentic.pipeline")
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class PipelineStage(str, Enum):
     """Pipeline stages in the assembly line."""
+
     INTAKE = "intake"
     CONTENT_ANALYSIS = "content_analysis"
     SUMMARIZATION = "summarization"
@@ -42,6 +45,7 @@ class PipelineStage(str, Enum):
 
 class AgentState(TypedDict):
     """State object passed between agents in the pipeline."""
+
     # Input data
     article_id: str
     raw_content: str
@@ -54,19 +58,19 @@ class AgentState(TypedDict):
     iteration: int
 
     # Processed data
-    analyzed_content: Optional[Dict[str, Any]]
-    summary: Optional[str]
-    topics: Optional[List[str]]
-    sentiment: Optional[Dict[str, float]]
-    quality_score: Optional[float]
+    analyzed_content: dict[str, Any] | None
+    summary: str | None
+    topics: list[str] | None
+    sentiment: dict[str, float] | None
+    quality_score: float | None
 
     # Messages and errors
-    messages: Annotated[List[BaseMessage], operator.add]
-    errors: Annotated[List[str], operator.add]
+    messages: Annotated[list[BaseMessage], operator.add]
+    errors: Annotated[list[str], operator.add]
 
     # Decisions and routing
     should_continue: bool
-    next_stage: Optional[str]
+    next_stage: str | None
 
 
 class AgenticPipeline:
@@ -125,11 +129,7 @@ class AgenticPipeline:
         workflow.add_conditional_edges(
             "quality_check",
             self._should_continue,
-            {
-                "output": "output",
-                "content_analysis": "content_analysis",
-                END: END
-            }
+            {"output": "output", "content_analysis": "content_analysis", END: END},
         )
 
         workflow.add_edge("output", END)
@@ -187,12 +187,8 @@ class AgenticPipeline:
             try:
                 result = runner()
                 on_success(state, result)
-                state["messages"].append(
-                    AIMessage(content=f"{agent_name} completed")
-                )
-                metrics().agent_invocations_total.labels(
-                    agent=agent_name, status="ok"
-                ).inc()
+                state["messages"].append(AIMessage(content=f"{agent_name} completed"))
+                metrics().agent_invocations_total.labels(agent=agent_name, status="ok").inc()
             except Exception as exc:
                 logger.exception(
                     "pipeline.stage.failed",
@@ -201,9 +197,7 @@ class AgenticPipeline:
                     error=str(exc),
                 )
                 state["errors"].append(f"{stage.value} error: {exc}")
-                metrics().agent_invocations_total.labels(
-                    agent=agent_name, status="error"
-                ).inc()
+                metrics().agent_invocations_total.labels(agent=agent_name, status="error").inc()
             finally:
                 duration = time.monotonic() - start
                 metrics().agent_duration_seconds.labels(agent=agent_name).observe(duration)
@@ -268,7 +262,7 @@ class AgenticPipeline:
                 original_content=state["raw_content"],
                 summary=state.get("summary"),
                 topics=state.get("topics"),
-                sentiment=state.get("sentiment")
+                sentiment=state.get("sentiment"),
             )
 
             state["quality_score"] = quality_result["score"]
@@ -279,7 +273,9 @@ class AgenticPipeline:
                 state["should_continue"] = True
                 state["next_stage"] = "content_analysis"  # Retry from content analysis
                 state["messages"].append(
-                    AIMessage(content=f"Quality check failed (score: {quality_result['score']}), retrying...")
+                    AIMessage(
+                        content=f"Quality check failed (score: {quality_result['score']}), retrying..."
+                    )
                 )
             else:
                 state["should_continue"] = True
@@ -289,7 +285,7 @@ class AgenticPipeline:
                 )
         except Exception as e:
             logger.error("Quality check failed", error=str(e))
-            state["errors"].append(f"Quality check error: {str(e)}")
+            state["errors"].append(f"Quality check error: {e!s}")
             state["should_continue"] = True
             state["next_stage"] = "output"
 
@@ -309,10 +305,9 @@ class AgenticPipeline:
         if not state.get("should_continue", True):
             return END
 
-        next_stage = state.get("next_stage", "output")
-        return next_stage
+        return state.get("next_stage", "output")
 
-    async def process_article(self, article_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_article(self, article_data: dict[str, Any]) -> dict[str, Any]:
         """
         Process an article through the entire pipeline.
 

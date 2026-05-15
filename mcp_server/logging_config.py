@@ -23,6 +23,7 @@ from .security import structlog_redact_processor
 
 try:
     from opentelemetry import trace as _otel_trace
+
     _OTEL_AVAILABLE = True
 except Exception:  # pragma: no cover - optional dep
     _OTEL_AVAILABLE = False
@@ -31,7 +32,7 @@ except Exception:  # pragma: no cover - optional dep
 
 def _inject_trace_context(
     logger: Any, method_name: str, event_dict: dict[str, Any]
-) -> dict[str, Any]:  # noqa: ARG001
+) -> dict[str, Any]:
     """Add trace_id / span_id from current OTel span to each log record."""
     if not _OTEL_AVAILABLE:
         return event_dict
@@ -48,7 +49,7 @@ def _inject_trace_context(
 
 def _add_service_context(
     logger: Any, method_name: str, event_dict: dict[str, Any]
-) -> dict[str, Any]:  # noqa: ARG001
+) -> dict[str, Any]:
     event_dict.setdefault("service", settings.mcp_server_name)
     event_dict.setdefault("env", settings.environment)
     event_dict.setdefault("version", settings.mcp_server_version)
@@ -56,29 +57,42 @@ def _add_service_context(
 
 
 def configure_logging() -> None:
-    """Idempotent structured logging setup."""
+    """Idempotent structured logging setup.
+
+    Processor chain differs by renderer:
+    - JSON: `format_exc_info` flattens exceptions into the record.
+    - Console: the ConsoleRenderer formats exceptions itself, so
+      `format_exc_info` is omitted (including it triggers a warning and,
+      under `-W error`, an exception).
+    """
     level_name = str(settings.log_level).upper()
     level = getattr(logging, level_name, logging.INFO)
     logging.basicConfig(level=level, format="%(message)s", stream=sys.stderr, force=True)
 
-    renderer = (
-        structlog.processors.JSONRenderer()
-        if settings.log_json
-        else structlog.dev.ConsoleRenderer(colors=False)
-    )
-    structlog.configure(
-        processors=[
-            structlog.contextvars.merge_contextvars,
-            _add_service_context,
-            _inject_trace_context,
-            structlog.processors.TimeStamper(fmt="iso", utc=True),
-            structlog.stdlib.add_log_level,
-            structlog.stdlib.add_logger_name,
-            structlog.processors.StackInfoRenderer(),
+    processors: list[Any] = [
+        structlog.contextvars.merge_contextvars,
+        _add_service_context,
+        _inject_trace_context,
+        structlog.processors.TimeStamper(fmt="iso", utc=True),
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.StackInfoRenderer(),
+    ]
+
+    if settings.log_json:
+        processors += [
             structlog.processors.format_exc_info,
             structlog_redact_processor,
-            renderer,
-        ],
+            structlog.processors.JSONRenderer(),
+        ]
+    else:
+        processors += [
+            structlog_redact_processor,
+            structlog.dev.ConsoleRenderer(colors=False),
+        ]
+
+    structlog.configure(
+        processors=processors,
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,

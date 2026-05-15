@@ -35,14 +35,18 @@ class _FakeRuntime:
         self.acp_backend = "memory"
         self.acp = _FakeAcp()
         self.jobs = _FakeJobs()
-        self.pipeline = SimpleNamespace(
-            content_analyzer=object(),
-            summarizer=object(),
-            classifier=object(),
-            sentiment_analyzer=object(),
-            quality_checker=object(),
-            app=object(),
-        ) if ready else None
+        self.pipeline = (
+            SimpleNamespace(
+                content_analyzer=object(),
+                summarizer=object(),
+                classifier=object(),
+                sentiment_analyzer=object(),
+                quality_checker=object(),
+                app=object(),
+            )
+            if ready
+            else None
+        )
         self._acp_ready = acp_ready
 
     def readiness(self) -> dict[str, Any]:

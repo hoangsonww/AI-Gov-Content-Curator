@@ -49,42 +49,54 @@ _INLINE_SECRET_PATTERNS: tuple[re.Pattern[str], ...] = (
 REDACTED = "***REDACTED***"
 
 
-def _redact_value(value: Any) -> Any:
-    """Return value with any inline secrets masked.
-
-    Strings are scrubbed in-place; mappings and sequences recurse.
-    """
-    if isinstance(value, str):
-        out = value
-        for pat in _INLINE_SECRET_PATTERNS:
-            out = pat.sub(REDACTED, out)
-        return out
-    if isinstance(value, Mapping):
-        return {k: _redact_value(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        cls = type(value)
-        return cls(_redact_value(v) for v in value)
-    return value
-
-
-def _is_secret_key(key: str) -> bool:
+def _is_secret_key(key: Any) -> bool:
     if not isinstance(key, str):
         return False
     return any(pat.search(key) for pat in _SECRET_KEY_PATTERNS)
 
 
+def _redact_obj(value: Any, *, key_is_secret: bool = False) -> Any:
+    """Recursively redact secrets.
+
+    - When `key_is_secret`, the whole value is masked (unless empty).
+    - Strings have inline secret patterns scrubbed.
+    - Mappings recurse with per-key secret detection so a secret-shaped
+      key nested arbitrarily deep is still caught.
+    - Lists / tuples recurse element-wise.
+    """
+    if key_is_secret:
+        if value in (None, ""):
+            return value
+        return REDACTED
+
+    if isinstance(value, str):
+        out = value
+        for pat in _INLINE_SECRET_PATTERNS:
+            out = pat.sub(REDACTED, out)
+        return out
+
+    if isinstance(value, Mapping):
+        return {k: _redact_obj(v, key_is_secret=_is_secret_key(k)) for k, v in value.items()}
+
+    if isinstance(value, list | tuple):
+        cls = type(value)
+        return cls(_redact_obj(v) for v in value)
+
+    return value
+
+
 def redact_mapping(data: Mapping[str, Any]) -> dict[str, Any]:
-    """Return a copy of `data` with secret-shaped keys and values masked."""
-    out: dict[str, Any] = {}
-    for k, v in data.items():
-        if _is_secret_key(str(k)):
-            out[k] = REDACTED if v not in (None, "") else v
-            continue
-        out[k] = _redact_value(v)
-    return out
+    """Return a copy of `data` with secret-shaped keys and values masked.
+
+    Redaction is recursive: secret-shaped keys are caught at any nesting
+    depth, including inside lists of mappings.
+    """
+    return {k: _redact_obj(v, key_is_secret=_is_secret_key(k)) for k, v in data.items()}
 
 
-def structlog_redact_processor(logger: Any, method_name: str, event_dict: dict[str, Any]) -> dict[str, Any]:  # noqa: ARG001
+def structlog_redact_processor(
+    logger: Any, method_name: str, event_dict: dict[str, Any]
+) -> dict[str, Any]:
     """structlog processor: redact secrets from every log record."""
     return redact_mapping(event_dict)
 
@@ -92,9 +104,7 @@ def structlog_redact_processor(logger: Any, method_name: str, event_dict: dict[s
 # ─── Input sanitization ───────────────────────────────────────────────────
 
 # C0 control chars except whitespace tabs/newlines.
-_CONTROL_CHARS = "".join(
-    chr(c) for c in range(0x00, 0x20) if c not in (0x09, 0x0A, 0x0D)
-) + "\x7f"
+_CONTROL_CHARS = "".join(chr(c) for c in range(0x20) if c not in (0x09, 0x0A, 0x0D)) + "\x7f"
 _CONTROL_RE = re.compile(f"[{re.escape(_CONTROL_CHARS)}]")
 
 
@@ -136,6 +146,7 @@ def constant_time_equals(a: str, b: str) -> bool:
 
 
 # ─── Token-bucket rate limiter ────────────────────────────────────────────
+
 
 @dataclass
 class _Bucket:
@@ -184,11 +195,10 @@ class TokenBucketRateLimiter:
 
 # ─── Allow-list helpers ───────────────────────────────────────────────────
 
+
 def assert_in_allowlist(value: str, allow: Iterable[str], *, field: str) -> str:
     """Raise ValueError if `value` is not in `allow`."""
     allow_set = {str(v).strip().lower() for v in allow}
     if value.strip().lower() not in allow_set:
-        raise ValueError(
-            f"{field} '{value}' not allowed. Permitted: {sorted(allow_set)}"
-        )
+        raise ValueError(f"{field} '{value}' not allowed. Permitted: {sorted(allow_set)}")
     return value

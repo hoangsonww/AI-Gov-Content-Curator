@@ -5,10 +5,10 @@ Agents are registered with metadata describing their capabilities,
 provider, model, and cost tier. The registry supports capability-based
 lookup and provider-aware fallback selection.
 """
+
 from __future__ import annotations
 
 import threading
-from typing import Optional
 
 import structlog
 
@@ -74,7 +74,7 @@ class AgentRegistry:
     # Read helpers
     # ------------------------------------------------------------------
 
-    def get(self, agent_id: str) -> Optional[AgentDefinition]:
+    def get(self, agent_id: str) -> AgentDefinition | None:
         """Retrieve an agent definition by its identifier.
 
         Args:
@@ -105,11 +105,7 @@ class AgentRegistry:
             List of matching :class:`AgentDefinition` instances.
         """
         with self._lock:
-            return [
-                agent
-                for agent in self._agents.values()
-                if capability in agent.capabilities
-            ]
+            return [agent for agent in self._agents.values() if capability in agent.capabilities]
 
     def list_by_provider(self, provider: ModelProvider) -> list[AgentDefinition]:
         """Return agents pinned to a specific provider.
@@ -121,17 +117,13 @@ class AgentRegistry:
             List of matching :class:`AgentDefinition` instances.
         """
         with self._lock:
-            return [
-                agent
-                for agent in self._agents.values()
-                if agent.provider == provider
-            ]
+            return [agent for agent in self._agents.values() if agent.provider == provider]
 
     def get_fallback(
         self,
         failed_agent_id: str,
-        required_capability: Optional[str] = None,
-    ) -> Optional[AgentDefinition]:
+        required_capability: str | None = None,
+    ) -> AgentDefinition | None:
         """Select a fallback agent when the primary agent fails.
 
         The fallback candidate must:
@@ -153,10 +145,7 @@ class AgentRegistry:
                 agent
                 for agent in self._agents.values()
                 if agent.agent_id != failed_agent_id
-                and (
-                    required_capability is None
-                    or required_capability in agent.capabilities
-                )
+                and (required_capability is None or required_capability in agent.capabilities)
             ]
 
         if not candidates:

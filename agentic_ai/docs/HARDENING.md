@@ -106,12 +106,44 @@ Existing modules updated:
 - `docs/security.md` — threat model + control matrix.
 - `docs/HARDENING.md` — this document.
 
-## Known follow-ups (not in this hardening pass)
+## Second pass — integration + infrastructure
 
-- `agentic_ai/api.py` (FastAPI) — wire observability + health endpoints.
-- `agentic_ai/aws/` and `agentic_ai/azure/` deploy scripts — reconcile
-  with the new image targets and env requirements.
+- `api.py` rewired: OTel FastAPI/HTTPX/logging instrumentation,
+  `/metrics`, `/healthz`, `/readyz`, token-bucket rate limiting,
+  trusted-host middleware, structured `MCPError` handling, lifespan
+  hooks, OpenAPI docs gated off in production.
+- `tool_middleware` applied to all 28 MCP tools — uniform span +
+  metrics + error envelope + optional rate limit. Tool schemas verified
+  preserved through the wrapper.
+- ACP tools emit `synthora_acp_messages_total` / `acp_agents_registered`.
+- Cloud adapters hardened: AWS Lambda + Azure Functions rewritten
+  (package imports, observability, typed errors, reused event loop,
+  managed identity for Azure Blob); new GCP Cloud Functions adapter
+  (`gcp/cloud_function.py`, HTTP + Pub/Sub).
+- `observability.py`: removed module-load tracer caching; added
+  `metrics_text()`; gated ConsoleSpanExporter behind `DEBUG`.
+- `logging_config.py`: renderer-aware processor chain (no
+  `format_exc_info` under ConsoleRenderer).
+- Infrastructure:
+  - `infrastructure/kubernetes/agentic-ai/` — deployment (api + mcp),
+    service, HPA, PDB, NetworkPolicy, ServiceMonitor, ConfigMap, Secret
+    template, ServiceAccount, kustomization.
+  - `infrastructure/helm/agentic-ai/` — full chart.
+  - `infrastructure/terraform/modules/agentic-ai/` — ECR, KMS, Secrets
+    Manager, IAM, CloudWatch, optional Helm release.
+- Repo automation: `.github/dependabot.yml`, `codeql-agentic-ai.yml`,
+  `.github/CODEOWNERS`, `agentic_ai/CHANGELOG.md`.
+- Lint baseline clean: `ruff check` + `ruff format` pass on
+  `agentic_ai/` + `mcp_server/`.
+
+## Known follow-ups
+
 - mypy strict baseline — fix remaining `Any`s; flip `continue-on-error`
-  off.
+  off in CI once clean.
+- Coverage ratchet — currently 30% gate (~40% actual). Raise as the
+  legacy `orchestration/`, `agents/`, and cloud adapters gain tests.
 - Distributed rate limiter — current `TokenBucketRateLimiter` is
-  in-process; swap with Redis Lua for multi-replica deployments.
+  in-process; swap with Redis Lua for multi-replica HTTP deployments.
+- ECS Fargate task definition — the Terraform module provisions ECR +
+  secrets + KMS + optional Helm release; a Fargate service is not yet
+  modeled.

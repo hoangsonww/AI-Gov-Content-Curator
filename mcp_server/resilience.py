@@ -17,6 +17,7 @@ Design:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import functools
 import logging
 import time
@@ -34,6 +35,7 @@ from tenacity import (
 
 try:
     from pybreaker import CircuitBreaker, CircuitBreakerError
+
     _PYBREAKER_AVAILABLE = True
 except Exception:  # pragma: no cover - optional dep guard
     CircuitBreaker = None  # type: ignore[assignment,misc]
@@ -68,10 +70,8 @@ class _BreakerListener:
     def state_change(self, cb: Any, old_state: Any, new_state: Any) -> None:
         state_name = getattr(new_state, "name", str(new_state)).lower()
         mapping = {"closed": 0, "half_open": 1, "open": 2, "half-open": 1}
-        try:
+        with contextlib.suppress(Exception):  # pragma: no cover - best-effort
             metrics().circuit_state.labels(name=self.name).set(mapping.get(state_name, 0))
-        except Exception:  # pragma: no cover
-            pass
         logger.warning(
             "circuit.state_change",
             breaker=self.name,
@@ -82,10 +82,10 @@ class _BreakerListener:
     def failure(self, cb: Any, exc: BaseException) -> None:
         logger.warning("circuit.failure", breaker=self.name, error=str(exc))
 
-    def success(self, cb: Any) -> None:  # noqa: ARG002
+    def success(self, cb: Any) -> None:
         pass
 
-    def before_call(self, cb: Any, func: Callable[..., Any], *args: Any, **kwargs: Any) -> None:  # noqa: ARG002
+    def before_call(self, cb: Any, func: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
         pass
 
 
@@ -95,19 +95,22 @@ def get_breaker(
     fail_max: int = 5,
     reset_timeout_s: int = 30,
 ) -> Any:
-    """Get or create a named circuit breaker."""
-    if not _PYBREAKER_AVAILABLE:
-        return _NoopBreaker(name)
+    """Get or create a named circuit breaker. Cached per name."""
     if name in _breakers:
         return _breakers[name]
-    breaker = CircuitBreaker(
-        fail_max=fail_max,
-        reset_timeout=reset_timeout_s,
-        listeners=[_BreakerListener(name)],
-        name=name,
-    )
+
+    if not _PYBREAKER_AVAILABLE:
+        breaker: Any = _NoopBreaker(name)
+    else:
+        breaker = CircuitBreaker(
+            fail_max=fail_max,
+            reset_timeout=reset_timeout_s,
+            listeners=[_BreakerListener(name)],
+            name=name,
+        )
+        metrics().circuit_state.labels(name=name).set(0)
+
     _breakers[name] = breaker
-    metrics().circuit_state.labels(name=name).set(0)
     return breaker
 
 
@@ -163,6 +166,7 @@ def with_retries(
         op_name = operation or fn.__qualname__
 
         if asyncio.iscoroutinefunction(fn):
+
             @functools.wraps(fn)
             async def async_inner(*args: Any, **kwargs: Any) -> Any:
                 policy = _retry_policy(
@@ -188,7 +192,9 @@ def with_retries(
                                     error=str(exc),
                                 )
                                 raise
-                            metrics().retries_total.labels(operation=op_name, outcome="success").inc()
+                            metrics().retries_total.labels(
+                                operation=op_name, outcome="success"
+                            ).inc()
                             return result
                 except retry_on:  # type: ignore[misc]
                     metrics().retries_total.labels(operation=op_name, outcome="failure").inc()
@@ -196,6 +202,8 @@ def with_retries(
                 # Unreachable but keeps mypy happy.
                 if last_exc:  # pragma: no cover
                     raise last_exc
+                return None
+
             return cast(F, async_inner)
 
         @functools.wraps(fn)
@@ -235,6 +243,7 @@ def with_retries(
 
 # ─── Timeout helpers ──────────────────────────────────────────────────────
 
+
 async def with_async_timeout(
     coro: Any,
     *,
@@ -244,7 +253,7 @@ async def with_async_timeout(
     """Run `coro` under a deadline. Raises `TimeoutError_` on expiry."""
     try:
         return await asyncio.wait_for(coro, timeout=timeout_s)
-    except asyncio.TimeoutError as exc:
+    except TimeoutError as exc:
         logger.warning("timeout", operation=operation, timeout_s=timeout_s)
         raise TimeoutError_(
             f"{operation} exceeded deadline of {timeout_s:.2f}s",
@@ -253,6 +262,7 @@ async def with_async_timeout(
 
 
 # ─── High-level combinator: retry + circuit + timeout ─────────────────────
+
 
 def guarded_call(
     *,
@@ -273,6 +283,7 @@ def guarded_call(
 
     def wrap(fn: F) -> F:
         if asyncio.iscoroutinefunction(fn):
+
             @with_retries(operation=name, max_attempts=max_attempts, retry_on=retry_on)
             @functools.wraps(fn)
             async def retried(*args: Any, **kwargs: Any) -> Any:
