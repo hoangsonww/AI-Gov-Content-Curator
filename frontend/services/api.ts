@@ -917,14 +917,10 @@ export const downloadUserDataExport = async (): Promise<void> => {
 };
 
 /**
- * Requests a deletion token. Returns the token and its expiry so the
- * frontend can immediately pass it to confirmDeleteAccount without
- * persisting it to localStorage.
+ * Sends a deletion confirmation code to the user's registered email.
+ * The code is NOT returned here — the user must retrieve it from their inbox.
  */
-export const requestAccountDeletion = async (): Promise<{
-  deletionToken: string;
-  expiresAt: string;
-}> => {
+export const requestAccountDeletion = async (): Promise<void> => {
   const token = getAuthToken();
   if (!token) throw new Error("Not authenticated");
 
@@ -932,9 +928,8 @@ export const requestAccountDeletion = async (): Promise<{
     method: "POST",
     headers: { Authorization: token },
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || "Request failed");
-  return data;
 };
 
 /**
@@ -955,6 +950,19 @@ export const confirmDeleteAccount = async (
     },
     body: JSON.stringify({ deletionToken }),
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || "Deletion failed");
+};
+
+/**
+ * Cancels a pending deletion request, clearing the token from the DB
+ * so it doesn't linger until the 1h TTL expires.
+ */
+export const cancelAccountDeletion = async (): Promise<void> => {
+  const token = getAuthToken();
+  if (!token) return; // already logged out — nothing to clear
+  await fetch(`${BASE_URL}/privacy/cancel-deletion`, {
+    method: "POST",
+    headers: { Authorization: token },
+  });
 };

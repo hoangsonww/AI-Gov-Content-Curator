@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
@@ -6,8 +6,10 @@ import { MdDownload, MdDeleteForever, MdWarning, MdCheck } from "react-icons/md"
 import {
   downloadUserDataExport,
   requestAccountDeletion,
+  cancelAccountDeletion,
   confirmDeleteAccount,
   clearAuthToken,
+  getAuthToken,
 } from "../../services/api";
 import { toast } from "react-toastify";
 
@@ -15,16 +17,18 @@ type DeletionStep = "idle" | "confirming" | "requested" | "done";
 
 export default function PrivacyPage() {
   const router = useRouter();
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [deletionStep, setDeletionStep] = useState<DeletionStep>("idle");
-  const [deletionToken, setDeletionToken] = useState("");
-  const [deletionExpiry, setDeletionExpiry] = useState("");
+  const [emailedCode, setEmailedCode] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [confirmText, setConfirmText] = useState("");
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) router.replace("/auth/login");
+    if (!getAuthToken()) router.replace("/auth/login");
   }, [router]);
+
+  useEffect(() => () => { if (redirectTimer.current) clearTimeout(redirectTimer.current); }, []);
 
   const handleExport = async () => {
     setExportLoading(true);
@@ -41,10 +45,9 @@ export default function PrivacyPage() {
   const handleRequestDeletion = async () => {
     setDeleteLoading(true);
     try {
-      const { deletionToken: tok, expiresAt } = await requestAccountDeletion();
-      setDeletionToken(tok);
-      setDeletionExpiry(new Date(expiresAt).toLocaleTimeString());
+      await requestAccountDeletion();
       setDeletionStep("requested");
+      toast.success("Confirmation code sent — check your email.");
     } catch (err: any) {
       toast.error(err.message || "Could not initiate deletion. Please try again.");
     } finally {
@@ -53,18 +56,17 @@ export default function PrivacyPage() {
   };
 
   const handleConfirmDeletion = async () => {
-    if (confirmText !== "DELETE") return;
+    if (!emailedCode.trim() || confirmText !== "DELETE") return;
     setDeleteLoading(true);
     try {
-      await confirmDeleteAccount(deletionToken);
+      await confirmDeleteAccount(emailedCode.trim().toUpperCase());
       setDeletionStep("done");
       clearAuthToken();
       toast.success("Your account has been permanently deleted.");
-      setTimeout(() => router.replace("/"), 2500);
+      redirectTimer.current = setTimeout(() => router.replace("/"), 2500);
     } catch (err: any) {
-      toast.error(err.message || "Deletion failed. The token may have expired.");
-      setDeletionStep("idle");
-      setDeletionToken("");
+      toast.error(err.message || "Deletion failed. The code may be wrong or expired.");
+      setEmailedCode("");
       setConfirmText("");
     } finally {
       setDeleteLoading(false);
@@ -72,9 +74,10 @@ export default function PrivacyPage() {
   };
 
   const handleCancelDeletion = () => {
+    // Fire-and-forget — clears the token from the DB so it doesn't linger.
+    cancelAccountDeletion().catch(() => {});
     setDeletionStep("idle");
-    setDeletionToken("");
-    setDeletionExpiry("");
+    setEmailedCode("");
     setConfirmText("");
   };
 
@@ -151,9 +154,10 @@ export default function PrivacyPage() {
           {deletionStep === "confirming" && (
             <>
               <p className="privacy-section-desc">
-                Click <strong>Send deletion request</strong> to generate a
-                one-time confirmation token (valid for <strong>1 hour</strong>).
-                You will then type <code>DELETE</code> to confirm.
+                Click <strong>Send confirmation code</strong> — we'll email a
+                one-time code to your registered address (valid for{" "}
+                <strong>1 hour</strong>). You'll then enter the code and type{" "}
+                <code>DELETE</code> to confirm.
               </p>
               <div className="privacy-btn-row">
                 <button
@@ -161,7 +165,7 @@ export default function PrivacyPage() {
                   onClick={handleRequestDeletion}
                   disabled={deleteLoading}
                 >
-                  {deleteLoading ? "Generating token…" : "Send deletion request"}
+                  {deleteLoading ? "Sending…" : "Send confirmation code"}
                 </button>
                 <button
                   className="passkey-btn"
@@ -178,13 +182,21 @@ export default function PrivacyPage() {
             <>
               <div className="privacy-banner privacy-banner-warning">
                 <MdWarning size={18} />
-                Deletion token generated — expires at{" "}
-                <strong>{deletionExpiry}</strong>.
+                A confirmation code was sent to your email — it expires in 1 hour.
               </div>
               <p className="privacy-section-desc">
-                Type <code>DELETE</code> in the box below then click{" "}
-                <strong>Permanently delete my account</strong>.
+                Enter the code from your email, then type <code>DELETE</code>{" "}
+                and click <strong>Permanently delete my account</strong>.
               </p>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Confirmation code from email"
+                value={emailedCode}
+                onChange={(e) => setEmailedCode(e.target.value.toUpperCase())}
+                autoComplete="one-time-code"
+                style={{ marginBottom: "0.75rem", letterSpacing: "0.1em" }}
+              />
               <input
                 type="text"
                 className="form-input"
@@ -198,11 +210,13 @@ export default function PrivacyPage() {
                 <button
                   className="passkey-btn privacy-delete-btn"
                   onClick={handleConfirmDeletion}
-                  disabled={deleteLoading || confirmText !== "DELETE"}
+                  disabled={
+                    deleteLoading ||
+                    !emailedCode.trim() ||
+                    confirmText !== "DELETE"
+                  }
                 >
-                  {deleteLoading
-                    ? "Deleting…"
-                    : "Permanently delete my account"}
+                  {deleteLoading ? "Deleting…" : "Permanently delete my account"}
                 </button>
                 <button
                   className="passkey-btn"
