@@ -885,3 +885,76 @@ export async function analyzeArticleBias(
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Privacy controls
+// ---------------------------------------------------------------------------
+
+/**
+ * Triggers a browser download of the user's full data export (JSON).
+ */
+export const downloadUserDataExport = async (): Promise<void> => {
+  const token = getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${BASE_URL}/privacy/export`, {
+    headers: { Authorization: token },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as any).error || "Export failed");
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `synthoraai-data-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * Requests a deletion token. Returns the token and its expiry so the
+ * frontend can immediately pass it to confirmDeleteAccount without
+ * persisting it to localStorage.
+ */
+export const requestAccountDeletion = async (): Promise<{
+  deletionToken: string;
+  expiresAt: string;
+}> => {
+  const token = getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${BASE_URL}/privacy/request-deletion`, {
+    method: "POST",
+    headers: { Authorization: token },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+};
+
+/**
+ * Permanently deletes the authenticated user's account using the token
+ * returned by requestAccountDeletion.
+ */
+export const confirmDeleteAccount = async (
+  deletionToken: string,
+): Promise<void> => {
+  const token = getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${BASE_URL}/privacy/account`, {
+    method: "DELETE",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ deletionToken }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Deletion failed");
+};

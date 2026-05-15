@@ -14,6 +14,7 @@ import chatRoutes from "./routes/chat.routes";
 import commentRoutes from "./routes/comment.routes";
 import ratingRoutes from "./routes/rating.routes";
 import biasRoutes from "./routes/bias.routes";
+import privacyRoutes from "./routes/privacy.routes";
 import swaggerDocs from "./swagger/swagger";
 
 dotenv.config();
@@ -150,6 +151,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/bias", biasRoutes);
+app.use("/api/privacy", privacyRoutes);
 
 /* ───────────── 404 & error handling ───────────── */
 

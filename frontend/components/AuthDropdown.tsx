@@ -127,6 +127,7 @@ export default function AuthDropdown({
     "/auth/register",
     "/auth/reset-password",
     "/account/passkeys",
+    "/account/privacy",
   ];
   const isAuthRoute = authPaths.includes(router.pathname);
 
@@ -157,6 +158,18 @@ export default function AuthDropdown({
                     onClick={toggle}
                   >
                     Manage Passkeys
+                  </a>
+                </Link>
+                <Link href="/account/privacy" legacyBehavior>
+                  <a
+                    className={`auth-option${
+                      router.pathname === "/account/privacy"
+                        ? " active-auth-option"
+                        : ""
+                    }`}
+                    onClick={toggle}
+                  >
+                    Privacy &amp; Data
                   </a>
                 </Link>
                 <button
