@@ -1,0 +1,74 @@
+# Build artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info
+.eggs
+build
+dist
+.tox
+.nox
+
+# Virtualenvs
+.venv
+venv
+env
+
+# Caches
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+.coverage.*
+coverage.xml
+htmlcov
+
+# Editor / OS
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Secrets + envs (never bake into image)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Docs we don't ship
+docs/_build
+docs/site
+*.md
+!agentic_ai/README.md
+!mcp_server/README.md
+
+# Logs
+logs
+*.log
+
+# Local DB / fixtures
+*.sqlite
+*.sqlite3
+*.db
+
+# Local CI artifacts
+.github
+infrastructure
+frontend
+backend
+crawler
+newsletters
+orchestration
+shell
+bin
+scripts

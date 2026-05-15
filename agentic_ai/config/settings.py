@@ -1,9 +1,21 @@
+"""Production-ready configuration settings for the Agentic AI Pipeline.
+
+Adopts strict Pydantic Settings semantics in production: secret references
+must resolve, allow-listed providers, fail-fast on bad enum values.
 """
-Production-ready configuration settings for the Agentic AI Pipeline.
-"""
-from typing import Optional
+
+from __future__ import annotations
+
+from typing import Literal, Optional
+
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+
+
+Environment = Literal["development", "staging", "production", "test"]
+LLMProvider = Literal["google", "openai", "anthropic", "cohere"]
+ACPBackend = Literal["redis", "memory"]
+LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
 class Settings(BaseSettings):
@@ -13,100 +25,184 @@ class Settings(BaseSettings):
         env_file=("agentic_ai/.env", ".env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="allow"
+        extra="allow",
     )
 
-    # Application Settings
+    # ── Application ────────────────────────────────────────────────────
     app_name: str = "SynthoraAI Agentic Pipeline"
-    app_version: str = Field(default="1.0.0", description="Application version")
-    environment: str = Field(default="production", description="Environment: development, staging, production")
-    debug: bool = Field(default=False, description="Debug mode")
-    log_level: str = Field(default="INFO", description="Logging level")
-    log_json: bool = Field(default=True, description="Emit structured JSON logs")
+    app_version: str = Field(default="1.0.0")
+    environment: Environment = Field(default="production")
+    debug: bool = Field(default=False)
+    log_level: LogLevel = Field(default="INFO")
+    log_json: bool = Field(default=True)
 
-    # API Settings
-    api_host: str = Field(default="0.0.0.0", description="API host")
-    api_port: int = Field(default=8000, description="API port")
-    api_workers: int = Field(default=4, description="Number of API workers")
+    # ── API ────────────────────────────────────────────────────────────
+    api_host: str = Field(default="0.0.0.0")  # noqa: S104  bind-all is intentional for containers
+    api_port: int = Field(default=8000, ge=1, le=65535)
+    api_workers: int = Field(default=4, ge=1, le=64)
 
-    # MCP Server Settings
-    mcp_server_name: str = Field(default="synthora-agentic-pipeline", description="MCP server name")
-    mcp_server_version: str = Field(default="1.0.0", description="MCP server version")
-    mcp_port: int = Field(default=8001, description="MCP server port")
-    mcp_max_connections: int = Field(default=100, description="Max MCP connections")
-    mcp_max_content_chars: int = Field(default=20000, description="Max article content size")
-    mcp_max_metadata_entries: int = Field(default=50, description="Max metadata keys")
-    mcp_max_metadata_value_chars: int = Field(default=2000, description="Max metadata value size")
-    mcp_max_batch_items: int = Field(default=25, description="Max items allowed per batch tool call")
-    mcp_max_job_history: int = Field(default=1000, description="Max in-memory processing job records")
-    mcp_job_ttl_seconds: int = Field(default=86400, description="Job retention TTL in seconds")
-    acp_enabled: bool = Field(default=True, description="Enable ACP agent-to-agent communication primitives")
-    acp_backend: str = Field(default="redis", description="ACP backend: redis or memory")
-    acp_max_agents: int = Field(default=200, description="Max registered ACP agents")
-    acp_max_messages: int = Field(default=5000, description="Max in-memory ACP messages")
-    acp_message_ttl_seconds: int = Field(default=3600, description="ACP message TTL in seconds")
-    acp_agent_ttl_seconds: int = Field(default=900, description="ACP agent heartbeat TTL in seconds")
-    acp_redis_key_prefix: str = Field(default="synthora:acp", description="Redis key prefix for ACP records")
-    acp_max_payload_chars: int = Field(default=20000, description="Max ACP payload serialized size")
-    acp_max_metadata_entries: int = Field(default=50, description="Max ACP metadata keys")
-    acp_max_capabilities: int = Field(default=32, description="Max ACP capabilities entries per agent")
+    # ── MCP Server ─────────────────────────────────────────────────────
+    mcp_server_name: str = Field(default="synthora-agentic-pipeline")
+    mcp_server_version: str = Field(default="1.0.0")
+    mcp_port: int = Field(default=8001, ge=1, le=65535)
+    mcp_max_connections: int = Field(default=100, ge=1, le=10_000)
+    mcp_max_content_chars: int = Field(default=20_000, ge=1, le=1_000_000)
+    mcp_max_metadata_entries: int = Field(default=50, ge=1, le=1_000)
+    mcp_max_metadata_value_chars: int = Field(default=2_000, ge=1, le=200_000)
+    mcp_max_batch_items: int = Field(default=25, ge=1, le=1_000)
+    mcp_max_job_history: int = Field(default=1_000, ge=1, le=1_000_000)
+    mcp_job_ttl_seconds: int = Field(default=86_400, ge=1)
 
-    # LLM Configuration
-    openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")
-    anthropic_api_key: Optional[str] = Field(default=None, description="Anthropic API key")
-    google_ai_api_key: Optional[str] = Field(default=None, description="Google AI API key")
-    cohere_api_key: Optional[str] = Field(default=None, description="Cohere API key")
+    # ── ACP ────────────────────────────────────────────────────────────
+    acp_enabled: bool = Field(default=True)
+    acp_backend: ACPBackend = Field(default="redis")
+    acp_max_agents: int = Field(default=200, ge=1, le=100_000)
+    acp_max_messages: int = Field(default=5_000, ge=1, le=10_000_000)
+    acp_message_ttl_seconds: int = Field(default=3_600, ge=1)
+    acp_agent_ttl_seconds: int = Field(default=900, ge=1)
+    acp_redis_key_prefix: str = Field(default="synthora:acp")
+    acp_max_payload_chars: int = Field(default=20_000, ge=1, le=1_000_000)
+    acp_max_metadata_entries: int = Field(default=50, ge=1, le=1_000)
+    acp_max_capabilities: int = Field(default=32, ge=1, le=1_000)
 
-    default_llm_provider: str = Field(default="google", description="Default LLM provider")
-    default_model: str = Field(default="gemini-1.5-flash", description="Default model name")
-    temperature: float = Field(default=0.7, description="LLM temperature")
-    max_tokens: int = Field(default=2000, description="Max tokens for LLM responses")
+    # ── LLM provider keys (SecretStr so they never serialize to logs) ──
+    openai_api_key: Optional[SecretStr] = Field(default=None)
+    anthropic_api_key: Optional[SecretStr] = Field(default=None)
+    google_ai_api_key: Optional[SecretStr] = Field(default=None)
+    cohere_api_key: Optional[SecretStr] = Field(default=None)
 
-    # Vector Store Configuration
-    pinecone_api_key: Optional[str] = Field(default=None, description="Pinecone API key")
-    pinecone_environment: Optional[str] = Field(default=None, description="Pinecone environment")
-    pinecone_index_name: str = Field(default="synthora-ai", description="Pinecone index name")
+    default_llm_provider: LLMProvider = Field(default="google")
+    default_model: str = Field(default="gemini-1.5-flash")
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    max_tokens: int = Field(default=2000, ge=1, le=200_000)
 
-    # MongoDB Configuration
-    mongodb_uri: str = Field(default="mongodb://localhost:27017", description="MongoDB URI")
-    mongodb_database: str = Field(default="synthora_ai", description="MongoDB database name")
+    # LLM call resilience.
+    llm_request_timeout_seconds: float = Field(default=60.0, gt=0.0)
+    llm_max_attempts: int = Field(default=3, ge=1, le=10)
+    llm_circuit_fail_max: int = Field(default=5, ge=1, le=100)
+    llm_circuit_reset_seconds: int = Field(default=30, ge=1, le=3_600)
 
-    # Redis Configuration
-    redis_host: str = Field(default="localhost", description="Redis host")
-    redis_port: int = Field(default=6379, description="Redis port")
-    redis_db: int = Field(default=0, description="Redis database number")
-    redis_password: Optional[str] = Field(default=None, description="Redis password")
+    # ── Vector Store ───────────────────────────────────────────────────
+    pinecone_api_key: Optional[SecretStr] = Field(default=None)
+    pinecone_environment: Optional[str] = Field(default=None)
+    pinecone_index_name: str = Field(default="synthora-ai")
 
-    # AWS Configuration
-    aws_region: str = Field(default="us-east-1", description="AWS region")
-    aws_access_key_id: Optional[str] = Field(default=None, description="AWS access key")
-    aws_secret_access_key: Optional[str] = Field(default=None, description="AWS secret key")
-    aws_s3_bucket: Optional[str] = Field(default=None, description="AWS S3 bucket")
+    # ── MongoDB ────────────────────────────────────────────────────────
+    mongodb_uri: SecretStr = Field(default=SecretStr("mongodb://localhost:27017"))
+    mongodb_database: str = Field(default="synthora_ai")
 
-    # Azure Configuration
-    azure_subscription_id: Optional[str] = Field(default=None, description="Azure subscription ID")
-    azure_resource_group: Optional[str] = Field(default=None, description="Azure resource group")
-    azure_storage_account: Optional[str] = Field(default=None, description="Azure storage account")
-    azure_storage_key: Optional[str] = Field(default=None, description="Azure storage key")
+    # ── Redis ──────────────────────────────────────────────────────────
+    redis_host: str = Field(default="localhost")
+    redis_port: int = Field(default=6379, ge=1, le=65535)
+    redis_db: int = Field(default=0, ge=0, le=15)
+    redis_password: Optional[SecretStr] = Field(default=None)
+    redis_tls: bool = Field(default=False)
 
-    # Agent Configuration
-    max_iterations: int = Field(default=10, description="Max agent iterations")
-    agent_timeout: int = Field(default=300, description="Agent timeout in seconds")
-    enable_human_in_loop: bool = Field(default=False, description="Enable human-in-the-loop")
+    # ── AWS ────────────────────────────────────────────────────────────
+    aws_region: str = Field(default="us-east-1")
+    aws_access_key_id: Optional[SecretStr] = Field(default=None)
+    aws_secret_access_key: Optional[SecretStr] = Field(default=None)
+    aws_s3_bucket: Optional[str] = Field(default=None)
 
-    # Rate Limiting
-    rate_limit_requests: int = Field(default=100, description="Rate limit requests per minute")
-    rate_limit_window: int = Field(default=60, description="Rate limit window in seconds")
+    # ── Azure ──────────────────────────────────────────────────────────
+    azure_subscription_id: Optional[str] = Field(default=None)
+    azure_resource_group: Optional[str] = Field(default=None)
+    azure_storage_account: Optional[str] = Field(default=None)
+    azure_storage_key: Optional[SecretStr] = Field(default=None)
+    azure_app_insights_connection_string: Optional[SecretStr] = Field(default=None)
 
-    # Monitoring
-    enable_metrics: bool = Field(default=True, description="Enable Prometheus metrics")
-    metrics_port: int = Field(default=9090, description="Metrics port")
+    # ── GCP ────────────────────────────────────────────────────────────
+    gcp_project_id: Optional[str] = Field(default=None)
+    gcp_region: str = Field(default="us-central1")
+    gcp_storage_bucket: Optional[str] = Field(default=None)
+    google_application_credentials: Optional[str] = Field(default=None)
 
-    # Feature Flags
-    enable_content_analysis: bool = Field(default=True, description="Enable content analysis")
-    enable_sentiment_analysis: bool = Field(default=True, description="Enable sentiment analysis")
-    enable_summarization: bool = Field(default=True, description="Enable summarization")
-    enable_classification: bool = Field(default=True, description="Enable classification")
+    # ── Agent Configuration ────────────────────────────────────────────
+    max_iterations: int = Field(default=10, ge=1, le=100)
+    agent_timeout: int = Field(default=300, ge=1, le=3_600)
+    enable_human_in_loop: bool = Field(default=False)
+
+    # ── Rate Limiting ──────────────────────────────────────────────────
+    rate_limit_requests: int = Field(default=100, ge=1, le=1_000_000)
+    rate_limit_window: int = Field(default=60, ge=1, le=86_400)
+
+    # ── Monitoring / OTel ──────────────────────────────────────────────
+    enable_metrics: bool = Field(default=True)
+    metrics_port: int = Field(default=9090, ge=1, le=65535)
+    otel_exporter_otlp_endpoint: Optional[str] = Field(default=None)
+    otel_exporter_otlp_protocol: Literal["grpc", "http/protobuf"] = Field(default="grpc")
+    otel_traces_sample_ratio: float = Field(default=1.0, ge=0.0, le=1.0)
+
+    # ── Feature Flags ──────────────────────────────────────────────────
+    enable_content_analysis: bool = Field(default=True)
+    enable_sentiment_analysis: bool = Field(default=True)
+    enable_summarization: bool = Field(default=True)
+    enable_classification: bool = Field(default=True)
+
+    # ── Cost Budget ────────────────────────────────────────────────────
+    daily_cost_budget_usd: float = Field(default=50.0, ge=0.0)
+    cost_alert_threshold: float = Field(default=0.8, ge=0.0, le=1.0)
+
+    # ─── Validators ────────────────────────────────────────────────────
+
+    @field_validator("log_level", mode="before")
+    @classmethod
+    def _upper_log_level(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip().upper()
+        return value
+
+    @field_validator("environment", "default_llm_provider", "acp_backend", mode="before")
+    @classmethod
+    def _lower_enums(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip().lower()
+        return value
+
+    @model_validator(mode="after")
+    def _check_provider_key_present(self) -> "Settings":
+        """In production, the default LLM provider must have its key set.
+
+        Non-production environments may run without keys (e.g. unit tests
+        that mock the LLM). This keeps test ergonomics while preventing
+        production startup with missing credentials.
+        """
+        if self.environment != "production":
+            return self
+        provider_keys: dict[str, Optional[SecretStr]] = {
+            "google": self.google_ai_api_key,
+            "openai": self.openai_api_key,
+            "anthropic": self.anthropic_api_key,
+            "cohere": self.cohere_api_key,
+        }
+        key = provider_keys.get(self.default_llm_provider)
+        if key is None or not key.get_secret_value().strip():
+            raise ValueError(
+                f"DEFAULT_LLM_PROVIDER={self.default_llm_provider} requires its "
+                "API key to be set when ENVIRONMENT=production."
+            )
+        return self
+
+    # ─── Convenience helpers ───────────────────────────────────────────
+
+    def get_provider_key(self, provider: str) -> Optional[str]:
+        """Return the API key for a provider as a plain string, or None."""
+        attr = {
+            "google": "google_ai_api_key",
+            "openai": "openai_api_key",
+            "anthropic": "anthropic_api_key",
+            "cohere": "cohere_api_key",
+        }.get(provider.lower())
+        if attr is None:
+            return None
+        secret: Optional[SecretStr] = getattr(self, attr, None)
+        if secret is None:
+            return None
+        value = secret.get_secret_value().strip()
+        return value or None
+
+    def is_production(self) -> bool:
+        return self.environment == "production"
 
 
 settings = Settings()

@@ -1,0 +1,64 @@
+{
+  "title": "SynthoraAI Pipeline",
+  "uid": "synthora-pipeline",
+  "schemaVersion": 38,
+  "version": 1,
+  "tags": ["synthora"],
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Pipeline Runs (last 5m)",
+      "id": 1,
+      "gridPos": {"x": 0, "y": 0, "w": 8, "h": 5},
+      "targets": [
+        {"expr": "sum(increase(synthora_pipeline_runs_total[5m])) by (status)"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Pipeline P95 Duration",
+      "id": 2,
+      "gridPos": {"x": 8, "y": 0, "w": 16, "h": 5},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, sum(rate(synthora_pipeline_duration_seconds_bucket[5m])) by (le, status))"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "LLM Calls / sec",
+      "id": 3,
+      "gridPos": {"x": 0, "y": 5, "w": 12, "h": 6},
+      "targets": [
+        {"expr": "sum(rate(synthora_llm_calls_total[1m])) by (provider, model, status)"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "LLM P95 Latency",
+      "id": 4,
+      "gridPos": {"x": 12, "y": 5, "w": 12, "h": 6},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, sum(rate(synthora_llm_duration_seconds_bucket[5m])) by (le, provider, model))"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "LLM Cost (USD) cumulative",
+      "id": 5,
+      "gridPos": {"x": 0, "y": 11, "w": 12, "h": 6},
+      "targets": [
+        {"expr": "sum(synthora_llm_cost_usd_total) by (provider, model)"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Circuit Breakers",
+      "id": 6,
+      "gridPos": {"x": 12, "y": 11, "w": 12, "h": 6},
+      "targets": [
+        {"expr": "synthora_circuit_breaker_state"}
+      ]
+    }
+  ]
+}

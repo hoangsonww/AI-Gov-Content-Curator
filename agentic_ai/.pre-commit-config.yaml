@@ -1,0 +1,55 @@
+# Run with: pre-commit run --all-files
+# Install: pre-commit install --install-hooks
+default_language_version:
+  python: python3.11
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.5
+          - pydantic-settings>=2.1
+          - types-redis>=4.6
+        args: [--config-file=pyproject.toml]
+        files: ^(agentic_ai|mcp_server)/.*\.py$
+        exclude: ^(agentic_ai/(aws|azure|tests)/)
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml, -q]
+        additional_dependencies: ["bandit[toml]"]
+        files: ^(agentic_ai|mcp_server)/.*\.py$
+        exclude: ^(agentic_ai/tests/|.*/test_.*\.py$)
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks

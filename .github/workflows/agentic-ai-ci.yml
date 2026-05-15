@@ -1,0 +1,252 @@
+name: Agentic AI CI
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "agentic_ai/**"
+      - "mcp_server/**"
+      - ".github/workflows/agentic-ai-ci.yml"
+  pull_request:
+    paths:
+      - "agentic_ai/**"
+      - "mcp_server/**"
+      - ".github/workflows/agentic-ai-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: read
+
+concurrency:
+  group: agentic-ai-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_CACHE_DIR: "1"
+  PYTHONUNBUFFERED: "1"
+  ENVIRONMENT: "test"
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ruff + format)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: agentic_ai/requirements/dev.txt
+
+      - name: Install dev deps
+        working-directory: agentic_ai
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff==0.6.9
+
+      - name: Ruff check
+        working-directory: agentic_ai
+        run: ruff check . ../mcp_server
+
+      - name: Ruff format --check
+        working-directory: agentic_ai
+        run: ruff format --check . ../mcp_server
+
+  # ───────────────────────────────────────────────────────────────────────
+  typecheck:
+    name: Typecheck (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: agentic_ai/requirements/dev.txt
+
+      - name: Install runtime + dev deps
+        working-directory: agentic_ai
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/dev.txt
+
+      - name: Run mypy
+        working-directory: agentic_ai
+        run: mypy --config-file=pyproject.toml ../mcp_server agentic_ai
+        continue-on-error: true # mypy strict is aspirational; flip to false once clean
+
+  # ───────────────────────────────────────────────────────────────────────
+  test:
+    name: Tests (pytest, py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      ACP_BACKEND: redis
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      LOG_JSON: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: agentic_ai/requirements/dev.txt
+
+      - name: Install
+        working-directory: agentic_ai
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/dev.txt
+
+      - name: Run pytest
+        working-directory: agentic_ai
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          pytest -q --maxfail=1 \
+            --junitxml=junit.xml \
+            --cov-report=xml:coverage.xml
+
+      - name: Upload coverage
+        if: always() && matrix.python == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: agentic_ai/coverage.xml
+
+      - name: Upload junit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.python }}
+          path: agentic_ai/junit.xml
+
+  # ───────────────────────────────────────────────────────────────────────
+  security:
+    name: Security (bandit + pip-audit + gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: agentic_ai/requirements/dev.txt
+
+      - name: Install tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml]==1.7.10 pip-audit==2.7.3
+
+      - name: Bandit
+        working-directory: agentic_ai
+        run: bandit -c pyproject.toml -r . ../mcp_server -ll -f sarif -o bandit.sarif || true
+
+      - name: Upload Bandit SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: agentic_ai/bandit.sarif
+          category: bandit
+        continue-on-error: true
+
+      - name: pip-audit
+        working-directory: agentic_ai
+        run: pip-audit -r requirements/base.txt --strict --progress-spinner=off
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          config: .github/gitleaks.toml
+        continue-on-error: true
+
+  # ───────────────────────────────────────────────────────────────────────
+  build-image:
+    name: Build + scan container image
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build mcp image (load only)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: agentic_ai/Dockerfile
+          target: mcp
+          load: true
+          tags: synthora/mcp:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: synthora/mcp:ci
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: "0" # report but don't fail build until baseline is clean
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy
+        continue-on-error: true
+
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          image: synthora/mcp:ci
+          format: spdx-json
+          artifact-name: sbom-mcp.spdx.json
+
+  # ───────────────────────────────────────────────────────────────────────
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test, security, build-image]
+    if: always()
+    steps:
+      - name: Status
+        run: |
+          echo "lint=${{ needs.lint.result }}"
+          echo "typecheck=${{ needs.typecheck.result }}"
+          echo "test=${{ needs.test.result }}"
+          echo "security=${{ needs.security.result }}"
+          echo "build-image=${{ needs.build-image.result }}"
+          if [ "${{ needs.lint.result }}" != "success" ] \
+             || [ "${{ needs.test.result }}" != "success" ] \
+             || [ "${{ needs.security.result }}" != "success" ] \
+             || [ "${{ needs.build-image.result }}" != "success" ]; then
+            exit 1
+          fi

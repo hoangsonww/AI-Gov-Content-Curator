@@ -1,0 +1,62 @@
+# Core runtime dependencies. Resolved from pyproject.toml.
+# For reproducible installs use: pip install -r requirements.lock.txt
+
+# Core LangChain / LangGraph
+langchain>=0.1.0,<0.4
+langchain-core>=0.1.0,<0.4
+langchain-community>=0.0.10,<0.4
+langchain-google-genai>=1.0.0,<3.0
+langchain-openai>=0.1.0,<0.4
+langchain-anthropic>=0.1.0,<0.4
+langchain-cohere>=0.1.0,<0.4
+langgraph>=0.0.20,<0.3
+langsmith>=0.0.77,<0.3
+
+# LLM SDKs
+openai>=1.10.0,<2.0
+anthropic>=0.8.0,<1.0
+google-generativeai>=0.3.0,<1.0
+cohere>=4.37,<6.0
+
+# Vector + storage
+pinecone-client>=3.0.0,<6.0
+chromadb>=0.4.0,<1.0
+faiss-cpu>=1.7.4,<2.0
+
+# MCP
+mcp>=1.2.0,<2.0
+
+# API + validation
+fastapi>=0.109.0,<1.0
+uvicorn[standard]>=0.27.0,<1.0
+pydantic>=2.5.0,<3.0
+pydantic-settings>=2.1.0,<3.0
+httpx>=0.26.0,<1.0
+
+# Data
+numpy>=1.24.0,<3.0
+pandas>=2.0.0,<3.0
+python-dotenv>=1.0.0,<2.0
+
+# Logging + metrics
+prometheus-client>=0.19.0,<1.0
+structlog>=24.1.0,<26.0
+
+# Resilience
+tenacity>=8.2.0,<10.0
+pybreaker>=1.0.2,<2.0
+
+# OpenTelemetry
+opentelemetry-api>=1.24.0,<2.0
+opentelemetry-sdk>=1.24.0,<2.0
+opentelemetry-exporter-otlp-proto-grpc>=1.24.0,<2.0
+opentelemetry-exporter-otlp-proto-http>=1.24.0,<2.0
+opentelemetry-instrumentation>=0.45b0,<1.0
+opentelemetry-instrumentation-fastapi>=0.45b0,<1.0
+opentelemetry-instrumentation-httpx>=0.45b0,<1.0
+opentelemetry-instrumentation-redis>=0.45b0,<1.0
+opentelemetry-instrumentation-logging>=0.45b0,<1.0
+
+# Redis client
+redis>=5.0.0,<7.0
+hiredis>=2.3.0,<4.0

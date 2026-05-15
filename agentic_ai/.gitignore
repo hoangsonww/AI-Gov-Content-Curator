@@ -55,7 +55,7 @@ aws/lambda-layer/
 azure/.python_packages/
 
 # Docker
-.dockerignore
+# (.dockerignore is checked in; see Dockerfile)
 
 # OS
 .DS_Store

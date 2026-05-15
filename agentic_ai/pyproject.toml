@@ -1,0 +1,291 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "synthora-agentic-ai"
+version = "1.0.0"
+description = "SynthoraAI agentic AI pipeline and MCP server"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "SynthoraAI" }]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Typing :: Typed",
+]
+
+dependencies = [
+  # Pin lower bounds. Upper bounds are enforced via the lockfile.
+  "langchain>=0.1.0,<0.4",
+  "langchain-core>=0.1.0,<0.4",
+  "langchain-community>=0.0.10,<0.4",
+  "langchain-google-genai>=1.0.0,<3.0",
+  "langchain-openai>=0.1.0,<0.4",
+  "langchain-anthropic>=0.1.0,<0.4",
+  "langchain-cohere>=0.1.0,<0.4",
+  "langgraph>=0.0.20,<0.3",
+  "langsmith>=0.0.77,<0.3",
+
+  "openai>=1.10.0,<2.0",
+  "anthropic>=0.8.0,<1.0",
+  "google-generativeai>=0.3.0,<1.0",
+  "cohere>=4.37,<6.0",
+
+  "pinecone-client>=3.0.0,<6.0",
+  "chromadb>=0.4.0,<1.0",
+  "faiss-cpu>=1.7.4,<2.0",
+
+  "mcp>=1.2.0,<2.0",
+
+  "fastapi>=0.109.0,<1.0",
+  "uvicorn[standard]>=0.27.0,<1.0",
+  "pydantic>=2.5.0,<3.0",
+  "pydantic-settings>=2.1.0,<3.0",
+  "httpx>=0.26.0,<1.0",
+
+  "numpy>=1.24.0,<3.0",
+  "pandas>=2.0.0,<3.0",
+  "python-dotenv>=1.0.0,<2.0",
+
+  "prometheus-client>=0.19.0,<1.0",
+  "structlog>=24.1.0,<26.0",
+
+  # Resilience
+  "tenacity>=8.2.0,<10.0",
+  "pybreaker>=1.0.2,<2.0",
+
+  # Observability (OpenTelemetry)
+  "opentelemetry-api>=1.24.0,<2.0",
+  "opentelemetry-sdk>=1.24.0,<2.0",
+  "opentelemetry-exporter-otlp-proto-grpc>=1.24.0,<2.0",
+  "opentelemetry-exporter-otlp-proto-http>=1.24.0,<2.0",
+  "opentelemetry-instrumentation>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-fastapi>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-httpx>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-redis>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-logging>=0.45b0,<1.0",
+
+  "redis>=5.0.0,<7.0",
+  "hiredis>=2.3.0,<4.0",
+]
+
+[project.optional-dependencies]
+cloud-aws = [
+  "boto3>=1.34.0,<2.0",
+  "botocore>=1.34.0,<2.0",
+  "aws-lambda-powertools>=2.30.0,<4.0",
+]
+cloud-azure = [
+  "azure-identity>=1.15.0,<2.0",
+  "azure-storage-blob>=12.19.0,<13.0",
+  "azure-functions>=1.18.0,<2.0",
+  "azure-monitor-opentelemetry>=1.2.0,<2.0",
+]
+cloud-gcp = [
+  "google-cloud-storage>=2.14.0,<4.0",
+  "google-cloud-logging>=3.9.0,<4.0",
+  "functions-framework>=3.5.0,<4.0",
+  "opentelemetry-exporter-gcp-trace>=1.6.0,<2.0",
+]
+dev = [
+  "pytest>=7.4.0,<9.0",
+  "pytest-asyncio>=0.21.0,<1.0",
+  "pytest-cov>=4.1.0,<6.0",
+  "pytest-randomly>=3.15.0,<4.0",
+  "pytest-mock>=3.12.0,<4.0",
+  "pytest-timeout>=2.2.0,<3.0",
+  "hypothesis>=6.92.0,<7.0",
+  "ruff>=0.6.0,<1.0",
+  "mypy>=1.10.0,<2.0",
+  "types-redis>=4.6.0,<5.0",
+  "bandit[toml]>=1.7.7,<2.0",
+  "pip-audit>=2.7.0,<3.0",
+  "pre-commit>=3.6.0,<5.0",
+  "ipython>=8.20.0,<10.0",
+]
+all-cloud = [
+  "synthora-agentic-ai[cloud-aws,cloud-azure,cloud-gcp]",
+]
+all = [
+  "synthora-agentic-ai[cloud-aws,cloud-azure,cloud-gcp,dev]",
+]
+
+[project.scripts]
+synthora-mcp = "mcp_server.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["../agentic_ai", "../mcp_server"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ruff (lint + format, replaces black + flake8 + isort + pyupgrade)
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+  ".pytest_cache",
+  "__pycache__",
+  "aws/cloudformation.yaml",
+  "azure",
+]
+
+[tool.ruff.lint]
+select = [
+  "E", "W",      # pycodestyle
+  "F",           # pyflakes
+  "I",           # isort
+  "B",           # flake8-bugbear
+  "C4",          # flake8-comprehensions
+  "UP",          # pyupgrade
+  "ASYNC",       # async lint
+  "S",           # bandit-like security checks
+  "RUF",         # ruff-specific
+  "SIM",         # simplify
+  "PIE",         # misc
+  "T20",         # no print
+  "PT",          # pytest style
+  "RET",         # return statements
+  "PERF",        # performance
+  "FURB",        # modernize
+]
+ignore = [
+  "E501",   # line length handled by formatter
+  "B008",   # function-call-in-default (FastAPI Depends etc.)
+  "S101",   # assert allowed (used in tests + defensive paths)
+  "S105",   # hardcoded-password-string false positives on field defaults
+  "S106",   # ditto
+  "S107",   # ditto
+  "S110",   # try-except-pass for best-effort cleanup
+  "RUF012", # mutable class attrs in pydantic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S", "T20", "B011", "PT004"]
+"agentic_ai/aws/**/*.py" = ["T20"]
+"agentic_ai/azure/**/*.py" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agentic_ai", "mcp_server"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Mypy
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+no_implicit_reexport = true
+check_untyped_defs = true
+show_error_codes = true
+pretty = true
+exclude = [
+  "build/",
+  "dist/",
+  "\\.pytest_cache/",
+  "__pycache__/",
+  "aws/cloudformation\\.yaml",
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "langchain.*",
+  "langchain_core.*",
+  "langchain_community.*",
+  "langchain_google_genai.*",
+  "langchain_openai.*",
+  "langchain_anthropic.*",
+  "langchain_cohere.*",
+  "langgraph.*",
+  "langsmith.*",
+  "chromadb.*",
+  "pinecone.*",
+  "cohere.*",
+  "pybreaker",
+  "faiss",
+  "google.generativeai",
+  "azure.*",
+  "boto3",
+  "botocore.*",
+  "aws_lambda_powertools.*",
+]
+ignore_missing_imports = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pytest
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+minversion = "7.4"
+testpaths = ["tests"]
+pythonpath = [".."]
+asyncio_mode = "auto"
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+  "--showlocals",
+  "--tb=short",
+  "--cov=agentic_ai",
+  "--cov=mcp_server",
+  "--cov-report=term-missing",
+  "--cov-report=xml:coverage.xml",
+  "--cov-fail-under=60",
+]
+markers = [
+  "slow: long-running test",
+  "integration: requires external services (redis, network)",
+  "unit: pure unit test",
+]
+filterwarnings = [
+  "error",
+  "ignore::DeprecationWarning",
+  "ignore::PendingDeprecationWarning",
+  "ignore::ResourceWarning",
+]
+timeout = 30
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Coverage
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.coverage.run]
+branch = true
+source = ["agentic_ai", "mcp_server"]
+omit = [
+  "*/tests/*",
+  "*/__main__.py",
+  "*/aws/lambda_function.py",
+  "*/azure/function_app.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 2
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "\\.\\.\\.",
+]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Bandit
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.bandit]
+exclude_dirs = ["tests", ".pytest_cache", "build", "dist"]
+skips = ["B101", "B601"]

@@ -1,6 +1,5 @@
-"""
-MCP server application composition root.
-"""
+"""MCP server application composition root."""
+
 from __future__ import annotations
 
 import structlog
@@ -9,6 +8,7 @@ from mcp.server.fastmcp import FastMCP
 from agentic_ai.config.settings import settings
 
 from .logging_config import configure_logging
+from .observability import configure_observability, metrics
 from .prompts import register_prompts
 from .resources import register_resources
 from .runtime import ServerRuntime
@@ -20,6 +20,10 @@ class AgenticMCPServer:
 
     def __init__(self) -> None:
         configure_logging()
+        configure_observability()
+        # Warm the metrics registry so first scrape always succeeds.
+        metrics()
+
         logger = structlog.get_logger("mcp_server")
         self.logger = logger.bind(
             component="mcp_server",

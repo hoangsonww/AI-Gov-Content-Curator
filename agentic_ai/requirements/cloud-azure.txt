@@ -1,0 +1,5 @@
+-r base.txt
+azure-identity>=1.15.0,<2.0
+azure-storage-blob>=12.19.0,<13.0
+azure-functions>=1.18.0,<2.0
+azure-monitor-opentelemetry>=1.2.0,<2.0
