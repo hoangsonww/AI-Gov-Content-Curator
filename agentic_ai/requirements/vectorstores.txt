@@ -2,5 +2,5 @@
 # Optional retrieval / vector-store stack. Heavy: chromadb pulls
 # onnxruntime (~200MB). Install only when the pipeline needs retrieval.
 pinecone-client>=3.0.0,<6.0
-chromadb>=0.4.0,<1.0
+chromadb>=0.4.0,<2.0
 faiss-cpu>=1.7.4,<2.0
