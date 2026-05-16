@@ -859,9 +859,9 @@ numpy==2.3.4 \
     --hash=sha256:fdebe771ca06bb8d6abce84e51dca9f7921fe6ad34a0c914541b063e9a68928b \
     --hash=sha256:fea80f4f4cf83b54c3a051f2f727870ee51e22f0248d3114b8e755d160b38cfb
     # via -r agentic_ai/requirements/base.txt
-openai==2.32.0 \
-    --hash=sha256:4dcc9badeb4bf54ad0d187453742f290226d30150890b7890711bda4f32f192f \
-    --hash=sha256:c54b27a9e4cb8d51f0dd94972ffd1a04437efeb259a9e60d8922b8bd26fe55e0
+openai==2.37.0 \
+    --hash=sha256:814633888b8f3b1ffd6615697c6e4ef93632d08b7c2e28c8c5ef3556e5a10107 \
+    --hash=sha256:f4bc562cc5f3a43d40d678105572d9d44765f6e0f50c125f63055419b72f4bd9
     # via langchain-openai
 opentelemetry-api==1.41.1 \
     --hash=sha256:0ad1814d73b875f84494387dae86ce0b12c68556331ce6ce8fe789197c949621 \
