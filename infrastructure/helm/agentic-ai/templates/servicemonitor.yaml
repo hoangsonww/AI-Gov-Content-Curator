@@ -1,0 +1,22 @@
+{{- if and .Values.api.enabled .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "agentic-ai.fullname" . }}-api
+  labels:
+    {{- include "agentic-ai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+    {{- if .Values.serviceMonitor.release }}
+    release: {{ .Values.serviceMonitor.release }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "agentic-ai.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+{{- end }}

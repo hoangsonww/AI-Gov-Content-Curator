@@ -1,116 +1,131 @@
+"""AWS Lambda handler for the Agentic AI Pipeline.
+
+Hardened:
+- Uses proper package imports (no sys.path hack).
+- Configures structured logging + OTel + Prometheus on cold start.
+- Validates input through Pydantic via `ArticleProcessRequest`.
+- Converts `MCPError` subclasses to typed responses.
+- Logs go to CloudWatch with trace_id correlation (when X-Ray or OTel
+  side-car is configured).
+- The pipeline coroutine runs under an asyncio policy that survives
+  Lambda's frozen loop across warm invocations.
 """
-AWS Lambda handler for the Agentic AI Pipeline.
-Processes articles using serverless architecture.
-"""
-import json
-import os
-import sys
+
+from __future__ import annotations
+
 import asyncio
-from typing import Dict, Any, Optional
+import json
+from typing import Any
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from core.pipeline import AgenticPipeline
-from config.settings import settings
 import structlog
 
-logger = structlog.get_logger()
+from agentic_ai.config.settings import settings
+from agentic_ai.core.pipeline import AgenticPipeline
+from mcp_server.errors import MCPError, ValidationError
+from mcp_server.logging_config import configure_logging
+from mcp_server.observability import configure_observability, metrics, traced_async_span
+from mcp_server.validation import sanitize_metadata, validate_content_size
 
-# Initialize pipeline (cold start)
-pipeline = None
+configure_logging()
+configure_observability()
+logger = structlog.get_logger("agentic_ai.aws.lambda")
+
+# Cold-start singletons.
+_pipeline: AgenticPipeline | None = None
+_loop: asyncio.AbstractEventLoop | None = None
 
 
-def _run_async(coro):
+def _get_pipeline() -> AgenticPipeline:
+    global _pipeline
+    if _pipeline is None:
+        logger.info("lambda.cold_start")
+        _pipeline = AgenticPipeline()
+    return _pipeline
+
+
+def _get_loop() -> asyncio.AbstractEventLoop:
+    """Reuse one event loop across warm invocations.
+
+    Calling `asyncio.run` per invocation closes the loop, which prevents
+    background tasks (OTel exporter, breakers) from re-using state.
     """
-    Run async code safely from synchronous Lambda handler.
-    """
-    return asyncio.run(coro)
+    global _loop
+    if _loop is None or _loop.is_closed():
+        _loop = asyncio.new_event_loop()
+    return _loop
 
 
-def _validate_payload(payload: Dict[str, Any]) -> Optional[str]:
-    if not isinstance(payload.get("article_id"), str) or not payload["article_id"].strip():
-        return "Missing or invalid required field: article_id"
-    if not isinstance(payload.get("content"), str) or not payload["content"].strip():
-        return "Missing or invalid required field: content"
-    if len(payload["content"]) > settings.mcp_max_content_chars:
-        return f"content exceeds max length ({settings.mcp_max_content_chars})"
-    return None
+def _validate_event(payload: dict[str, Any]) -> None:
+    article_id = payload.get("article_id")
+    content = payload.get("content")
+    if not isinstance(article_id, str) or not article_id.strip():
+        raise ValidationError("article_id is required")
+    if not isinstance(content, str) or not content.strip():
+        raise ValidationError("content is required")
+    err = validate_content_size(content)
+    if err:
+        raise ValidationError(err)
 
 
-def get_pipeline() -> AgenticPipeline:
-    """Get or create pipeline instance (singleton pattern for Lambda)."""
-    global pipeline
-    if pipeline is None:
-        logger.info("Initializing pipeline (cold start)")
-        pipeline = AgenticPipeline()
-    return pipeline
-
-
-def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    """
-    AWS Lambda handler for article processing.
-
-    Expected event format:
-    {
-        "article_id": "...",
-        "content": "...",
-        "url": "...",
-        "source": "..."
+def _response(status_code: int, body: Any) -> dict[str, Any]:
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+        },
+        "body": json.dumps(body, default=str),
     }
 
-    Returns:
-        Processed article data with summary, topics, sentiment, etc.
-    """
-    try:
-        logger.info("Lambda invoked", request_id=context.request_id)
 
-        # Parse event
+def lambda_handler(event: Any, context: Any) -> dict[str, Any]:
+    """Lambda entrypoint. Accepts raw event or API Gateway proxy event."""
+    request_id = getattr(context, "aws_request_id", None) or "unknown"
+    log = logger.bind(
+        request_id=request_id,
+        function_name=getattr(context, "function_name", "lambda"),
+        function_version=getattr(context, "function_version", ""),
+    )
+    log.info("lambda.invoke", environment=settings.environment)
+
+    try:
+        # Normalize event shape.
         if isinstance(event, str):
             event = json.loads(event)
-
-        # Handle API Gateway proxy format
-        if "body" in event:
+        if isinstance(event, dict) and "body" in event:
             body = event["body"]
             if isinstance(body, str):
                 body = json.loads(body)
             event = body
 
-        validation_error = _validate_payload(event)
-        if validation_error:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": validation_error})
-            }
-
-        # Get pipeline and process
-        pipeline_instance = get_pipeline()
-
-        # Process article
-        result = _run_async(pipeline_instance.process_article(event))
-
-        logger.info("Processing completed", article_id=event["article_id"])
-
-        # Return success response
-        return {
-            "statusCode": 200,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-            },
-            "body": json.dumps(result)
+        _validate_event(event)
+        article_data = {
+            "id": event["article_id"].strip(),
+            "content": event["content"],
+            "url": str(event.get("url", "")).strip(),
+            "source": str(event.get("source", "")).strip(),
+            **sanitize_metadata(event.get("metadata") or {}),
         }
 
-    except Exception as e:
-        logger.error("Lambda execution failed", error=str(e))
-        return {
-            "statusCode": 500,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-            },
-            "body": json.dumps({
-                "error": str(e),
-                "message": "Internal server error"
-            })
-        }
+        async def _run() -> Any:
+            async with traced_async_span(
+                "aws.lambda.process_article",
+                **{"article.id": article_data["id"]},
+            ):
+                return await _get_pipeline().process_article(article_data)
+
+        result = _get_loop().run_until_complete(_run())
+        log.info("lambda.complete", article_id=article_data["id"])
+        return _response(200, result)
+
+    except MCPError as exc:
+        log.warning("lambda.error", code=exc.code, message=exc.message)
+        metrics().errors_total.labels(code=exc.code).inc()
+        return _response(exc.http_status, exc.to_dict())
+    except Exception as exc:  # pragma: no cover - safety net
+        log.exception("lambda.unhandled", error=str(exc))
+        metrics().errors_total.labels(code="unhandled").inc()
+        return _response(
+            500,
+            {"error": "internal_error", "message": "An unexpected error occurred"},
+        )

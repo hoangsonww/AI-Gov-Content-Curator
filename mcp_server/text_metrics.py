@@ -1,9 +1,9 @@
 """Lightweight content metrics for diagnostics and preflight checks."""
+
 from __future__ import annotations
 
 import re
 from typing import Any
-
 
 _WORD_RE = re.compile(r"\b[\w'-]+\b")
 _SENTENCE_RE = re.compile(r"[^.!?]+[.!?]?")
@@ -23,9 +23,7 @@ def compute_text_metrics(content: str) -> dict[str, Any]:
     avg_word_length = (
         round(sum(len(word) for word in words) / word_count, 2) if word_count > 0 else 0.0
     )
-    avg_sentence_length_words = (
-        round(word_count / sentence_count, 2) if sentence_count > 0 else 0.0
-    )
+    avg_sentence_length_words = round(word_count / sentence_count, 2) if sentence_count > 0 else 0.0
     unique_word_ratio = (
         round(len({word.lower() for word in words}) / word_count, 3) if word_count > 0 else 0.0
     )

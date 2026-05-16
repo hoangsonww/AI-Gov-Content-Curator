@@ -6,3 +6,4 @@ frontend/public/workbox-*.js
 backend/dist
 /daily.log
 *.md
+.mypy_cache

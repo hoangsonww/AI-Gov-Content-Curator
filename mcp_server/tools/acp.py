@@ -1,11 +1,19 @@
 """ACP tools for agent registration and inter-agent messaging."""
+
 from __future__ import annotations
 
+import contextlib
 import json
 from typing import Any
 
+import structlog
+from mcp.server.fastmcp import FastMCP
+
 from agentic_ai.config.settings import settings
 
+from ..middleware import tool_middleware
+from ..observability import metrics
+from ..runtime import ServerRuntime
 from ..validation import sanitize_metadata
 from .common import coerce_positive_int, validation_error
 
@@ -35,8 +43,9 @@ def _validate_payload_size(payload: dict[str, Any]) -> dict[str, Any] | None:
     return None
 
 
-def register_acp_tools(mcp, runtime, logger) -> None:
+def register_acp_tools(mcp: FastMCP, runtime: ServerRuntime, logger: structlog.BoundLogger) -> None:
     @mcp.tool()
+    @tool_middleware("acp_register_agent")
     async def acp_register_agent(
         agent_id: str,
         display_name: str = "",
@@ -67,6 +76,7 @@ def register_acp_tools(mcp, runtime, logger) -> None:
             return validation_error("agent_id", str(exc))
 
     @mcp.tool()
+    @tool_middleware("acp_unregister_agent", rate_limit=False)
     async def acp_unregister_agent(agent_id: str) -> dict[str, Any]:
         """Unregister an ACP agent identity."""
         enabled_error = _acp_enabled_error()
@@ -79,6 +89,7 @@ def register_acp_tools(mcp, runtime, logger) -> None:
         return {"agent_id": normalized, "unregistered": removed}
 
     @mcp.tool()
+    @tool_middleware("acp_heartbeat", rate_limit=False)
     async def acp_heartbeat(agent_id: str) -> dict[str, Any]:
         """Update ACP heartbeat for an active agent."""
         enabled_error = _acp_enabled_error()
@@ -93,6 +104,7 @@ def register_acp_tools(mcp, runtime, logger) -> None:
         return {"agent": record.model_dump()}
 
     @mcp.tool()
+    @tool_middleware("acp_send_message")
     async def acp_send_message(
         sender_id: str,
         recipient_id: str,
@@ -134,11 +146,13 @@ def register_acp_tools(mcp, runtime, logger) -> None:
                 recipient_id=message.recipient_id,
                 message_id=message.message_id,
             )
+            metrics().acp_messages_total.labels(direction="sent").inc()
             return {"sent": True, "message": message.model_dump()}
         except ValueError as exc:
             return validation_error("message", str(exc))
 
     @mcp.tool()
+    @tool_middleware("acp_fetch_inbox", rate_limit=False)
     async def acp_fetch_inbox(
         agent_id: str,
         limit: int = 20,
@@ -158,6 +172,8 @@ def register_acp_tools(mcp, runtime, logger) -> None:
                 limit=safe_limit,
                 include_acknowledged=include_acknowledged,
             )
+            if messages:
+                metrics().acp_messages_total.labels(direction="received").inc(len(messages))
             return {
                 "agent_id": str(agent_id).strip(),
                 "count": len(messages),
@@ -167,6 +183,7 @@ def register_acp_tools(mcp, runtime, logger) -> None:
             return validation_error("agent_id", str(exc))
 
     @mcp.tool()
+    @tool_middleware("acp_acknowledge_message", rate_limit=False)
     async def acp_acknowledge_message(agent_id: str, message_id: str) -> dict[str, Any]:
         """Acknowledge ACP message delivery by recipient."""
         enabled_error = _acp_enabled_error()
@@ -184,20 +201,25 @@ def register_acp_tools(mcp, runtime, logger) -> None:
                 agent_id=normalized_agent,
                 message_id=normalized_message,
             )
+            metrics().acp_messages_total.labels(direction="ack").inc()
             return {"acknowledged": True, "message": message.model_dump()}
         except ValueError as exc:
             return validation_error("message_id", str(exc))
 
     @mcp.tool()
+    @tool_middleware("acp_list_agents", rate_limit=False)
     async def acp_list_agents() -> dict[str, Any]:
         """List all currently registered ACP agents."""
         enabled_error = _acp_enabled_error()
         if enabled_error:
             return enabled_error
         agents = await runtime.acp.list_agents()
+        with contextlib.suppress(Exception):
+            metrics().acp_agents_registered.set(len(agents))
         return {"count": len(agents), "agents": agents}
 
     @mcp.tool()
+    @tool_middleware("acp_get_message", rate_limit=False)
     async def acp_get_message(message_id: str) -> dict[str, Any]:
         """Get ACP message envelope by message id."""
         enabled_error = _acp_enabled_error()
@@ -210,4 +232,3 @@ def register_acp_tools(mcp, runtime, logger) -> None:
         if message is None:
             return {"message_id": normalized, "status": "not_found"}
         return {"message": message.model_dump()}
-

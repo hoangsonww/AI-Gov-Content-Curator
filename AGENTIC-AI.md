@@ -33,8 +33,10 @@ Comprehensive technical reference for the multi-agent content processing pipelin
 - [Deployment](#deployment)
   - [Local Development](#local-development)
   - [Docker Deployment](#docker-deployment)
+  - [Kubernetes / Helm / Terraform](#kubernetes--helm--terraform)
   - [AWS Lambda](#aws-lambda)
   - [Azure Functions](#azure-functions)
+  - [GCP Cloud Functions](#gcp-cloud-functions)
 - [Integration with SynthoraAI](#integration-with-synthoraai)
 - [Monitoring \& Observability](#monitoring--observability)
 - [Extension Guide](#extension-guide)
@@ -102,6 +104,19 @@ graph TB
     CA & SUM & CLS & SA & QC --> Google & OpenAI & Anthropic & Cohere
 ```
 
+The system is designed with **resilience**, **observability**, and **provider-agnosticism** in mind, featuring:
+- Exponential backoff retries, circuit breakers, and timeouts for all external calls
+- OpenTelemetry traces, Prometheus metrics, and structured JSON logs with trace correlation
+- Pluggable LLM backends (Google Gemini, OpenAI, Anthropic, Cohere) swappable via config and imported lazily to avoid unnecessary dependencies in local dev or tests
+- Graceful degradation when providers are misconfigured — the pipeline starts in degraded mode, and the MCP server remains responsive to health checks and non-LLM tools
+- A standardized interface via the MCP protocol, ensuring any compatible client can invoke the pipeline without custom integration
+- Strict handling of secrets with `SecretStr`, a structlog redaction processor, and health endpoints that report only boolean readiness without exposing sensitive details
+- A dedicated Quality Checker agent that scores output on a 0–1 scale and triggers a bounded retry loop when quality falls below 0.7, ensuring high-quality results while avoiding infinite loops
+- A clear separation of concerns between the pipeline logic (`agentic_ai/`) and the MCP server interface (`mcp_server/`), connected via Python imports but allowing for independent development and testing
+- Comprehensive documentation, including an ADR record for architectural decisions, a runbook for incident response, and detailed code comments throughout the pipeline and agents
+- A robust CI pipeline covering linting, type checking, security scanning, and tests with a real Redis instance to ensure reliability in production environments
+- and more...
+
 ---
 
 ## Design Philosophy
@@ -109,11 +124,13 @@ graph TB
 | Principle | Implementation |
 |-----------|----------------|
 | **Assembly Line** | Articles flow through a fixed sequence of specialized agents, each adding structured data to shared state |
-| **Quality Gate** | A dedicated Quality Checker agent scores output and triggers retry loops when quality < 0.7 |
-| **Provider Agnostic** | Pluggable LLM backend — Google Gemini, OpenAI, Anthropic, or Cohere — swappable via config |
+| **Quality Gate** | A dedicated Quality Checker agent scores output and triggers a bounded retry loop when quality < 0.7 |
+| **Provider Agnostic** | Pluggable LLM backend — Google Gemini, OpenAI, or Anthropic (Cohere pending a langchain-1.x package) — swappable via config, imported lazily |
+| **Resilience by Default** | Every external call flows through `guarded_call`: exponential-backoff retry + a per-provider circuit breaker + a timeout. `BaseAgent._run_chain()` is the single LLM choke point |
+| **Observable by Default** | OpenTelemetry spans + a typed Prometheus registry + JSON logs with trace correlation are wired into the pipeline, agents, and every MCP tool |
 | **Graceful Degradation** | Pipeline starts in degraded mode if providers are misconfigured; MCP server remains responsive |
 | **Standardized Interface** | MCP protocol ensures any compatible client can invoke the pipeline without custom integration |
-| **Zero-Secret Exposure** | Diagnostics and health endpoints never leak API keys; only boolean readiness is reported |
+| **Zero-Secret Exposure** | `SecretStr` credentials, a structlog redaction processor, and health endpoints that report only boolean readiness |
 
 ---
 
@@ -475,7 +492,14 @@ flowchart TD
 
 ### AgentState Schema
 
-The pipeline uses a `TypedDict` with LangGraph `Annotated` reducers for list accumulation:
+The pipeline uses a `TypedDict` for shared state. `messages` and `errors`
+are plain **LastValue** channels — *not* `Annotated[list, operator.add]`
+reducers. Each node mutates the shared list in place and returns the
+whole state; with an `operator.add` reducer LangGraph would concatenate
+the returned (already-accumulated) list onto the channel value, doubling
+both lists every super-step — exponential blowup that wedges the
+pipeline within a few quality-retry iterations. The graph is a strictly
+linear assembly line (no fan-out/fan-in), so LastValue is correct.
 
 ```mermaid
 classDiagram
@@ -492,8 +516,8 @@ classDiagram
         +topics: Optional~list[str]~
         +sentiment: Optional~dict~
         +quality_score: Optional~float~
-        +messages: Annotated~list[BaseMessage], add~
-        +errors: Annotated~list[str], add~
+        +messages: list[BaseMessage]
+        +errors: list[str]
         +should_continue: bool
         +next_stage: Optional~str~
     }
@@ -514,9 +538,14 @@ classDiagram
 ```
 
 **Key design decisions:**
-- `messages` and `errors` use `Annotated[List, operator.add]` — values **accumulate** across nodes rather than being overwritten
+- `messages` and `errors` are plain `list` channels (LastValue). Nodes
+  append in place and return the full state — see the note above.
 - `should_continue` and `next_stage` are the **routing signals** read by `_should_continue()`
-- `iteration` increments on each pass through `intake`, tracking retry loops
+- `iteration` increments in the quality-check node, tracking retry loops
+- `process_article` passes an explicit LangGraph `recursion_limit`
+  (`max_iterations * 6 + 15`) so a low-quality article reruns the full
+  `max_iterations` loop and terminates gracefully instead of hitting
+  LangGraph's default limit of 25 and raising `GraphRecursionError`
 
 ### PipelineStage Enum
 
@@ -824,6 +853,19 @@ All configuration is managed by a **Pydantic BaseSettings** class (`agentic_ai/c
 | **Pipeline** | | |
 | `MAX_ITERATIONS` | `10` | Max quality check retries |
 | `AGENT_TIMEOUT` | `300` | Agent timeout (seconds) |
+| **LLM resilience** | | |
+| `LLM_REQUEST_TIMEOUT_SECONDS` | `60` | Per-LLM-call timeout |
+| `LLM_MAX_ATTEMPTS` | `3` | Retry attempts on transient errors |
+| `LLM_CIRCUIT_FAIL_MAX` | `5` | Failures before the breaker opens |
+| `LLM_CIRCUIT_RESET_SECONDS` | `30` | Breaker half-open cooldown |
+| **Observability** | | |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | OTLP collector endpoint (empty = tracing no-op) |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
+| `OTEL_TRACES_SAMPLE_RATIO` | `1.0` | Trace sample ratio |
+| `ENABLE_METRICS` | `true` | Prometheus metrics |
+| **Cost guard** | | |
+| `DAILY_COST_BUDGET_USD` | `50.0` | Daily LLM spend budget |
+| `COST_ALERT_THRESHOLD` | `0.8` | Budget fraction that triggers alerts |
 | **API Keys** | | |
 | `GOOGLE_AI_API_KEY` | — | Google Gemini API key |
 | `OPENAI_API_KEY` | — | OpenAI API key |
@@ -868,6 +910,20 @@ flowchart TD
 
 **All 5 agents share the same provider/model** — configured globally, not per-agent. To change the provider, set `DEFAULT_LLM_PROVIDER` and the corresponding API key.
 
+**Lazy provider imports.** `BaseAgent._get_default_llm()` imports only
+the *selected* provider's integration package, so an image that runs
+Google does not need the OpenAI / Anthropic packages installed. A
+missing package surfaces as a clear `ConfigurationError`.
+
+**Cohere status.** `langchain-cohere` has no langchain-1.x release (it
+transitively requires the deprecated `langchain-community`), so Cohere is
+not part of the default install on the 1.x stack. The lazy `ChatCohere`
+branch re-enables it automatically once an upstream 1.x package ships.
+
+**Resilience.** Every provider call runs through `guarded_call`: retry
+with exponential backoff + jitter on transient errors, a per-provider
+circuit breaker (`llm:<provider>`, shared across agents), and a timeout.
+
 **Diagnostics endpoint** (`diagnose_provider_configuration`) reports which providers have API keys configured (boolean only — never exposes the actual keys).
 
 ---
@@ -877,8 +933,8 @@ flowchart TD
 ### Local Development
 
 ```bash
-# Install dependencies
-cd agentic_ai && pip install -r requirements.txt
+# Install dependencies (base runtime; add requirements/dev.txt for tooling)
+cd agentic_ai && pip install -r requirements/base.txt
 
 # Set up environment
 cp .env.example .env
@@ -910,38 +966,48 @@ cd agentic_ai && make run-mcp
 
 ### Docker Deployment
 
-```bash
-# Build
-cd agentic_ai && make docker-build
+The image is multi-stage, multi-target (`mcp` | `api` | `dev`), runs as
+a non-root user (UID 10001) on a digest-pinned base with build tooling
+stripped, and is ~355 MB.
 
-# Full stack (pipeline + MongoDB + Redis + Prometheus + Grafana)
-cd agentic_ai && make docker-up
+```bash
+# Build the API image (also runs `python -m mcp_server`)
+cd agentic_ai && make docker-build DOCKER_TARGET=api
+
+# Local stack — default profile is api + redis
+docker compose -f agentic_ai/docker-compose.yml up -d
+# Monitoring profile adds Prometheus + Grafana + an OTel collector
+docker compose -f agentic_ai/docker-compose.yml --profile monitoring up -d
+# The MCP server is on-demand, not a daemon — run it via the mcp profile:
+docker compose -f agentic_ai/docker-compose.yml --profile mcp run --rm mcp
 ```
 
-**Docker Compose services (`agentic_ai/docker-compose.yml`):**
+**Docker Compose profiles (`agentic_ai/docker-compose.yml`):**
 
-| Service | Ports | Purpose |
-|---------|-------|---------|
-| `agentic-pipeline` | 8000, 8001, 9090 | Pipeline API + MCP + Metrics |
-| `mongodb` | 27017 | Data persistence |
-| `redis` | 6379 | Caching layer |
-| `prometheus` | 9090 | Metrics scraping |
-| `grafana` | 3000 | Dashboards |
+| Profile | Services | Purpose |
+|---------|----------|---------|
+| default | `api`, `redis` | FastAPI HTTP service + its store |
+| `mcp` | `mcp` | MCP stdio server (on-demand, `compose run`) |
+| `monitoring` | `prometheus`, `grafana`, `otel-collector` | Observability stack |
+| `storage` | `mongodb` | Optional persistence |
 
-```mermaid
-graph TB
-    subgraph "Docker Compose"
-        AP["agentic-pipeline<br/>:8000 :8001 :9090"]
-        Mongo["mongodb<br/>:27017"]
-        RedisS["redis<br/>:6379"]
-        Prom["prometheus<br/>:9090"]
-        Graf["grafana<br/>:3000"]
-    end
+### Kubernetes / Helm / Terraform
 
-    AP --> Mongo
-    AP --> RedisS
-    Prom -->|"scrape"| AP
-    Graf -->|"query"| Prom
+Production runs the FastAPI service on Kubernetes. The MCP server uses
+stdio transport and is launched on demand by an MCP client — it is **not**
+a Deployment.
+
+```bash
+# Raw manifests (kustomize) — Deployment, Service, HPA, PDB,
+# NetworkPolicy, ServiceMonitor, ConfigMap, Secret template
+kubectl apply -k infrastructure/kubernetes/agentic-ai
+
+# Helm chart
+helm upgrade --install agentic-ai infrastructure/helm/agentic-ai \
+  --namespace ai-curator --create-namespace
+
+# Terraform module — ECR + KMS + Secrets Manager + IAM + optional Helm release
+# infrastructure/terraform/modules/agentic-ai
 ```
 
 ### AWS Lambda
@@ -972,7 +1038,19 @@ Two triggers:
 1. **HTTP Trigger** (`main`) — synchronous request/response via HTTP POST
 2. **Queue Trigger** (`queue_process`) — async processing via Azure Storage Queue
 
-**Deploy:** `cd agentic_ai && make deploy-azure`
+Blob persistence prefers managed identity (`DefaultAzureCredential`).
+
+### GCP Cloud Functions
+
+**Handlers:** `agentic_ai/gcp/cloud_function.py`
+
+Two triggers:
+1. **HTTP Trigger** (`process_article`)
+2. **Pub/Sub Trigger** (`process_pubsub`) — results persisted to GCS
+
+All three serverless adapters share the hardened core: structured
+logging, OTel, typed errors, input validation, and a reused event loop
+across warm invocations. See each cloud's `README.md`.
 
 ---
 
@@ -1018,27 +1096,45 @@ The agentic pipeline enriches articles crawled by the ingestion service, adding 
 
 ## Monitoring & Observability
 
+Observability is implemented in `mcp_server/observability.py` and shared
+across the pipeline and the MCP server.
+
 ```mermaid
 flowchart LR
-    Pipeline["AgenticPipeline"]
-    Pipeline -->|"structlog"| Logs["Structured Logs<br/>(stderr, JSON)"]
-    Pipeline -->|"prometheus-client"| Metrics["Prometheus<br/>:9090/metrics"]
-    Metrics --> Grafana["Grafana<br/>Dashboards"]
+    Pipeline["AgenticPipeline + agents"]
+    MCP["MCP tools (tool_middleware)"]
+    API["FastAPI service"]
 
-    MCP["MCP Server"] -->|"health tool"| Health["check_pipeline_health()"]
-    MCP -->|"readiness"| Ready["get_runtime_readiness()"]
-    MCP -->|"diagnostics"| Diag["diagnose_provider_configuration()"]
-    MCP -->|"preflight"| Pre["run_preflight_checks()"]
-    MCP -->|"job stats"| Stats["jobs://stats resource"]
+    Pipeline & MCP & API -->|"OTel spans"| OTLP["OTLP exporter<br/>→ collector"]
+    Pipeline & MCP & API -->|"typed registry"| Prom["Prometheus<br/>synthora_* metrics"]
+    Pipeline & MCP & API -->|"structlog JSON"| Logs["stderr logs<br/>trace_id + redaction"]
+
+    Prom --> PromSrv["Prometheus / Grafana"]
+    OTLP --> Tracing["Tempo / Jaeger / Splunk"]
+    API -->|"GET /metrics"| Prom
+    API -->|"GET /healthz, /readyz"| Probes["k8s probes"]
 ```
 
-**Health check dimensions:**
-- Runtime readiness (pipeline initialized?)
-- Pipeline component status (each agent loaded?)
-- Job store statistics (success rate, active jobs)
-- Provider configuration (API keys present?)
-- Processing limits (content size, batch size)
-- Feature flags (which agents enabled?)
+**Tracing.** A span tree per article: `pipeline.process_article` →
+`pipeline.stage.<name>` → `agent.<name>.chain` (with `llm.provider` /
+`llm.model` attributes). MCP tools emit `mcp.tool.<name>` spans. Exporter
+configured via `OTEL_EXPORTER_OTLP_ENDPOINT`.
+
+**Metrics.** A typed Prometheus registry — all `synthora_`-prefixed:
+`pipeline_runs_total`, `pipeline_duration_seconds`,
+`agent_invocations_total`, `agent_duration_seconds`, `llm_calls_total`,
+`llm_duration_seconds`, `llm_tokens_total`, `llm_cost_usd_total`,
+`mcp_tool_invocations_total`, `acp_messages_total`,
+`circuit_breaker_state`, `retries_total`, `errors_total`.
+
+**Logs.** JSON to stderr, `trace_id`/`span_id` injected from the active
+span, secret-redacted by a structlog processor.
+
+**Health (three tiers, `health.py`).**
+- *Liveness* — process up + module importable (`/healthz`).
+- *Readiness* — dependencies (ACP/Redis) reachable (`/readyz`).
+- *Deep health* — component + provider + job + ACP snapshot
+  (`check_pipeline_health` tool / `runtime://health`).
 
 ---
 
@@ -1103,18 +1199,35 @@ flowchart LR
 
 | Concern | Mitigation |
 |---------|------------|
-| **API Key Exposure** | Diagnostics report boolean readiness only — never expose key values |
+| **API Key Exposure** | `SecretStr` credentials; a structlog redaction processor masks key-shaped fields + inline secret patterns; diagnostics report boolean readiness only |
 | **Content Size** | `MCP_MAX_CONTENT_CHARS` (20,000) enforced on every input |
 | **Batch Size** | `MCP_MAX_BATCH_ITEMS` (25) prevents resource exhaustion |
-| **Metadata Injection** | `sanitize_metadata()` enforces entry count, value length, and type coercion |
+| **Metadata Injection** | `sanitize_metadata()` enforces entry count, value length, type coercion, control-char stripping |
+| **Rate Limiting** | Token-bucket limiter (`security.py`) throttles MCP tool calls + HTTP requests |
 | **Transport Security** | stdio transport — no network exposure (caller must have process access) |
-| **Input Validation** | Pydantic models validate all structured inputs; `article_id` is stripped and checked |
-| **Logging** | All logs go to stderr; stdout reserved for JSON-RPC protocol stream |
+| **Input Validation** | Pydantic models (`extra="forbid"`); NFKC normalization + control-char stripping; `article_id` sanitized |
+| **Config fail-fast** | In `ENVIRONMENT=production` the settings model refuses to start without the default provider key |
+| **Logging** | JSON to stderr (stdout reserved for JSON-RPC); secret-redacted; trace-correlated |
+| **Typed errors** | `errors.py` distinguishes retryable vs permanent; callers never see raw provider exceptions |
+| **Container** | Non-root (UID 10001), read-only rootfs, dropped caps, digest-pinned base, build tooling stripped |
+| **Dependency CVEs** | Trivy + pip-audit in CI; **zero known Python CVEs** on the langchain 1.x line |
 | **Graceful Degradation** | Missing API keys → degraded mode, not crash |
+
+See [`agentic_ai/docs/security.md`](agentic_ai/docs/security.md) for the
+full threat model and CVE posture.
 
 ---
 
 ## Error Handling & Recovery
+
+Failures are mapped to a **typed exception hierarchy** (`errors.py`):
+`ValidationError`, `NotFoundError`, `ConflictError`,
+`ResourceExhaustedError`, `TransientUpstreamError` /
+`PermanentUpstreamError`, `TimeoutError_`, `CircuitOpenError`,
+`ConfigurationError`. Each carries an `http_status` and a `retryable`
+flag; `RETRYABLE_ERROR_TYPES` drives the retry policy. `tool_middleware`
+converts any `MCPError` into a uniform `{error, message, context,
+retryable}` envelope.
 
 ```mermaid
 flowchart TD

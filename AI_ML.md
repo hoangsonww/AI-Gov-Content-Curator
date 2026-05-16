@@ -71,7 +71,7 @@ graph TB
     end
 
     subgraph "Python Agentic Layer"
-        API["FastAPI Bridge<br/>(agentic_ai/api.py :8100)"]
+        API["FastAPI Bridge<br/>(agentic_ai/api.py :8000)"]
         AP["AgenticPipeline<br/>(LangGraph StateGraph)"]
         COSUP["ContentSupervisor"]
         CBM["CostBudgetManager"]
@@ -121,7 +121,7 @@ graph TB
     DPC -->|"Primary"| ANTH
     DPC -->|"Fallback"| GOOG
 
-    PC -->|"HTTP :8100"| API
+    PC -->|"HTTP :8000"| API
     API --> AP
     API --> COSUP
     COSUP --> AP
@@ -225,7 +225,7 @@ sequenceDiagram
     participant Client
     participant Backend as Backend Express
     participant Bridge as PipelineClient
-    participant FastAPI as Python FastAPI :8100
+    participant FastAPI as Python FastAPI :8000
     participant Pipeline as AgenticPipeline
     participant CA as ContentAnalyzer
     participant SUM as Summarizer
@@ -440,6 +440,8 @@ Each agent has a dedicated system prompt in `src/agents/prompts/system/`:
 
 ## Module 2: Python Agentic Pipeline
 
+**Package:** `agentic_ai` (Python package in `agentic_ai/`)
+
 ### LangGraph Pipeline State Machine
 
 ```mermaid
@@ -587,6 +589,13 @@ graph TB
     style DLQ fill:#e67e22,color:#fff
 ```
 
+This subsystem is `mypy --strict` clean (no grandfather override) and has
+**100% line coverage** across all eight modules — 91 tests in
+`agentic_ai/tests/test_orchestration.py` exercising the supervisor,
+registry, cost budgeting (including the daily UTC reset), error recovery
+(every error type plus the generic fallback), the dead-letter queue, and
+the concurrent batch processor.
+
 ### HTTP Bridge (`agentic_ai/api.py`)
 
 FastAPI server exposing the pipeline over HTTP for the TypeScript layer:
@@ -598,7 +607,7 @@ FastAPI server exposing the pipeline over HTTP for the TypeScript layer:
 | `/analyze` | POST | Run individual agents (content/sentiment/classification/summary/quality) |
 | `/batch` | POST | Process multiple articles (max 25, concurrency 5) |
 
-Start: `cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8100`
+Start: `cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8000`
 
 ### Cloud Adapters
 
@@ -624,20 +633,23 @@ graph TB
     end
 
     subgraph "FastMCP Server (mcp_server/)"
-        APP["app.py<br/>Composition Root"]
+        APP["app.py<br/>Composition Root<br/>(logging + observability)"]
+        MW["tool_middleware<br/>span + metrics + typed errors + rate limit"]
         RT["ServerRuntime"]
         JS["ProcessingJobStore<br/>Async-safe in-memory<br/>TTL pruning, max 1000"]
 
-        subgraph "Tools (20)"
+        subgraph "Tools (28)"
             T_PROC["Processing (8)<br/>process_article<br/>process_article_batch<br/>validate_article_payload<br/>get_processing_status<br/>get_processing_result<br/>list_processing_jobs<br/>delete_processing_job<br/>purge_processing_jobs"]
             T_ANAL["Analysis (6)<br/>analyze_content<br/>analyze_sentiment<br/>extract_topics<br/>evaluate_quality<br/>compute_text_metrics<br/>generate_summary"]
             T_OPS["Operations (6)<br/>check_pipeline_health<br/>get_pipeline_graph<br/>get_server_capabilities<br/>get_runtime_readiness<br/>diagnose_provider_config<br/>run_preflight_checks"]
+            T_ACP["ACP (8)<br/>acp_register_agent<br/>acp_unregister_agent<br/>acp_heartbeat<br/>acp_send_message<br/>acp_fetch_inbox<br/>acp_acknowledge_message<br/>acp_list_agents<br/>acp_get_message"]
         end
 
-        subgraph "Resources (11)"
+        subgraph "Resources (14)"
             R_CFG["Config (4)<br/>config://pipeline<br/>config://limits<br/>config://providers<br/>config://features"]
             R_RT["Runtime (4)<br/>runtime://health<br/>runtime://readiness<br/>runtime://capabilities<br/>runtime://pipeline/graph"]
             R_JOBS["Jobs & Topics (3)<br/>jobs://stats<br/>jobs://recent<br/>topics://available"]
+            R_ACP["ACP (3)<br/>acp://agents<br/>acp://stats<br/>acp://messages/recent"]
         end
 
         subgraph "Prompts (7)"
@@ -658,12 +670,15 @@ graph TB
     APP --> RT
     RT --> JS
     RT --> AP
-    APP --> T_PROC
-    APP --> T_ANAL
-    APP --> T_OPS
+    APP --> MW
+    MW --> T_PROC
+    MW --> T_ANAL
+    MW --> T_OPS
+    MW --> T_ACP
     APP --> R_CFG
     APP --> R_RT
     APP --> R_JOBS
+    APP --> R_ACP
     APP --> P_SUM
     APP --> P_ANAL
     APP --> P_GOV
@@ -717,14 +732,14 @@ graph LR
     end
 
     subgraph "Python"
-        API["agentic_ai/api.py<br/>FastAPI :8100"]
+        API["agentic_ai/api.py<br/>FastAPI :8000"]
         PIPE["agentic_ai/<br/>core/pipeline.py"]
         ORCHPY["agentic_ai/<br/>orchestration/"]
         MCP["mcp_server/<br/>FastMCP"]
     end
 
     BE -->|"npm workspace import"| ORC
-    ORC -->|"HTTP :8100<br/>PipelineClient"| API
+    ORC -->|"HTTP :8000<br/>PipelineClient"| API
     API -->|"Python import"| PIPE
     API -->|"Python import"| ORCHPY
     ORCHPY -->|"wraps"| PIPE
@@ -1061,7 +1076,23 @@ flowchart TD
     style TRY3 fill:#e67e22,color:#fff
 ```
 
-### Python Error Recovery Engine
+### Python Resilience
+
+The core pipeline wraps **every external call** (LLM providers, Redis)
+in `mcp_server/resilience.py`'s `guarded_call`:
+
+- **Retry** — tenacity, exponential backoff + jitter, only on
+  classified *transient* errors (`RETRYABLE_ERROR_TYPES`).
+- **Circuit breaker** — a self-contained, asyncio-safe breaker keyed
+  per provider (`llm:<provider>`); a provider outage trips the breaker
+  for every agent using it. State is exported as the
+  `synthora_circuit_breaker_state` metric.
+- **Timeout** — `asyncio.wait_for` (async) / worker-thread deadline
+  (sync); raises a typed `TimeoutError_`.
+
+`BaseAgent._run_chain()` is the single choke point all agent LLM calls
+flow through. The separate `agentic_ai/orchestration/` subsystem adds a
+richer recovery engine on top (classification + dead-letter queue):
 
 ```mermaid
 flowchart TD
@@ -1102,9 +1133,10 @@ graph TB
         TS_TRACE["Per-request tracing<br/>sessionId, agentId,<br/>latencyMs, tokens"]
     end
 
-    subgraph "Python"
-        PY_LOG["structlog<br/>JSON to stderr"]
-        PY_MET["prometheus-client<br/>(optional)"]
+    subgraph "Python (mcp_server/observability.py)"
+        PY_LOG["structlog JSON to stderr<br/>trace_id correlation + redaction"]
+        PY_TRACE["OpenTelemetry spans<br/>pipeline / agent / tool / LLM"]
+        PY_MET["Typed Prometheus registry<br/>synthora_* metrics + LLM cost"]
         PY_JOBS["JobStore stats<br/>total, completed,<br/>failed, success_rate"]
     end
 
@@ -1117,12 +1149,21 @@ graph TB
     TS_LOG --> BE_LOG
     TS_MET --> BE_HEALTH
     PY_JOBS --> BE_HEALTH
+    PY_TRACE --> OTLP["OTLP collector<br/>Tempo / Jaeger / Splunk"]
+    PY_MET --> PROM["Prometheus / Grafana"]
     TS_TRACE --> BE_COST
 
     style TS_LOG fill:#4a90d9,color:#fff
     style PY_LOG fill:#e67e22,color:#fff
     style BE_HEALTH fill:#27ae60,color:#fff
 ```
+
+The Python `synthora_*` metric set covers pipeline runs/duration,
+per-agent invocations/duration, LLM calls/tokens/cost, MCP tool calls,
+ACP messages, circuit-breaker state, retries, and errors. The FastAPI
+service exposes them at `GET /metrics`; pods export OTLP traces to the
+node-local collector. A starter Grafana dashboard ships in
+`agentic_ai/monitoring/grafana/`.
 
 ---
 
@@ -1140,7 +1181,7 @@ graph TB
 | `ORCHESTRATION_MAX_HANDOFF_DEPTH` | No | `5` | Max agent hops |
 | `ORCHESTRATION_MAX_ACTIVE_MESSAGES` | No | `20` | Session compaction threshold |
 | `ORCHESTRATION_LOG_LEVEL` | No | `info` | Log verbosity |
-| `PIPELINE_API_URL` | No | `http://localhost:8100` | Python pipeline bridge URL |
+| `PIPELINE_API_URL` | No | `http://localhost:8000` | Python pipeline bridge URL |
 | `PIPELINE_TIMEOUT_MS` | No | `120000` | Pipeline request timeout |
 
 ### Python Pipeline
@@ -1154,9 +1195,21 @@ graph TB
 | `ANTHROPIC_API_KEY` | If anthropic | — | Anthropic key |
 | `COHERE_API_KEY` | If cohere | — | Cohere key |
 | `MONGODB_URI` | No | `mongodb://127.0.0.1:27017/synthora_ai` | Article storage |
-| `PINECONE_API_KEY` | No | — | Vector search |
+| `PINECONE_API_KEY` | No | — | Vector search (optional `vectorstores` extra) |
 | `MAX_ITERATIONS` | No | `10` | Quality check retry limit |
 | `AGENT_TIMEOUT` | No | `300` | Agent timeout (seconds) |
+| `LLM_REQUEST_TIMEOUT_SECONDS` | No | `60` | Per-LLM-call timeout |
+| `LLM_MAX_ATTEMPTS` | No | `3` | Retry attempts on transient errors |
+| `LLM_CIRCUIT_FAIL_MAX` | No | `5` | Failures before the circuit breaker opens |
+| `LLM_CIRCUIT_RESET_SECONDS` | No | `30` | Breaker half-open cooldown |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | No | — | OTLP collector (empty = tracing no-op) |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | No | `grpc` | `grpc` or `http/protobuf` |
+| `ACP_BACKEND` | No | `redis` | ACP store: `redis` or `memory` |
+
+> **Note.** `COHERE_API_KEY` still selects the Cohere provider, but
+> `langchain-cohere` has no langchain-1.x release and is not installed
+> by default — selecting cohere raises a clear `ConfigurationError`
+> until an upstream 1.x package ships.
 
 ### MCP Server
 
@@ -1215,8 +1268,8 @@ graph TB
     NEXT --> LB
     LB --> BE1
     LB --> BE2
-    BE1 -->|"HTTP :8100"| PY_LB
-    BE2 -->|"HTTP :8100"| PY_LB
+    BE1 -->|"HTTP :8000"| PY_LB
+    BE2 -->|"HTTP :8000"| PY_LB
     PY_LB --> PY1
     PY_LB --> PY2
 
@@ -1241,7 +1294,7 @@ graph TB
 
 ```bash
 # 1. Start Python pipeline bridge
-cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8100 --reload
+cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 
 # 2. Start backend (includes TypeScript orchestration)
 cd backend && npm run dev

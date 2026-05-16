@@ -1,8 +1,11 @@
 """Summarization prompts."""
+
 from __future__ import annotations
 
+from mcp.server.fastmcp import FastMCP
 
-def register_summarization_prompts(mcp) -> None:
+
+def register_summarization_prompts(mcp: FastMCP) -> None:
     @mcp.prompt()
     async def summarize_article_prompt(article_content: str) -> str:
         """Prompt template for concise article summaries."""
@@ -15,7 +18,9 @@ Article:
 Summary:"""
 
     @mcp.prompt()
-    async def executive_brief_prompt(article_content: str, audience: str = "policy leadership") -> str:
+    async def executive_brief_prompt(
+        article_content: str, audience: str = "policy leadership"
+    ) -> str:
         """Prompt template for executive briefing style summaries."""
         return f"""Prepare an executive brief for {audience} based on the article below.
 

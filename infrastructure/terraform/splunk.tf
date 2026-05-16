@@ -25,7 +25,7 @@ module "splunk" {
     newsletter = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/ai-curator-${var.environment}-newsletter:*"
   }
 
-  enable_s3_backup  = true
+  enable_s3_backup   = true
   buffering_interval = 60
   buffering_size     = 5
   retry_duration     = 300

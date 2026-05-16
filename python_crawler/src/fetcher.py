@@ -8,7 +8,8 @@ import aiohttp
 from .config import CrawlerConfig
 
 try:
-    from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
+    from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+    from playwright.async_api import async_playwright
 except Exception:  # pragma: no cover
     async_playwright = None
     PlaywrightTimeoutError = Exception
@@ -32,7 +33,7 @@ async def fetch_dynamic(url: str, user_agent: str) -> Optional[str]:
                 await browser.close()
                 return None
 
-        html = await page.content()
+        html: str = await page.content()
         await browser.close()
         return html
 
@@ -63,7 +64,7 @@ async def fetch_html(
             if attempt >= config.max_retries:
                 LOG.warning("Fetch failed for %s: %s", url, exc)
                 return None
-            backoff = config.backoff_base * (2 ** attempt) + random.uniform(0, 0.3)
+            backoff = config.backoff_base * (2**attempt) + random.uniform(0, 0.3)
             await asyncio.sleep(backoff)
 
     return None

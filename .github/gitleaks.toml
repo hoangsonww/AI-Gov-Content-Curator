@@ -1,0 +1,24 @@
+# gitleaks config — extends default ruleset with project-specific allow
+# patterns (.env.example fields, generated SBOMs, etc.).
+
+title = "SynthoraAI gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "ignore documented example env vars"
+paths = [
+  '''(agentic_ai/)?\.env\.example''',
+  '''(agentic_ai/)?README.md''',
+  '''.*/CHANGELOG.*''',
+]
+
+[[allowlists]]
+description = "ignore SBOMs and CI artifacts"
+paths = [
+  '''.*sbom.*\.json''',
+  '''.*\.sarif''',
+  '''coverage\.xml''',
+  '''junit\.xml''',
+]

@@ -1,0 +1,76 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agentic-ai-api
+  namespace: ai-curator
+  labels:
+    app.kubernetes.io/name: agentic-ai
+    app.kubernetes.io/component: api
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: agentic-ai
+      app.kubernetes.io/component: api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Istio mesh + cluster-internal callers only.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              istio-injection: enabled
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: synthora
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Prometheus scrape from the monitoring namespace.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              name: splunk-monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # DNS.
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Redis.
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # OTel telemetry. The Splunk OTel Collector runs as a node-local
+    # DaemonSet, reached via the host IP (RFC1918) — so this rule is not
+    # namespace-scoped; it allows the OTLP ports to any destination.
+    - ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    # LLM provider HTTPS egress (public internet only; RFC1918 excluded).
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 169.254.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443

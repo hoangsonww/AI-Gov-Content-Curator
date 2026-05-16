@@ -1,0 +1,15 @@
+{{- if and .Values.api.enabled .Values.api.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "agentic-ai.fullname" . }}-api
+  labels:
+    {{- include "agentic-ai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  minAvailable: {{ .Values.api.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "agentic-ai.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+{{- end }}

@@ -5,13 +5,14 @@ Provides concurrent article processing with an asyncio semaphore to
 bound parallelism, priority-based ordering, per-item retry logic, and
 a typed :class:`BatchResult` summary.
 """
+
 from __future__ import annotations
 
 import asyncio
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 import structlog
 
@@ -27,7 +28,7 @@ _DEFAULT_MAX_RETRIES: int = 2
 
 def _utc_now() -> str:
     """Return the current UTC timestamp as ISO-8601."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 @dataclass
@@ -53,7 +54,7 @@ class BatchResult:
     skipped: int
     results: list[dict[str, Any]] = field(default_factory=list)
     started_at: str = field(default_factory=_utc_now)
-    completed_at: Optional[str] = None
+    completed_at: str | None = None
     duration_seconds: float = 0.0
 
 
@@ -129,8 +130,7 @@ class ArticleBatchProcessor:
 
         semaphore = asyncio.Semaphore(self._concurrency)
         tasks = [
-            self._process_one(article, mode, semaphore, batch_id)
-            for article in sorted_articles
+            self._process_one(article, mode, semaphore, batch_id) for article in sorted_articles
         ]
         item_results: list[dict[str, Any]] = await asyncio.gather(*tasks, return_exceptions=False)
 
@@ -224,9 +224,7 @@ class ArticleBatchProcessor:
             Per-article result dictionary with keys: ``article_id``, ``status``,
             ``result`` or ``error``, ``retries``, ``original_payload``.
         """
-        article_id = str(
-            article.get("id") or article.get("article_id") or uuid.uuid4()
-        )
+        article_id = str(article.get("id") or article.get("article_id") or uuid.uuid4())
 
         if not article.get("content"):
             logger.warning(
@@ -244,7 +242,7 @@ class ArticleBatchProcessor:
             }
 
         retries = 0
-        last_error: Optional[str] = None
+        last_error: str | None = None
 
         async with semaphore:
             while retries <= self._max_retries:

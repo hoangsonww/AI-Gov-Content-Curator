@@ -1,0 +1,58 @@
+version: 2
+updates:
+  # ── Python: agentic_ai + mcp_server ───────────────────────────────────
+  - package-ecosystem: pip
+    directory: /agentic_ai
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - agentic-ai
+    groups:
+      langchain:
+        patterns:
+          - "langchain*"
+          - "langgraph"
+          - "langsmith"
+      opentelemetry:
+        patterns:
+          - "opentelemetry-*"
+      dev-tooling:
+        patterns:
+          - "ruff"
+          - "mypy"
+          - "pytest*"
+          - "bandit*"
+          - "pip-audit"
+          - "pre-commit"
+          - "hypothesis"
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+
+  # ── GitHub Actions ────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - ci/cd
+    commit-message:
+      prefix: "ci(deps)"
+
+  # ── Docker base images for agentic_ai ─────────────────────────────────
+  - package-ecosystem: docker
+    directory: /agentic_ai
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - deployment
+    commit-message:
+      prefix: "chore(docker)"

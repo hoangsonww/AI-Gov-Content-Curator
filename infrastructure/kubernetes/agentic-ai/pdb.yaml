@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: agentic-ai-api
+  namespace: ai-curator
+  labels:
+    app.kubernetes.io/name: agentic-ai
+    app.kubernetes.io/component: api
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agentic-ai
+      app.kubernetes.io/component: api

@@ -1,4 +1,5 @@
 """Pydantic models for ACP agent communication primitives."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -45,4 +46,3 @@ class ACPMessageRecord(BaseModel):
     expires_at: str
     delivered_at: str | None = None
     acknowledged_at: str | None = None
-

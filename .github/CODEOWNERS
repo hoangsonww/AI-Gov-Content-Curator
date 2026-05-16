@@ -1,0 +1,42 @@
+# Code ownership for review routing.
+# @hoangsonww owns the entire repository.
+
+# Default owner for every path.
+*                                  @hoangsonww
+
+# Explicit per-area entries (same owner). Kept for clarity and so future
+# co-owners can be added per area without losing the global default.
+
+# Application services
+/agentic_ai/                       @hoangsonww
+/mcp_server/                       @hoangsonww
+/orchestration/                    @hoangsonww
+/backend/                          @hoangsonww
+/frontend/                         @hoangsonww
+/crawler/                          @hoangsonww
+/python_crawler/                   @hoangsonww
+/newsletters/                      @hoangsonww
+
+# Infrastructure, deployment, and developer tooling
+/infrastructure/                   @hoangsonww
+/shell/                            @hoangsonww
+/bin/                              @hoangsonww
+/codex/                            @hoangsonww
+
+# CI, automation, and dev-environment config
+/.github/                          @hoangsonww
+/.circleci/                        @hoangsonww
+/.husky/                           @hoangsonww
+/.devcontainer/                    @hoangsonww
+/.idea/                            @hoangsonww
+
+# Agent / AI tooling and session state
+/.claude/                          @hoangsonww
+/.agents/                          @hoangsonww
+/.agent-sessions/                  @hoangsonww
+/.beads/                           @hoangsonww
+
+# Top-level docs and root config files
+/*.md                              @hoangsonww
+/*.json                            @hoangsonww
+/*.sh                              @hoangsonww

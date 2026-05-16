@@ -1,0 +1,18 @@
+Thanks for installing {{ .Chart.Name }}.
+
+Image: {{ include "agentic-ai.image" . }}
+Namespace: {{ .Release.Namespace }}
+
+{{- if .Values.api.enabled }}
+API service: http://{{ include "agentic-ai.fullname" . }}-api.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.api.service.port }}
+Probes:
+  liveness  -> /healthz
+  readiness -> /readyz
+  metrics   -> /metrics
+{{- end }}
+
+MCP server: stdio transport (ADR 0002). Not a cluster workload — an MCP
+client launches `python -m mcp_server` on demand using this same image.
+
+Verify rollout:
+  kubectl -n {{ .Release.Namespace }} rollout status deploy {{ include "agentic-ai.fullname" . }}-api

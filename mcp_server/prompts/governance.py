@@ -1,8 +1,11 @@
 """Governance and incident-response prompts."""
+
 from __future__ import annotations
 
+from mcp.server.fastmcp import FastMCP
 
-def register_governance_prompts(mcp) -> None:
+
+def register_governance_prompts(mcp: FastMCP) -> None:
     @mcp.prompt()
     async def red_team_bias_prompt(content: str) -> str:
         """Prompt template for adversarial bias and framing checks."""

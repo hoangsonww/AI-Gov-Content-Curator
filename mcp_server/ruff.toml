@@ -1,0 +1,6 @@
+# mcp_server shares the lint/format configuration defined in
+# agentic_ai/pyproject.toml. Without this file, running ruff with a
+# working directory other than agentic_ai/ would fall back to ruff's
+# defaults for mcp_server (e.g. an 88-col line length instead of 100),
+# producing inconsistent results between local runs and CI.
+extend = "../agentic_ai/pyproject.toml"

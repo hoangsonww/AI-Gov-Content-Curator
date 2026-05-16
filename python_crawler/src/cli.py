@@ -35,7 +35,16 @@ async def fetch_and_process(
     summarize: bool,
 ) -> Optional[ArticleData]:
     async with semaphore:
-        article = await fetch_article(session, url, config)
+        # A single bad URL (network fault, malformed HTML, browser launch
+        # failure in the JS fallback) must never abort the whole batch:
+        # this coroutine is gathered with siblings, so any uncaught
+        # exception would cancel the entire run.
+        try:
+            article = await fetch_article(session, url, config)
+        except Exception as exc:
+            LOG.warning("Fetch failed for %s: %s", url, exc)
+            return None
+
         if not article:
             return None
 
@@ -57,15 +66,25 @@ async def main() -> None:
     parser.add_argument("--concurrency", type=int, default=8, help="Parallel fetch slots")
     parser.add_argument("--output", default="articles.json", help="Output filepath")
     parser.add_argument("--output-format", choices=["json", "jsonl"], default="json")
-    parser.add_argument("--allowed-domain", action="append", default=[], help="Allowed domain (repeatable)")
-    parser.add_argument("--include", action="append", default=[], help="Include URL regex (repeatable)")
-    parser.add_argument("--exclude", action="append", default=[], help="Exclude URL regex (repeatable)")
+    parser.add_argument(
+        "--allowed-domain", action="append", default=[], help="Allowed domain (repeatable)"
+    )
+    parser.add_argument(
+        "--include", action="append", default=[], help="Include URL regex (repeatable)"
+    )
+    parser.add_argument(
+        "--exclude", action="append", default=[], help="Exclude URL regex (repeatable)"
+    )
     parser.add_argument("--no-robots", action="store_true", help="Ignore robots.txt")
-    parser.add_argument("--request-delay", type=float, default=0.2, help="Delay between requests (seconds)")
+    parser.add_argument(
+        "--request-delay", type=float, default=0.2, help="Delay between requests (seconds)"
+    )
     parser.add_argument("--timeout", type=int, default=12, help="Request timeout (seconds)")
     parser.add_argument("--max-retries", type=int, default=3, help="Max retries per request")
     parser.add_argument("--no-js-fallback", action="store_true", help="Disable Playwright fallback")
-    parser.add_argument("--min-text-length", type=int, default=600, help="Minimum extracted text length")
+    parser.add_argument(
+        "--min-text-length", type=int, default=600, help="Minimum extracted text length"
+    )
     parser.add_argument("--no-summarize", action="store_true", help="Disable AI summarization")
     args = parser.parse_args()
 
@@ -93,7 +112,9 @@ async def main() -> None:
 
     async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
         sem = asyncio.Semaphore(config.concurrency)
-        tasks = [fetch_and_process(session, url, sem, config, not args.no_summarize) for url in urls]
+        tasks = [
+            fetch_and_process(session, url, sem, config, not args.no_summarize) for url in urls
+        ]
         results = await asyncio.gather(*tasks)
 
     articles = [article.__dict__ for article in results if article]

@@ -1,0 +1,387 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "synthora-agentic-ai"
+version = "1.0.0"
+description = "SynthoraAI agentic AI pipeline and MCP server"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "SynthoraAI" }]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Typing :: Typed",
+]
+
+dependencies = [
+  # Pin lower bounds. Upper bounds are enforced via the lockfile.
+  # On the langchain 1.x line. Only packages the code imports are
+  # declared — the `langchain` meta-package, `langchain-community`, and
+  # `langchain-text-splitters` are absent (nothing imports them).
+  # Lower bounds are CVE-patched 1.x releases. See docs/security.md.
+  "langchain-core>=1.2.22,<2",
+  "langchain-google-genai>=4.0.0,<5",
+  "langchain-openai>=1.1.14,<2",
+  "langchain-anthropic>=1.0.0,<2",
+  "langgraph>=1.0.10,<2",
+  "langsmith>=0.8.0,<1",
+
+  # Raw provider SDKs (openai/anthropic/google-generativeai/cohere) are
+  # not pinned directly — the langchain-* integration packages pull the
+  # correct versions transitively; a direct pin only risks conflicts.
+
+  # Vector stores (chromadb, faiss, pinecone) are NOT in the base set —
+  # the current pipeline + MCP server do not import them, and chromadb
+  # alone pulls onnxruntime (~200MB). Install the `vectorstores` extra
+  # if/when retrieval is added.
+
+  "mcp>=1.2.0,<2.0",
+
+  "fastapi>=0.109.0,<1.0",
+  "uvicorn[standard]>=0.27.0,<1.0",
+  "pydantic>=2.5.0,<3.0",
+  "pydantic-settings>=2.1.0,<3.0",
+  "httpx>=0.26.0,<1.0",
+
+  "numpy>=1.24.0,<3.0",
+  "python-dotenv>=1.0.0,<2.0",
+
+  "prometheus-client>=0.19.0,<1.0",
+  "structlog>=24.1.0,<26.0",
+
+  # Resilience. The circuit breaker is implemented in-process
+  # (mcp_server/resilience.py); pybreaker is intentionally not used —
+  # its only async entry point is Tornado-based, not asyncio.
+  "tenacity>=8.2.0,<10.0",
+
+  # Observability (OpenTelemetry)
+  "opentelemetry-api>=1.24.0,<2.0",
+  "opentelemetry-sdk>=1.24.0,<2.0",
+  "opentelemetry-exporter-otlp-proto-grpc>=1.24.0,<2.0",
+  "opentelemetry-exporter-otlp-proto-http>=1.24.0,<2.0",
+  "opentelemetry-instrumentation>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-fastapi>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-httpx>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-redis>=0.45b0,<1.0",
+  "opentelemetry-instrumentation-logging>=0.45b0,<1.0",
+
+  "redis>=5.0.0,<7.0",
+  "hiredis>=2.3.0,<4.0",
+]
+
+[project.optional-dependencies]
+# Retrieval / vector stores — opt-in; heavy (chromadb pulls onnxruntime).
+vectorstores = [
+  "pinecone-client>=3.0.0,<6.0",
+  "chromadb>=0.4.0,<1.0",
+  "faiss-cpu>=1.7.4,<2.0",
+]
+# Note: the Cohere provider has no langchain-1.x integration package
+# (`langchain-cohere` is 0.x only and transitively requires the
+# deprecated `langchain-community`). It is therefore not installable
+# alongside the 1.x base. `base_agent` keeps the lazy ChatCohere branch
+# so support returns automatically once `langchain-cohere` ships a 1.x
+# release; until then `DEFAULT_LLM_PROVIDER=cohere` raises a clear error.
+cloud-aws = [
+  "boto3>=1.34.0,<2.0",
+  "botocore>=1.34.0,<2.0",
+  "aws-lambda-powertools>=2.30.0,<4.0",
+]
+cloud-azure = [
+  "azure-identity>=1.15.0,<2.0",
+  "azure-storage-blob>=12.19.0,<13.0",
+  "azure-functions>=1.18.0,<2.0",
+  "azure-monitor-opentelemetry>=1.2.0,<2.0",
+]
+cloud-gcp = [
+  "google-cloud-storage>=2.14.0,<4.0",
+  "google-cloud-logging>=3.9.0,<4.0",
+  "functions-framework>=3.5.0,<4.0",
+  "opentelemetry-exporter-gcp-trace>=1.6.0,<2.0",
+]
+dev = [
+  "pytest>=7.4.0,<9.0",
+  "pytest-asyncio>=0.21.0,<1.0",
+  "pytest-cov>=4.1.0,<6.0",
+  "pytest-randomly>=3.15.0,<4.0",
+  "pytest-mock>=3.12.0,<4.0",
+  "pytest-timeout>=2.2.0,<3.0",
+  "hypothesis>=6.92.0,<7.0",
+  "ruff>=0.6.0,<1.0",
+  "mypy>=1.10.0,<2.0",
+  "types-redis>=4.6.0,<5.0",
+  "bandit[toml]>=1.7.7,<2.0",
+  "pip-audit>=2.7.0,<3.0",
+  "pre-commit>=3.6.0,<5.0",
+  "ipython>=8.20.0,<10.0",
+]
+all-cloud = [
+  "synthora-agentic-ai[cloud-aws,cloud-azure,cloud-gcp]",
+]
+all = [
+  "synthora-agentic-ai[vectorstores,cloud-aws,cloud-azure,cloud-gcp,dev]",
+]
+
+[project.scripts]
+synthora-mcp = "mcp_server.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["../agentic_ai", "../mcp_server"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ruff (lint + format, replaces black + flake8 + isort + pyupgrade)
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+  ".pytest_cache",
+  "__pycache__",
+  "aws/cloudformation.yaml",
+  "azure",
+]
+
+[tool.ruff.lint]
+select = [
+  "E", "W",      # pycodestyle
+  "F",           # pyflakes
+  "I",           # isort
+  "B",           # flake8-bugbear
+  "C4",          # flake8-comprehensions
+  "UP",          # pyupgrade
+  "ASYNC",       # async lint
+  "S",           # bandit-like security checks
+  "RUF",         # ruff-specific
+  "SIM",         # simplify
+  "PIE",         # misc
+  "T20",         # no print
+  "PT",          # pytest style
+  "RET",         # return statements
+  "PERF",        # performance
+  "FURB",        # modernize
+]
+ignore = [
+  "E501",   # line length handled by formatter
+  "B008",   # function-call-in-default (FastAPI Depends etc.)
+  "S101",   # assert allowed (used in tests + defensive paths)
+  "S105",   # hardcoded-password-string false positives on field defaults
+  "S106",   # ditto
+  "S107",   # ditto
+  "S110",   # try-except-pass for best-effort cleanup
+  "RUF012", # mutable class attrs in pydantic
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may use broad pytest.raises and looser assertion style.
+"tests/**/*.py" = ["S", "T20", "B011", "B017", "PT004", "PT011"]
+"agentic_ai/aws/**/*.py" = ["T20"]
+"agentic_ai/azure/**/*.py" = ["T20"]
+# The orchestration subsystem predates this hardening pass and is not in
+# its scope. Lint it loosely until it gets its own pass.
+"agentic_ai/orchestration/**/*.py" = ["S311", "SIM102", "SIM105", "PERF"]
+"orchestration/**/*.py" = ["S311", "SIM102", "SIM105", "PERF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agentic_ai", "mcp_server"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Mypy
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+no_implicit_reexport = true
+check_untyped_defs = true
+show_error_codes = true
+pretty = true
+exclude = [
+  "build/",
+  "dist/",
+  "\\.pytest_cache/",
+  "__pycache__/",
+  "aws/cloudformation\\.yaml",
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "langchain.*",
+  "langchain_core.*",
+  "langchain_community.*",
+  "langchain_google_genai.*",
+  "langchain_openai.*",
+  "langchain_anthropic.*",
+  "langchain_cohere.*",
+  "langgraph.*",
+  "langsmith.*",
+  "mcp.*",
+  "opentelemetry.exporter.*",
+  "opentelemetry.instrumentation.*",
+  "chromadb.*",
+  "langchain_experimental.*",
+  "pinecone.*",
+  "cohere.*",
+  "faiss",
+  "google",
+  "google.*",
+  "azure.*",
+  "boto3",
+  "botocore.*",
+  "aws_lambda_powertools.*",
+]
+ignore_missing_imports = true
+
+# The langchain provider-integration packages ship `py.typed`, but their
+# pydantic models use field aliases (`model`, `*_api_key`) that mypy
+# flags as unexpected kwargs even though they are valid at runtime.
+# Skip following them so calls into them are treated as untyped rather
+# than producing false positives.
+#
+# `google.*` is also skipped: it is a PEP 420 namespace package shared by
+# google-genai, google-cloud-*, and protobuf. mypy's incremental cache
+# cannot reliably fix cross-references into a partially-analyzed namespace
+# package and crashes with `AssertionError: Cannot find module for google`
+# on the second run. Skipping the imports keeps mypy deterministic.
+[[tool.mypy.overrides]]
+module = [
+  "langchain_openai.*",
+  "langchain_anthropic.*",
+  "langchain_cohere.*",
+  "langchain_google_genai.*",
+  "google.*",
+]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+# Test modules use lightweight fakes, fixtures, and duck-typed stand-ins
+# (e.g. `_FakeRuntime`) by design. Enforcing the full strict surface on
+# them produces noise without catching production defects, so untyped
+# test functions and calls into them are allowed. Real type errors in
+# test bodies (bad assertions, wrong argument types) are still reported.
+[[tool.mypy.overrides]]
+module = [
+  "agentic_ai.tests.*",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+
+# FastMCP's `@mcp.tool()` / resource / prompt decorators are untyped, so
+# `disallow_untyped_decorators` (part of `strict`) flags every registered
+# primitive. That is a third-party-library limitation, not a defect in
+# our code — relax just that one check for the registration modules.
+[[tool.mypy.overrides]]
+module = [
+  "mcp_server.tools.*",
+  "mcp_server.resources.*",
+  "mcp_server.prompts.*",
+]
+disallow_untyped_decorators = false
+
+# The concrete agent implementations predate the typed-core hardening and
+# are grandfathered at a relaxed (non-strict) level until they get their
+# own typing pass; the strict checks remain in force for everything else.
+
+[[tool.mypy.overrides]]
+module = [
+  "agentic_ai.agents.classifier",
+  "agentic_ai.agents.content_analyzer",
+  "agentic_ai.agents.sentiment_analyzer",
+  "agentic_ai.agents.summarizer",
+  "agentic_ai.agents.quality_checker",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_any_generics = false
+disallow_untyped_decorators = false
+warn_return_any = false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pytest
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+minversion = "7.4"
+testpaths = ["tests"]
+pythonpath = [".."]
+asyncio_mode = "auto"
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+  "--showlocals",
+  "--tb=short",
+  "--cov=agentic_ai",
+  "--cov=mcp_server",
+  "--cov-report=term-missing",
+  "--cov-report=xml:coverage.xml",
+  # Ratchet: this is the honest current baseline. Legacy surfaces
+  # (orchestration/, agents/, cloud adapters) are not yet covered.
+  # Raise this number as coverage improves; never lower it.
+  "--cov-fail-under=30",
+]
+markers = [
+  "slow: long-running test",
+  "integration: requires external services (redis, network)",
+  "unit: pure unit test",
+]
+filterwarnings = [
+  "error",
+  "ignore::DeprecationWarning",
+  "ignore::PendingDeprecationWarning",
+  "ignore::ResourceWarning",
+  # google-generativeai emits a multi-line FutureWarning on import (the
+  # package is being superseded by google-genai). Third-party, unrelated
+  # to our code. The `(?s)` inline flag makes `.` span the message's
+  # leading newline; `warnings.warn` uses a stacklevel that varies, so
+  # match by message rather than module.
+  "ignore:(?s).*google.*generativeai.*:FutureWarning",
+]
+timeout = 30
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Coverage
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.coverage.run]
+branch = true
+source = ["agentic_ai", "mcp_server"]
+omit = [
+  "*/tests/*",
+  "*/__main__.py",
+  "*/aws/lambda_function.py",
+  "*/azure/function_app.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 2
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "\\.\\.\\.",
+]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Bandit
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.bandit]
+exclude_dirs = ["tests", ".pytest_cache", "build", "dist"]
+skips = ["B101", "B601"]

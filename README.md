@@ -10,9 +10,9 @@ This monorepo, multi-services project is organized into seven main components:
 - **Crawler:** Automatically crawls and extracts article URLs and metadata from government homepages and public API sources.
 - **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
-- **Agentic AI Pipeline:** Sophisticated multi-agent system for advanced content processing using LangGraph and LangChain, with a FastAPI HTTP bridge for cross-service integration.
+- **Agentic AI Pipeline:** Production-hardened multi-agent system on LangGraph + LangChain 1.x — resilience (retry/circuit-breaker/timeout), OpenTelemetry + Prometheus observability, a non-root container image, and Kubernetes/Helm/Terraform artifacts; zero known Python CVEs.
 - **Chat Orchestration:** TypeScript-based dual-provider (Anthropic + Google) chat layer with 16 specialized agents, intent routing, grounding validation, and cost tracking.
-- **MCP Server + ACP Layer:** Model Context Protocol server exposing the agentic pipeline as 28 tools, 14 resources, and 7 prompts, plus a production-grade Agent Communication Protocol (ACP) for agent-to-agent messaging with Redis-backed multi-replica support.
+- **MCP Server + ACP Layer:** Model Context Protocol server exposing the agentic pipeline as 28 tools, 14 resources, and 7 prompts (each wrapped by `tool_middleware`), plus a production-grade Agent Communication Protocol (ACP) for agent-to-agent messaging with Redis-backed multi-replica support.
 
 <p align="center">
   <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator Logo" width="30%">
@@ -212,8 +212,8 @@ Additionally, there are **3 advanced AI components:**
 1. **Agentic AI Pipeline:**
    - A sophisticated multi-agent system built with Python, leveraging LangGraph and LangChain for advanced content processing. This pipeline handles tasks such as article summarization, topic extraction, bias analysis, and more. It is designed to be modular and extensible, allowing for the addition of new agents and tools as needed. The pipeline is exposed via a FastAPI HTTP bridge for seamless integration with other services.
 2. **Orchestration Layer:**
-   - **Python** (`agentic_ai/orchestration/`): Enterprise article processing orchestration atop the LangGraph pipeline — content supervision, cost budgeting, error recovery with circuit breaking, dead-letter queuing, and concurrent batch processing. Exposed via a FastAPI HTTP bridge (`agentic_ai/api.py` on port 8100) for cross-service integration.
-   - **TypeScript** (`orchestration/`): Dual-provider LLM chat layer — unified Anthropic + Google client, intent-based agent routing (16 agents), grounding validation, prompt caching, cost tracking, and structured observability. Integrated into the backend via `/api/orchestrator/*` endpoints. See `orchestration/README.md`.
+   - **Python** (`agentic_ai/orchestration/`): Enterprise article-processing orchestration atop the LangGraph pipeline — content supervision, cost budgeting, error recovery with circuit breaking, dead-letter queuing, and concurrent batch processing. `mypy --strict` clean with 100% line coverage across all modules. Exposed via a FastAPI HTTP bridge (`agentic_ai/api.py` on port 8000) for cross-service integration.
+   - **TypeScript** (`orchestration/`): Dual-provider LLM chat layer — unified Anthropic + Google client, intent-based agent routing (16 agents), grounding validation, prompt caching, cost tracking, and structured observability. `strict` TypeScript with 233 Jest tests behind an enforced coverage gate. Integrated into the backend via `/api/orchestrator/*` endpoints. See `orchestration/README.md`.
 3. **MCP Server + ACP Layer** (`mcp_server/`): Model Context Protocol server exposing the agentic pipeline over stdio — 28 tools, 14 resources, and 7 prompts for Claude Code and IDE integration. Includes ACP with Redis-backed agent registry and inter-agent message routing for production multi-replica deployments. Configured via `.mcp.json`.
 
 This monorepo, microservices architecture is designed to be modular and scalable, allowing for easy updates and maintenance. Each component can be developed, tested, and deployed independently, ensuring a smooth development workflow.
@@ -225,76 +225,15 @@ This monorepo, microservices architecture is designed to be modular and scalable
 
 ## Collaboration & Agile Workflow with Jira
 
-### Introduction
-
-This project is currently using Jira for task management and collaboration. The project's Kanban board is organized into six main columns: **Backlog**, **To Do**, **In Progress**, **Testing**, **Code Review**, and **Done**.
-Each task is assigned to a specific team member and includes detailed descriptions, acceptance criteria, and due dates.
-
-> [!TIP]
-> Before getting started, please make sure to read through the entire section to understand the workflow and how to effectively use Jira for this project.
-
-### Agile Approach
-
-We are following an AGILE approach to development, which emphasizes iterative progress, collaboration, and flexibility. This allows us to adapt to changes quickly and deliver value to users in a timely manner.
-
-Agile methodologies, such as Scrum or Kanban, are used to manage the development process, ensuring that tasks are prioritized, completed, and reviewed efficiently. This approach helps us maintain a high level of quality and responsiveness to user needs.
-
-We chose Kanban for this project because it allows us to visualize the workflow, limit work in progress, and focus on delivering value incrementally. The Kanban board provides a clear overview of the project's status, making it easy to track progress and identify bottlenecks.
-
-### Why Jira?
-
-We are currently pursuing an AGILE approach to development, and Jira is a great tool for managing tasks, tracking progress, and facilitating collaboration among team members. It allows us to create tasks, assign them to team members, set priorities, and track the status of each task in real-time.
-
-Also, Jira provides a comprehensive set of features for managing projects, including sprint planning, backlog management, and reporting. It allows us to create user stories, epics, and tasks, and track their progress throughout the development cycle.
-
-### Project Board
-
-**You can view the project board and tasks at [https://ai-content-curator.atlassian.net](https://ai-content-curator.atlassian.net/jira/software/projects/AICC/boards/3?atlOrigin=eyJpIjoiZDM2MDQ4MWUwYTVkNGNhNzkzZmI5YjE2NGZmZjc2ZDAiLCJwIjoiaiJ9).**
+The team follows an Agile (Kanban) workflow tracked in Jira, with a GitHub branch/PR process keyed to Jira issue IDs.
 
 > [!IMPORTANT]
-> Login is required to access the board, and you can create an account if you don't have one.
-
-If you need **access** to the project board, please contact me directly at [sonnguyenhoang.com](https://sonnguyenhoang.com) or via email at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com) for an invitation. I believe that having access to the project board will help you understand the project's progress, tasks, and overall workflow better, and it will also allow you to contribute more effectively to the project.
-
-### Workflow
-
-As soon as you receive a task (verbally or in writing) or come up with an idea:
-
-1. Create a new task in the **Backlog** column of the Jira board/list.
-2. Add a detailed description of the task, including acceptance criteria and due date.
-3. Assign the task to yourself or another team member.
-4. Create a new branch in the GitHub repository for the task. Make sure that you use the Jira issue key in the branch name (e.g., `AICC-123`).
-   - Mark the Jira task as **To Do**/**In Progress**.
-   - This is very important for Jira to recognize the branch and link it to the task!
-5. Work on the task in your local development environment, committing changes to the branch as you go.
-6. Once the task is complete, push the branch to the remote repository and create a pull request (PR) in GitHub.
-   - Name the PR with a descriptive title that includes the Jira issue key (e.g., `feat(ui): implement new feature [AICC-123`).
-   - Before you commit your changes, make sure to run any applicable tests and ensure that the code is properly formatted and linted.
-   - **Note**: If your changes do not involve any AI functionalities (e.g. chatbot, crawler), then set `GOOGLE_AI_API_KEY=dummy` in your `backend/.env` file to bypass the git hooks that check for AI-related environment variables. This will allow you to commit and push your changes without needing access to the actual API keys, while still maintaining the integrity of the development workflow.
-7. Assign the PR to the appropriate team member for code review.
-   - Move the Jira task to the **Code Review** column.
-8. Make any necessary changes based on feedback from the code review.
-9. Once the PR is approved, merge it into the main branch.
-   - Make sure to resolve any merge conflicts before merging.
-10. After merging, move the Jira task to the **Done** column.
-
-This workflow ensures that tasks are tracked, code is reviewed, and the project progresses smoothly. It also allows for easy collaboration and communication among team members, and for our pursuit of an AGILE approach to development.
-
-<p align="center">
-  <img src="frontend/img/jira-general.png" alt="Jira Workflow" width="100%">
-</p>
-
-### Confluence
-
-We are also using Confluence for documentation and knowledge sharing. The Confluence space is organized into different sections, including project overview, architecture, API documentation, and user guides.
-
-**You can view the Confluence space at [https://ai-content-curator.atlassian.net/wiki/spaces/ACC/](https://ai-content-curator.atlassian.net/wiki/spaces/ACC/).**
-
-<p align="center">
-  <img src="frontend/img/confluence.png" alt="Confluence Space" width="100%">
-</p>
-
-To gain access to the Confluence space, please contact me directly at [sonnguyenhoang.com](https://sonnguyenhoang.com) or via email at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com).
+> **Before starting any work, read [AGILE_WORKFLOW.md](AGILE_WORKFLOW.md).**
+> It is the authoritative process reference — Kanban board columns, the
+> Agile rationale, the step-by-step branch/PR/code-review workflow,
+> Jira-issue-key branch naming, and the Jira + Confluence project links.
+> For local setup and code-style mechanics, see
+> **[CONTRIBUTING.md](.github/CONTRIBUTING.md)**.
 
 ---
 
@@ -830,7 +769,10 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 
 ## Agentic AI Pipeline
 
-The **Agentic AI Pipeline** is a sophisticated, production-ready multi-agent system built with **LangGraph** and **LangChain** that processes articles through a series of specialized AI agents. This advanced system provides enhanced content analysis, summarization, classification, sentiment analysis, and quality assurance beyond the basic AI features.
+The **Agentic AI Pipeline** is a production-hardened multi-agent system
+built with **LangGraph + LangChain 1.x** that processes articles through
+a series of specialized AI agents — content analysis, summarization,
+classification, sentiment analysis, and quality assurance.
 
 ### Overview
 
@@ -858,10 +800,14 @@ graph LR
   - **Sentiment Analyzer**: Analyzes emotional tone and objectivity
   - **Quality Checker**: Validates outputs with automatic retry logic
 
-- **🔄 Assembly Line Processing**: LangGraph-based state machine with conditional routing
-- **🔌 MCP Server**: Model Context Protocol server for standardized AI interactions
+- **🔄 Assembly Line Processing**: LangGraph state machine with conditional routing and a bounded quality-retry loop
+- **🩺 Resilience**: Retry + per-provider circuit breaker + timeout (`guarded_call`) on every external call
+- **📡 Observability**: OpenTelemetry tracing + a typed Prometheus registry (`synthora_*` metrics) + trace-correlated, secret-redacted JSON logs
+- **🔐 Security**: `SecretStr` credentials, typed errors, input sanitization, token-bucket rate limiting, production fail-fast config
+- **🔌 MCP Server**: Model Context Protocol server (stdio) — every tool wrapped by `tool_middleware`
 - **🛰️ ACP Layer**: Agent Communication Protocol for inter-agent messaging (`register -> heartbeat -> send -> inbox -> ack`)
 - **📬 Durable Agent Comms**: Redis-backed ACP store for multi-replica deployments with TTL, retention, and liveness pruning
+- **🐳 Container & Infra**: Non-root multi-stage image; Kubernetes manifests, Helm chart, and Terraform module
 - **🧪 Operational Preflight**: Live ACP roundtrip checks are part of `make mcp-preflight`
 - **☁️ Cloud-Ready**: Production configs for AWS Lambda and Azure Functions
 - **📊 Quality Assurance**: Built-in quality checking with automatic retry mechanisms

@@ -1,0 +1,73 @@
+name: PR Automation
+
+# Auto-assigns the PR author, applies four standing triage labels, and
+# applies path-based labels driven by .github/labeler.yml.
+#
+# Uses pull_request_target so PRs from forks still get labeled. This job
+# does NOT check out PR code, so the elevated token is safe.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pr-automation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  automate:
+    name: Assign + label
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.state == 'open'
+    steps:
+      - name: Assign PR to author
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const author = pr.user.login;
+
+            // Bots can't be assignees. Skip.
+            if (pr.user.type === 'Bot' || author.endsWith('[bot]')) {
+              core.info(`Skipping assignment — author ${author} is a bot.`);
+              return;
+            }
+
+            // Idempotent: addAssignees ignores users already assigned.
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              assignees: [author],
+            });
+            core.info(`Assigned PR #${pr.number} to ${author}.`);
+
+      - name: Apply standing triage labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const STANDING_LABELS = [
+              'enhancement',
+              'bug',
+              'help wanted',
+              'question',
+            ];
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: STANDING_LABELS,
+            });
+            core.info(`Applied standing labels: ${STANDING_LABELS.join(', ')}`);
+
+      - name: Apply path-based labels
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+          sync-labels: false

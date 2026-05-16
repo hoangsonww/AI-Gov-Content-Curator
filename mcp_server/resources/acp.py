@@ -1,12 +1,17 @@
 """ACP resources for operational visibility."""
+
 from __future__ import annotations
 
 from typing import Any
 
+from mcp.server.fastmcp import FastMCP
+
 from agentic_ai.config.settings import settings
 
+from ..runtime import ServerRuntime
 
-def register_acp_resources(mcp, runtime) -> None:
+
+def register_acp_resources(mcp: FastMCP, runtime: ServerRuntime) -> None:
     @mcp.resource("acp://agents")
     async def acp_agents() -> dict[str, Any]:
         """Get registered ACP agents."""
@@ -29,4 +34,3 @@ def register_acp_resources(mcp, runtime) -> None:
             return {"enabled": False, "count": 0, "messages": []}
         messages = await runtime.acp.list_recent_messages(limit=20, offset=0)
         return {"enabled": True, "count": len(messages), "messages": messages}
-

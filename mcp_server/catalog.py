@@ -1,4 +1,5 @@
 """Catalog of exposed MCP primitives for discovery and diagnostics."""
+
 from __future__ import annotations
 
 TOOL_CATALOG: list[str] = [

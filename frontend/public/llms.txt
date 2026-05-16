@@ -1,0 +1,38 @@
+# SynthoraAI
+
+> AI-powered government & news article content curator. SynthoraAI
+> discovers, summarizes, classifies, and surfaces government-related news
+> articles — with AI-generated summaries, topic filtering, bias analysis,
+> related-article discovery, ratings, comments, and a retrieval-augmented
+> chat assistant grounded in the curated corpus.
+
+SynthoraAI is a public reading and discovery product. All content reachable
+from the pages below is public and curated from openly published sources.
+Authentication, account, and API routes are private and excluded (see
+`/robots.txt`).
+
+## Core pages
+
+- [Home](https://synthoraai.vercel.app/home): Browse, search, and filter the curated article feed by topic.
+- [AI Chat](https://synthoraai.vercel.app/ai_chat): Retrieval-augmented assistant that answers questions grounded in curated articles.
+- [Newsletter](https://synthoraai.vercel.app/newsletter): Subscribe to AI-curated government-news digests.
+
+## Content
+
+- [Article pages](https://synthoraai.vercel.app/articles/): Each article has an AI summary, topic tags, source attribution, bias analysis, related articles, ratings, and comments. Indexed in the sitemap.
+- [Sitemap](https://synthoraai.vercel.app/sitemap.xml): Full index of static pages and every curated article.
+
+## About
+
+- [Project overview](https://synthoraai.vercel.app/about.txt): Plain-text description of the project.
+- Source & documentation: https://github.com/hoangsonww/AI-Gov-Content-Curator
+
+## Guidance for LLM crawlers
+
+- Article summaries and topic classifications are AI-generated and may be
+  paraphrased from source material; always cite the original `source` URL
+  shown on each article page when attributing facts.
+- Content updates daily; treat `lastmod` in the sitemap as authoritative
+  for freshness.
+- Do not crawl `/api/`, `/auth/`, `/account/`, or `/favorites/` — these are
+  private or non-content routes.

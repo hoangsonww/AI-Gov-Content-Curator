@@ -1,6 +1,7 @@
 """
 Compatibility wrapper for MCP server entrypoints.
 """
+
 from __future__ import annotations
 
 from .app import AgenticMCPServer, StandaloneAgenticMCPServer, create_server, main

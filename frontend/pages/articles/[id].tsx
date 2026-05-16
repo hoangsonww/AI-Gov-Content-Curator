@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
-import Head from "next/head";
 import Link from "next/link";
+import SEO from "../../components/SEO";
 import { MdHome, MdContentCopy, MdEmail, MdCheck } from "react-icons/md";
 import { AiOutlineTwitter, AiFillLinkedin } from "react-icons/ai";
 import { FaFacebookF } from "react-icons/fa";
@@ -105,15 +105,51 @@ export default function ArticlePage({ article }: ArticlePageProps) {
     );
   }, []);
 
-  let titlePreview =
-    article.title.split(" ").slice(0, 5).join(" ") || "Title not available";
-  const dynamicTitle = `SynthoraAI – ${titlePreview}`;
+  const seoDescription = (
+    article.summary?.trim() ||
+    article.content?.trim() ||
+    "Curated government-news article on SynthoraAI."
+  )
+    .replace(/\s+/g, " ")
+    .slice(0, 200);
+
+  const articlePath = `/articles/${article._id}`;
+  const articleKeywords = (article.topics || []).join(", ");
+  const articleJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.title,
+    description: seoDescription,
+    datePublished: article.fetchedAt,
+    dateModified: article.fetchedAt,
+    articleSection: article.topics?.[0] || "Government News",
+    keywords: articleKeywords,
+    isAccessibleForFree: true,
+    author: {
+      "@type": "Organization",
+      name: article.source || "SynthoraAI",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "SynthoraAI",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://synthoraai.vercel.app/android-chrome-512x512.png",
+      },
+    },
+    mainEntityOfPage: `https://synthoraai.vercel.app${articlePath}`,
+  };
 
   return (
     <>
-      <Head>
-        <title>{dynamicTitle}</title>
-      </Head>
+      <SEO
+        title={article.title}
+        description={seoDescription}
+        path={articlePath}
+        ogType="article"
+        keywords={articleKeywords}
+        jsonLd={articleJsonLd}
+      />
 
       <div className="page-wrapper">
         <ArticleDetail article={article} />

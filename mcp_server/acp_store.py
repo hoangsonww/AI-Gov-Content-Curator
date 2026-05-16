@@ -1,10 +1,11 @@
 """In-memory ACP registry and message routing store."""
+
 from __future__ import annotations
 
 import asyncio
 from collections import deque
 from datetime import datetime, timedelta
-from typing import Protocol
+from typing import Any, Protocol
 from uuid import uuid4
 
 from .acp_models import ACPAgentRecord, ACPMessageRecord
@@ -18,21 +19,21 @@ class ACPStoreProtocol(Protocol):
         agent_id: str,
         display_name: str = "",
         capabilities: list[str] | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ACPAgentRecord: ...
 
     async def unregister_agent(self, agent_id: str) -> bool: ...
 
     async def heartbeat(self, agent_id: str) -> ACPAgentRecord | None: ...
 
-    async def list_agents(self) -> list[dict]: ...
+    async def list_agents(self) -> list[dict[str, Any]]: ...
 
     async def send_message(
         self,
         *,
         sender_id: str,
         recipient_id: str,
-        payload: dict,
+        payload: dict[str, Any],
         message_type: str = "event",
         conversation_id: str = "",
         priority: int = 5,
@@ -41,11 +42,15 @@ class ACPStoreProtocol(Protocol):
 
     async def get_message(self, message_id: str) -> ACPMessageRecord | None: ...
 
-    async def fetch_inbox(self, *, agent_id: str, limit: int, include_acknowledged: bool = False) -> list[dict]: ...
+    async def fetch_inbox(
+        self, *, agent_id: str, limit: int, include_acknowledged: bool = False
+    ) -> list[dict[str, Any]]: ...
 
     async def acknowledge_message(self, *, agent_id: str, message_id: str) -> ACPMessageRecord: ...
 
-    async def list_recent_messages(self, *, limit: int = 20, offset: int = 0) -> list[dict]: ...
+    async def list_recent_messages(
+        self, *, limit: int = 20, offset: int = 0
+    ) -> list[dict[str, Any]]: ...
 
     async def stats(self) -> dict[str, int]: ...
 
@@ -70,7 +75,7 @@ class InMemoryACPStore:
         agent_id: str,
         display_name: str = "",
         capabilities: list[str] | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ACPAgentRecord:
         async with self._lock:
             existing = self._agents.get(agent_id)
@@ -107,7 +112,7 @@ class InMemoryACPStore:
             record.last_heartbeat_at = utc_now_iso()
             return record
 
-    async def list_agents(self) -> list[dict]:
+    async def list_agents(self) -> list[dict[str, Any]]:
         async with self._lock:
             return [agent.model_dump() for agent in self._agents.values()]
 
@@ -116,7 +121,7 @@ class InMemoryACPStore:
         *,
         sender_id: str,
         recipient_id: str,
-        payload: dict,
+        payload: dict[str, Any],
         message_type: str = "event",
         conversation_id: str = "",
         priority: int = 5,
@@ -130,7 +135,9 @@ class InMemoryACPStore:
             if recipient_id not in self._agents:
                 raise ValueError(f"recipient agent '{recipient_id}' is not registered")
 
-            effective_ttl = ttl_seconds if ttl_seconds and ttl_seconds > 0 else self.default_message_ttl_seconds
+            effective_ttl = (
+                ttl_seconds if ttl_seconds and ttl_seconds > 0 else self.default_message_ttl_seconds
+            )
             created_at = utc_now()
             message = ACPMessageRecord(
                 message_id=f"msg_{uuid4().hex}",
@@ -156,7 +163,9 @@ class InMemoryACPStore:
             await self._prune_locked()
             return self._messages.get(message_id)
 
-    async def fetch_inbox(self, *, agent_id: str, limit: int, include_acknowledged: bool = False) -> list[dict]:
+    async def fetch_inbox(
+        self, *, agent_id: str, limit: int, include_acknowledged: bool = False
+    ) -> list[dict[str, Any]]:
         safe_limit = max(1, min(int(limit), 200))
         async with self._lock:
             await self._prune_locked()
@@ -165,7 +174,7 @@ class InMemoryACPStore:
                 raise ValueError(f"agent '{agent_id}' is not registered")
 
             inbox = self._inbox.get(agent_id, deque())
-            messages: list[dict] = []
+            messages: list[dict[str, Any]] = []
             for message_id in reversed(inbox):
                 message = self._messages.get(message_id)
                 if message is None:
@@ -193,12 +202,14 @@ class InMemoryACPStore:
             message.acknowledged_at = utc_now_iso()
             return message
 
-    async def list_recent_messages(self, *, limit: int = 20, offset: int = 0) -> list[dict]:
+    async def list_recent_messages(
+        self, *, limit: int = 20, offset: int = 0
+    ) -> list[dict[str, Any]]:
         safe_limit = max(1, min(int(limit), 200))
         safe_offset = max(0, int(offset))
         async with self._lock:
             await self._prune_locked()
-            selected: list[dict] = []
+            selected: list[dict[str, Any]] = []
             skipped = 0
             for message_id in reversed(self._order):
                 message = self._messages.get(message_id)
@@ -218,9 +229,15 @@ class InMemoryACPStore:
             return {
                 "registered_agents": len(self._agents),
                 "total_messages": len(self._messages),
-                "pending_messages": len([m for m in self._messages.values() if m.status == "pending"]),
-                "delivered_messages": len([m for m in self._messages.values() if m.status == "delivered"]),
-                "acknowledged_messages": len([m for m in self._messages.values() if m.status == "acknowledged"]),
+                "pending_messages": len(
+                    [m for m in self._messages.values() if m.status == "pending"]
+                ),
+                "delivered_messages": len(
+                    [m for m in self._messages.values() if m.status == "delivered"]
+                ),
+                "acknowledged_messages": len(
+                    [m for m in self._messages.values() if m.status == "acknowledged"]
+                ),
             }
 
     async def _prune_locked(self) -> None:
@@ -260,4 +277,3 @@ class InMemoryACPStore:
 
 # Backward-compatible alias used by tests/importers.
 ACPStore = InMemoryACPStore
-
