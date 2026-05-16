@@ -732,13 +732,13 @@ jsonschema-specifications==2025.9.1 \
     --hash=sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe \
     --hash=sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d
     # via jsonschema
-langchain-anthropic==1.4.0 \
-    --hash=sha256:bbf64e99f9149a34ba67813e9582b2160a0968de9e9f54f7ba8d1658f253c2e5 \
-    --hash=sha256:c84f55722336935f7574d5771598e674f3959fdca0b51de14c9788dbf52761be
+langchain-anthropic==1.4.3 \
+    --hash=sha256:65466e0f2f95909a009708f2958e917dfdbfab79c612b4484a30866a85e1f291 \
+    --hash=sha256:f8a2442463c0629b1b3110eaeaa56fdbdc87df2a802f8c7f5ecf611eb4874ec8
     # via -r agentic_ai/requirements/base.txt
-langchain-core==1.2.31 \
-    --hash=sha256:aad3ecc9e4dce2dd2bb79526c81b92e5322fd81db7834a031cb80359f2e3ebaa \
-    --hash=sha256:c407193edb99311cc36ec3e4d3667a065bbc4d7d72fbb6e368538b9b134d4033
+langchain-core==1.4.0 \
+    --hash=sha256:1dc341eed802ed9c117c0df3923c991e5e9e226571e5725c194eeb5bd93d1a7f \
+    --hash=sha256:23cbbdb46e38ddd1dd5247e6167e96013eae74bea4c5949c550809970a9e565c
     # via
     #   -r agentic_ai/requirements/base.txt
     #   langchain-anthropic
@@ -751,13 +751,13 @@ langchain-google-genai==4.2.2 \
     --hash=sha256:5fc774bf41d1dc1c1a5ba8d7b9f2017dfa77e30653c9b44d2dfbaf0e877e7388 \
     --hash=sha256:c8d09aac0304d26f1c2483e41a350f15587af1fbe034c39a304e1e17a3b743f3
     # via -r agentic_ai/requirements/base.txt
-langchain-openai==1.1.14 \
-    --hash=sha256:71b4262932fabe506ce79c175dbc956cc48f24d81e20b27662df493147750643 \
-    --hash=sha256:cb525d2011f9813fc15a7dcfd4bca5b87badcbcb2c113a7fbe45d1b8a1bbb69c
+langchain-openai==1.2.1 \
+    --hash=sha256:a80732185030d4f453dda6c25feef46f645f665423fdffe38ae3edf1ac3c6c4d \
+    --hash=sha256:ee4480b787706361b7125fad46930589a624df87aa158c6986ef1fad10d10675
     # via -r agentic_ai/requirements/base.txt
-langgraph==1.1.6 \
-    --hash=sha256:1783f764b08a607e9f288dbcf6da61caeb0dd40b337e5c9fb8b412341fbc0b60 \
-    --hash=sha256:fdbf5f54fa5a5a4c4b09b7b5e537f1b2fa283d2f0f610d3457ddeecb479458b9
+langgraph==1.2.0 \
+    --hash=sha256:03fd5895a8d4b70db1ff63ebc3bacead29dd20cd794a8b1a483e7ec9018f7a65 \
+    --hash=sha256:4a9baaf62afc5d5f63144a50095140a34b9aa9b7cea695d25326d564775348e7
     # via -r agentic_ai/requirements/base.txt
 langgraph-checkpoint==4.1.0 \
     --hash=sha256:8bc2a0466a20c38b865ce6671b42093fd5c041133f32351cae4222e0eeaf7fb5 \
@@ -773,9 +773,9 @@ langgraph-sdk==0.3.14 \
     --hash=sha256:68935bf6f4924eda92617a9e5dfb4f4281197508c648cb9d62ff083907607f9d \
     --hash=sha256:acd1674c538e97f3cdaa610f6dd7e34bc9bad30167f0ccc482dcd563325e81f5
     # via langgraph
-langsmith==0.8.4 \
-    --hash=sha256:4e334ab223d10129c9943c461d95fa9089523638ea29cd048045a7f99b973f50 \
-    --hash=sha256:989b387f6ff92ec5f9d14c0edb333e2579590cad5a1ca07042d924b0ec43cd10
+langsmith==0.8.5 \
+    --hash=sha256:3615243d99c12f4047f13042bdc05a373dce232d106a6511b3ca7b48c5af1c2c \
+    --hash=sha256:efc779f9d450dcaf9d97bc8894f4926276509d6e730e05289af9a64debce06ae
     # via
     #   -r agentic_ai/requirements/base.txt
     #   langchain-core
