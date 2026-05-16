@@ -49,6 +49,13 @@ import mongoose, { Schema, Document } from "mongoose";
  *           type: string
  *           format: date-time
  *           description: Timestamp when the user was last updated
+ *         deletionToken:
+ *           type: string
+ *           description: Short-lived token authorising account deletion (1 h TTL)
+ *         deletionTokenExpiry:
+ *           type: string
+ *           format: date-time
+ *           description: Expiry timestamp for the deletion token
  */
 
 export interface IUser extends Document {
@@ -60,6 +67,8 @@ export interface IUser extends Document {
   resetPasswordToken?: string;
   hasPasskeys?: boolean;
   favorites: string[]; // Array of Article IDs
+  deletionToken?: string;
+  deletionTokenExpiry?: Date;
 }
 
 const UserSchema: Schema = new Schema(
@@ -72,6 +81,8 @@ const UserSchema: Schema = new Schema(
     resetPasswordToken: { type: String },
     hasPasskeys: { type: Boolean, default: false },
     favorites: [{ type: String }],
+    deletionToken: { type: String },
+    deletionTokenExpiry: { type: Date },
   },
   { timestamps: true },
 );

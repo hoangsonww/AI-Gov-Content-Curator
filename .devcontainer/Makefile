@@ -1,4 +1,4 @@
-# Makefile for ai-article-content-curator monorepo (now inside shell/)
+# Makefile for ai-article-content-curator monorepo for .devcontainer
 # Usage: make <target>
 # NOTE: Recipes must be indented with tabs (not spaces).
 

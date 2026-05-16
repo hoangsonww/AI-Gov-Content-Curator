@@ -1,7 +1,8 @@
-name: PR Automation
+name: PR Automation for SythoraAI 📊
 
-# Auto-assigns the PR author, applies four standing triage labels, and
-# applies path-based labels driven by .github/labeler.yml.
+# Auto-assigns the PR author, applies four standing triage labels,
+# applies path-based labels driven by .github/labeler.yml, and assigns
+# the latest open milestone.
 #
 # Uses pull_request_target so PRs from forks still get labeled. This job
 # does NOT check out PR code, so the elevated token is safe.
@@ -71,3 +72,42 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
           sync-labels: false
+
+      - name: Assign latest milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            // Don't override a milestone already set on the PR.
+            if (pr.milestone) {
+              core.info(`PR #${pr.number} already on milestone "${pr.milestone.title}".`);
+              return;
+            }
+
+            const milestones = await github.paginate(
+              github.rest.issues.listMilestones,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                per_page: 100,
+              },
+            );
+            if (milestones.length === 0) {
+              core.info('No open milestones — skipping milestone assignment.');
+              return;
+            }
+
+            // "Latest" = the most recently created open milestone.
+            const latest = milestones.sort(
+              (a, b) => new Date(b.created_at) - new Date(a.created_at),
+            )[0];
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              milestone: latest.number,
+            });
+            core.info(`Set milestone "${latest.title}" on PR #${pr.number}.`);

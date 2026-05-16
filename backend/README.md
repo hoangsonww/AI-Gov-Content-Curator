@@ -1,6 +1,7 @@
 # SynthoraAI - AI Article Content Curator Backend (work in progress)
 
 Backend API service for the AI Article Content Curator project. This service is responsible for:
+
 - Ingesting article URLs from government homepage sources and public APIs (e.g., NewsAPI, fetched by an external crawler service).
 - Processing article content using AI summarization (Google Generative AI - Gemini).
 - Storing article data (URL, title, full content, AI summary, source info, fetch timestamp) in MongoDB via Mongoose.
@@ -99,24 +100,44 @@ flowchart LR
 - **Express.js API Endpoints:**  
   The backend provides the following RESTful endpoints (running within a Next.js environment):
 
-  | **Method** | **Endpoint**                              | **Auth** | **Description**                                                                       |
-  | ---------- | ----------------------------------------- | -------- | ------------------------------------------------------------------------------------- |
-  | GET        | `/api/articles`                           | —        | Returns a paginated list of articles. Accepts `page`, `limit`, `source` query params. |
-  | GET        | `/api/articles/:id`                       | —        | Retrieves detailed information about a single article by its ID.                      |
-  | POST       | `/api/auth/register`                      | —        | Email + password signup. Returns user + JWT.                                          |
-  | POST       | `/api/auth/login`                         | —        | Email + password login. Returns user + JWT.                                           |
-  | GET        | `/api/auth/verify-email`                  | —        | Email verification via token (`?email&token`).                                        |
-  | POST       | `/api/auth/reset-password`                | —        | Request a password-reset token.                                                       |
-  | POST       | `/api/auth/confirm-reset-password`        | —        | Confirm reset and set a new password (also doubles as "set initial password" for passkey-only accounts). |
-  | POST       | `/api/auth/passkey/signup/begin`          | —        | Start passkey-only signup (no User row created yet).                                  |
-  | POST       | `/api/auth/passkey/signup/verify`         | —        | Finish passkey signup. Creates User + Passkey atomically and issues JWT.              |
-  | POST       | `/api/auth/passkey/authenticate/begin`    | —        | Begin discoverable / usernameless passkey login.                                      |
-  | POST       | `/api/auth/passkey/authenticate/verify`   | —        | Finish passkey login. Returns user + JWT identical to password login.                 |
-  | POST       | `/api/auth/passkey/register/begin`        | JWT      | Begin adding a passkey to the current account.                                        |
-  | POST       | `/api/auth/passkey/register/verify`       | JWT      | Persist a newly registered passkey.                                                   |
-  | GET        | `/api/auth/passkey`                       | JWT      | List the caller's passkeys.                                                           |
-  | PATCH      | `/api/auth/passkey/:id`                   | JWT      | Rename a passkey.                                                                     |
-  | DELETE     | `/api/auth/passkey/:id`                   | JWT      | Delete a passkey (refuses if it would orphan a passwordless account).                 |
+  | **Method** | **Endpoint**                            | **Auth** | **Description**                                                                                                                                                                            |
+  | ---------- | --------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+  | GET        | `/api/articles`                         | —        | Returns a paginated list of articles. Accepts `page`, `limit`, `source` query params.                                                                                                      |
+  | GET        | `/api/articles/:id`                     | —        | Retrieves detailed information about a single article by its ID.                                                                                                                           |
+  | POST       | `/api/auth/register`                    | —        | Email + password signup. Returns user + JWT.                                                                                                                                               |
+  | POST       | `/api/auth/login`                       | —        | Email + password login. Returns user + JWT.                                                                                                                                                |
+  | GET        | `/api/auth/verify-email`                | —        | Email verification via token (`?email&token`).                                                                                                                                             |
+  | POST       | `/api/auth/reset-password`              | —        | Request a password-reset token.                                                                                                                                                            |
+  | POST       | `/api/auth/confirm-reset-password`      | —        | Confirm reset and set a new password (also doubles as "set initial password" for passkey-only accounts).                                                                                   |
+  | POST       | `/api/auth/passkey/signup/begin`        | —        | Start passkey-only signup (no User row created yet).                                                                                                                                       |
+  | POST       | `/api/auth/passkey/signup/verify`       | —        | Finish passkey signup. Creates User + Passkey atomically and issues JWT.                                                                                                                   |
+  | POST       | `/api/auth/passkey/authenticate/begin`  | —        | Begin discoverable / usernameless passkey login.                                                                                                                                           |
+  | POST       | `/api/auth/passkey/authenticate/verify` | —        | Finish passkey login. Returns user + JWT identical to password login.                                                                                                                      |
+  | POST       | `/api/auth/passkey/register/begin`      | JWT      | Begin adding a passkey to the current account.                                                                                                                                             |
+  | POST       | `/api/auth/passkey/register/verify`     | JWT      | Persist a newly registered passkey.                                                                                                                                                        |
+  | GET        | `/api/auth/passkey`                     | JWT      | List the caller's passkeys.                                                                                                                                                                |
+  | PATCH      | `/api/auth/passkey/:id`                 | JWT      | Rename a passkey.                                                                                                                                                                          |
+  | DELETE     | `/api/auth/passkey/:id`                 | JWT      | Delete a passkey (refuses if it would orphan a passwordless account).                                                                                                                      |
+  | GET        | `/api/privacy/export`                   | JWT      | Download a JSON archive of all data held for the caller — profile, favorites, comments, ratings, passkey metadata, newsletter subscription. Excludes password hashes and raw passkey keys. |
+  | POST       | `/api/privacy/request-deletion`         | JWT      | Issue a short-lived (1 h TTL) account-deletion token to authorize the delete step.                                                                                                         |
+  | DELETE     | `/api/privacy/account`                  | JWT      | Verify the deletion token, then permanently delete the user and all linked records (comments, ratings, passkeys, newsletter subscription).                                                 |
+
+### Privacy & Data Controls
+
+The `privacy.controller.ts` + `privacy.routes.ts` pair implements GDPR-style
+data-subject controls, all JWT-protected and scoped to the authenticated
+caller:
+
+- **Data export** — `GET /api/privacy/export` streams a downloadable JSON
+  archive (`synthoraai-export-<id>.json`) of every record tied to the user.
+  Sensitive fields (password hash, internal tokens, raw passkey public keys)
+  are deliberately omitted.
+- **Account deletion** — a two-step flow. `POST /api/privacy/request-deletion`
+  issues a 256-bit random token (`deletionToken` + `deletionTokenExpiry` on
+  the `User` model, 1-hour TTL). `DELETE /api/privacy/account` verifies that
+  token and then hard-deletes the user plus all associated comments, ratings,
+  passkeys, and the newsletter subscription. Deletion is irreversible — there
+  is no soft-delete or grace period.
 
 ### Request Lifecycle
 

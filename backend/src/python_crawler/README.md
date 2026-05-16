@@ -139,23 +139,23 @@ python run_crawler.py https://example.gov \
 
 ### CLI Flags
 
-| Flag | Description | Default |
-| --- | --- | --- |
-| `--max-links` | Max links to fetch | `50` |
-| `--depth` | Max crawl depth | `2` |
-| `--concurrency` | Parallel fetch slots | `8` |
-| `--output` | Output file path | `articles.json` |
-| `--output-format` | `json` or `jsonl` | `json` |
-| `--allowed-domain` | Allowed domain (repeatable) | seed domain |
-| `--include` | URL include regex (repeatable) | none |
-| `--exclude` | URL exclude regex (repeatable) | none |
-| `--no-robots` | Ignore robots.txt | false |
-| `--request-delay` | Delay between requests (s) | `0.2` |
-| `--timeout` | Request timeout (s) | `12` |
-| `--max-retries` | Max retries per request | `3` |
-| `--no-js-fallback` | Disable Playwright | false |
-| `--min-text-length` | Minimum text length | `600` |
-| `--no-summarize` | Disable summarization | false |
+| Flag                | Description                    | Default         |
+| ------------------- | ------------------------------ | --------------- |
+| `--max-links`       | Max links to fetch             | `50`            |
+| `--depth`           | Max crawl depth                | `2`             |
+| `--concurrency`     | Parallel fetch slots           | `8`             |
+| `--output`          | Output file path               | `articles.json` |
+| `--output-format`   | `json` or `jsonl`              | `json`          |
+| `--allowed-domain`  | Allowed domain (repeatable)    | seed domain     |
+| `--include`         | URL include regex (repeatable) | none            |
+| `--exclude`         | URL exclude regex (repeatable) | none            |
+| `--no-robots`       | Ignore robots.txt              | false           |
+| `--request-delay`   | Delay between requests (s)     | `0.2`           |
+| `--timeout`         | Request timeout (s)            | `12`            |
+| `--max-retries`     | Max retries per request        | `3`             |
+| `--no-js-fallback`  | Disable Playwright             | false           |
+| `--min-text-length` | Minimum text length            | `600`           |
+| `--no-summarize`    | Disable summarization          | false           |
 
 ## Output Schema
 

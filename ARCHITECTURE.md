@@ -1679,6 +1679,7 @@ Both paths issue an identical JWT. The `User.password` field is **optional**; a 
 - User profile updates
 - Passkey CRUD (`GET /api/auth/passkey`, `PATCH /api/auth/passkey/:id`, `DELETE /api/auth/passkey/:id`)
 - Passkey registration begin/verify (adding a passkey to an existing account)
+- Privacy & data controls (`GET /api/privacy/export`, `POST /api/privacy/request-deletion`, `DELETE /api/privacy/account`)
 
 **Public Routes:**
 - Article list/detail

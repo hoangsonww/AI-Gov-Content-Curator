@@ -332,25 +332,25 @@ Below are some screenshots of the application (some screenshots may be outdated 
   <img src="frontend/img/translate.png" alt="App-wide Translate Feature" width="100%">
 </p>
 
-### 10. 404 Not Found Page
-
-<p align="center">
-  <img src="frontend/img/404.png" alt="404 Not Found Page" width="100%">
-</p>
-
-### 11. Daily Newsletter Email Example
+### 10. Daily Newsletter Email Example
 
 <p align="center">
   <img src="frontend/img/newsletter-example.png" alt="Daily Newsletter Example" width="100%">
 </p>
 
-### 12. Passkey Management Page
+### 11. Passkey Management Page
 
 <p align="center">
   <img src="frontend/img/passkeys.png" alt="Passkey Management Page" width="100%">
 </p>
 
-_more pages and features are available in the app - we encourage you to explore!_
+### 12. Privacy Data Export Page / Account Deletion Flow
+
+<p align="center">
+  <img src="frontend/img/privacy.png" alt="Privacy Data Export Page / Account Deletion Flow" width="100%">
+</p>
+
+_many more pages and features are available in the app - we encourage you to explore!_
 
 ---
 
@@ -373,6 +373,8 @@ The **Backend** is responsible for storing articles and serving them via RESTful
   A serverless function (triggered twice daily at 6:00 AM and 6:00 PM UTC) fetches and processes new articles, so that the system remains up-to-date!
 - **User Authentication:**  
   Supports email + password registration, login, and JWT-based authentication, **plus passwordless passkey (WebAuthn / FIDO2) sign-in**. Users can sign up with a passkey only, add additional passkeys to an existing account, and manage them (list / rename / delete) at `/account/passkeys`. Both flows issue the same JWT, so the rest of the system is unchanged.
+- **Privacy & Data Controls:**  
+  GDPR-style data-subject endpoints — `GET /api/privacy/export` returns a JSON archive of all data held for the user (profile, favorites, comments, ratings, passkey metadata, newsletter subscription; password hashes and raw keys excluded). Account deletion is a two-step, token-gated flow (`POST /api/privacy/request-deletion` issues a 1-hour token; `DELETE /api/privacy/account` verifies it and cascade-deletes the user and all linked records).
 - **Favorite Articles:**  
   Authenticated users can mark articles as favorites for quick access.
 - **Newsletter Subscription:**  
@@ -653,6 +655,9 @@ The **Frontend** is built with Next.js and React, providing a modern, mobile-res
 
 - **Favorite Articles:**  
   Authenticated users can mark articles as favorites for quick access. This is stored in the backend and displayed in the frontend.
+
+- **Privacy & Data Controls:**  
+  The `/account/privacy` page (linked from the auth dropdown) lets users download a JSON archive of all their data and delete their account through a deliberate two-step flow (request → type `DELETE` → confirm).
 
 - **Newsletter Subscription:**  
   Users can subscribe to a newsletter for daily updates on the latest articles. This feature is integrated with a third-party service (Resend) for managing subscriptions and sending emails.
