@@ -40,9 +40,17 @@ env/
 
 # Testing
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
 .coverage
+.coverage.*
+coverage.xml
+junit.xml
 htmlcov/
 *.cover
+bandit.sarif
+trivy-results.sarif
+sbom*.json
 .hypothesis/
 
 # Logs
@@ -55,7 +63,7 @@ aws/lambda-layer/
 azure/.python_packages/
 
 # Docker
-.dockerignore
+# (.dockerignore is checked in; see Dockerfile)
 
 # OS
 .DS_Store

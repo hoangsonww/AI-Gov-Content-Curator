@@ -109,6 +109,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "firehose_backup" {
     id     = "expire-old-backups"
     status = "Enabled"
 
+    # Empty filter == apply to every object in the bucket. Newer AWS
+    # provider versions require an explicit filter or prefix per rule.
+    filter {}
+
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
@@ -286,13 +290,13 @@ resource "aws_kinesis_firehose_delivery_stream" "splunk" {
     buffering_size     = var.buffering_size
 
     s3_configuration {
-      role_arn           = aws_iam_role.firehose.arn
-      bucket_arn         = var.enable_s3_backup ? aws_s3_bucket.firehose_backup[0].arn : "arn:aws:s3:::unused"
-      prefix             = "splunk-failed/${var.environment}/"
+      role_arn            = aws_iam_role.firehose.arn
+      bucket_arn          = var.enable_s3_backup ? aws_s3_bucket.firehose_backup[0].arn : "arn:aws:s3:::unused"
+      prefix              = "splunk-failed/${var.environment}/"
       error_output_prefix = "splunk-errors/${var.environment}/"
-      buffering_interval = 300
-      buffering_size     = 5
-      compression_format = "GZIP"
+      buffering_interval  = 300
+      buffering_size      = 5
+      compression_format  = "GZIP"
 
       cloudwatch_logging_options {
         enabled         = true

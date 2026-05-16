@@ -280,11 +280,11 @@ resource "aws_cloudwatch_metric_alarm" "high_4xx_errors" {
 resource "aws_cloudwatch_composite_alarm" "service_unhealthy" {
   for_each = var.services
 
-  alarm_name          = "ai-curator-${var.environment}-${each.key}-service-unhealthy"
-  alarm_description   = "Composite alarm for ${each.key} service health"
-  actions_enabled     = true
-  alarm_actions       = [var.sns_topic_arn]
-  ok_actions          = [var.sns_topic_arn]
+  alarm_name        = "ai-curator-${var.environment}-${each.key}-service-unhealthy"
+  alarm_description = "Composite alarm for ${each.key} service health"
+  actions_enabled   = true
+  alarm_actions     = [var.sns_topic_arn]
+  ok_actions        = [var.sns_topic_arn]
 
   alarm_rule = join(" OR ", [
     "ALARM(${aws_cloudwatch_metric_alarm.cpu_high[each.key].alarm_name})",

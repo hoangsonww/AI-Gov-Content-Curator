@@ -1,7 +1,8 @@
 """Shared helpers for MCP tool modules."""
+
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError
 
@@ -10,6 +11,9 @@ from agentic_ai.config.settings import settings
 from ..models import ArticleProcessRequest
 from ..runtime import ServerRuntime
 from ..validation import sanitize_metadata, validate_content_size
+
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    from agentic_ai.core.pipeline import AgenticPipeline
 
 _ALLOWED_JOB_STATUSES = {"pending", "processing", "completed", "failed", "not_found"}
 
@@ -26,7 +30,9 @@ def service_unavailable(message: str, runtime: ServerRuntime) -> dict[str, Any]:
     }
 
 
-def ensure_runtime_ready(runtime: ServerRuntime) -> tuple[Any | None, dict[str, Any] | None]:
+def ensure_runtime_ready(
+    runtime: ServerRuntime,
+) -> tuple[AgenticPipeline | None, dict[str, Any] | None]:
     if runtime.ready and runtime.pipeline is not None:
         return runtime.pipeline, None
     return None, service_unavailable(
@@ -49,7 +55,7 @@ def parse_article_request(
     content: str,
     url: str = "",
     source: str = "",
-    metadata: Optional[dict[str, Any]] = None,
+    metadata: dict[str, Any] | None = None,
 ) -> tuple[ArticleProcessRequest | None, dict[str, Any] | None, dict[str, Any] | None]:
     try:
         request = ArticleProcessRequest(
@@ -85,7 +91,9 @@ def validate_batch_size(requested_size: int) -> dict[str, Any] | None:
     return None
 
 
-def coerce_positive_int(value: int, field_name: str, default: int, max_value: int) -> tuple[int, dict[str, Any] | None]:
+def coerce_positive_int(
+    value: int, field_name: str, default: int, max_value: int
+) -> tuple[int, dict[str, Any] | None]:
     try:
         parsed = int(value)
     except (TypeError, ValueError):

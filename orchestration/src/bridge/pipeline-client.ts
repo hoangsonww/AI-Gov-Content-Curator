@@ -4,7 +4,7 @@
  * Allows the TypeScript orchestration layer to call the Python LangGraph
  * pipeline for article processing, analysis, and batch operations.
  *
- * The Python side is served by `agentic_ai/api.py` (FastAPI on port 8100).
+ * The Python side is served by `agentic_ai/api.py` (FastAPI on port 8000).
  */
 
 import { createLogger } from "../observability/logger";
@@ -16,7 +16,7 @@ const logger = createLogger("bridge.pipeline-client");
 // ---------------------------------------------------------------------------
 
 export interface PipelineClientConfig {
-  /** Base URL of the Python pipeline API. Default: http://localhost:8100 */
+  /** Base URL of the Python pipeline API. Default: http://localhost:8000 */
   baseUrl?: string;
   /** Request timeout in ms. Default: 120_000 (2 min) */
   timeoutMs?: number;
@@ -105,7 +105,7 @@ export class PipelineClient {
     this.baseUrl = (
       config.baseUrl ??
       process.env.PIPELINE_API_URL ??
-      "http://localhost:8100"
+      "http://localhost:8000"
     ).replace(/\/+$/, "");
     this.timeoutMs = config.timeoutMs ?? 120_000;
     this.retries = config.retries ?? 2;

@@ -1,7 +1,7 @@
 import os
 import re
 import time
-from typing import List, Optional
+from typing import List
 
 from dotenv import load_dotenv
 
@@ -62,7 +62,7 @@ def _summarize_with_genai(prompt: str) -> str:
             top_k=64,
             max_output_tokens=2048,
         )
-        return response.choices[0].message.content.strip()
+        return str(response.choices[0].message.content).strip()
 
     raise RuntimeError("Unsupported Google Generative AI SDK version")
 
@@ -80,14 +80,16 @@ def summarize_content(content: str) -> str:
 
     for chunk in chunks:
         instruction = f"{SYSTEM_INSTRUCTION}\n\n" if SYSTEM_INSTRUCTION else ""
-        prompt = f"{instruction}Summarize the following article for a professional audience:\n\n{chunk}"
+        prompt = (
+            f"{instruction}Summarize the following article for a professional audience:\n\n{chunk}"
+        )
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 summary = _summarize_with_genai(prompt)
                 if summary:
                     summaries.append(summary)
                     break
-            except Exception as exc:
+            except Exception:
                 if attempt >= MAX_RETRIES:
                     summaries.append(_extractive_summary(chunk))
                     break

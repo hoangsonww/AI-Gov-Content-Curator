@@ -1,12 +1,12 @@
 """
 Classifier Agent - Categorizes articles into topics.
 """
-from typing import List, Optional
-from langchain_core.prompts import ChatPromptTemplate
+
+import structlog
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 from .base_agent import BaseAgent
-import structlog
 
 logger = structlog.get_logger()
 
@@ -30,16 +30,19 @@ class ClassifierAgent(BaseAgent):
         "Public Safety",
         "Energy",
         "Transportation",
-        "Science & Research"
+        "Science & Research",
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Classifier Agent."""
         super().__init__(name="Classifier")
 
         # Define the classification prompt
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("system", f"""You are an expert content classifier for government and news articles.
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    f"""You are an expert content classifier for government and news articles.
             Classify the content into relevant topic categories from this list:
 
             {', '.join(self.TOPIC_CATEGORIES)}
@@ -54,19 +57,24 @@ class ClassifierAgent(BaseAgent):
             - topics: list of selected topics (strings)
             - confidence: list of confidence scores (0-1) for each topic
             - reasoning: brief explanation of classification
-            """),
-            ("user", """Classify this content:
+            """,
+                ),
+                (
+                    "user",
+                    """Classify this content:
 
             Content: {content}
 
             {summary_info}
 
-            Return the classification:""")
-        ])
+            Return the classification:""",
+                ),
+            ]
+        )
 
         self.chain = self.prompt | self.llm | JsonOutputParser()
 
-    def classify(self, content: str, summary: Optional[str] = None) -> List[str]:
+    def classify(self, content: str, summary: str | None = None) -> list[str]:
         """
         Classify article into topic categories.
 
@@ -82,10 +90,13 @@ class ClassifierAgent(BaseAgent):
 
             summary_info = f"Summary: {summary}" if summary else ""
 
-            result = self.chain.invoke({
-                "content": content[:3000],  # Limit for classification
-                "summary_info": summary_info
-            })
+            result = self._run_chain(
+                {
+                    "content": content[:3000],  # Limit for classification
+                    "summary_info": summary_info,
+                },
+                op="agent.classifier.classify",
+            )
 
             topics = result.get("topics", [])
             logger.info("Classification completed", topics=topics)
@@ -97,6 +108,6 @@ class ClassifierAgent(BaseAgent):
             # Return default topic on error
             return ["General"]
 
-    def process(self, content: str, **kwargs) -> List[str]:
+    def process(self, content: str, **kwargs) -> list[str]:
         """Process method implementation."""
         return self.classify(content, kwargs.get("summary"))

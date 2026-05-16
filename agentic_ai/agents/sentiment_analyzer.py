@@ -1,12 +1,14 @@
 """
 Sentiment Analyzer Agent - Analyzes emotional tone and sentiment.
 """
-from typing import Any, Dict, Optional
-from langchain_core.prompts import ChatPromptTemplate
+
+from typing import Any
+
+import structlog
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 from .base_agent import BaseAgent
-import structlog
 
 logger = structlog.get_logger()
 
@@ -14,13 +16,16 @@ logger = structlog.get_logger()
 class SentimentAnalyzerAgent(BaseAgent):
     """Agent responsible for analyzing sentiment and emotional tone."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Sentiment Analyzer Agent."""
         super().__init__(name="SentimentAnalyzer")
 
         # Define the sentiment analysis prompt
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert sentiment analyzer for government and news articles.
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """You are an expert sentiment analyzer for government and news articles.
             Analyze the emotional tone and sentiment of the content.
 
             Provide analysis on multiple dimensions:
@@ -39,23 +44,24 @@ class SentimentAnalyzerAgent(BaseAgent):
             - controversy_level: string (low/medium/high)
             - key_phrases: list of strings that indicate sentiment
             - confidence: float (0 to 1)
-            """),
-            ("user", """Analyze the sentiment of this content:
+            """,
+                ),
+                (
+                    "user",
+                    """Analyze the sentiment of this content:
 
             {content}
 
             {summary_info}
 
-            Provide sentiment analysis:""")
-        ])
+            Provide sentiment analysis:""",
+                ),
+            ]
+        )
 
         self.chain = self.prompt | self.llm | JsonOutputParser()
 
-    def analyze_sentiment(
-        self,
-        content: str,
-        summary: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def analyze_sentiment(self, content: str, summary: str | None = None) -> dict[str, Any]:
         """
         Analyze sentiment of the article.
 
@@ -71,15 +77,18 @@ class SentimentAnalyzerAgent(BaseAgent):
 
             summary_info = f"Summary: {summary}" if summary else ""
 
-            result = self.chain.invoke({
-                "content": content[:4000],  # Limit for sentiment analysis
-                "summary_info": summary_info
-            })
+            result = self._run_chain(
+                {
+                    "content": content[:4000],  # Limit for sentiment analysis
+                    "summary_info": summary_info,
+                },
+                op="agent.sentiment_analyzer.analyze_sentiment",
+            )
 
             logger.info(
                 "Sentiment analysis completed",
                 sentiment=result.get("overall_sentiment"),
-                score=result.get("sentiment_score")
+                score=result.get("sentiment_score"),
             )
 
             return result
@@ -95,9 +104,9 @@ class SentimentAnalyzerAgent(BaseAgent):
                 "controversy_level": "low",
                 "key_phrases": [],
                 "confidence": 0.0,
-                "error": str(e)
+                "error": str(e),
             }
 
-    def process(self, content: str, **kwargs) -> Dict[str, Any]:
+    def process(self, content: str, **kwargs) -> dict[str, Any]:
         """Process method implementation."""
         return self.analyze_sentiment(content, kwargs.get("summary"))

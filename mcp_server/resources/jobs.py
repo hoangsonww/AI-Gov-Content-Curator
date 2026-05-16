@@ -1,10 +1,15 @@
 """Job and taxonomy resources."""
+
 from __future__ import annotations
 
 from typing import Any
 
+from mcp.server.fastmcp import FastMCP
 
-def register_job_resources(mcp, runtime) -> None:
+from ..runtime import ServerRuntime
+
+
+def register_job_resources(mcp: FastMCP, runtime: ServerRuntime) -> None:
     @mcp.resource("jobs://stats")
     async def get_processing_stats() -> dict[str, Any]:
         """Get aggregate processing statistics."""
@@ -24,4 +29,5 @@ def register_job_resources(mcp, runtime) -> None:
         """Get available classification categories."""
         if not runtime.ready or runtime.pipeline is None:
             return []
-        return runtime.pipeline.classifier.TOPIC_CATEGORIES
+        categories: list[str] = list(runtime.pipeline.classifier.TOPIC_CATEGORIES)
+        return categories

@@ -1,0 +1,61 @@
+# Core runtime dependencies. Resolved from pyproject.toml.
+# For reproducible installs use: pip install -r requirements.lock.txt
+
+# Core LangChain / LangGraph — on the langchain 1.x line.
+# Only packages the code imports are declared; the `langchain`
+# meta-package, `langchain-community`, and `langchain-text-splitters`
+# are absent (nothing imports them). Lower bounds are CVE-patched 1.x
+# releases. `langchain-cohere` has no 1.x release and transitively
+# requires langchain-community — it stays in the optional, legacy-only
+# `providers-cohere` extra. See docs/security.md.
+langchain-core>=1.2.22,<2
+langchain-google-genai>=4.0.0,<5
+langchain-openai>=1.1.14,<2
+langchain-anthropic>=1.0.0,<2
+langgraph>=1.0.10,<2
+langsmith>=0.8.0,<1
+
+# Raw provider SDKs (openai, anthropic, google-generativeai, cohere) are
+# NOT pinned directly — nothing imports them, and the `langchain-*`
+# integration packages above pull the correct SDK versions transitively.
+# Pinning them here only risks conflicts (langchain-openai 1.x needs
+# openai 2.x, etc.).
+
+# Vector stores are NOT in the base set — see requirements/vectorstores.txt
+# (chromadb pulls onnxruntime, ~200MB; nothing in the pipeline imports them).
+
+# MCP
+mcp>=1.2.0,<2.0
+
+# API + validation
+fastapi>=0.109.0,<1.0
+uvicorn[standard]>=0.27.0,<1.0
+pydantic>=2.5.0,<3.0
+pydantic-settings>=2.1.0,<3.0
+httpx>=0.26.0,<1.0
+
+# Data
+numpy>=1.24.0,<3.0
+python-dotenv>=1.0.0,<2.0
+
+# Logging + metrics
+prometheus-client>=0.19.0,<1.0
+structlog>=24.1.0,<26.0
+
+# Resilience (circuit breaker is in-process; see mcp_server/resilience.py)
+tenacity>=8.2.0,<10.0
+
+# OpenTelemetry
+opentelemetry-api>=1.24.0,<2.0
+opentelemetry-sdk>=1.24.0,<2.0
+opentelemetry-exporter-otlp-proto-grpc>=1.24.0,<2.0
+opentelemetry-exporter-otlp-proto-http>=1.24.0,<2.0
+opentelemetry-instrumentation>=0.45b0,<1.0
+opentelemetry-instrumentation-fastapi>=0.45b0,<1.0
+opentelemetry-instrumentation-httpx>=0.45b0,<1.0
+opentelemetry-instrumentation-redis>=0.45b0,<1.0
+opentelemetry-instrumentation-logging>=0.45b0,<1.0
+
+# Redis client
+redis>=5.0.0,<7.0
+hiredis>=2.3.0,<4.0

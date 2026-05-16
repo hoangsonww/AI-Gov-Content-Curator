@@ -1,179 +1,187 @@
+"""Azure Functions handlers for the Agentic AI Pipeline.
+
+Hardened:
+- Proper package imports.
+- Structured logging + OTel + Prometheus configured at module load.
+- Uses Pydantic-backed validation via shared helpers.
+- Maps MCPError subclasses to typed HTTP responses.
+- Single reused event loop across warm starts.
+- Blob persistence uses managed identity when AZURE_STORAGE_KEY is
+  absent (DefaultAzureCredential).
 """
-Azure Functions handler for the Agentic AI Pipeline.
-Processes articles using Azure serverless architecture.
-"""
-import json
-import logging
-import os
-import sys
+
+from __future__ import annotations
+
 import asyncio
-from typing import Dict, Any, Optional
+import json
+import os
+from typing import Any
 
 import azure.functions as func
-from azure.storage.blob import BlobServiceClient
+import structlog
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from agentic_ai.config.settings import settings
+from agentic_ai.core.pipeline import AgenticPipeline
+from mcp_server.errors import MCPError, ValidationError
+from mcp_server.logging_config import configure_logging
+from mcp_server.observability import configure_observability, metrics, traced_async_span
+from mcp_server.validation import sanitize_metadata, validate_content_size
 
-from core.pipeline import AgenticPipeline
-from config.settings import settings
+configure_logging()
+configure_observability()
+logger = structlog.get_logger("agentic_ai.azure.function")
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Initialize pipeline (singleton for warm starts)
-pipeline = None
+_pipeline: AgenticPipeline | None = None
+_loop: asyncio.AbstractEventLoop | None = None
 
 
-def _store_processing_result(result: Dict[str, Any], article_id: str) -> None:
+def _get_pipeline() -> AgenticPipeline:
+    global _pipeline  # noqa: PLW0603
+    if _pipeline is None:
+        logger.info("azure.cold_start")
+        _pipeline = AgenticPipeline()
+    return _pipeline
+
+
+def _get_loop() -> asyncio.AbstractEventLoop:
+    global _loop  # noqa: PLW0603
+    if _loop is None or _loop.is_closed():
+        _loop = asyncio.new_event_loop()
+    return _loop
+
+
+def _validate(payload: dict[str, Any]) -> None:
+    article_id = payload.get("article_id")
+    content = payload.get("content")
+    if not isinstance(article_id, str) or not article_id.strip():
+        raise ValidationError("article_id is required")
+    if not isinstance(content, str) or not content.strip():
+        raise ValidationError("content is required")
+    err = validate_content_size(content)
+    if err:
+        raise ValidationError(err)
+
+
+def _normalized_payload(body: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": body["article_id"].strip(),
+        "content": body["content"],
+        "url": str(body.get("url", "")).strip(),
+        "source": str(body.get("source", "")).strip(),
+        **sanitize_metadata(body.get("metadata") or {}),
+    }
+
+
+def _http_response(status_code: int, body: Any) -> func.HttpResponse:
+    return func.HttpResponse(
+        json.dumps(body, default=str),
+        status_code=status_code,
+        mimetype="application/json",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+def _store_processing_result(result: dict[str, Any], article_id: str) -> None:
+    """Persist queue results to Blob Storage.
+
+    Prefer managed identity. Fall back to connection string only when the
+    setting is present.
     """
-    Store queue processing result in Azure Blob Storage when configured.
-    """
-    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
     container = os.getenv("AZURE_RESULTS_CONTAINER", "agentic-results")
-    if not connection_string:
-        logger.warning(
-            "AZURE_STORAGE_CONNECTION_STRING is not configured; skipping result persistence",
-            extra={"article_id": article_id},
-        )
+    account_url = os.getenv("AZURE_STORAGE_ACCOUNT_URL")
+    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+
+    try:
+        from azure.storage.blob import BlobServiceClient
+        if account_url:
+            from azure.identity import DefaultAzureCredential
+            blob_service = BlobServiceClient(
+                account_url=account_url,
+                credential=DefaultAzureCredential(),
+            )
+        elif connection_string:
+            blob_service = BlobServiceClient.from_connection_string(connection_string)
+        else:
+            logger.warning("azure.blob.skipped", reason="no_credentials")
+            return
+    except Exception as exc:  # pragma: no cover
+        logger.warning("azure.blob.client_init_failed", error=str(exc))
         return
 
-    blob_service = BlobServiceClient.from_connection_string(connection_string)
-    container_client = blob_service.get_container_client(container)
     try:
-        container_client.create_container()
-    except Exception:
-        pass
-
-    blob_name = f"results/{article_id}.json"
-    payload = json.dumps(result).encode("utf-8")
-    blob_client = container_client.get_blob_client(blob_name)
-    blob_client.upload_blob(payload, overwrite=True)
-
-
-def _run_async(coro):
-    """
-    Run async code safely from a synchronous Azure Function handler.
-    """
-    return asyncio.run(coro)
-
-
-def _validate_payload(payload: Dict[str, Any]) -> Optional[str]:
-    if not isinstance(payload.get("article_id"), str) or not payload["article_id"].strip():
-        return "Missing or invalid required field: article_id"
-    if not isinstance(payload.get("content"), str) or not payload["content"].strip():
-        return "Missing or invalid required field: content"
-    if len(payload["content"]) > settings.mcp_max_content_chars:
-        return f"content exceeds max length ({settings.mcp_max_content_chars})"
-    return None
-
-
-def get_pipeline() -> AgenticPipeline:
-    """Get or create pipeline instance."""
-    global pipeline
-    if pipeline is None:
-        logger.info("Initializing pipeline (cold start)")
-        pipeline = AgenticPipeline()
-    return pipeline
+        container_client = blob_service.get_container_client(container)
+        try:
+            container_client.create_container()
+        except Exception:
+            pass
+        blob_name = f"results/{article_id}.json"
+        payload = json.dumps(result, default=str).encode("utf-8")
+        container_client.get_blob_client(blob_name).upload_blob(payload, overwrite=True)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("azure.blob.upload_failed", article_id=article_id, error=str(exc))
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    Azure Function HTTP trigger for article processing.
-
-    Expected request body:
-    {
-        "article_id": "...",
-        "content": "...",
-        "url": "...",
-        "source": "..."
-    }
-
-    Returns:
-        JSON response with processed article data
-    """
-    logger.info('Processing article request')
-
+    """HTTP trigger entrypoint."""
+    log = logger.bind(environment=settings.environment, invocation_id=req.headers.get("x-azure-functionkey", ""))
     try:
-        # Parse request body
         try:
-            req_body = req.get_json()
+            body = req.get_json()
         except ValueError:
-            return func.HttpResponse(
-                json.dumps({"error": "Invalid JSON in request body"}),
-                status_code=400,
-                mimetype="application/json"
-            )
+            raise ValidationError("Invalid JSON in request body")
 
-        validation_error = _validate_payload(req_body)
-        if validation_error:
-            return func.HttpResponse(
-                json.dumps({"error": validation_error}),
-                status_code=400,
-                mimetype="application/json"
-            )
+        _validate(body)
+        article_data = _normalized_payload(body)
 
-        # Get pipeline and process
-        pipeline_instance = get_pipeline()
+        async def _run() -> Any:
+            async with traced_async_span(
+                "azure.function.process_article",
+                **{"article.id": article_data["id"]},
+            ):
+                return await _get_pipeline().process_article(article_data)
 
-        # Process article
-        result = _run_async(pipeline_instance.process_article(req_body))
+        result = _get_loop().run_until_complete(_run())
+        log.info("azure.function.complete", article_id=article_data["id"])
+        return _http_response(200, result)
 
-        logger.info(f"Processing completed for article: {req_body['article_id']}")
-
-        # Return success response
-        return func.HttpResponse(
-            json.dumps(result),
-            status_code=200,
-            mimetype="application/json",
-            headers={
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
-            }
-        )
-
-    except Exception as e:
-        logger.error(f"Function execution failed: {str(e)}", exc_info=True)
-        return func.HttpResponse(
-            json.dumps({
-                "error": str(e),
-                "message": "Internal server error"
-            }),
-            status_code=500,
-            mimetype="application/json"
+    except MCPError as exc:
+        log.warning("azure.function.error", code=exc.code, message=exc.message)
+        metrics().errors_total.labels(code=exc.code).inc()
+        return _http_response(exc.http_status, exc.to_dict())
+    except Exception as exc:  # pragma: no cover
+        log.exception("azure.function.unhandled")
+        metrics().errors_total.labels(code="unhandled").inc()
+        return _http_response(
+            500,
+            {"error": "internal_error", "message": str(exc)},
         )
 
 
-# Queue trigger for async processing
 def queue_process(msg: func.QueueMessage) -> None:
-    """
-    Azure Queue trigger for asynchronous article processing.
-
-    Message format: Same as HTTP request body
-    """
-    logger.info('Processing queue message')
-
+    """Queue trigger entrypoint."""
+    log = logger.bind(message_id=msg.id)
     try:
-        # Parse message
-        message_data = json.loads(msg.get_body().decode('utf-8'))
+        body = json.loads(msg.get_body().decode("utf-8"))
+        _validate(body)
+        article_data = _normalized_payload(body)
 
-        # Get pipeline and process
-        pipeline_instance = get_pipeline()
+        async def _run() -> Any:
+            async with traced_async_span(
+                "azure.function.queue_process",
+                **{"article.id": article_data["id"]},
+            ):
+                return await _get_pipeline().process_article(article_data)
 
-        validation_error = _validate_payload(message_data)
-        if validation_error:
-            raise ValueError(validation_error)
+        result = _get_loop().run_until_complete(_run())
+        _store_processing_result(result, article_data["id"])
+        log.info("azure.queue.complete", article_id=article_data["id"])
 
-        # Process article
-        result = _run_async(pipeline_instance.process_article(message_data))
-
-        logger.info(f"Queue processing completed for article: {message_data.get('article_id')}")
-
-        article_id = str(message_data.get("article_id", "unknown"))
-        _store_processing_result(result, article_id)
-
-    except Exception as e:
-        logger.error(f"Queue processing failed: {str(e)}", exc_info=True)
-        # Message will be automatically moved to poison queue after max retries
+    except MCPError as exc:
+        log.warning("azure.queue.error", code=exc.code, message=exc.message)
+        metrics().errors_total.labels(code=exc.code).inc()
+        raise
+    except Exception:
+        log.exception("azure.queue.unhandled")
+        metrics().errors_total.labels(code="unhandled").inc()
+        # Re-raise so Azure moves to poison queue after retries.
+        raise

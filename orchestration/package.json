@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --coverage",
+    "test:fast": "jest --runInBand",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

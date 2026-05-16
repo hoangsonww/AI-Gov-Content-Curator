@@ -1,108 +1,261 @@
-version: '3.8'
+# Compose v2 — `version:` is intentionally omitted (obsolete in v2).
+#
+# This stack is for LOCAL DEVELOPMENT. Production deploys via the Helm
+# chart / Kubernetes manifests under infrastructure/.
+#
+# Usage:
+#   # default: FastAPI api + redis
+#   docker compose -f agentic_ai/docker-compose.yml --env-file agentic_ai/.env up -d
+#   # run the MCP stdio server on demand (interactive):
+#   docker compose -f agentic_ai/docker-compose.yml --profile mcp run --rm mcp
+#
+# Secret management:
+#   Provider keys (GOOGLE_AI_API_KEY, ...) come from the --env-file, never
+#   this file. The MongoDB/Grafana credentials below carry local-only
+#   defaults; production storage + dashboards run outside compose.
+#
+# Profiles:
+#   default    → api + redis (the deployable HTTP service + its store)
+#   mcp        → MCP stdio server; use `compose run`, not `up` (on-demand)
+#   monitoring → prometheus + grafana + otel-collector
+#   storage    → mongodb (optional; not required by the api or MCP server)
+
+x-common-env: &common-env
+  ENVIRONMENT: ${ENVIRONMENT:-development}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  LOG_JSON: ${LOG_JSON:-true}
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+  ACP_BACKEND: redis
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
+  OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
+  OTEL_TRACES_SAMPLE_RATIO: ${OTEL_TRACES_SAMPLE_RATIO:-1.0}
+  GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  COHERE_API_KEY: ${COHERE_API_KEY:-}
+  PINECONE_API_KEY: ${PINECONE_API_KEY:-}
+  MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017}
+
+x-default-resources: &default-resources
+  deploy:
+    resources:
+      limits:
+        cpus: "2.0"
+        memory: 2g
+      reservations:
+        cpus: "0.5"
+        memory: 512m
 
 services:
-  # Agentic AI Pipeline Service
-  agentic-pipeline:
+  # MCP server — stdio transport. It is NOT a long-running daemon: an MCP
+  # client (Claude Code, etc.) launches it on demand and owns its
+  # stdin/stdout. It is therefore behind the `mcp` profile and is meant to
+  # be used with `docker compose run`, not `up`:
+  #
+  #   docker compose --profile mcp run --rm mcp
+  #
+  # stdin_open + tty keep the process alive when started interactively;
+  # no `restart` policy (a stdio server exiting on EOF is normal, not a
+  # crash). For an always-on networked service, use the `api` service.
+  mcp:
+    profiles: ["mcp"]
     build:
       context: ..
       dockerfile: agentic_ai/Dockerfile
-    container_name: synthora-agentic-pipeline
-    ports:
-      - "8000:8000"
-      - "8001:8001"
-      - "9090:9090"
+      target: mcp
+      args:
+        INSTALL_PROFILE: ${INSTALL_PROFILE:-base}
+    image: synthora/agentic-ai-mcp:${IMAGE_TAG:-local}
+    container_name: synthora-mcp
+    user: "10001:10001"
+    read_only: true
+    stdin_open: true
+    tty: true
+    tmpfs:
+      - /tmp:size=64M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     environment:
-      - ENVIRONMENT=development
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
-      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      <<: *common-env
     depends_on:
-      - mongodb
-      - redis
+      redis:
+        condition: service_healthy
     networks:
-      - synthora-network
+      - synthora-net
+    <<: *default-resources
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # FastAPI HTTP service — the always-on, networked deployable service.
+  # In the default profile, so `docker compose up` starts api + redis.
+  api:
+    build:
+      context: ..
+      dockerfile: agentic_ai/Dockerfile
+      target: api
+      args:
+        INSTALL_PROFILE: ${INSTALL_PROFILE:-base}
+    image: synthora/agentic-ai-api:${IMAGE_TAG:-local}
+    container_name: synthora-api
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      <<: *common-env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - synthora-net
     restart: unless-stopped
-    volumes:
-      - ./logs:/app/agentic_ai/logs
     healthcheck:
-      test: ["CMD", "python", "-c", "from mcp_server.runtime import ServerRuntime; import sys; sys.exit(0 if ServerRuntime().ready else 1)"]
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 30s
+    <<: *default-resources
 
-  # MongoDB
-  mongodb:
-    image: mongo:7
-    container_name: synthora-mongodb
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
-    volumes:
-      - mongodb-data:/data/db
-    networks:
-      - synthora-network
-    restart: unless-stopped
-
-  # Redis
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     container_name: synthora-redis
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis-data:/data
+    user: "999:999"
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - "256mb"
+      - --maxmemory-policy
+      - "allkeys-lru"
+      - --requirepass
+      - "${REDIS_PASSWORD:-}"
     networks:
-      - synthora-network
+      - synthora-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - redis-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 384m
+        reservations:
+          cpus: "0.1"
+          memory: 64m
+
+  mongodb:
+    profiles: ["storage"]
+    image: mongo:7
+    container_name: synthora-mongodb
+    # Local-development credentials. Compose interpolates every service
+    # eagerly (even inactive profiles), so these use :- defaults rather
+    # than :? to keep `docker compose up` working for the core services.
+    # Production storage runs outside compose — never reuse these values.
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-synthora}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-synthora-local-only}
+    networks:
+      - synthora-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mongodb-data:/data/db
+
+  prometheus:
+    profiles: ["monitoring"]
+    image: prom/prometheus:v2.54.1
+    container_name: synthora-prometheus
+    user: "65534:65534"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    ports:
+      - "127.0.0.1:9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - synthora-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/ready"]
+      interval: 30s
+      timeout: 5s
       retries: 3
 
-  # Prometheus (Optional - for metrics)
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: synthora-prometheus
-    ports:
-      - "9091:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    networks:
-      - synthora-network
-    restart: unless-stopped
-
-  # Grafana (Optional - for visualization)
   grafana:
-    image: grafana/grafana:latest
+    profiles: ["monitoring"]
+    image: grafana/grafana:11.2.2
     container_name: synthora-grafana
-    ports:
-      - "3001:3000"
+    user: "472:472"
+    # Local-development credentials only. The Grafana port is bound to
+    # 127.0.0.1. Set GRAFANA_PASSWORD in an env-file to override; this
+    # compose stack is not a production deployment surface.
     environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    ports:
+      - "127.0.0.1:3001:3000"
     volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - grafana-data:/var/lib/grafana
     networks:
-      - synthora-network
+      - synthora-net
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_healthy
+
+  otel-collector:
+    profiles: ["monitoring"]
+    image: otel/opentelemetry-collector-contrib:0.107.0
+    container_name: synthora-otel-collector
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./monitoring/otel/config.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "127.0.0.1:4317:4317"   # OTLP gRPC
+      - "127.0.0.1:4318:4318"   # OTLP HTTP
+      - "127.0.0.1:8888:8888"   # Collector metrics
+    networks:
+      - synthora-net
     restart: unless-stopped
 
 networks:
-  synthora-network:
+  synthora-net:
     driver: bridge
 
 volumes:
-  mongodb-data:
   redis-data:
+  mongodb-data:
   prometheus-data:
   grafana-data:

@@ -1,5 +1,5 @@
 import { GetStaticProps } from "next";
-import Head from "next/head";
+import SEO from "../components/SEO";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { MdSearch } from "react-icons/md";
@@ -68,9 +68,12 @@ export default function HomePage({
 
   return (
     <>
-      <Head>
-        <title>SynthoraAI - AI-Powered News Article Content Curator</title>
-      </Head>
+      <SEO
+        title="SynthoraAI - AI-Powered News Article Content Curator"
+        description="Browse, search, and filter AI-curated government news. Read AI-generated summaries, explore topics, and discover related articles on SynthoraAI."
+        path="/home"
+        keywords="AI article curator, government news, news aggregator, content curation, topic filtering, article summaries"
+      />
       <div style={{ marginBottom: "2rem", marginTop: "2rem" }}>
         <div className="search-container fade-down">
           <div className="search-input-wrapper">

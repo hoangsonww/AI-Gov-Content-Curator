@@ -1,8 +1,13 @@
 """Processing and job lifecycle tools."""
+
 from __future__ import annotations
 
 from typing import Any
 
+import structlog
+from mcp.server.fastmcp import FastMCP
+
+from ..middleware import tool_middleware
 from ..models import ArticleProcessRequest, ProcessingStatus
 from ..runtime import ServerRuntime
 from ..utils import utc_now_iso
@@ -16,8 +21,12 @@ from .common import (
 )
 
 
-def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
-    async def _run_pipeline(request: ArticleProcessRequest, metadata_clean: dict[str, Any]) -> dict[str, Any]:
+def register_processing_tools(
+    mcp: FastMCP, runtime: ServerRuntime, logger: structlog.BoundLogger
+) -> None:
+    async def _run_pipeline(
+        request: ArticleProcessRequest, metadata_clean: dict[str, Any]
+    ) -> dict[str, Any]:
         pipeline, readiness_error = ensure_runtime_ready(runtime)
         if readiness_error:
             failed_job = ProcessingStatus(
@@ -31,6 +40,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
             )
             await runtime.jobs.upsert(failed_job)
             return {"article_id": request.article_id, **readiness_error}
+        assert pipeline is not None
 
         logger.info("tool.process_article.start", article_id=request.article_id)
         job = ProcessingStatus(
@@ -50,7 +60,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
                 "source": request.source,
                 **metadata_clean,
             }
-            result = await pipeline.process_article(article_data)
+            result: dict[str, Any] = await pipeline.process_article(article_data)
             job.status = "completed"
             job.progress = 1.0
             job.current_stage = "completed"
@@ -69,6 +79,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
             return {"article_id": request.article_id, "error": "processing_failed"}
 
     @mcp.tool()
+    @tool_middleware("process_article")
     async def process_article(
         article_id: str,
         content: str,
@@ -86,10 +97,12 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         )
         if error:
             return error
-        assert request is not None and metadata_clean is not None
+        assert request is not None
+        assert metadata_clean is not None
         return await _run_pipeline(request, metadata_clean)
 
     @mcp.tool()
+    @tool_middleware("process_article_batch")
     async def process_article_batch(
         articles: list[dict[str, Any]],
         continue_on_error: bool = True,
@@ -103,7 +116,8 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         succeeded = 0
         failed = 0
 
-        for idx, payload in enumerate(articles):
+        for idx, raw_item in enumerate(articles):
+            payload: Any = raw_item
             if not isinstance(payload, dict):
                 failed += 1
                 results.append(
@@ -140,7 +154,8 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
                     break
                 continue
 
-            assert request is not None and metadata_clean is not None
+            assert request is not None
+            assert metadata_clean is not None
             output = await _run_pipeline(request, metadata_clean)
 
             if output.get("error"):
@@ -176,6 +191,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("validate_article_payload", rate_limit=False)
     async def validate_article_payload(
         article_id: str,
         content: str,
@@ -194,7 +210,8 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         if error:
             return error
 
-        assert request is not None and metadata_clean is not None
+        assert request is not None
+        assert metadata_clean is not None
         return {
             "valid": True,
             "normalized": {
@@ -210,6 +227,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("get_processing_status", rate_limit=False)
     async def get_processing_status(article_id: str) -> dict[str, Any]:
         """Get current status for an article processing job."""
         normalized_id = str(article_id).strip()
@@ -227,6 +245,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         return job.model_dump()
 
     @mcp.tool()
+    @tool_middleware("get_processing_result", rate_limit=False)
     async def get_processing_result(article_id: str) -> dict[str, Any]:
         """Get finalized result payload for an article job when available."""
         normalized_id = str(article_id).strip()
@@ -246,6 +265,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("list_processing_jobs", rate_limit=False)
     async def list_processing_jobs(
         limit: int = 20,
         offset: int = 0,
@@ -282,6 +302,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("delete_processing_job", rate_limit=False)
     async def delete_processing_job(article_id: str) -> dict[str, Any]:
         """Delete a specific processing job from in-memory store."""
         normalized_id = str(article_id).strip()
@@ -295,6 +316,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         }
 
     @mcp.tool()
+    @tool_middleware("purge_processing_jobs")
     async def purge_processing_jobs(
         status: str = "",
         older_than_seconds: int = 0,
@@ -321,8 +343,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
                 "set confirm=true to purge all jobs without filters",
             )
 
-        result = await runtime.jobs.purge(
+        return await runtime.jobs.purge(
             status=normalized_status,
             older_than_seconds=safe_older_than if safe_older_than > 0 else None,
         )
-        return result

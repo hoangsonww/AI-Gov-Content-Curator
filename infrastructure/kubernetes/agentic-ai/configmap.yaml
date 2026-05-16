@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentic-ai-config
+  namespace: ai-curator
+  labels:
+    app.kubernetes.io/name: agentic-ai
+    app.kubernetes.io/component: config
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  LOG_JSON: "true"
+  ACP_BACKEND: "redis"
+  ACP_ENABLED: "true"
+  MCP_SERVER_NAME: "synthora-agentic-pipeline"
+  MCP_SERVER_VERSION: "1.0.0"
+  MCP_MAX_CONTENT_CHARS: "20000"
+  MCP_MAX_BATCH_ITEMS: "25"
+  MCP_MAX_JOB_HISTORY: "1000"
+  MCP_JOB_TTL_SECONDS: "86400"
+  DEFAULT_LLM_PROVIDER: "google"
+  DEFAULT_MODEL: "gemini-1.5-flash"
+  TEMPERATURE: "0.7"
+  MAX_TOKENS: "2000"
+  LLM_REQUEST_TIMEOUT_SECONDS: "60"
+  LLM_MAX_ATTEMPTS: "3"
+  LLM_CIRCUIT_FAIL_MAX: "5"
+  LLM_CIRCUIT_RESET_SECONDS: "30"
+  AGENT_TIMEOUT: "300"
+  MAX_ITERATIONS: "10"
+  RATE_LIMIT_REQUESTS: "100"
+  RATE_LIMIT_WINDOW: "60"
+  # OTEL_EXPORTER_OTLP_ENDPOINT is intentionally NOT set here. The cluster
+  # runs the Splunk OTel Collector as a per-node DaemonSet
+  # (splunk-otel-collector-agent), reached via the node's host IP. Each
+  # Deployment supplies OTEL_EXPORTER_OTLP_ENDPOINT=http://$(HOST_IP):4317
+  # from a downward-API fieldRef. See deployment-*.yaml.
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  OTEL_TRACES_SAMPLE_RATIO: "0.25"
+  ENABLE_METRICS: "true"
+  REDIS_HOST: "redis.ai-curator.svc.cluster.local"
+  REDIS_PORT: "6379"
+  DAILY_COST_BUDGET_USD: "100.0"
+  API_TRUSTED_HOSTS: "agentic.api.synthora.ai,api.synthora.ai"

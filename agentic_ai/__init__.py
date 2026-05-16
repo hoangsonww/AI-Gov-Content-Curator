@@ -3,7 +3,10 @@ SynthoraAI Agentic AI Pipeline
 
 A sophisticated, production-ready multi-agent AI system built with LangGraph and LangChain.
 """
+
 from __future__ import annotations
+
+from typing import Any
 
 __version__ = "1.0.0"
 __author__ = "SynthoraAI Team"
@@ -17,16 +20,18 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     """
     Lazy imports to avoid importing heavy LangGraph/LLM dependencies on package import.
     """
     if name == "settings":
         from .config.settings import settings as _settings
+
         return _settings
 
     if name in {"AgenticPipeline", "PipelineStage", "AgentState"}:
-        from .core.pipeline import AgenticPipeline, PipelineStage, AgentState
+        from .core.pipeline import AgenticPipeline, AgentState, PipelineStage
+
         mapping = {
             "AgenticPipeline": AgenticPipeline,
             "PipelineStage": PipelineStage,

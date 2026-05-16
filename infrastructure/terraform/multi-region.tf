@@ -4,18 +4,18 @@
 locals {
   regions = {
     primary = {
-      name              = "us-east-1"
-      cidr              = "10.0.0.0/16"
+      name               = "us-east-1"
+      cidr               = "10.0.0.0/16"
       availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
     }
     secondary = {
-      name              = "us-west-2"
-      cidr              = "10.1.0.0/16"
+      name               = "us-west-2"
+      cidr               = "10.1.0.0/16"
       availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
     }
     tertiary = {
-      name              = "eu-west-1"
-      cidr              = "10.2.0.0/16"
+      name               = "eu-west-1"
+      cidr               = "10.2.0.0/16"
       availability_zones = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
     }
   }
@@ -54,7 +54,7 @@ resource "aws_route53_record" "primary" {
   name    = "api.${var.domain_name}"
   type    = "A"
 
-  set_identifier = "primary"
+  set_identifier  = "primary"
   health_check_id = aws_route53_health_check.primary.id
 
   failover_routing_policy {
@@ -96,8 +96,8 @@ resource "aws_globalaccelerator_listener" "https" {
 }
 
 resource "aws_globalaccelerator_endpoint_group" "us_east_1" {
-  listener_arn = aws_globalaccelerator_listener.https.id
-  endpoint_group_region = "us-east-1"
+  listener_arn            = aws_globalaccelerator_listener.https.id
+  endpoint_group_region   = "us-east-1"
   traffic_dial_percentage = 100
 
   endpoint_configuration {
@@ -106,10 +106,10 @@ resource "aws_globalaccelerator_endpoint_group" "us_east_1" {
   }
 
   health_check_interval_seconds = 30
-  health_check_path            = "/health"
-  health_check_port            = 443
-  health_check_protocol        = "HTTPS"
-  threshold_count              = 3
+  health_check_path             = "/health"
+  health_check_port             = 443
+  health_check_protocol         = "HTTPS"
+  threshold_count               = 3
 }
 
 # S3 Bucket for Global Accelerator Logs
@@ -141,49 +141,21 @@ resource "aws_s3_bucket_public_access_block" "ga_logs" {
 }
 
 # Cross-Region Replication for S3
-resource "aws_s3_bucket_replication_configuration" "replication" {
-  depends_on = [aws_s3_bucket_versioning.source]
-
-  role = aws_iam_role.replication.arn
-  bucket = aws_s3_bucket.source.id
-
-  rule {
-    id     = "replicate-all"
-    status = "Enabled"
-
-    filter {}
-
-    destination {
-      bucket        = aws_s3_bucket.destination.arn
-      storage_class = "STANDARD_IA"
-
-      replication_time {
-        status = "Enabled"
-        time {
-          minutes = 15
-        }
-      }
-
-      metrics {
-        status = "Enabled"
-        event_threshold {
-          minutes = 15
-        }
-      }
-    }
-
-    delete_marker_replication {
-      status = "Enabled"
-    }
-  }
-}
+#
+# Disabled: this block is incomplete WIP. It referenced four resources that
+# were never declared — `aws_s3_bucket.source`, `aws_s3_bucket.destination`,
+# `aws_s3_bucket_versioning.source`, and `aws_iam_role.replication` — so the
+# configuration never validated. Completing it correctly requires a chosen
+# DR/destination region (with its own provider alias), versioning on both
+# buckets, and a scoped replication IAM role/policy. Re-enable once those
+# decisions are made; see infrastructure/DEPLOYMENT.md.
 
 # DynamoDB Global Tables for Session Storage
 resource "aws_dynamodb_table" "sessions" {
-  name           = "ai-curator-${var.environment}-sessions"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "sessionId"
-  stream_enabled = true
+  name             = "ai-curator-${var.environment}-sessions"
+  billing_mode     = "PAY_PER_REQUEST"
+  hash_key         = "sessionId"
+  stream_enabled   = true
   stream_view_type = "NEW_AND_OLD_IMAGES"
 
   attribute {
@@ -231,14 +203,14 @@ resource "aws_elasticache_replication_group" "primary" {
   count = var.enable_redis_global ? 1 : 0
 
   replication_group_id       = "ai-curator-${var.environment}-primary"
-  replication_group_description = "Primary Redis cluster"
+  description                = "Primary Redis cluster"
   engine                     = "redis"
   engine_version             = "7.0"
   node_type                  = "cache.r6g.large"
   num_cache_clusters         = 3
   port                       = 6379
   automatic_failover_enabled = true
-  multi_az_enabled          = true
+  multi_az_enabled           = true
   at_rest_encryption_enabled = true
   transit_encryption_enabled = true
 
@@ -261,6 +233,120 @@ resource "aws_elasticache_subnet_group" "redis" {
 
   tags = {
     Name = "ai-curator-${var.environment}-redis-subnet-group"
+  }
+}
+
+# WAFv2 Web ACL for the CloudFront distribution. CLOUDFRONT scope requires
+# the resource to live in us-east-1, hence the aliased provider. Baseline
+# protection: AWS managed rule groups + a rate-based rule.
+resource "aws_wafv2_web_acl" "cloudfront" {
+  count    = var.enable_waf ? 1 : 0
+  provider = aws.us_east_1
+
+  name        = "ai-curator-${var.environment}-cloudfront"
+  description = "Baseline WAF protection for the AI Curator CDN"
+  scope       = "CLOUDFRONT"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "aws-common-rule-set"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "ai-curator-${var.environment}-common-rules"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "aws-known-bad-inputs"
+    priority = 2
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "ai-curator-${var.environment}-known-bad-inputs"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "aws-ip-reputation"
+    priority = 3
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesAmazonIpReputationList"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "ai-curator-${var.environment}-ip-reputation"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "rate-limit"
+    priority = 4
+
+    action {
+      block {}
+    }
+
+    statement {
+      rate_based_statement {
+        limit              = 2000
+        aggregate_key_type = "IP"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "ai-curator-${var.environment}-rate-limit"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "ai-curator-${var.environment}-cloudfront-waf"
+    sampled_requests_enabled   = true
+  }
+
+  tags = {
+    Name = "ai-curator-${var.environment}-cloudfront-waf"
   }
 }
 

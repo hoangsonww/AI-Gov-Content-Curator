@@ -1,0 +1,5 @@
+-r base.txt
+google-cloud-storage>=2.14.0,<4.0
+google-cloud-logging>=3.9.0,<4.0
+functions-framework>=3.5.0,<4.0
+opentelemetry-exporter-gcp-trace>=1.6.0,<2.0

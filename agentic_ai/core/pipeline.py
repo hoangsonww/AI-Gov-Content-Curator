@@ -2,27 +2,38 @@
 Assembly Line Architecture for Agentic AI Pipeline using LangGraph.
 This implements a sophisticated multi-agent system with state management.
 """
-from typing import Dict, Any, List, Optional, TypedDict, Annotated
+
+import time
+from collections.abc import Callable
+from datetime import UTC, datetime
 from enum import Enum
-import operator
-from datetime import datetime
+from typing import Any, TypedDict
 
-from langgraph.graph import StateGraph, END
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-
-from ..config.settings import settings
-from ..agents.content_analyzer import ContentAnalyzerAgent
-from ..agents.summarizer import SummarizerAgent
-from ..agents.classifier import ClassifierAgent
-from ..agents.sentiment_analyzer import SentimentAnalyzerAgent
-from ..agents.quality_checker import QualityCheckerAgent
 import structlog
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.runnables import RunnableConfig
+from langgraph.graph import END, StateGraph
 
-logger = structlog.get_logger()
+from mcp_server.observability import metrics, traced_async_span, traced_span
+from mcp_server.resilience import with_async_timeout
+
+from ..agents.classifier import ClassifierAgent
+from ..agents.content_analyzer import ContentAnalyzerAgent
+from ..agents.quality_checker import QualityCheckerAgent
+from ..agents.sentiment_analyzer import SentimentAnalyzerAgent
+from ..agents.summarizer import SummarizerAgent
+from ..config.settings import settings
+
+logger = structlog.get_logger("agentic.pipeline")
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(UTC).isoformat()
 
 
 class PipelineStage(str, Enum):
     """Pipeline stages in the assembly line."""
+
     INTAKE = "intake"
     CONTENT_ANALYSIS = "content_analysis"
     SUMMARIZATION = "summarization"
@@ -35,6 +46,7 @@ class PipelineStage(str, Enum):
 
 class AgentState(TypedDict):
     """State object passed between agents in the pipeline."""
+
     # Input data
     article_id: str
     raw_content: str
@@ -47,19 +59,29 @@ class AgentState(TypedDict):
     iteration: int
 
     # Processed data
-    analyzed_content: Optional[Dict[str, Any]]
-    summary: Optional[str]
-    topics: Optional[List[str]]
-    sentiment: Optional[Dict[str, float]]
-    quality_score: Optional[float]
+    analyzed_content: dict[str, Any] | None
+    summary: str | None
+    topics: list[str] | None
+    sentiment: dict[str, float] | None
+    quality_score: float | None
 
-    # Messages and errors
-    messages: Annotated[List[BaseMessage], operator.add]
-    errors: Annotated[List[str], operator.add]
+    # Messages and errors.
+    #
+    # These are plain LastValue channels — NOT `Annotated[..., operator.add]`
+    # reducers. Every node mutates the SAME list in place (e.g.
+    # `state["messages"].append(...)`) and returns the whole state. With an
+    # `operator.add` reducer LangGraph would concatenate the node's returned
+    # (already-accumulated) list onto the channel's existing value, doubling
+    # both lists on every super-step — exponential blowup that wedges the
+    # pipeline within a handful of quality-retry iterations. The graph is a
+    # strictly linear assembly line (no fan-out/fan-in), so LastValue is
+    # both correct and the right reducer here.
+    messages: list[BaseMessage]
+    errors: list[str]
 
     # Decisions and routing
     should_continue: bool
-    next_stage: Optional[str]
+    next_stage: str | None
 
 
 class AgenticPipeline:
@@ -74,7 +96,7 @@ class AgenticPipeline:
     5. Quality Check: Validates output quality
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the pipeline with all agents and graph."""
         logger.info("Initializing Agentic AI Pipeline")
 
@@ -91,9 +113,9 @@ class AgenticPipeline:
 
         logger.info("Pipeline initialized successfully")
 
-    def _build_graph(self) -> StateGraph:
+    def _build_graph(self) -> StateGraph[AgentState]:
         """Build the LangGraph state machine for the pipeline."""
-        workflow = StateGraph(AgentState)
+        workflow: StateGraph[AgentState] = StateGraph(AgentState)
 
         # Add nodes for each stage
         workflow.add_node("intake", self._intake_node)
@@ -118,11 +140,7 @@ class AgenticPipeline:
         workflow.add_conditional_edges(
             "quality_check",
             self._should_continue,
-            {
-                "output": "output",
-                "content_analysis": "content_analysis",
-                END: END
-            }
+            {"output": "output", "content_analysis": "content_analysis", END: END},
         )
 
         workflow.add_edge("output", END)
@@ -131,10 +149,10 @@ class AgenticPipeline:
 
     def _intake_node(self, state: AgentState) -> AgentState:
         """Initial intake node that validates input."""
-        logger.info("Pipeline stage: INTAKE", article_id=state.get("article_id"))
+        logger.info("pipeline.stage.intake", article_id=state.get("article_id"))
 
         state["current_stage"] = PipelineStage.INTAKE
-        state["timestamp"] = datetime.utcnow().isoformat()
+        state["timestamp"] = _utc_now_iso()
         state["iteration"] = state.get("iteration", 0) + 1
 
         # Validate required fields
@@ -150,89 +168,99 @@ class AgenticPipeline:
 
         return state
 
-    def _content_analysis_node(self, state: AgentState) -> AgentState:
-        """Content analysis stage."""
-        logger.info("Pipeline stage: CONTENT_ANALYSIS", article_id=state.get("article_id"))
-
-        state["current_stage"] = PipelineStage.CONTENT_ANALYSIS
-
-        try:
-            result = self.content_analyzer.analyze(
-                content=state["raw_content"],
-                metadata={"url": state.get("url"), "source": state.get("source")}
-            )
-            state["analyzed_content"] = result
-            state["messages"].append(
-                AIMessage(content="Content analysis completed")
-            )
-        except Exception as e:
-            logger.error("Content analysis failed", error=str(e))
-            state["errors"].append(f"Content analysis error: {str(e)}")
-
+    def _run_agent_node(
+        self,
+        state: AgentState,
+        *,
+        stage: PipelineStage,
+        agent_name: str,
+        runner: Callable[[], Any],
+        on_success: Callable[[AgentState, Any], None],
+    ) -> AgentState:
+        """Shared boilerplate: trace span, metrics, error capture per stage."""
+        state["current_stage"] = stage
+        start = time.monotonic()
+        article_id = state.get("article_id", "unknown")
+        logger.info(
+            "pipeline.stage.start",
+            stage=stage.value,
+            agent=agent_name,
+            article_id=article_id,
+        )
+        with traced_span(
+            f"pipeline.stage.{stage.value}",
+            **{
+                "pipeline.stage": stage.value,
+                "agent.name": agent_name,
+                "article.id": article_id,
+            },
+        ):
+            try:
+                result = runner()
+                on_success(state, result)
+                state["messages"].append(AIMessage(content=f"{agent_name} completed"))
+                metrics().agent_invocations_total.labels(agent=agent_name, status="ok").inc()
+            except Exception as exc:
+                logger.exception(
+                    "pipeline.stage.failed",
+                    stage=stage.value,
+                    agent=agent_name,
+                    error=str(exc),
+                )
+                state["errors"].append(f"{stage.value} error: {exc}")
+                metrics().agent_invocations_total.labels(agent=agent_name, status="error").inc()
+            finally:
+                duration = time.monotonic() - start
+                metrics().agent_duration_seconds.labels(agent=agent_name).observe(duration)
         return state
+
+    def _content_analysis_node(self, state: AgentState) -> AgentState:
+        return self._run_agent_node(
+            state,
+            stage=PipelineStage.CONTENT_ANALYSIS,
+            agent_name="content_analyzer",
+            runner=lambda: self.content_analyzer.analyze(
+                content=state["raw_content"],
+                metadata={"url": state.get("url"), "source": state.get("source")},
+            ),
+            on_success=lambda s, result: s.__setitem__("analyzed_content", result),
+        )
 
     def _summarization_node(self, state: AgentState) -> AgentState:
-        """Summarization stage."""
-        logger.info("Pipeline stage: SUMMARIZATION", article_id=state.get("article_id"))
-
-        state["current_stage"] = PipelineStage.SUMMARIZATION
-
-        try:
-            summary = self.summarizer.summarize(
+        return self._run_agent_node(
+            state,
+            stage=PipelineStage.SUMMARIZATION,
+            agent_name="summarizer",
+            runner=lambda: self.summarizer.summarize(
                 content=state["raw_content"],
-                analyzed_content=state.get("analyzed_content")
-            )
-            state["summary"] = summary
-            state["messages"].append(
-                AIMessage(content="Summarization completed")
-            )
-        except Exception as e:
-            logger.error("Summarization failed", error=str(e))
-            state["errors"].append(f"Summarization error: {str(e)}")
-
-        return state
+                analyzed_content=state.get("analyzed_content"),
+            ),
+            on_success=lambda s, result: s.__setitem__("summary", result),
+        )
 
     def _classification_node(self, state: AgentState) -> AgentState:
-        """Classification stage."""
-        logger.info("Pipeline stage: CLASSIFICATION", article_id=state.get("article_id"))
-
-        state["current_stage"] = PipelineStage.CLASSIFICATION
-
-        try:
-            topics = self.classifier.classify(
+        return self._run_agent_node(
+            state,
+            stage=PipelineStage.CLASSIFICATION,
+            agent_name="classifier",
+            runner=lambda: self.classifier.classify(
                 content=state["raw_content"],
-                summary=state.get("summary")
-            )
-            state["topics"] = topics
-            state["messages"].append(
-                AIMessage(content=f"Classification completed: {', '.join(topics)}")
-            )
-        except Exception as e:
-            logger.error("Classification failed", error=str(e))
-            state["errors"].append(f"Classification error: {str(e)}")
-
-        return state
+                summary=state.get("summary"),
+            ),
+            on_success=lambda s, result: s.__setitem__("topics", result),
+        )
 
     def _sentiment_analysis_node(self, state: AgentState) -> AgentState:
-        """Sentiment analysis stage."""
-        logger.info("Pipeline stage: SENTIMENT_ANALYSIS", article_id=state.get("article_id"))
-
-        state["current_stage"] = PipelineStage.SENTIMENT_ANALYSIS
-
-        try:
-            sentiment = self.sentiment_analyzer.analyze_sentiment(
+        return self._run_agent_node(
+            state,
+            stage=PipelineStage.SENTIMENT_ANALYSIS,
+            agent_name="sentiment_analyzer",
+            runner=lambda: self.sentiment_analyzer.analyze_sentiment(
                 content=state["raw_content"],
-                summary=state.get("summary")
-            )
-            state["sentiment"] = sentiment
-            state["messages"].append(
-                AIMessage(content="Sentiment analysis completed")
-            )
-        except Exception as e:
-            logger.error("Sentiment analysis failed", error=str(e))
-            state["errors"].append(f"Sentiment analysis error: {str(e)}")
-
-        return state
+                summary=state.get("summary"),
+            ),
+            on_success=lambda s, result: s.__setitem__("sentiment", result),
+        )
 
     def _quality_check_node(self, state: AgentState) -> AgentState:
         """Quality check stage."""
@@ -245,7 +273,7 @@ class AgenticPipeline:
                 original_content=state["raw_content"],
                 summary=state.get("summary"),
                 topics=state.get("topics"),
-                sentiment=state.get("sentiment")
+                sentiment=state.get("sentiment"),
             )
 
             state["quality_score"] = quality_result["score"]
@@ -256,7 +284,9 @@ class AgenticPipeline:
                 state["should_continue"] = True
                 state["next_stage"] = "content_analysis"  # Retry from content analysis
                 state["messages"].append(
-                    AIMessage(content=f"Quality check failed (score: {quality_result['score']}), retrying...")
+                    AIMessage(
+                        content=f"Quality check failed (score: {quality_result['score']}), retrying..."
+                    )
                 )
             else:
                 state["should_continue"] = True
@@ -266,7 +296,7 @@ class AgenticPipeline:
                 )
         except Exception as e:
             logger.error("Quality check failed", error=str(e))
-            state["errors"].append(f"Quality check error: {str(e)}")
+            state["errors"].append(f"Quality check error: {e!s}")
             state["should_continue"] = True
             state["next_stage"] = "output"
 
@@ -286,29 +316,27 @@ class AgenticPipeline:
         if not state.get("should_continue", True):
             return END
 
-        next_stage = state.get("next_stage", "output")
-        return next_stage
+        return state.get("next_stage") or "output"
 
-    async def process_article(self, article_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_article(self, article_data: dict[str, Any]) -> dict[str, Any]:
         """
         Process an article through the entire pipeline.
 
-        Args:
-            article_data: Dictionary containing article information
-
-        Returns:
-            Dictionary with processed results
+        Emits a top-level OTel span and Prometheus metrics, enforces a
+        deadline equal to `settings.agent_timeout` multiplied by the max
+        iterations so a runaway quality-check loop cannot wedge a worker.
         """
-        logger.info("Starting article processing", article_id=article_data.get("id"))
+        article_id = article_data.get("id", "unknown")
+        log = logger.bind(article_id=article_id)
+        log.info("pipeline.start")
 
-        # Initialize state
         initial_state: AgentState = {
-            "article_id": article_data.get("id", "unknown"),
+            "article_id": article_id,
             "raw_content": article_data.get("content", ""),
             "url": article_data.get("url", ""),
             "source": article_data.get("source", ""),
             "current_stage": PipelineStage.INTAKE,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": _utc_now_iso(),
             "iteration": 0,
             "analyzed_content": None,
             "summary": None,
@@ -318,42 +346,78 @@ class AgenticPipeline:
             "messages": [],
             "errors": [],
             "should_continue": True,
-            "next_stage": None
+            "next_stage": None,
         }
 
-        try:
-            # Run the pipeline
-            final_state = await self.app.ainvoke(initial_state)
+        # Top-level deadline. Loosely bounded; per-stage timeouts give finer control.
+        deadline_s = float(settings.agent_timeout) * max(1, settings.max_iterations)
 
-            # Extract results
-            result = {
-                "article_id": final_state["article_id"],
-                "summary": final_state.get("summary"),
-                "topics": final_state.get("topics", []),
-                "sentiment": final_state.get("sentiment"),
-                "quality_score": final_state.get("quality_score"),
-                "analyzed_content": final_state.get("analyzed_content"),
-                "iterations": final_state.get("iteration"),
-                "errors": final_state.get("errors", []),
-                "timestamp": final_state["timestamp"]
-            }
+        # LangGraph counts every node execution against `recursion_limit`.
+        # The quality gate can loop content_analysis → ... → quality_check
+        # up to `max_iterations` times, and each loop runs 5 stage nodes
+        # (+ intake + output + edge super-steps). The default limit of 25
+        # is far below that, so a low-quality article would raise
+        # GraphRecursionError instead of terminating gracefully. Size the
+        # limit to the worst case with headroom.
+        recursion_limit = max(25, settings.max_iterations * 6 + 15)
+        run_config: RunnableConfig = {"recursion_limit": recursion_limit}
+        start = time.monotonic()
+        status = "completed"
 
-            logger.info(
-                "Article processing completed",
-                article_id=result["article_id"],
-                quality_score=result.get("quality_score"),
-                iterations=result.get("iterations")
-            )
+        async with traced_async_span(
+            "pipeline.process_article",
+            **{
+                "article.id": article_id,
+                "article.source": article_data.get("source", ""),
+                "article.url": article_data.get("url", ""),
+                "pipeline.max_iterations": settings.max_iterations,
+            },
+        ):
+            try:
+                # langgraph's compiled-graph generics do not round-trip a
+                # TypedDict state cleanly through `.compile()`, so mypy sees
+                # `ainvoke` expecting the unbound `StateT` rather than
+                # `AgentState`. The call is correct at runtime.
+                final_state = await with_async_timeout(
+                    self.app.ainvoke(initial_state, config=run_config),  # type: ignore[arg-type]
+                    timeout_s=deadline_s,
+                    operation="pipeline.process_article",
+                )
 
-            return result
+                result = {
+                    "article_id": final_state["article_id"],
+                    "summary": final_state.get("summary"),
+                    "topics": final_state.get("topics", []),
+                    "sentiment": final_state.get("sentiment"),
+                    "quality_score": final_state.get("quality_score"),
+                    "analyzed_content": final_state.get("analyzed_content"),
+                    "iterations": final_state.get("iteration"),
+                    "errors": final_state.get("errors", []),
+                    "timestamp": final_state["timestamp"],
+                }
+                if result["errors"]:
+                    status = "partial"
+                log.info(
+                    "pipeline.complete",
+                    quality_score=result.get("quality_score"),
+                    iterations=result.get("iterations"),
+                    error_count=len(result["errors"]),
+                )
+                return result
 
-        except Exception as e:
-            logger.error("Pipeline execution failed", error=str(e), article_id=article_data.get("id"))
-            return {
-                "article_id": article_data.get("id"),
-                "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
-            }
+            except Exception as exc:
+                status = "failed"
+                log.exception("pipeline.failed", error=str(exc))
+                return {
+                    "article_id": article_id,
+                    "error": str(exc),
+                    "error_type": type(exc).__name__,
+                    "timestamp": _utc_now_iso(),
+                }
+            finally:
+                duration = time.monotonic() - start
+                metrics().pipeline_runs_total.labels(status=status).inc()
+                metrics().pipeline_duration_seconds.labels(status=status).observe(duration)
 
     def visualize(self) -> str:
         """Generate a mermaid diagram of the pipeline."""

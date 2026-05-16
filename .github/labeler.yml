@@ -1,0 +1,44 @@
+# Path-based PR labels. Multiple labels can apply to a single PR.
+# Docs: https://github.com/actions/labeler
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'backend/**'
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'frontend/**'
+
+crawler:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'crawler/**'
+
+newsletter:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'newsletters/**'
+
+tooling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'shell/**'
+          - 'bin/**'
+
+deployment:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'infrastructure/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - '**/*.mdx'
+          - 'docs/**'
+          - '**/README*'
+          - '**/CHANGELOG*'
+          - '**/CONTRIBUTING*'
+          - '**/CODE_OF_CONDUCT*'

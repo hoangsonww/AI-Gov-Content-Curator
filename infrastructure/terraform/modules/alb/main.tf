@@ -39,8 +39,8 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = var.public_subnets
 
-  enable_deletion_protection = var.environment == "prod" ? true : false
-  enable_http2              = true
+  enable_deletion_protection       = var.environment == "prod" ? true : false
+  enable_http2                     = true
   enable_cross_zone_load_balancing = true
 
   access_logs {
@@ -69,6 +69,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
   rule {
     id     = "delete-old-logs"
     status = "Enabled"
+
+    # Empty filter == apply to every object in the bucket. Newer AWS
+    # provider versions require an explicit filter or prefix per rule.
+    filter {}
 
     expiration {
       days = 90

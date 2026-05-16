@@ -4,11 +4,12 @@ Complete type system for the SynthoraAI orchestration layer.
 Defines enumerations, dataclasses, and pricing constants used across
 all orchestration modules.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 
 class AgentErrorType(str, Enum):
@@ -133,7 +134,7 @@ class IntentParameters:
     primary_intent: str
     secondary_intents: list[str] = field(default_factory=list)
     required_capabilities: list[str] = field(default_factory=list)
-    preferred_provider: Optional[ModelProvider] = None
+    preferred_provider: ModelProvider | None = None
     context: dict[str, Any] = field(default_factory=dict)
 
 
@@ -177,8 +178,8 @@ class TaskResult:
     agent_id: str
     success: bool
     output: dict[str, Any] = field(default_factory=dict)
-    error_type: Optional[AgentErrorType] = None
-    error_message: Optional[str] = None
+    error_type: AgentErrorType | None = None
+    error_message: str | None = None
     duration_ms: float = 0.0
     tokens_used: dict[str, int] = field(default_factory=dict)
     cost_usd: float = 0.0
@@ -221,7 +222,7 @@ class HandoffPayload:
     to_agent: str
     reason: HandoffReason
     context: dict[str, Any] = field(default_factory=dict)
-    partial_result: Optional[dict[str, Any]] = None
+    partial_result: dict[str, Any] | None = None
     instructions: str = ""
 
 
@@ -243,7 +244,7 @@ class AgentError:
     message: str
     retryable: bool = True
     context: dict[str, Any] = field(default_factory=dict)
-    original_exception: Optional[str] = None
+    original_exception: str | None = None
 
 
 @dataclass
@@ -284,7 +285,7 @@ class ExecutionStep:
     agent_id: str
     depends_on: list[str] = field(default_factory=list)
     can_run_parallel: bool = False
-    retry_policy: Optional[RetryPolicy] = None
+    retry_policy: RetryPolicy | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
 

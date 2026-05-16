@@ -1,0 +1,14 @@
+# Trivy ignore file — curated, justified CVE risk acceptances.
+# Each entry MUST have a rationale. Review on every dependency bump.
+# Auto-discovered by Trivy when scanning with this directory as the
+# working dir (or via TRIVY_IGNOREFILE).
+#
+# Currently EMPTY for Python packages: the langchain 1.x migration
+# cleared every previously-residual langchain-stack CVE. `pip-audit`
+# and `trivy` both report zero Python vulnerabilities.
+#
+# OS-package CVEs in the Debian base have no upstream fix available
+# (`FixedVersion` empty) and are not listed here — they are mitigated by
+# the container hardening (non-root, read-only fs, dropped caps, minimal
+# package set) and tracked in docs/security.md. Add an entry here only
+# with a written, reviewed rationale.

@@ -1,0 +1,65 @@
+# Run with: pre-commit run --all-files
+# Install: pre-commit install --install-hooks
+default_language_version:
+  python: python3.11
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+        # CloudFormation templates use intrinsic-function tags (!Sub, !Ref,
+        # !GetAtt) that a plain YAML safe-loader cannot construct.
+        exclude: ^agentic_ai/aws/cloudformation\.yaml$
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # mypy runs as a local/system hook (not mirrors-mypy) so it uses the
+  # project's installed mypy + the real dependency set. An isolated
+  # pre-commit env cannot resolve structlog/fastapi/langgraph/etc., and
+  # pre-commit executes hooks from the repo root, so a relative
+  # `--config-file=pyproject.toml` does not resolve. This keeps
+  # pre-commit, `make typecheck`, and CI running the identical command.
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (strict)
+        entry: mypy --config-file=agentic_ai/pyproject.toml mcp_server agentic_ai
+        language: system
+        pass_filenames: false
+        files: ^(agentic_ai|mcp_server)/.*\.py$
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      # `-ll` (severity >= medium) matches `make security` and the CI
+      # policy. Low-severity findings (try/except/pass on optional
+      # telemetry imports, non-crypto random for backoff jitter) are
+      # intentional and reviewed.
+      - id: bandit
+        args: [-c, agentic_ai/pyproject.toml, -ll, -q]
+        additional_dependencies: ["bandit[toml]"]
+        files: ^(agentic_ai|mcp_server)/.*\.py$
+        exclude: ^(agentic_ai/tests/|.*/test_.*\.py$)
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks

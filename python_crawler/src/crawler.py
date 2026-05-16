@@ -27,7 +27,9 @@ def _normalize_allowed_domains(allowed: List[str], default_domain: str) -> Set[s
     return normalized
 
 
-async def fetch_article(session: aiohttp.ClientSession, url: str, config: CrawlerConfig) -> Optional[ArticleData]:
+async def fetch_article(
+    session: aiohttp.ClientSession, url: str, config: CrawlerConfig
+) -> Optional[ArticleData]:
     html = await fetch_html(session, url, config)
 
     if not html and config.js_fallback:
@@ -79,7 +81,9 @@ async def crawl_homepage(homepage_url: str, config: CrawlerConfig) -> List[str]:
             visited.add(url)
 
             if config.respect_robots:
-                allowed = await robots.allowed(session, url, config.user_agent, config.request_timeout)
+                allowed = await robots.allowed(
+                    session, url, config.user_agent, config.request_timeout
+                )
                 if not allowed:
                     continue
 
@@ -90,13 +94,20 @@ async def crawl_homepage(homepage_url: str, config: CrawlerConfig) -> List[str]:
             soup = BeautifulSoup(html, "html.parser")
             found: List[str] = []
             for a in soup.find_all("a", href=True):
-                href = normalize_url(urljoin(url, a["href"]))
+                # bs4 types a multi-valued attribute as str | list[str];
+                # an <a href> is single-valued, but coerce defensively.
+                href_attr = a["href"]
+                href_value = href_attr[0] if isinstance(href_attr, list) else href_attr
+                href = normalize_url(urljoin(url, href_value))
                 if not href or should_skip_url(href):
                     continue
 
                 parsed = urlparse(href)
                 if config.allow_subdomains:
-                    if not any(parsed.netloc == d or parsed.netloc.endswith("." + d) for d in allowed_domains):
+                    if not any(
+                        parsed.netloc == d or parsed.netloc.endswith("." + d)
+                        for d in allowed_domains
+                    ):
                         continue
                 else:
                     if parsed.netloc not in allowed_domains:

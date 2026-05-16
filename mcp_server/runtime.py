@@ -1,12 +1,13 @@
 """
 Runtime wiring for pipeline + job store.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from uuid import uuid4
 
 import structlog
-from uuid import uuid4
 
 from agentic_ai.config.settings import settings
 
@@ -27,7 +28,7 @@ class ServerRuntime:
     def __init__(self) -> None:
         self.logger = structlog.get_logger("mcp_server.runtime")
         self.started_at = utc_now_iso()
-        self.pipeline: "AgenticPipeline | None" = None
+        self.pipeline: AgenticPipeline | None = None
         self.ready = False
         self.startup_error: str | None = None
         self.acp_backend = settings.acp_backend
@@ -80,7 +81,11 @@ class ServerRuntime:
             )
             await self.acp.acknowledge_message(agent_id=recipient_id, message_id=message.message_id)
             checks["message_acknowledged"] = True
-            return {"enabled": True, "ready": all(bool(v) for v in checks.values()), "checks": checks}
+            return {
+                "enabled": True,
+                "ready": all(bool(v) for v in checks.values()),
+                "checks": checks,
+            }
         except Exception as exc:  # pragma: no cover - safety net for operations
             return {
                 "enabled": True,
@@ -107,12 +112,23 @@ class ServerRuntime:
             try:
                 from redis.asyncio import Redis
 
+                # redis_password is a SecretStr; extract the raw value.
+                redis_password = (
+                    settings.redis_password.get_secret_value()
+                    if settings.redis_password is not None
+                    else None
+                )
                 redis_client = Redis(
                     host=settings.redis_host,
                     port=settings.redis_port,
                     db=settings.redis_db,
-                    password=settings.redis_password,
+                    password=redis_password or None,
+                    ssl=settings.redis_tls,
                     decode_responses=True,
+                    socket_connect_timeout=5,
+                    socket_timeout=5,
+                    health_check_interval=30,
+                    retry_on_timeout=True,
                 )
                 self.acp_backend = "redis"
                 return RedisACPStore(

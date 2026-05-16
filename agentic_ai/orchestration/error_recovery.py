@@ -6,6 +6,7 @@ backoff helper using the AWS full-jitter pattern, and a thread-safe
 circuit breaker that trips after repeated failures within a rolling
 time window.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -13,7 +14,8 @@ import random
 import threading
 import time
 from collections import defaultdict, deque
-from typing import Any, Callable, Coroutine, Optional
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 import structlog
 
@@ -22,9 +24,9 @@ from .types import AgentError, AgentErrorType, ModelProvider
 logger = structlog.get_logger(__name__)
 
 # Circuit breaker parameters
-_CB_FAILURE_THRESHOLD: int = 3       # failures within the window to trip
-_CB_WINDOW_SECONDS: float = 300.0    # rolling window (5 minutes)
-_CB_COOLDOWN_SECONDS: float = 60.0   # time the circuit stays open
+_CB_FAILURE_THRESHOLD: int = 3  # failures within the window to trip
+_CB_WINDOW_SECONDS: float = 300.0  # rolling window (5 minutes)
+_CB_COOLDOWN_SECONDS: float = 60.0  # time the circuit stays open
 
 
 class _CircuitBreakerState:
@@ -32,7 +34,7 @@ class _CircuitBreakerState:
 
     def __init__(self) -> None:
         self.failure_timestamps: deque[float] = deque()
-        self.tripped_at: Optional[float] = None
+        self.tripped_at: float | None = None
 
 
 class ErrorRecoveryEngine:
@@ -182,7 +184,7 @@ class ErrorRecoveryEngine:
             base: Base delay in seconds.
             cap: Maximum delay cap in seconds.
         """
-        ceiling = min(cap, base * (2 ** attempt))
+        ceiling = min(cap, base * (2**attempt))
         delay = random.uniform(0, ceiling)
         logger.debug("error_recovery.backoff", attempt=attempt, delay_seconds=delay)
         await asyncio.sleep(delay)
@@ -195,7 +197,11 @@ class ErrorRecoveryEngine:
         """Wait with exponential backoff then retry."""
         attempt = error.context.get("attempt", 0)
         await self._backoff_with_jitter(attempt, base=2.0, cap=120.0)
-        return {"action": "retry", "agent_id": error.agent_id, "reason": "rate_limit_backoff_complete"}
+        return {
+            "action": "retry",
+            "agent_id": error.agent_id,
+            "reason": "rate_limit_backoff_complete",
+        }
 
     async def _recover_context_overflow(self, error: AgentError) -> dict[str, Any]:
         """Truncate content and retry with a smaller context window."""

@@ -5,12 +5,13 @@ Wraps the existing :class:`~agentic_ai.core.pipeline.AgenticPipeline`
 and adds routing, cost budgeting, parallel execution planning, and
 quality gate logic on top of the LangGraph assembly line.
 """
+
 from __future__ import annotations
 
 import asyncio
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 import structlog
 
@@ -35,7 +36,7 @@ _ESTIMATED_OUTPUT_TOKENS: int = 500
 
 def _utc_now() -> str:
     """Return the current UTC timestamp as an ISO-8601 string."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class ContentSupervisor:
@@ -66,8 +67,8 @@ class ContentSupervisor:
 
     def __init__(
         self,
-        pipeline: Optional[AgenticPipeline] = None,
-        budget_manager: Optional[CostBudgetManager] = None,
+        pipeline: AgenticPipeline | None = None,
+        budget_manager: CostBudgetManager | None = None,
         daily_budget_usd: float = 10.0,
     ) -> None:
         self._pipeline: AgenticPipeline = pipeline or AgenticPipeline()
@@ -106,9 +107,7 @@ class ContentSupervisor:
             orchestration metadata (``routing``, ``plan_id``, ``mode``,
             ``budget_check``, ``quality_gate``).
         """
-        article_id: str = str(
-            article.get("id") or article.get("article_id") or uuid.uuid4()
-        )
+        article_id: str = str(article.get("id") or article.get("article_id") or uuid.uuid4())
         log = logger.bind(article_id=article_id, mode=mode)
         log.info("supervisor.process_article.start")
 
@@ -142,7 +141,7 @@ class ContentSupervisor:
         pipeline_result = await self.execute_plan(plan, article)
 
         # 5. Quality gate — missing score is treated as failed (not assumed passing)
-        quality_score: Optional[float] = pipeline_result.get("quality_score")
+        quality_score: float | None = pipeline_result.get("quality_score")
         quality_gate_passed = quality_score is not None and quality_score >= _QUALITY_THRESHOLD
 
         # Record usage (best-effort)
@@ -218,7 +217,12 @@ class ContentSupervisor:
             return ArticleRouting(
                 article_id=article_id,
                 primary_agent="content-analyzer",
-                supporting_agents=["summarizer", "classifier", "sentiment-analyzer", "quality-checker"],
+                supporting_agents=[
+                    "summarizer",
+                    "classifier",
+                    "sentiment-analyzer",
+                    "quality-checker",
+                ],
                 mode=ProcessingMode.FULL,
                 estimated_cost_usd=0.012,
                 reason="long_content_full_pipeline",
@@ -228,7 +232,13 @@ class ContentSupervisor:
             return ArticleRouting(
                 article_id=article_id,
                 primary_agent="content-analyzer",
-                supporting_agents=["summarizer", "classifier", "sentiment-analyzer", "quality-checker", "content-supervisor"],
+                supporting_agents=[
+                    "summarizer",
+                    "classifier",
+                    "sentiment-analyzer",
+                    "quality-checker",
+                    "content-supervisor",
+                ],
                 mode=ProcessingMode.FULL,
                 estimated_cost_usd=0.015,
                 reason="government_source_full_with_supervisor",
