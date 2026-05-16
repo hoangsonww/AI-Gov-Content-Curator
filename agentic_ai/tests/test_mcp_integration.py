@@ -8,6 +8,8 @@ through FastMCP's tool manager. This covers the wiring in `app.py`,
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 pytestmark = pytest.mark.asyncio
@@ -20,12 +22,12 @@ def mcp_server(fresh_metrics_registry, reset_circuit_breakers):
     return create_server()
 
 
-def _tool_map(server: object) -> dict[str, object]:
+def _tool_map(server: Any) -> dict[str, Any]:
     manager = server.mcp._tool_manager
     return {t.name: t for t in manager.list_tools()}
 
 
-async def test_server_registers_expected_tools(mcp_server: object) -> None:
+async def test_server_registers_expected_tools(mcp_server: Any) -> None:
     tools = _tool_map(mcp_server)
     # A representative slice across all four tool modules.
     for name in (
@@ -42,7 +44,7 @@ async def test_server_registers_expected_tools(mcp_server: object) -> None:
         assert name in tools, f"missing tool: {name}"
 
 
-async def test_process_article_schema_preserved(mcp_server: object) -> None:
+async def test_process_article_schema_preserved(mcp_server: Any) -> None:
     """Middleware must not erase the typed signature FastMCP needs."""
     tool = _tool_map(mcp_server)["process_article"]
     props = set(tool.parameters.get("properties", {}))
@@ -50,7 +52,7 @@ async def test_process_article_schema_preserved(mcp_server: object) -> None:
     assert set(tool.parameters.get("required", [])) == {"article_id", "content"}
 
 
-async def test_validate_article_payload_runs(mcp_server: object) -> None:
+async def test_validate_article_payload_runs(mcp_server: Any) -> None:
     """A pure-validation tool works even with the pipeline degraded."""
     manager = mcp_server.mcp._tool_manager
     result = await manager.call_tool(
@@ -61,20 +63,20 @@ async def test_validate_article_payload_runs(mcp_server: object) -> None:
     assert payload is not None
 
 
-async def test_check_pipeline_health_runs(mcp_server: object) -> None:
+async def test_check_pipeline_health_runs(mcp_server: Any) -> None:
     manager = mcp_server.mcp._tool_manager
     result = await manager.call_tool("check_pipeline_health", {})
     assert result is not None
 
 
-async def test_runtime_readiness_reports_degraded_without_key(mcp_server: object) -> None:
+async def test_runtime_readiness_reports_degraded_without_key(mcp_server: Any) -> None:
     """In the test env there is no LLM key, so the pipeline is degraded."""
     readiness = mcp_server.runtime.readiness()
     assert readiness["ready"] is False
     assert readiness["startup_error"]
 
 
-async def test_resources_and_prompts_registered(mcp_server: object) -> None:
+async def test_resources_and_prompts_registered(mcp_server: Any) -> None:
     # Resource + prompt managers should be populated.
     resource_mgr = mcp_server.mcp._resource_manager
     prompt_mgr = mcp_server.mcp._prompt_manager

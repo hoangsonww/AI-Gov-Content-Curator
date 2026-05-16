@@ -16,7 +16,7 @@ logger = structlog.get_logger()
 class SentimentAnalyzerAgent(BaseAgent):
     """Agent responsible for analyzing sentiment and emotional tone."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Sentiment Analyzer Agent."""
         super().__init__(name="SentimentAnalyzer")
 

@@ -17,7 +17,7 @@ Hardening:
 - Trusted host middleware enabled when running behind a proxy.
 
 Start:
-    uvicorn agentic_ai.api:app --host 0.0.0.0 --port 8100
+    uvicorn agentic_ai.api:app --host 0.0.0.0 --port 8000
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from agentic_ai.config.settings import settings
 from mcp_server.errors import MCPError, ResourceExhaustedError, ValidationError
@@ -188,7 +188,7 @@ class _RateLimitMiddleware(BaseHTTPMiddleware):
             burst=max(1, settings.rate_limit_requests),
         )
 
-    async def dispatch(self, request: Request, call_next: Any) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         path = request.url.path
         if path in self._SKIP_PATHS:
             return await call_next(request)
@@ -206,7 +206,7 @@ class _RateLimitMiddleware(BaseHTTPMiddleware):
 class _AccessLogMiddleware(BaseHTTPMiddleware):
     """Per-request span + structured access log + duration metric."""
 
-    async def dispatch(self, request: Request, call_next: Any) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start = time.monotonic()
         path = request.url.path
         async with traced_async_span(

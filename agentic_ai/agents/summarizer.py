@@ -16,7 +16,7 @@ logger = structlog.get_logger()
 class SummarizerAgent(BaseAgent):
     """Agent responsible for generating article summaries."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Summarizer Agent."""
         super().__init__(name="Summarizer")
 

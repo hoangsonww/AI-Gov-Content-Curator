@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+import structlog
+from mcp.server.fastmcp import FastMCP
+
 from ..middleware import tool_middleware
 from ..models import ArticleProcessRequest, ProcessingStatus
 from ..runtime import ServerRuntime
@@ -18,7 +21,9 @@ from .common import (
 )
 
 
-def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
+def register_processing_tools(
+    mcp: FastMCP, runtime: ServerRuntime, logger: structlog.BoundLogger
+) -> None:
     async def _run_pipeline(
         request: ArticleProcessRequest, metadata_clean: dict[str, Any]
     ) -> dict[str, Any]:
@@ -35,6 +40,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
             )
             await runtime.jobs.upsert(failed_job)
             return {"article_id": request.article_id, **readiness_error}
+        assert pipeline is not None
 
         logger.info("tool.process_article.start", article_id=request.article_id)
         job = ProcessingStatus(
@@ -54,7 +60,7 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
                 "source": request.source,
                 **metadata_clean,
             }
-            result = await pipeline.process_article(article_data)
+            result: dict[str, Any] = await pipeline.process_article(article_data)
             job.status = "completed"
             job.progress = 1.0
             job.current_stage = "completed"
@@ -110,7 +116,8 @@ def register_processing_tools(mcp, runtime: ServerRuntime, logger) -> None:
         succeeded = 0
         failed = 0
 
-        for idx, payload in enumerate(articles):
+        for idx, raw_item in enumerate(articles):
+            payload: Any = raw_item
             if not isinstance(payload, dict):
                 failed += 1
                 results.append(

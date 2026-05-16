@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from mcp.server.fastmcp import FastMCP
 
-def register_analysis_prompts(mcp) -> None:
+
+def register_analysis_prompts(mcp: FastMCP) -> None:
     @mcp.prompt()
     async def analyze_sentiment_prompt(content: str) -> str:
         """Prompt template for sentiment analysis."""

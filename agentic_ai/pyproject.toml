@@ -232,12 +232,14 @@ module = [
   "langsmith.*",
   "mcp.*",
   "opentelemetry.exporter.*",
+  "opentelemetry.instrumentation.*",
   "chromadb.*",
   "langchain_experimental.*",
   "pinecone.*",
   "cohere.*",
   "faiss",
-  "google.generativeai",
+  "google",
+  "google.*",
   "azure.*",
   "boto3",
   "botocore.*",
@@ -250,15 +252,35 @@ ignore_missing_imports = true
 # flags as unexpected kwargs even though they are valid at runtime.
 # Skip following them so calls into them are treated as untyped rather
 # than producing false positives.
+#
+# `google.*` is also skipped: it is a PEP 420 namespace package shared by
+# google-genai, google-cloud-*, and protobuf. mypy's incremental cache
+# cannot reliably fix cross-references into a partially-analyzed namespace
+# package and crashes with `AssertionError: Cannot find module for google`
+# on the second run. Skipping the imports keeps mypy deterministic.
 [[tool.mypy.overrides]]
 module = [
   "langchain_openai.*",
   "langchain_anthropic.*",
   "langchain_cohere.*",
   "langchain_google_genai.*",
+  "google.*",
 ]
 follow_imports = "skip"
 ignore_missing_imports = true
+
+# Test modules use lightweight fakes, fixtures, and duck-typed stand-ins
+# (e.g. `_FakeRuntime`) by design. Enforcing the full strict surface on
+# them produces noise without catching production defects, so untyped
+# test functions and calls into them are allowed. Real type errors in
+# test bodies (bad assertions, wrong argument types) are still reported.
+[[tool.mypy.overrides]]
+module = [
+  "agentic_ai.tests.*",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
 
 # FastMCP's `@mcp.tool()` / resource / prompt decorators are untyped, so
 # `disallow_untyped_decorators` (part of `strict`) flags every registered

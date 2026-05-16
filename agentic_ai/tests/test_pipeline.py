@@ -62,7 +62,7 @@ def _build_pipeline(monkeypatch: pytest.MonkeyPatch, *, quality_score: float) ->
     pipeline.summarizer.summarize = _summary  # type: ignore[method-assign]
     pipeline.classifier.classify = _topics  # type: ignore[method-assign]
     pipeline.sentiment_analyzer.analyze_sentiment = _sentiment  # type: ignore[method-assign]
-    pipeline.quality_checker.check_quality = _quality  # type: ignore[method-assign]
+    pipeline.quality_checker.check_quality = _quality  # type: ignore[method-assign, assignment]
 
     pipeline._test_calls = calls  # type: ignore[attr-defined]
     return pipeline
@@ -133,7 +133,7 @@ async def test_process_article_stage_failure_is_captured(
     def _boom(content: str, summary: str | None = None) -> dict[str, Any]:
         raise RuntimeError("sentiment model exploded")
 
-    pipeline.sentiment_analyzer.analyze_sentiment = _boom  # type: ignore[method-assign]
+    pipeline.sentiment_analyzer.analyze_sentiment = _boom
 
     result = await pipeline.process_article({"id": "article-4", "content": "Body text."})
 

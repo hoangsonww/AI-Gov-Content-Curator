@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+import structlog
+from mcp.server.fastmcp import FastMCP
+
 from ..middleware import tool_middleware
 from ..runtime import ServerRuntime
 from ..text_metrics import compute_text_metrics as build_text_metrics
@@ -34,7 +37,9 @@ def _render_summary_by_style(summary: str, style: str) -> str:
     return cleaned
 
 
-def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
+def register_analysis_tools(
+    mcp: FastMCP, runtime: ServerRuntime, logger: structlog.BoundLogger
+) -> None:
     @mcp.tool()
     @tool_middleware("analyze_content")
     async def analyze_content(content: str, analysis_type: str = "full") -> dict[str, Any]:
@@ -43,6 +48,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         pipeline, readiness_error = ensure_runtime_ready(runtime)
         if readiness_error:
             return readiness_error
+        assert pipeline is not None
 
         if not content.strip():
             return validation_error("content", "required")
@@ -52,10 +58,14 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
             return validation_error("content", size_error)
 
         if mode == "content":
-            return pipeline.content_analyzer.analyze(content)
+            content_result: dict[str, Any] = pipeline.content_analyzer.analyze(content)
+            return content_result
 
         if mode == "sentiment":
-            return pipeline.sentiment_analyzer.analyze_sentiment(content)
+            sentiment_result: dict[str, Any] = pipeline.sentiment_analyzer.analyze_sentiment(
+                content
+            )
+            return sentiment_result
 
         if mode == "classification":
             return {"topics": pipeline.classifier.classify(content)}
@@ -102,6 +112,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         pipeline, readiness_error = ensure_runtime_ready(runtime)
         if readiness_error:
             return readiness_error
+        assert pipeline is not None
 
         if not content.strip():
             return validation_error("content", "required")
@@ -110,7 +121,10 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         if size_error:
             return validation_error("content", size_error)
 
-        return pipeline.sentiment_analyzer.analyze_sentiment(content, summary=summary or None)
+        result: dict[str, Any] = pipeline.sentiment_analyzer.analyze_sentiment(
+            content, summary=summary or None
+        )
+        return result
 
     @mcp.tool()
     @tool_middleware("extract_topics")
@@ -119,6 +133,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         pipeline, readiness_error = ensure_runtime_ready(runtime)
         if readiness_error:
             return readiness_error
+        assert pipeline is not None
 
         if not content.strip():
             return validation_error("content", "required")
@@ -145,6 +160,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
         pipeline, readiness_error = ensure_runtime_ready(runtime)
         if readiness_error:
             return readiness_error
+        assert pipeline is not None
 
         if not content.strip():
             return validation_error("content", "required")
@@ -213,6 +229,7 @@ def register_analysis_tools(mcp, runtime: ServerRuntime, logger) -> None:
                 f"Error: {readiness_error['message']}; "
                 f"startup_error={readiness_error['readiness'].get('startup_error')}"
             )
+        assert pipeline is not None
 
         if not content.strip():
             return "Error: content is required"

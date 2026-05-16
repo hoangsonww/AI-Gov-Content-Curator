@@ -78,7 +78,7 @@ def _response(status_code: int, body: Any) -> dict[str, Any]:
     }
 
 
-def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
+def lambda_handler(event: Any, context: Any) -> dict[str, Any]:
     """Lambda entrypoint. Accepts raw event or API Gateway proxy event."""
     request_id = getattr(context, "aws_request_id", None) or "unknown"
     log = logger.bind(

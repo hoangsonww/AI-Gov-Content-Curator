@@ -83,7 +83,7 @@ class BaseAgent(ABC):
     # type-checkable on the base class.
     chain: Any
 
-    def __init__(self, name: str, llm: BaseChatModel | None = None):
+    def __init__(self, name: str, llm: BaseChatModel | None = None) -> None:
         self.name = name
         self.llm = llm or self._get_default_llm()
         self._logger = logger.bind(agent=name)

@@ -28,32 +28,11 @@ resource "aws_appautoscaling_scheduled_action" "scale_down_evening" {
   }
 }
 
-# Predictive Scaling Policy
-resource "aws_autoscaling_policy" "predictive_scaling" {
-  count = var.enable_predictive_scaling ? 1 : 0
-
-  name                   = "ai-curator-${var.environment}-predictive-scaling"
-  autoscaling_group_name = aws_autoscaling_group.workers[0].name
-  policy_type            = "PredictiveScaling"
-
-  predictive_scaling_configuration {
-    metric_specification {
-      target_value = 70.0
-
-      predefined_load_metric_specification {
-        predefined_metric_type = "ASGTotalCPUUtilization"
-      }
-
-      predefined_scaling_metric_specification {
-        predefined_metric_type = "ASGAverageCPUUtilization"
-      }
-    }
-
-    mode                         = "ForecastAndScale"
-    scheduling_buffer_time       = 600
-    max_capacity_breach_behavior = "IncreaseMaxCapacity"
-  }
-}
+# NOTE: EC2 Auto Scaling predictive scaling (`aws_autoscaling_policy` with
+# `PredictiveScaling`) is not applicable to this Fargate/ECS platform — it
+# requires an EC2 `aws_autoscaling_group`, which this architecture does not
+# use. ECS service scaling is handled by the `aws_appautoscaling_*`
+# policies in this file (scheduled, step, and SQS target-tracking).
 
 # Step Scaling Policy for Sudden Traffic Spikes
 resource "aws_appautoscaling_policy" "step_scaling" {
@@ -214,7 +193,7 @@ resource "aws_lambda_function" "scaling_events_handler" {
 
   environment {
     variables = {
-      ENVIRONMENT = var.environment
+      ENVIRONMENT       = var.environment
       SLACK_WEBHOOK_URL = var.slack_webhook_url
     }
   }
@@ -241,25 +220,11 @@ resource "aws_iam_role" "scaling_events_lambda" {
   })
 }
 
-# Cost Optimization - Fargate Spot
-resource "aws_ecs_capacity_provider" "fargate_spot" {
-  name = "ai-curator-${var.environment}-fargate-spot"
-
-  auto_scaling_group_provider {
-    managed_scaling {
-      maximum_scaling_step_size = 10
-      minimum_scaling_step_size = 1
-      status                    = "ENABLED"
-      target_capacity           = 80
-    }
-
-    managed_termination_protection = "DISABLED"
-  }
-
-  tags = {
-    Name = "ai-curator-${var.environment}-fargate-spot"
-  }
-}
+# NOTE: Fargate Spot is an AWS built-in capacity provider (`FARGATE_SPOT`)
+# and is enabled directly by the `aws_ecs_cluster_capacity_providers`
+# strategy below. A custom `aws_ecs_capacity_provider` is only for
+# EC2-backed ASGs (it requires `auto_scaling_group_arn`) and does not
+# apply to Fargate.
 
 # Capacity Provider Strategy
 resource "aws_ecs_cluster_capacity_providers" "spot_strategy" {
@@ -292,7 +257,7 @@ resource "aws_lambda_function" "cost_optimizer" {
 
   environment {
     variables = {
-      ENVIRONMENT = var.environment
+      ENVIRONMENT  = var.environment
       CLUSTER_NAME = module.ecs_cluster.cluster_name
     }
   }

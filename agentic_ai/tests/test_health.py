@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
 from mcp_server import health
+from mcp_server.runtime import ServerRuntime
 
 
 class _FakeAcp:
@@ -61,35 +62,40 @@ class _FakeRuntime:
         return {"enabled": True, "ready": self._acp_ready, "checks": {}}
 
 
+def _runtime(*, ready: bool, acp_ready: bool = True) -> ServerRuntime:
+    """Build a structural ServerRuntime stand-in for the health probes."""
+    return cast(ServerRuntime, _FakeRuntime(ready=ready, acp_ready=acp_ready))
+
+
 @pytest.mark.asyncio
 async def test_liveness_always_alive() -> None:
-    r = await health.liveness(_FakeRuntime(ready=False))
+    r = await health.liveness(_runtime(ready=False))
     assert r["status"] == "alive"
 
 
 @pytest.mark.asyncio
 async def test_readiness_when_ready() -> None:
-    r = await health.readiness(_FakeRuntime(ready=True, acp_ready=True))
+    r = await health.readiness(_runtime(ready=True, acp_ready=True))
     assert r["status"] == "ready"
     assert r["ready"] is True
 
 
 @pytest.mark.asyncio
 async def test_readiness_when_acp_down() -> None:
-    r = await health.readiness(_FakeRuntime(ready=True, acp_ready=False))
+    r = await health.readiness(_runtime(ready=True, acp_ready=False))
     assert r["status"] == "not_ready"
     assert r["ready"] is False
 
 
 @pytest.mark.asyncio
 async def test_readiness_when_pipeline_down() -> None:
-    r = await health.readiness(_FakeRuntime(ready=False))
+    r = await health.readiness(_runtime(ready=False))
     assert r["ready"] is False
 
 
 @pytest.mark.asyncio
 async def test_health_returns_full_report() -> None:
-    r = await health.health(_FakeRuntime(ready=True))
+    r = await health.health(_runtime(ready=True))
     assert r["status"] in {"healthy", "degraded"}
     assert "providers" in r
     assert "limits" in r

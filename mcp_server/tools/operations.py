@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+import structlog
+from mcp.server.fastmcp import FastMCP
+
 from agentic_ai.config.settings import settings
 
 from ..diagnostics import (
@@ -19,7 +22,9 @@ from ..validation import validate_content_size
 from .common import ensure_runtime_ready, validation_error
 
 
-def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
+def register_operations_tools(
+    mcp: FastMCP, runtime: ServerRuntime, logger: structlog.BoundLogger
+) -> None:
     @mcp.tool()
     @tool_middleware("check_pipeline_health", rate_limit=False)
     async def check_pipeline_health() -> dict[str, Any]:
@@ -37,6 +42,7 @@ def register_operations_tools(mcp, runtime: ServerRuntime, logger) -> None:
         pipeline, readiness_error = ensure_runtime_ready(runtime)
         if readiness_error:
             return readiness_error
+        assert pipeline is not None
 
         graph = pipeline.visualize()
         return {

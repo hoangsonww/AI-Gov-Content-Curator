@@ -6,6 +6,8 @@ A sophisticated, production-ready multi-agent AI system built with LangGraph and
 
 from __future__ import annotations
 
+from typing import Any
+
 __version__ = "1.0.0"
 __author__ = "SynthoraAI Team"
 __license__ = "MIT"
@@ -18,7 +20,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     """
     Lazy imports to avoid importing heavy LangGraph/LLM dependencies on package import.
     """

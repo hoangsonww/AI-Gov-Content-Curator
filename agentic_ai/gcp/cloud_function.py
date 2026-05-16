@@ -86,7 +86,7 @@ def _persist_result(result: dict[str, Any], article_id: str) -> None:
     if not bucket:
         return
     try:
-        from google.cloud import storage  # type: ignore[import-not-found]
+        from google.cloud import storage
 
         client = storage.Client()
         blob = client.bucket(bucket).blob(f"results/{article_id}.json")

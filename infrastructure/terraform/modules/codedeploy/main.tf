@@ -176,10 +176,6 @@ resource "aws_codedeploy_deployment_config" "canary_10_percent_5_minutes" {
       percentage = 10
     }
   }
-
-  tags = {
-    Name = "ai-curator-${var.environment}-canary-10-5"
-  }
 }
 
 # Deployment Config - Linear with 10% traffic shift every 1 minute
@@ -195,10 +191,6 @@ resource "aws_codedeploy_deployment_config" "linear_10_percent_1_minute" {
       percentage = 10
     }
   }
-
-  tags = {
-    Name = "ai-curator-${var.environment}-linear-10-1"
-  }
 }
 
 # Deployment Config - All at once
@@ -208,9 +200,5 @@ resource "aws_codedeploy_deployment_config" "all_at_once" {
 
   traffic_routing_config {
     type = "AllAtOnce"
-  }
-
-  tags = {
-    Name = "ai-curator-${var.environment}-all-at-once"
   }
 }

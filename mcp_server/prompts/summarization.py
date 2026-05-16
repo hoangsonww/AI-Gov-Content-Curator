@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from mcp.server.fastmcp import FastMCP
 
-def register_summarization_prompts(mcp) -> None:
+
+def register_summarization_prompts(mcp: FastMCP) -> None:
     @mcp.prompt()
     async def summarize_article_prompt(article_content: str) -> str:
         """Prompt template for concise article summaries."""

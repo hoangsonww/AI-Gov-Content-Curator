@@ -33,7 +33,7 @@ class ClassifierAgent(BaseAgent):
         "Science & Research",
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Classifier Agent."""
         super().__init__(name="Classifier")
 

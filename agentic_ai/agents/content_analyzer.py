@@ -16,7 +16,7 @@ logger = structlog.get_logger()
 class ContentAnalyzerAgent(BaseAgent):
     """Agent responsible for analyzing content structure and extracting key information."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Content Analyzer Agent."""
         super().__init__(name="ContentAnalyzer")
 

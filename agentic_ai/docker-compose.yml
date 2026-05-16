@@ -67,7 +67,7 @@ services:
       target: mcp
       args:
         INSTALL_PROFILE: ${INSTALL_PROFILE:-base}
-    image: synthora/agentic-ai:${IMAGE_TAG:-local}
+    image: synthora/agentic-ai-mcp:${IMAGE_TAG:-local}
     container_name: synthora-mcp
     user: "10001:10001"
     read_only: true
@@ -102,7 +102,7 @@ services:
       target: api
       args:
         INSTALL_PROFILE: ${INSTALL_PROFILE:-base}
-    image: synthora/agentic-ai:${IMAGE_TAG:-local}
+    image: synthora/agentic-ai-api:${IMAGE_TAG:-local}
     container_name: synthora-api
     user: "10001:10001"
     read_only: true

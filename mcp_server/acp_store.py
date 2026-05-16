@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections import deque
 from datetime import datetime, timedelta
-from typing import Protocol
+from typing import Any, Protocol
 from uuid import uuid4
 
 from .acp_models import ACPAgentRecord, ACPMessageRecord
@@ -19,21 +19,21 @@ class ACPStoreProtocol(Protocol):
         agent_id: str,
         display_name: str = "",
         capabilities: list[str] | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ACPAgentRecord: ...
 
     async def unregister_agent(self, agent_id: str) -> bool: ...
 
     async def heartbeat(self, agent_id: str) -> ACPAgentRecord | None: ...
 
-    async def list_agents(self) -> list[dict]: ...
+    async def list_agents(self) -> list[dict[str, Any]]: ...
 
     async def send_message(
         self,
         *,
         sender_id: str,
         recipient_id: str,
-        payload: dict,
+        payload: dict[str, Any],
         message_type: str = "event",
         conversation_id: str = "",
         priority: int = 5,
@@ -44,11 +44,13 @@ class ACPStoreProtocol(Protocol):
 
     async def fetch_inbox(
         self, *, agent_id: str, limit: int, include_acknowledged: bool = False
-    ) -> list[dict]: ...
+    ) -> list[dict[str, Any]]: ...
 
     async def acknowledge_message(self, *, agent_id: str, message_id: str) -> ACPMessageRecord: ...
 
-    async def list_recent_messages(self, *, limit: int = 20, offset: int = 0) -> list[dict]: ...
+    async def list_recent_messages(
+        self, *, limit: int = 20, offset: int = 0
+    ) -> list[dict[str, Any]]: ...
 
     async def stats(self) -> dict[str, int]: ...
 
@@ -73,7 +75,7 @@ class InMemoryACPStore:
         agent_id: str,
         display_name: str = "",
         capabilities: list[str] | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ACPAgentRecord:
         async with self._lock:
             existing = self._agents.get(agent_id)
@@ -110,7 +112,7 @@ class InMemoryACPStore:
             record.last_heartbeat_at = utc_now_iso()
             return record
 
-    async def list_agents(self) -> list[dict]:
+    async def list_agents(self) -> list[dict[str, Any]]:
         async with self._lock:
             return [agent.model_dump() for agent in self._agents.values()]
 
@@ -119,7 +121,7 @@ class InMemoryACPStore:
         *,
         sender_id: str,
         recipient_id: str,
-        payload: dict,
+        payload: dict[str, Any],
         message_type: str = "event",
         conversation_id: str = "",
         priority: int = 5,
@@ -163,7 +165,7 @@ class InMemoryACPStore:
 
     async def fetch_inbox(
         self, *, agent_id: str, limit: int, include_acknowledged: bool = False
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         safe_limit = max(1, min(int(limit), 200))
         async with self._lock:
             await self._prune_locked()
@@ -172,7 +174,7 @@ class InMemoryACPStore:
                 raise ValueError(f"agent '{agent_id}' is not registered")
 
             inbox = self._inbox.get(agent_id, deque())
-            messages: list[dict] = []
+            messages: list[dict[str, Any]] = []
             for message_id in reversed(inbox):
                 message = self._messages.get(message_id)
                 if message is None:
@@ -200,12 +202,14 @@ class InMemoryACPStore:
             message.acknowledged_at = utc_now_iso()
             return message
 
-    async def list_recent_messages(self, *, limit: int = 20, offset: int = 0) -> list[dict]:
+    async def list_recent_messages(
+        self, *, limit: int = 20, offset: int = 0
+    ) -> list[dict[str, Any]]:
         safe_limit = max(1, min(int(limit), 200))
         safe_offset = max(0, int(offset))
         async with self._lock:
             await self._prune_locked()
-            selected: list[dict] = []
+            selected: list[dict[str, Any]] = []
             skipped = 0
             for message_id in reversed(self._order):
                 message = self._messages.get(message_id)

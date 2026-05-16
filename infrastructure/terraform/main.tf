@@ -29,11 +29,26 @@ provider "aws" {
   }
 }
 
+# CloudFront-scoped WAFv2 web ACLs must be created in us-east-1 regardless
+# of the deployment region. This alias provider exists for those resources.
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      Project     = "AI-Gov-Content-Curator"
+      ManagedBy   = "Terraform"
+      Environment = var.environment
+    }
+  }
+}
+
 # VPC and Networking
 module "vpc" {
   source = "./modules/vpc"
 
-  environment         = var.environment
+  environment        = var.environment
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
   public_subnets     = var.public_subnets
@@ -44,11 +59,11 @@ module "vpc" {
 module "alb" {
   source = "./modules/alb"
 
-  environment        = var.environment
-  vpc_id            = module.vpc.vpc_id
-  public_subnets    = module.vpc.public_subnet_ids
-  certificate_arn   = var.certificate_arn
-  enable_waf        = var.enable_waf
+  environment     = var.environment
+  vpc_id          = module.vpc.vpc_id
+  public_subnets  = module.vpc.public_subnet_ids
+  certificate_arn = var.certificate_arn
+  enable_waf      = var.enable_waf
 }
 
 # ECS Cluster
@@ -67,33 +82,33 @@ module "ecs_cluster" {
 module "backend_service" {
   source = "./modules/ecs-service"
 
-  environment     = var.environment
-  service_name    = "backend"
-  cluster_id      = module.ecs_cluster.cluster_id
-  cluster_name    = module.ecs_cluster.cluster_name
+  environment  = var.environment
+  service_name = "backend"
+  cluster_id   = module.ecs_cluster.cluster_id
+  cluster_name = module.ecs_cluster.cluster_name
 
   # Task Definition
-  task_cpu                 = var.backend_cpu
-  task_memory              = var.backend_memory
-  container_image          = var.backend_image
-  container_port           = 3000
-  container_cpu            = var.backend_cpu
-  container_memory         = var.backend_memory
+  task_cpu         = var.backend_cpu
+  task_memory      = var.backend_memory
+  container_image  = var.backend_image
+  container_port   = 3000
+  container_cpu    = var.backend_cpu
+  container_memory = var.backend_memory
 
   # Networking
-  vpc_id              = module.vpc.vpc_id
-  private_subnets     = module.vpc.private_subnet_ids
-  alb_target_group_arn = module.alb.backend_target_group_arn
+  vpc_id                = module.vpc.vpc_id
+  private_subnets       = module.vpc.private_subnet_ids
+  alb_target_group_arn  = module.alb.backend_target_group_arn
   alb_security_group_id = module.alb.security_group_id
 
   # Auto Scaling
-  desired_count     = var.backend_desired_count
-  min_capacity      = var.backend_min_capacity
-  max_capacity      = var.backend_max_capacity
+  desired_count = var.backend_desired_count
+  min_capacity  = var.backend_min_capacity
+  max_capacity  = var.backend_max_capacity
 
   # Blue/Green Deployment
   deployment_controller = "CODE_DEPLOY"
-  enable_blue_green    = true
+  enable_blue_green     = true
 
   # Environment Variables
   environment_variables = [
@@ -124,10 +139,10 @@ module "backend_service" {
   ]
 
   # Health Checks
-  health_check_path              = "/health"
-  health_check_interval          = 30
-  health_check_timeout           = 5
-  health_check_healthy_threshold = 2
+  health_check_path                = "/health"
+  health_check_interval            = 30
+  health_check_timeout             = 5
+  health_check_healthy_threshold   = 2
   health_check_unhealthy_threshold = 3
 }
 
@@ -135,29 +150,29 @@ module "backend_service" {
 module "frontend_service" {
   source = "./modules/ecs-service"
 
-  environment     = var.environment
-  service_name    = "frontend"
-  cluster_id      = module.ecs_cluster.cluster_id
-  cluster_name    = module.ecs_cluster.cluster_name
+  environment  = var.environment
+  service_name = "frontend"
+  cluster_id   = module.ecs_cluster.cluster_id
+  cluster_name = module.ecs_cluster.cluster_name
 
-  task_cpu                 = var.frontend_cpu
-  task_memory              = var.frontend_memory
-  container_image          = var.frontend_image
-  container_port           = 3000
-  container_cpu            = var.frontend_cpu
-  container_memory         = var.frontend_memory
+  task_cpu         = var.frontend_cpu
+  task_memory      = var.frontend_memory
+  container_image  = var.frontend_image
+  container_port   = 3000
+  container_cpu    = var.frontend_cpu
+  container_memory = var.frontend_memory
 
-  vpc_id              = module.vpc.vpc_id
-  private_subnets     = module.vpc.private_subnet_ids
-  alb_target_group_arn = module.alb.frontend_target_group_arn
+  vpc_id                = module.vpc.vpc_id
+  private_subnets       = module.vpc.private_subnet_ids
+  alb_target_group_arn  = module.alb.frontend_target_group_arn
   alb_security_group_id = module.alb.security_group_id
 
-  desired_count     = var.frontend_desired_count
-  min_capacity      = var.frontend_min_capacity
-  max_capacity      = var.frontend_max_capacity
+  desired_count = var.frontend_desired_count
+  min_capacity  = var.frontend_min_capacity
+  max_capacity  = var.frontend_max_capacity
 
   deployment_controller = "CODE_DEPLOY"
-  enable_blue_green    = true
+  enable_blue_green     = true
 
   environment_variables = [
     {
@@ -177,9 +192,9 @@ module "frontend_service" {
 module "crawler_scheduled_task" {
   source = "./modules/ecs-scheduled-task"
 
-  environment     = var.environment
-  task_name       = "crawler"
-  cluster_arn     = module.ecs_cluster.cluster_arn
+  environment = var.environment
+  task_name   = "crawler"
+  cluster_arn = module.ecs_cluster.cluster_arn
 
   task_cpu        = var.crawler_cpu
   task_memory     = var.crawler_memory
@@ -214,9 +229,9 @@ module "crawler_scheduled_task" {
 module "newsletter_scheduled_task" {
   source = "./modules/ecs-scheduled-task"
 
-  environment     = var.environment
-  task_name       = "newsletter"
-  cluster_arn     = module.ecs_cluster.cluster_arn
+  environment = var.environment
+  task_name   = "newsletter"
+  cluster_arn = module.ecs_cluster.cluster_arn
 
   task_cpu        = var.newsletter_cpu
   task_memory     = var.newsletter_memory
@@ -255,21 +270,21 @@ module "codedeploy" {
 
   applications = {
     backend = {
-      cluster_name         = module.ecs_cluster.cluster_name
-      service_name         = module.backend_service.service_name
-      alb_listener_arn     = module.alb.https_listener_arn
-      target_group_blue    = module.alb.backend_target_group_arn
-      target_group_green   = module.alb.backend_target_group_green_arn
-      auto_rollback        = true
+      cluster_name          = module.ecs_cluster.cluster_name
+      service_name          = module.backend_service.service_name
+      alb_listener_arn      = module.alb.https_listener_arn
+      target_group_blue     = module.alb.backend_target_group_arn
+      target_group_green    = module.alb.backend_target_group_green_arn
+      auto_rollback         = true
       termination_wait_time = 5
     }
     frontend = {
-      cluster_name         = module.ecs_cluster.cluster_name
-      service_name         = module.frontend_service.service_name
-      alb_listener_arn     = module.alb.https_listener_arn
-      target_group_blue    = module.alb.frontend_target_group_arn
-      target_group_green   = module.alb.frontend_target_group_green_arn
-      auto_rollback        = true
+      cluster_name          = module.ecs_cluster.cluster_name
+      service_name          = module.frontend_service.service_name
+      alb_listener_arn      = module.alb.https_listener_arn
+      target_group_blue     = module.alb.frontend_target_group_arn
+      target_group_green    = module.alb.frontend_target_group_green_arn
+      auto_rollback         = true
       termination_wait_time = 5
     }
   }

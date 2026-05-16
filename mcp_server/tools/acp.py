@@ -6,10 +6,14 @@ import contextlib
 import json
 from typing import Any
 
+import structlog
+from mcp.server.fastmcp import FastMCP
+
 from agentic_ai.config.settings import settings
 
 from ..middleware import tool_middleware
 from ..observability import metrics
+from ..runtime import ServerRuntime
 from ..validation import sanitize_metadata
 from .common import coerce_positive_int, validation_error
 
@@ -39,7 +43,7 @@ def _validate_payload_size(payload: dict[str, Any]) -> dict[str, Any] | None:
     return None
 
 
-def register_acp_tools(mcp, runtime, logger) -> None:
+def register_acp_tools(mcp: FastMCP, runtime: ServerRuntime, logger: structlog.BoundLogger) -> None:
     @mcp.tool()
     @tool_middleware("acp_register_agent")
     async def acp_register_agent(

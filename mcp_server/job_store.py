@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 from collections import deque
 from datetime import datetime, timedelta
+from typing import Any
 
 from .models import ProcessingStatus
 from .utils import utc_now
@@ -50,7 +51,7 @@ class ProcessingJobStore:
         offset: int = 0,
         status: str | None = None,
         newest_first: bool = True,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         safe_limit = max(1, min(int(limit), 200))
         safe_offset = max(0, int(offset))
         async with self._lock:
@@ -60,7 +61,7 @@ class ProcessingJobStore:
             if newest_first:
                 ordered_ids.reverse()
 
-            selected: list[dict] = []
+            selected: list[dict[str, Any]] = []
             skipped = 0
             for job_id in ordered_ids:
                 job = self._jobs.get(job_id)

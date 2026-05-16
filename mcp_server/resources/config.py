@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from mcp.server.fastmcp import FastMCP
+
 from agentic_ai.config.settings import settings
 
 from ..diagnostics import get_feature_flags, get_limits_config, get_provider_configuration
+from ..runtime import ServerRuntime
 
 
-def register_config_resources(mcp, runtime) -> None:
+def register_config_resources(mcp: FastMCP, runtime: ServerRuntime) -> None:
     @mcp.resource("config://pipeline")
     async def get_pipeline_config() -> dict[str, Any]:
         """Get key pipeline config values used by the server."""

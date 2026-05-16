@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from mcp.server.fastmcp import FastMCP
+
 from ..diagnostics import build_health_report, get_server_capabilities
+from ..runtime import ServerRuntime
 
 
-def register_runtime_resources(mcp, runtime) -> None:
+def register_runtime_resources(mcp: FastMCP, runtime: ServerRuntime) -> None:
     @mcp.resource("runtime://health")
     async def runtime_health() -> dict[str, Any]:
         """Get runtime health report for monitoring dashboards."""

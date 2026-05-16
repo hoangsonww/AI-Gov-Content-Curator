@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from mcp.server.fastmcp import FastMCP
+
+from ..runtime import ServerRuntime
 from .acp import register_acp_resources
 from .config import register_config_resources
 from .jobs import register_job_resources
 from .runtime import register_runtime_resources
 
 
-def register_resources(mcp, runtime) -> None:
+def register_resources(mcp: FastMCP, runtime: ServerRuntime) -> None:
     register_config_resources(mcp, runtime)
     register_runtime_resources(mcp, runtime)
     register_job_resources(mcp, runtime)

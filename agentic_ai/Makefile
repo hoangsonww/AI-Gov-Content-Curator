@@ -60,7 +60,8 @@ lint: ## Run ruff lint
 
 .PHONY: typecheck
 typecheck: ## Run mypy strict
-	$(VENV)/bin/mypy --config-file=pyproject.toml ../mcp_server agentic_ai
+	cd $(PYTHONPATH_ROOT) && $(CURDIR)/$(VENV)/bin/mypy \
+		--config-file=$(CURDIR)/pyproject.toml mcp_server agentic_ai
 
 .PHONY: security
 security: ## Run bandit + pip-audit

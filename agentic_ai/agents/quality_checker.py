@@ -16,7 +16,7 @@ logger = structlog.get_logger()
 class QualityCheckerAgent(BaseAgent):
     """Agent responsible for quality checking pipeline outputs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Quality Checker Agent."""
         super().__init__(name="QualityChecker")
 

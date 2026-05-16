@@ -40,7 +40,7 @@ class RedisACPStore:
         agent_id: str,
         display_name: str = "",
         capabilities: list[str] | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ACPAgentRecord:
         await self._prune()
         agents_key = self._key("agents")
@@ -89,7 +89,7 @@ class RedisACPStore:
         await self.redis.zadd(self._key("agents:heartbeat"), {agent_id: utc_now().timestamp()})
         return record
 
-    async def list_agents(self) -> list[dict]:
+    async def list_agents(self) -> list[dict[str, Any]]:
         await self._prune()
         raw_map = await self.redis.hgetall(self._key("agents"))
         return [json.loads(raw) for raw in raw_map.values()]
@@ -99,7 +99,7 @@ class RedisACPStore:
         *,
         sender_id: str,
         recipient_id: str,
-        payload: dict,
+        payload: dict[str, Any],
         message_type: str = "event",
         conversation_id: str = "",
         priority: int = 5,
@@ -148,7 +148,7 @@ class RedisACPStore:
 
     async def fetch_inbox(
         self, *, agent_id: str, limit: int, include_acknowledged: bool = False
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         await self._prune()
         if not await self.redis.hexists(self._key("agents"), agent_id):
             raise ValueError(f"agent '{agent_id}' is not registered")
@@ -156,7 +156,7 @@ class RedisACPStore:
         inbox_key = self._key(f"inbox:{agent_id}")
         messages_hash = self._key("messages")
         message_ids = await self.redis.zrevrange(inbox_key, 0, safe_limit * 2)
-        out: list[dict] = []
+        out: list[dict[str, Any]] = []
         for message_id in message_ids:
             raw = await self.redis.hget(messages_hash, message_id)
             if raw is None:
@@ -190,14 +190,16 @@ class RedisACPStore:
         await self.redis.hset(messages_key, message.message_id, json.dumps(message.model_dump()))
         return message
 
-    async def list_recent_messages(self, *, limit: int = 20, offset: int = 0) -> list[dict]:
+    async def list_recent_messages(
+        self, *, limit: int = 20, offset: int = 0
+    ) -> list[dict[str, Any]]:
         await self._prune()
         safe_limit = max(1, min(int(limit), 200))
         safe_offset = max(0, int(offset))
         order_key = self._key("messages:order")
         messages_hash = self._key("messages")
         ids = await self.redis.zrevrange(order_key, safe_offset, safe_offset + safe_limit - 1)
-        out: list[dict] = []
+        out: list[dict[str, Any]] = []
         for message_id in ids:
             raw = await self.redis.hget(messages_hash, message_id)
             if raw is None:

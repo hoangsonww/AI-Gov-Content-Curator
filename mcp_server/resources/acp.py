@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
+from mcp.server.fastmcp import FastMCP
+
 from agentic_ai.config.settings import settings
 
+from ..runtime import ServerRuntime
 
-def register_acp_resources(mcp, runtime) -> None:
+
+def register_acp_resources(mcp: FastMCP, runtime: ServerRuntime) -> None:
     @mcp.resource("acp://agents")
     async def acp_agents() -> dict[str, Any]:
         """Get registered ACP agents."""

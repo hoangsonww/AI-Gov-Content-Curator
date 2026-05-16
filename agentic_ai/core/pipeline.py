@@ -4,12 +4,14 @@ This implements a sophisticated multi-agent system with state management.
 """
 
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, TypedDict
 
 import structlog
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, StateGraph
 
 from mcp_server.observability import metrics, traced_async_span, traced_span
@@ -94,7 +96,7 @@ class AgenticPipeline:
     5. Quality Check: Validates output quality
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the pipeline with all agents and graph."""
         logger.info("Initializing Agentic AI Pipeline")
 
@@ -111,9 +113,9 @@ class AgenticPipeline:
 
         logger.info("Pipeline initialized successfully")
 
-    def _build_graph(self) -> StateGraph:
+    def _build_graph(self) -> StateGraph[AgentState]:
         """Build the LangGraph state machine for the pipeline."""
-        workflow = StateGraph(AgentState)
+        workflow: StateGraph[AgentState] = StateGraph(AgentState)
 
         # Add nodes for each stage
         workflow.add_node("intake", self._intake_node)
@@ -172,8 +174,8 @@ class AgenticPipeline:
         *,
         stage: PipelineStage,
         agent_name: str,
-        runner,  # callable returning result
-        on_success,  # callable(state, result) → None
+        runner: Callable[[], Any],
+        on_success: Callable[[AgentState, Any], None],
     ) -> AgentState:
         """Shared boilerplate: trace span, metrics, error capture per stage."""
         state["current_stage"] = stage
@@ -314,7 +316,7 @@ class AgenticPipeline:
         if not state.get("should_continue", True):
             return END
 
-        return state.get("next_stage", "output")
+        return state.get("next_stage") or "output"
 
     async def process_article(self, article_data: dict[str, Any]) -> dict[str, Any]:
         """
@@ -358,6 +360,7 @@ class AgenticPipeline:
         # GraphRecursionError instead of terminating gracefully. Size the
         # limit to the worst case with headroom.
         recursion_limit = max(25, settings.max_iterations * 6 + 15)
+        run_config: RunnableConfig = {"recursion_limit": recursion_limit}
         start = time.monotonic()
         status = "completed"
 
@@ -371,11 +374,12 @@ class AgenticPipeline:
             },
         ):
             try:
+                # langgraph's compiled-graph generics do not round-trip a
+                # TypedDict state cleanly through `.compile()`, so mypy sees
+                # `ainvoke` expecting the unbound `StateT` rather than
+                # `AgentState`. The call is correct at runtime.
                 final_state = await with_async_timeout(
-                    self.app.ainvoke(
-                        initial_state,
-                        config={"recursion_limit": recursion_limit},
-                    ),
+                    self.app.ainvoke(initial_state, config=run_config),  # type: ignore[arg-type]
                     timeout_s=deadline_s,
                     operation="pipeline.process_article",
                 )
