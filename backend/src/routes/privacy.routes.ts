@@ -1,10 +1,26 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import {
   exportUserData,
   requestAccountDeletion,
+  cancelAccountDeletion,
   confirmDeleteAccount,
 } from "../controllers/privacy.controller";
 import { authenticate } from "../middleware/auth.middleware";
+
+// 3 requests per hour per authenticated user.
+// Must be placed after authenticate so req.user.id is available.
+const deletionRequestLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  keyGenerator: (req) => (req as any).user?.id ?? req.ip,
+  handler: (_req, res) =>
+    res.status(429).json({
+      error: "Too many deletion requests. Please try again in an hour.",
+    }),
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = Router();
 
@@ -56,15 +72,13 @@ router.get("/export", authenticate, exportUserData);
  *       - ApiKeyAuth: []
  *     responses:
  *       200:
- *         description: Deletion token issued
+ *         description: Confirmation code emailed to the registered address
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 message:    { type: string }
- *                 deletionToken: { type: string }
- *                 expiresAt:  { type: string, format: date-time }
+ *                 message: { type: string }
  *       401:
  *         description: Unauthenticated
  *       404:
@@ -72,7 +86,7 @@ router.get("/export", authenticate, exportUserData);
  *       500:
  *         description: Internal server error
  */
-router.post("/request-deletion", authenticate, requestAccountDeletion);
+router.post("/request-deletion", authenticate, deletionRequestLimiter, requestAccountDeletion);
 
 /**
  * @swagger
@@ -109,6 +123,25 @@ router.post("/request-deletion", authenticate, requestAccountDeletion);
  *       500:
  *         description: Internal server error
  */
+/**
+ * @swagger
+ * /api/privacy/cancel-deletion:
+ *   post:
+ *     tags: [Privacy]
+ *     summary: Cancel a pending account deletion request
+ *     description: Clears the deletion token from the user record immediately.
+ *     security:
+ *       - ApiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Deletion request cancelled
+ *       401:
+ *         description: Unauthenticated
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/cancel-deletion", authenticate, cancelAccountDeletion);
+
 router.delete("/account", authenticate, confirmDeleteAccount);
 
 export default router;
