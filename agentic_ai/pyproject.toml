@@ -79,7 +79,7 @@ dependencies = [
 [project.optional-dependencies]
 # Retrieval / vector stores — opt-in; heavy (chromadb pulls onnxruntime).
 vectorstores = [
-  "pinecone-client>=3.0.0,<6.0",
+  "pinecone-client>=3.0.0,<7.0",
   "chromadb>=0.4.0,<1.0",
   "faiss-cpu>=1.7.4,<2.0",
 ]
