@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
-import { MdDownload, MdDeleteForever, MdWarning, MdCheck } from "react-icons/md";
+import {
+  MdDownload,
+  MdDeleteForever,
+  MdWarning,
+  MdCheck,
+} from "react-icons/md";
 import {
   downloadUserDataExport,
   requestAccountDeletion,
@@ -28,7 +33,12 @@ export default function PrivacyPage() {
     if (!getAuthToken()) router.replace("/auth/login");
   }, [router]);
 
-  useEffect(() => () => { if (redirectTimer.current) clearTimeout(redirectTimer.current); }, []);
+  useEffect(
+    () => () => {
+      if (redirectTimer.current) clearTimeout(redirectTimer.current);
+    },
+    [],
+  );
 
   const handleExport = async () => {
     setExportLoading(true);
@@ -49,7 +59,9 @@ export default function PrivacyPage() {
       setDeletionStep("requested");
       toast.success("Confirmation code sent — check your email.");
     } catch (err: any) {
-      toast.error(err.message || "Could not initiate deletion. Please try again.");
+      toast.error(
+        err.message || "Could not initiate deletion. Please try again.",
+      );
     } finally {
       setDeleteLoading(false);
     }
@@ -65,7 +77,9 @@ export default function PrivacyPage() {
       toast.success("Your account has been permanently deleted.");
       redirectTimer.current = setTimeout(() => router.replace("/"), 2500);
     } catch (err: any) {
-      toast.error(err.message || "Deletion failed. The code may be wrong or expired.");
+      toast.error(
+        err.message || "Deletion failed. The code may be wrong or expired.",
+      );
       setEmailedCode("");
       setConfirmText("");
     } finally {
@@ -84,12 +98,15 @@ export default function PrivacyPage() {
   return (
     <>
       <Head>
-        <title>Privacy & Data — SynthoraAI</title>
+        <title>Privacy & Data - SynthoraAI</title>
       </Head>
 
       <div className="login-container" style={{ maxWidth: 660 }}>
         <h1 className="login-title">Privacy &amp; Data</h1>
-        <p className="subtitle" style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <p
+          className="subtitle"
+          style={{ textAlign: "center", marginBottom: "2rem" }}
+        >
           Manage your personal data in accordance with your privacy rights.
         </p>
 
@@ -181,8 +198,8 @@ export default function PrivacyPage() {
           {deletionStep === "requested" && (
             <>
               <div className="privacy-banner privacy-banner-warning">
-                <MdWarning size={18} />
-                A confirmation code was sent to your email — it expires in 1 hour.
+                <MdWarning size={18} />A confirmation code was sent to your
+                email — it expires in 1 hour.
               </div>
               <p className="privacy-section-desc">
                 Enter the code from your email, then type <code>DELETE</code>{" "}
@@ -216,7 +233,9 @@ export default function PrivacyPage() {
                     confirmText !== "DELETE"
                   }
                 >
-                  {deleteLoading ? "Deleting…" : "Permanently delete my account"}
+                  {deleteLoading
+                    ? "Deleting…"
+                    : "Permanently delete my account"}
                 </button>
                 <button
                   className="passkey-btn"

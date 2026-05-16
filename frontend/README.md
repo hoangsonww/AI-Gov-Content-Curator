@@ -176,6 +176,13 @@ A high-level look at the project structure:
 - Passkey calls go through `services/api.ts` (`loginWithPasskey`, `signupWithPasskey`, `registerPasskey`, `listPasskeys`, `renamePasskey`, `deletePasskey`) and dynamically import `@simplewebauthn/browser` to keep the lib out of the SSR bundle.
 - Both password and passkey paths issue the same JWT and store it as `localStorage["token"]`, so existing auth-aware components don't change.
 
+7. **Privacy & Data Controls**
+
+- `/account/privacy` (linked from the auth dropdown as **"Privacy & Data"** when logged in) gives users GDPR-style control over their data.
+- **Export** — a one-click button downloads a JSON archive of everything held for the account (profile, favorites, comments, ratings, passkey metadata, newsletter subscription).
+- **Account deletion** — a deliberate two-step flow: request deletion, then type `DELETE` to confirm. Confirming permanently removes the account and all associated records.
+- Privacy calls go through `services/api.ts` (`exportUserData`, `requestAccountDeletion`, `deleteAccount`), hitting the backend `/api/privacy/*` endpoints.
+
 ---
 
 ## Setup & Installation

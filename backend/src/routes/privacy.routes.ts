@@ -86,7 +86,12 @@ router.get("/export", authenticate, exportUserData);
  *       500:
  *         description: Internal server error
  */
-router.post("/request-deletion", authenticate, deletionRequestLimiter, requestAccountDeletion);
+router.post(
+  "/request-deletion",
+  authenticate,
+  deletionRequestLimiter,
+  requestAccountDeletion,
+);
 
 /**
  * @swagger

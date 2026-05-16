@@ -11,7 +11,8 @@ import NewsletterSubscriber from "../models/newsletterSubscriber.model";
 const DELETION_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const RESEND_FROM = process.env.RESEND_FROM ?? "SynthoraAI <noreply@sonnguyenhoang.com>";
+const RESEND_FROM =
+  process.env.RESEND_FROM ?? "SynthoraAI <noreply@sonnguyenhoang.com>";
 
 /**
  * GET /api/privacy/export
@@ -78,7 +79,9 @@ export const exportUserData = async (req: Request, res: Response) => {
       })),
       votes: votes.map((v) => ({
         commentId: v._id,
-        direction: (v.upvotes as any[]).some((id: any) => id.toString() === userId.toString())
+        direction: (v.upvotes as any[]).some(
+          (id: any) => id.toString() === userId.toString(),
+        )
           ? "upvote"
           : "downvote",
       })),
@@ -118,12 +121,18 @@ export const requestAccountDeletion = async (req: Request, res: Response) => {
     // 8 uppercase hex chars — easy to read from email, sufficient entropy
     // given the 1 h TTL and 3/hour rate limit.
     const deletionToken = crypto.randomBytes(4).toString("hex").toUpperCase();
-    const deletionTokenHash = crypto.createHash("sha256").update(deletionToken).digest("hex");
+    const deletionTokenHash = crypto
+      .createHash("sha256")
+      .update(deletionToken)
+      .digest("hex");
     const deletionTokenExpiry = new Date(Date.now() + DELETION_TOKEN_TTL_MS);
 
     // Store only the hash — plain token is emailed so a DB breach can't reuse it.
     // Use findByIdAndUpdate to avoid triggering the pre-save credential validator.
-    await User.findByIdAndUpdate(userId, { deletionToken: deletionTokenHash, deletionTokenExpiry });
+    await User.findByIdAndUpdate(userId, {
+      deletionToken: deletionTokenHash,
+      deletionTokenExpiry,
+    });
 
     await resend.emails.send({
       from: RESEND_FROM,
@@ -184,11 +193,17 @@ export const confirmDeleteAccount = async (req: Request, res: Response) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const incomingHash = crypto.createHash("sha256").update(deletionToken).digest("hex");
+    const incomingHash = crypto
+      .createHash("sha256")
+      .update(deletionToken)
+      .digest("hex");
     const storedHash = user.deletionToken ?? "";
     const tokenValid =
       storedHash.length === incomingHash.length &&
-      crypto.timingSafeEqual(Buffer.from(storedHash, "hex"), Buffer.from(incomingHash, "hex"));
+      crypto.timingSafeEqual(
+        Buffer.from(storedHash, "hex"),
+        Buffer.from(incomingHash, "hex"),
+      );
     if (
       !tokenValid ||
       !user.deletionTokenExpiry ||
@@ -210,9 +225,9 @@ export const confirmDeleteAccount = async (req: Request, res: Response) => {
           ).session(session),
           Rating.deleteMany({ userId }).session(session),
           Passkey.deleteMany({ userId }).session(session),
-          NewsletterSubscriber.deleteOne(
-            { email: user.email.toLowerCase().trim() },
-          ).session(session),
+          NewsletterSubscriber.deleteOne({
+            email: user.email.toLowerCase().trim(),
+          }).session(session),
         ]);
         await User.findByIdAndDelete(userId).session(session);
       });

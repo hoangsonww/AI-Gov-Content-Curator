@@ -117,6 +117,26 @@ flowchart LR
   | GET        | `/api/auth/passkey`                       | JWT      | List the caller's passkeys.                                                           |
   | PATCH      | `/api/auth/passkey/:id`                   | JWT      | Rename a passkey.                                                                     |
   | DELETE     | `/api/auth/passkey/:id`                   | JWT      | Delete a passkey (refuses if it would orphan a passwordless account).                 |
+  | GET        | `/api/privacy/export`                     | JWT      | Download a JSON archive of all data held for the caller — profile, favorites, comments, ratings, passkey metadata, newsletter subscription. Excludes password hashes and raw passkey keys. |
+  | POST       | `/api/privacy/request-deletion`           | JWT      | Issue a short-lived (1 h TTL) account-deletion token to authorize the delete step.    |
+  | DELETE     | `/api/privacy/account`                    | JWT      | Verify the deletion token, then permanently delete the user and all linked records (comments, ratings, passkeys, newsletter subscription). |
+
+### Privacy & Data Controls
+
+The `privacy.controller.ts` + `privacy.routes.ts` pair implements GDPR-style
+data-subject controls, all JWT-protected and scoped to the authenticated
+caller:
+
+- **Data export** — `GET /api/privacy/export` streams a downloadable JSON
+  archive (`synthoraai-export-<id>.json`) of every record tied to the user.
+  Sensitive fields (password hash, internal tokens, raw passkey public keys)
+  are deliberately omitted.
+- **Account deletion** — a two-step flow. `POST /api/privacy/request-deletion`
+  issues a 256-bit random token (`deletionToken` + `deletionTokenExpiry` on
+  the `User` model, 1-hour TTL). `DELETE /api/privacy/account` verifies that
+  token and then hard-deletes the user plus all associated comments, ratings,
+  passkeys, and the newsletter subscription. Deletion is irreversible — there
+  is no soft-delete or grace period.
 
 ### Request Lifecycle
 
