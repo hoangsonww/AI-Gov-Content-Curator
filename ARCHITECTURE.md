@@ -158,7 +158,8 @@ flowchart LR
 - **AI integrations:** Anthropic (Claude) and Google Generative AI power the dual-provider chat orchestration; Google Generative AI powers direct summarization, topic extraction, and conversational experiences
 - **Chat orchestration:** The TypeScript `orchestration/` package provides intent-based routing across 16 specialized agents with automatic provider failover, grounding validation, and cost tracking
 - **Article processing pipeline:** The Python `agentic_ai/` pipeline enriches articles through 5 LangGraph agents (analyze, summarize, classify, sentiment, quality check), exposed via a FastAPI HTTP bridge
-- **MCP + ACP integration:** The `mcp_server/` package exposes the pipeline as 28 tools, 14 resources, and 7 prompts for Claude Code and IDE integration, and provides ACP-backed inter-agent messaging for multi-replica operations
+- **MCP + ACP integration:** The `mcp_server/` package exposes the pipeline as 28 tools, 14 resources, and 7 prompts (each tool wrapped by `tool_middleware` for spans/metrics/typed errors) for Claude Code and IDE integration, and provides ACP-backed inter-agent messaging for multi-replica operations
+- **Agentic resilience & observability:** Every agent LLM call is retried + circuit-broken + timed out and emits OpenTelemetry spans and `synthora_*` Prometheus metrics; the subsystem runs on LangChain 1.x with zero known Python CVEs
 - **Vector search:** Pinecone provides semantic search capabilities for the AI chat features
 - **Caching layer:** Redis accelerates hot API responses and reduces database load
 - **Observability:** Splunk OTEL Collector (DaemonSet) collects logs, metrics, and traces from all services via filelog, OTLP, hostmetrics, and kubeletstats receivers — enriched with K8s metadata, redacted for secrets, and exported to Splunk HEC; metrics are also federated to Prometheus for Grafana dashboards
@@ -174,7 +175,7 @@ flowchart LR
 | **Crawler** | `crawler/` | Crawl homepages & APIs, deduplicate URLs, fetch full articles (Axios/Cheerio/Puppeteer), summarize via AI, extract topics, vectorize content, upsert to MongoDB & Pinecone | Next.js API routes, Puppeteer, Axios, Cheerio, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
 | **Frontend Web App** | `frontend/` | User-facing portal with article lists, filters, detail views, theming, authentication UX, article discussions, AI chat interface | Next.js, React, Tailwind CSS, TypeScript | Vercel, AWS ECS, Kubernetes, CloudFront CDN |
 | **Newsletter Service** | `newsletters/` | Manage subscriber list, generate daily digests, integrate with Resend, subscription/unsubscription endpoints | Next.js API routes, Resend SDK, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
-| **Agentic AI Pipeline + MCP Server** | `agentic_ai/`, `mcp_server/` | LangGraph/LangChain workflows plus MCP tools/resources/prompts, processing job orchestration, runtime diagnostics, and FastAPI HTTP bridge (`api.py` on :8100) for TypeScript integration | Python, LangChain, LangGraph, FastMCP, FastAPI | Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs |
+| **Agentic AI Pipeline + MCP Server** | `agentic_ai/`, `mcp_server/` | LangGraph 1.x workflows, MCP tools/resources/prompts, processing job orchestration, runtime diagnostics, FastAPI HTTP bridge (`api.py`), plus cross-cutting resilience (retry/circuit-breaker/timeout) + observability (OTel/Prometheus) + security layers | Python 3.11/3.12, LangChain 1.x, LangGraph, FastMCP, FastAPI, OpenTelemetry | Kubernetes/Helm (FastAPI service), on-demand stdio MCP hosts, AWS Lambda / Azure Functions / GCP Cloud Functions |
 | **TypeScript Chat Orchestration** | `orchestration/` | Dual-provider LLM client (Anthropic + Google), 16-agent registry with intent routing, grounding validation, prompt caching, cost tracking, context management, and Python pipeline HTTP bridge | TypeScript, @anthropic-ai/sdk, @google/generative-ai, Zod | Bundled into backend Express process (npm workspace) |
 | **Python Crawler Toolkit** | `python_crawler/` | Async crawling alternative with CLI, concurrency controls, local summarization | Python, aiohttp, Google Generative AI SDK | Manual/CLI, Docker containers |
 | **Shell & Make CLI** | `shell/`, `Makefile` | Developer ergonomics, dev servers, builds, scheduled jobs, lint/test runners, multi-service orchestration | Bash, Node.js scripts | Local development, CI/CD pipelines |
@@ -865,7 +866,19 @@ flowchart LR
 
 ## Agentic AI Pipeline
 
-The `agentic_ai/` and `mcp_server/` packages provide LangGraph/LangChain workflows plus an MCP interface for enterprise-grade content enrichment operations.
+The `agentic_ai/` and `mcp_server/` packages provide LangGraph/LangChain
+workflows plus an MCP interface for enterprise-grade content enrichment.
+
+> **Production-hardened.** Runs on **LangChain 1.x**. Cross-cutting
+> reliability/observability/security layers (`mcp_server/{errors,
+> resilience,observability,security,health,middleware,cost}.py`) wrap
+> every agent LLM call and every MCP tool: retry + per-provider circuit
+> breaker + timeout, OpenTelemetry tracing, a typed Prometheus registry,
+> secret-redacted JSON logs, typed errors, and rate limiting. The image
+> is a non-root multi-stage build (~355 MB) with **zero known Python
+> CVEs**; Kubernetes manifests, a Helm chart, and a Terraform module
+> live in `infrastructure/`. See [`AGENTIC-AI.md`](AGENTIC-AI.md),
+> [`MCP-ACP.md`](MCP-ACP.md), and `agentic_ai/docs/HARDENING.md`.
 
 ```mermaid
 flowchart LR
@@ -881,20 +894,23 @@ flowchart LR
 ```
 
 **Features:**
-- **Multi-agent Workflows:** Modular agents for fetching, summarizing, tagging
-- **MCP Interface:** Structured tools/resources/prompts with diagnostics and readiness checks
+- **Multi-agent Workflows:** 5 LangGraph agents (analyze, summarize, classify, sentiment, quality) on an assembly-line StateGraph with a bounded quality-retry loop
+- **Resilience:** retry + per-provider circuit breaker + timeout on every external call (`guarded_call`)
+- **Observability:** OpenTelemetry tracing + a typed Prometheus registry (`synthora_*`) + trace-correlated JSON logs
+- **MCP Interface:** 28 tools / 14 resources / 7 prompts, each tool wrapped by `tool_middleware`
 - **ACP Interface:** Agent registration, heartbeat, inbox routing, and acknowledgment lifecycle for cross-agent communication
 - **Bias Detection:** Specialized prompts and sentiment/bias analysis workflows
-- **Deployment:** Local stdio MCP hosts, Azure Functions, AWS Lambda, Kubernetes Jobs
+- **Deployment:** Kubernetes/Helm (FastAPI service), on-demand stdio MCP hosts, and AWS Lambda / Azure Functions / GCP Cloud Functions adapters
 
-See `agentic_ai/README.md` and `mcp_server/` for detailed runtime, tool surface, and deployment instructions. For a comprehensive reference of all AI/ML components, LLM providers, agents, cost controls, and Mermaid diagrams, see [`AI_ML.md`](AI_ML.md).
+See `agentic_ai/README.md` and `mcp_server/README.md` for detailed runtime, tool surface, and deployment instructions. For a comprehensive reference of all AI/ML components, LLM providers, agents, cost controls, and Mermaid diagrams, see [`AI_ML.md`](AI_ML.md).
 
 ### MCP + ACP Runtime Topology
 
 ```mermaid
 flowchart LR
     IDE[Claude Code / IDE Host] -->|MCP JSON-RPC over stdio| MCPServer[mcp_server FastMCP]
-    MCPServer --> Runtime[ServerRuntime]
+    MCPServer --> MW[tool_middleware<br/>span + metrics + typed errors]
+    MW --> Runtime[ServerRuntime]
     Runtime --> Pipeline[AgenticPipeline]
     Runtime --> JobStore[ProcessingJobStore]
     Runtime --> ACPStore[ACP Store]
@@ -902,16 +918,19 @@ flowchart LR
     ACPStore -->|production| Redis[(Redis ACP backend)]
     ACPStore -->|dev fallback| Memory[(In-memory ACP backend)]
 
+    Pipeline -.->|spans + metrics| OTel[OTel + Prometheus]
+    MW -.->|spans + metrics| OTel
+
     subgraph ACPFlow[ACP Message Lifecycle]
       A[acp_register_agent] --> B[acp_send_message]
       B --> C[acp_fetch_inbox]
       C --> D[acp_acknowledge_message]
     end
 
-    MCPServer --> A
-    MCPServer --> B
-    MCPServer --> C
-    MCPServer --> D
+    MW --> A
+    MW --> B
+    MW --> C
+    MW --> D
 ```
 
 ### Python Orchestration Layer (`agentic_ai/orchestration/`)

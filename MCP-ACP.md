@@ -11,6 +11,7 @@ This document explains how SynthoraAI uses **MCP (Model Context Protocol)** and 
 - [ACP protocol model](#acp-protocol-model)
 - [Redis-backed ACP runtime model](#redis-backed-acp-runtime-model)
 - [Production preflight and readiness gates](#production-preflight-and-readiness-gates)
+- [Observability](#observability)
 - [Security and operational guardrails](#security-and-operational-guardrails)
 - [Deployment patterns](#deployment-patterns)
 - [Failure handling and fallback behavior](#failure-handling-and-fallback-behavior)
@@ -55,9 +56,10 @@ flowchart TB
 
     subgraph MCPLayer[MCP Server Layer]
       MCP[FastMCP]
-      MCP --> ToolProc[Processing Tools]
-      MCP --> ToolOps[Operations Tools]
-      MCP --> ToolACP[ACP Tools]
+      MCP --> MW[tool_middleware<br/>span + metrics + typed errors + rate limit]
+      MW --> ToolProc[Processing Tools]
+      MW --> ToolOps[Operations Tools]
+      MW --> ToolACP[ACP Tools]
       MCP --> Res[Resources]
       MCP --> Prompts[Prompts]
     end
@@ -231,11 +233,25 @@ flowchart TD
     Fail[Exit code 1]
 ```
 
+## Observability
+
+Every MCP tool — including the ACP tools — is wrapped by
+`tool_middleware` (`mcp_server/middleware.py`), which emits an
+`mcp.tool.<name>` OpenTelemetry span, Prometheus metrics
+(`synthora_mcp_tool_invocations_total`, `synthora_mcp_tool_duration_seconds`),
+and converts any error into a typed `{error, message, context,
+retryable}` envelope. ACP message flow is metered by
+`synthora_acp_messages_total{direction}` and the registered-agent gauge.
+Logs are JSON on stderr, secret-redacted, and trace-correlated.
+
 ## Security and operational guardrails
 
 - ACP enablement controlled via `ACP_ENABLED`.
 - Production strict backend policy:
   - `ENVIRONMENT=production` + `ACP_ENABLED=true` + `ACP_BACKEND=redis` -> fail-fast if Redis unavailable.
+- Redis client hardening: `redis_password` is a `SecretStr` (the raw
+  value is extracted only at client construction), TLS via `REDIS_TLS`,
+  connection/socket timeouts, and `retry_on_timeout`.
 - Payload and metadata limits:
   - `ACP_MAX_PAYLOAD_CHARS`
   - `ACP_MAX_METADATA_ENTRIES`
@@ -245,6 +261,8 @@ flowchart TD
   - `ACP_MESSAGE_TTL_SECONDS`
 - Agent liveness controls:
   - `ACP_AGENT_TTL_SECONDS`
+- Tool-level token-bucket rate limiting + typed-error envelopes via
+  `tool_middleware`; secret redaction on every log record.
 
 ```mermaid
 flowchart LR
@@ -293,12 +311,13 @@ sequenceDiagram
 
 ## Validation checklist
 
-- [ ] `pip install -r agentic_ai/requirements.txt`
-- [ ] `PYTHONPATH=.. pytest agentic_ai/tests/test_mcp_server_*.py`
+- [ ] `pip install -r agentic_ai/requirements/base.txt`
+- [ ] `PYTHONPATH=. pytest agentic_ai/tests/` (77 tests; includes ACP store + Redis-backend + MCP integration)
 - [ ] Redis reachable from runtime environment
 - [ ] `ENVIRONMENT=production ACP_ENABLED=true ACP_BACKEND=redis make mcp-preflight`
 - [ ] ACP resource checks in MCP host (`acp://stats`, `acp://agents`)
 - [ ] Runtime readiness (`get_runtime_readiness`) and health (`check_pipeline_health`) healthy
+- [ ] `synthora_acp_messages_total` / `synthora_mcp_tool_*` metrics visible at `GET /metrics`
 
 ---
 

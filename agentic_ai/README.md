@@ -1,6 +1,18 @@
 # SynthoraAI Agentic AI Pipeline
 
-A sophisticated, production-ready Agentic AI system built with LangGraph and LangChain, featuring assembly line architecture, MCP server integration, and cloud deployment support for AWS and Azure.
+A production-hardened Agentic AI system built with **LangGraph + LangChain 1.x**,
+featuring an assembly-line multi-agent architecture, an MCP server, full
+OpenTelemetry + Prometheus observability, per-provider resilience (retry +
+circuit breaker + timeout), and deployment artifacts for AWS, Azure, GCP,
+Docker, Kubernetes, Helm, and Terraform.
+
+> **Hardening status.** This subsystem has been through a multi-pass
+> production-readiness review. Highlights: typed error model, secret
+> redaction, circuit breakers, OTel tracing, Prometheus metrics, a
+> non-root multi-stage container image (~355 MB), 77 passing tests, and
+> **zero known Python CVEs** (Trivy + pip-audit). See
+> [`docs/HARDENING.md`](docs/HARDENING.md), [`docs/security.md`](docs/security.md),
+> and [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Table of Contents
 
@@ -10,6 +22,7 @@ A sophisticated, production-ready Agentic AI system built with LangGraph and Lan
   - [System Overview](#system-overview)
   - [Assembly Line Flow](#assembly-line-flow)
   - [Agent Responsibilities](#agent-responsibilities)
+  - [Reliability & Observability Layers](#reliability--observability-layers)
 - [🎯 Agent Details](#-agent-details)
   - [1. Content Analyzer Agent](#1-content-analyzer-agent)
   - [2. Summarizer Agent](#2-summarizer-agent)
@@ -36,8 +49,9 @@ A sophisticated, production-ready Agentic AI system built with LangGraph and Lan
   - [Deploy to AWS](#deploy-to-aws)
   - [Deploy to Azure](#deploy-to-azure)
 - [📊 Monitoring & Observability](#-monitoring--observability)
+  - [Distributed Tracing (OpenTelemetry)](#distributed-tracing-opentelemetry)
   - [Structured Logging](#structured-logging)
-  - [Metrics](#metrics)
+  - [Metrics (Prometheus)](#metrics-prometheus)
   - [Health Checks](#health-checks)
 - [⚙️ Configuration](#-configuration)
   - [Environment Variables](#environment-variables)
@@ -75,13 +89,16 @@ The SynthoraAI Agentic AI Pipeline is an advanced content processing system that
 ### Key Features
 
 - **🤖 Multi-Agent Architecture**: Specialized agents for content analysis, summarization, classification, sentiment analysis, and quality checking
-- **🔄 Assembly Line Processing**: LangGraph-based pipeline with state management and conditional routing
-- **🔌 MCP Server**: Model Context Protocol server for standardized AI interactions
-- **🛰️ ACP (Agent Communication Protocol)**: Production-grade inter-agent messaging (register, heartbeat, send, inbox, ack) backed by Redis for multi-replica safety
-- **☁️ Cloud-Ready**: Production deployment configurations for AWS Lambda and Azure Functions
-- **📊 Quality Assurance**: Built-in quality checking with automatic retry mechanisms
-- **⚡ Production-Ready**: Comprehensive logging, monitoring, error handling, and observability
-- **🔐 Secure**: Secrets management with AWS Secrets Manager and Azure Key Vault
+- **🔄 Assembly Line Processing**: LangGraph state-machine pipeline with conditional routing and a bounded quality-retry loop
+- **🔌 MCP Server**: Model Context Protocol server (stdio transport) for standardized AI interactions
+- **🛰️ ACP (Agent Communication Protocol)**: Durable inter-agent messaging (register, heartbeat, send, inbox, ack) backed by Redis for multi-replica safety
+- **🩺 Resilience**: Every external call (LLM providers, Redis) is wrapped with exponential-backoff retry, a per-provider circuit breaker, and timeouts
+- **📡 Observability**: OpenTelemetry distributed tracing + a typed Prometheus metric registry (pipeline / agent / LLM-call / cost / ACP / circuit-breaker) + JSON logs with trace correlation
+- **🔐 Security**: Typed error model, secret redaction in logs, input sanitization, token-bucket rate limiting, `SecretStr` credentials, production fail-fast config validation
+- **🐳 Container & Infra**: Multi-stage non-root image (digest-pinned base, build tooling stripped); Kubernetes manifests, a Helm chart, and a Terraform module
+- **☁️ Cloud-Ready**: Serverless adapters for AWS Lambda, Azure Functions, and GCP Cloud Functions
+- **📊 Quality Assurance**: Built-in quality checking with a bounded automatic-retry mechanism
+- **🧪 Tested**: 77 passing tests; the resilience/observability/security core is `mypy --strict`-clean
 
 ---
 
@@ -194,6 +211,59 @@ graph LR
     end
 ```
 
+### Reliability & Observability Layers
+
+Every stage and every external call runs inside cross-cutting reliability
+and observability layers. These live in `mcp_server/` and are re-exported
+from `agentic_ai.core` so the pipeline and the MCP server share one
+implementation.
+
+```mermaid
+graph TB
+    subgraph Call["LLM / external call"]
+        FN[chain.invoke / redis op]
+    end
+
+    subgraph Resilience["resilience.py"]
+        BRK[Circuit breaker<br/>per provider]
+        RETRY[Retry<br/>exp backoff + jitter]
+        TO[Timeout]
+    end
+
+    subgraph Observability["observability.py"]
+        SPAN[OTel span]
+        MET[Prometheus metrics]
+        COST[LLM cost estimate]
+    end
+
+    subgraph Security["security.py + errors.py"]
+        RED[Secret redaction]
+        TYPED[Typed errors]
+        RL[Rate limiter]
+    end
+
+    FN --> TO --> RETRY --> BRK
+    BRK --> SPAN --> MET
+    SPAN --> COST
+    MET --> RED
+    BRK --> TYPED
+```
+
+| Module                    | Responsibility                                                |
+| ------------------------- | ------------------------------------------------------------- |
+| `mcp_server/errors.py`      | Typed exception hierarchy + retryable classification         |
+| `mcp_server/resilience.py`  | Retry (tenacity) + in-process circuit breaker + timeouts      |
+| `mcp_server/observability.py` | OTel tracing + Prometheus metric registry + LLM cost        |
+| `mcp_server/security.py`    | Secret redaction, sanitization, constant-time, rate limiter  |
+| `mcp_server/health.py`      | Liveness / readiness / deep-health probes                    |
+| `mcp_server/middleware.py`  | `tool_middleware` — wraps every MCP tool uniformly           |
+| `mcp_server/cost.py`        | Per-model token-cost estimation                              |
+
+The circuit breaker is keyed per provider (`llm:<provider>`), so an
+outage in one provider trips the breaker for every agent using it
+without affecting the others. `BaseAgent._run_chain()` is the single
+choke point through which all agent LLM calls flow.
+
 ---
 
 ## 🎯 Agent Details
@@ -304,17 +374,24 @@ ACP production behavior:
 
 The MCP server is organized as a package instead of a monolithic file:
 
-- `mcp_server/app.py`: composition root and server bootstrap
+- `mcp_server/app.py`: composition root and server bootstrap (configures logging + observability)
 - `mcp_server/tools/`: MCP tool registrations and request flow
 - `mcp_server/resources/`: MCP resource registrations
 - `mcp_server/prompts/`: MCP prompt registrations
-- `mcp_server/runtime.py`: runtime container (pipeline + job store)
+- `mcp_server/runtime.py`: runtime container (pipeline + job store + ACP)
+- `mcp_server/middleware.py`: `tool_middleware` — span + metrics + typed error envelope + rate limit per tool
+- `mcp_server/errors.py`: typed exception hierarchy with retryable classification
+- `mcp_server/resilience.py`: retry + circuit breaker + timeout (`guarded_call`)
+- `mcp_server/observability.py`: OpenTelemetry tracing + Prometheus metric registry + LLM cost
+- `mcp_server/security.py`: secret redaction, input sanitization, constant-time compare, rate limiter
+- `mcp_server/health.py`: liveness / readiness / deep-health
+- `mcp_server/cost.py`: per-model LLM cost estimation
 - `mcp_server/acp_store.py`: in-memory ACP implementation + protocol
 - `mcp_server/acp_redis_store.py`: Redis-backed ACP implementation
 - `mcp_server/job_store.py`: async-safe in-memory job retention
 - `mcp_server/models.py`: request/status schemas
-- `mcp_server/validation.py`: payload and metadata guardrails
-- `mcp_server/logging_config.py`: stderr-safe structured logging
+- `mcp_server/validation.py`: payload and metadata guardrails (routes through `security`)
+- `mcp_server/logging_config.py`: stderr-safe JSON logging with OTel trace correlation + secret redaction
 - `mcp_server/server.py`: compatibility wrapper entrypoint
 
 ### Available Tools
@@ -450,9 +527,17 @@ graph TB
 **Azure Services:**
 - **Azure Functions**: Serverless compute
 - **Storage Queues**: Asynchronous processing
-- **Blob Storage**: Artifact storage
+- **Blob Storage**: Artifact storage (managed-identity auth via `DefaultAzureCredential`)
 - **Key Vault**: Secrets management
 - **Application Insights**: Monitoring and analytics
+
+### GCP Architecture
+
+The `gcp/cloud_function.py` adapter exposes `process_article` (HTTP
+trigger) and `process_pubsub` (Pub/Sub trigger). Results are persisted
+to `gs://$GCP_STORAGE_BUCKET/results/` using application-default
+credentials; traces export via OTLP (or `opentelemetry-exporter-gcp-trace`
+→ Cloud Trace). See `gcp/README.md`.
 
 ---
 
@@ -477,8 +562,13 @@ graph TB
 
 2. **Install dependencies:**
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements/base.txt          # runtime
+   pip install -r requirements/dev.txt           # + lint/type/test tooling
+   # optional extras: cloud-aws.txt, cloud-azure.txt, cloud-gcp.txt,
+   # vectorstores.txt (chromadb/faiss/pinecone), or all.txt
    ```
+   `requirements.txt` is a back-compat shim for `requirements/base.txt`.
+   `requirements.lock.txt` is the hash-pinned lock for reproducible builds.
 
 3. **Configure environment:**
    ```bash
@@ -543,55 +633,110 @@ print(f"Quality Score: {result['quality_score']}")
 
 ## 🌩️ Deployment
 
-### Deploy to AWS
+The recommended production target is **Kubernetes** (the FastAPI service).
+The MCP server uses stdio transport and is launched on demand by an MCP
+client — it is **not** a long-running deployment (see
+[`docs/adr/0002-mcp-transport.md`](docs/adr/0002-mcp-transport.md)).
+
+### Container
 
 ```bash
-cd aws
-chmod +x deploy.sh
-./deploy.sh production
+# Multi-stage, multi-target, non-root image. Targets: mcp | api | dev.
+docker build -f Dockerfile --target api -t synthora/agentic-ai:latest ..
+# Local stack (api + redis); add --profile monitoring for Prom/Grafana/OTel:
+docker compose up -d
 ```
 
-See [aws/README.md](aws/README.md) for detailed instructions.
-
-### Deploy to Azure
+### Kubernetes / Helm
 
 ```bash
-cd azure
-chmod +x deploy.sh
-./deploy.sh production
+# Raw manifests (kustomize)
+kubectl apply -k ../infrastructure/kubernetes/agentic-ai
+# Helm chart
+helm upgrade --install agentic-ai ../infrastructure/helm/agentic-ai \
+  --namespace ai-curator --create-namespace
 ```
 
-See [azure/README.md](azure/README.md) for detailed instructions.
+Manifests are non-root, read-only-rootfs, drop all capabilities, set
+`seccompProfile: RuntimeDefault`, and ship an HPA, PDB, NetworkPolicy,
+and Prometheus `ServiceMonitor`.
+
+### Terraform
+
+`infrastructure/terraform/modules/agentic-ai` provisions ECR (KMS-encrypted,
+scan-on-push), a KMS CMK, Secrets Manager entries, an IAM read policy, a
+CloudWatch log group, and an optional Helm release.
+
+### Serverless adapters
+
+| Cloud | Adapter | Entry points |
+| ----- | ------- | ------------ |
+| AWS   | `aws/lambda_function.py`   | `lambda_handler` |
+| Azure | `azure/function_app.py`    | `main` (HTTP), `queue_process` |
+| GCP   | `gcp/cloud_function.py`    | `process_article` (HTTP), `process_pubsub` |
+
+See `aws/README.md`, `azure/README.md`, and `gcp/README.md`.
 
 ---
 
 ## 📊 Monitoring & Observability
 
-### Structured Logging
+### Distributed Tracing (OpenTelemetry)
 
-All components use structured logging with `structlog`:
+`configure_observability()` (called at app/server boot) sets up an OTLP
+exporter. The pipeline emits a span tree per article:
 
-```python
-logger.info(
-    "Article processed",
-    article_id=article_id,
-    quality_score=quality_score,
-    processing_time=elapsed_time
-)
+```
+pipeline.process_article
+└─ pipeline.stage.<content_analysis|summarization|…|quality_check>
+   └─ agent.<name>.chain      (llm.provider, llm.model attributes)
 ```
 
-### Metrics
+MCP tools emit `mcp.tool.<name>` spans (via `tool_middleware`); HTTP
+requests emit `http.<method>` spans. Configure the exporter with
+`OTEL_EXPORTER_OTLP_ENDPOINT` / `OTEL_EXPORTER_OTLP_PROTOCOL`. In
+Kubernetes, pods export to the node-local OTel/Splunk collector via
+`http://$(HOST_IP):4317`.
 
-Prometheus metrics are available on port 9090 (configurable):
+### Structured Logging
 
-- `pipeline_processing_total` - Total articles processed
-- `pipeline_processing_duration_seconds` - Processing time histogram
-- `pipeline_quality_score` - Quality score distribution
-- `agent_execution_duration_seconds` - Per-agent execution time
+All components use `structlog`. Logs are JSON (configurable), written to
+**stderr** (so stdout stays a clean MCP channel), carry `trace_id` /
+`span_id` from the active OTel span, and pass through a **secret
+redaction processor** so API keys / tokens never reach the log sink.
+
+### Metrics (Prometheus)
+
+A typed metric registry (`mcp_server/observability.py`) is exposed at
+`GET /metrics` on the FastAPI service. All series are `synthora_`-prefixed:
+
+| Metric | Description |
+| ------ | ----------- |
+| `synthora_pipeline_runs_total{status}` | Pipeline executions by terminal status |
+| `synthora_pipeline_duration_seconds{status}` | End-to-end pipeline latency histogram |
+| `synthora_agent_invocations_total{agent,status}` | Per-agent invocations |
+| `synthora_agent_duration_seconds{agent}` | Per-agent latency histogram |
+| `synthora_llm_calls_total{provider,model,status}` | LLM provider calls |
+| `synthora_llm_duration_seconds{provider,model}` | LLM call latency histogram |
+| `synthora_llm_tokens_total{provider,model,direction}` | Prompt / completion tokens |
+| `synthora_llm_cost_usd_total{provider,model}` | Estimated LLM spend |
+| `synthora_mcp_tool_invocations_total{tool,status}` | MCP tool calls |
+| `synthora_acp_messages_total{direction}` | ACP messages sent/received/ack |
+| `synthora_circuit_breaker_state{name}` | Breaker state (0 closed / 1 half-open / 2 open) |
+| `synthora_retries_total{operation,outcome}` | Retried operations |
+| `synthora_errors_total{code}` | Errors by typed code |
+
+A starter Grafana dashboard ships in `monitoring/grafana/`.
 
 ### Health Checks
 
-Check pipeline health via the `check_pipeline_health` MCP tool from your MCP client.
+- **HTTP** (FastAPI): `GET /healthz` (liveness), `GET /readyz` (readiness).
+- **MCP**: the `check_pipeline_health` and `run_preflight_checks` tools.
+- **Container**: the image `HEALTHCHECK` plus `make mcp-preflight`.
+
+Three tiers are distinguished in `mcp_server/health.py`: liveness
+(process alive), readiness (dependencies reachable), deep health
+(component + provider + job + ACP snapshot).
 
 ---
 
@@ -665,9 +810,18 @@ ACP_MAX_PAYLOAD_CHARS=20000
 ACP_MAX_METADATA_ENTRIES=50
 ACP_MAX_CAPABILITIES=32
 
-# Monitoring
+# Monitoring / OpenTelemetry
 ENABLE_METRICS=true
 METRICS_PORT=9090
+OTEL_EXPORTER_OTLP_ENDPOINT=         # e.g. http://otel-collector:4317
+OTEL_EXPORTER_OTLP_PROTOCOL=grpc     # grpc | http/protobuf
+OTEL_TRACES_SAMPLE_RATIO=1.0
+
+# LLM resilience
+LLM_REQUEST_TIMEOUT_SECONDS=60
+LLM_MAX_ATTEMPTS=3
+LLM_CIRCUIT_FAIL_MAX=5
+LLM_CIRCUIT_RESET_SECONDS=30
 
 # Cloud (AWS)
 AWS_REGION=us-east-1
@@ -682,18 +836,27 @@ AZURE_RESOURCE_GROUP=your-resource-group
 
 ## 🧪 Testing
 
+The suite has **77 tests** (unit + MCP integration + end-to-end pipeline
+with stubbed LLMs). `core/pipeline.py` is ~92% covered; overall ~55%.
+
 ### Run Tests
 
 ```bash
-# Install test dependencies
-pip install -r requirements.txt
+pip install -r requirements/dev.txt
 
-# Run all tests
+make test            # pytest with coverage gate
+make lint            # ruff check + format check
+make typecheck       # mypy --strict
+make security        # bandit + pip-audit
+make check           # lint + typecheck + security + test
+
+# or directly:
 PYTHONPATH=.. pytest tests/ -v
-
-# Run with coverage
-PYTHONPATH=.. pytest tests/ --cov=agentic_ai --cov-report=html
 ```
+
+CI (`.github/workflows/agentic-ai-ci.yml`) runs lint, typecheck, the
+test matrix (py3.11 + py3.12, Redis service), bandit, pip-audit,
+gitleaks, a Trivy image scan, and SBOM generation.
 
 ### Example Test
 
@@ -741,21 +904,42 @@ async def test_pipeline_processing():
 
 ## 🔐 Security
 
-### Best Practices
+Full detail: [`docs/security.md`](docs/security.md).
 
-- Store secrets in AWS Secrets Manager or Azure Key Vault
-- Use IAM roles and managed identities
-- Enable HTTPS-only traffic
-- Implement rate limiting
-- Validate and sanitize inputs
-- Regular security audits
+### Built-in controls
+
+- **Secrets**: provider keys are `pydantic.SecretStr`; a structlog
+  redaction processor masks key-shaped fields and inline secret patterns
+  so credentials never reach the log sink.
+- **Config fail-fast**: in `ENVIRONMENT=production` the settings model
+  refuses to start without the default provider's API key.
+- **Input hygiene**: `validation.py` + `security.py` cap content /
+  metadata size, NFKC-normalize, strip control characters, and sanitize
+  identifiers used in logs / metrics / spans.
+- **Rate limiting**: a token-bucket limiter throttles MCP tool calls and
+  HTTP requests.
+- **Typed errors**: `errors.py` distinguishes retryable vs permanent
+  failures; callers never see raw provider exceptions.
+- **Container**: non-root (UID 10001), read-only root filesystem,
+  dropped capabilities, `no-new-privileges`, digest-pinned base, build
+  tooling stripped from the runtime image.
+
+### CVE posture
+
+Trivy (image) and `pip-audit` (manifest) run in CI. **Python
+dependencies currently have zero known vulnerabilities** — the stack is
+on the langchain 1.x line, which cleared the full set of
+langchain/langgraph/langsmith CVEs. Dependency lower bounds are pinned
+to CVE-patched releases. OS-package CVEs in the Debian base have no
+upstream fix and are mitigated by the container hardening above.
 
 ### API Key Rotation
 
 1. Generate new API keys
-2. Update in secrets manager
-3. Redeploy functions
-4. Revoke old keys after grace period
+2. Update in the secret manager (AWS Secrets Manager / Azure Key Vault /
+   GCP Secret Manager / k8s `ExternalSecret`)
+3. Restart / redeploy the service
+4. Revoke old keys after a grace period
 
 ---
 

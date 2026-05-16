@@ -10,9 +10,9 @@ This monorepo, multi-services project is organized into seven main components:
 - **Crawler:** Automatically crawls and extracts article URLs and metadata from government homepages and public API sources.
 - **Frontend:** Offers an intuitive Next.js-based user interface for government staff (and potentially the public) to browse and view article details.
 - **Newsletter:** Sends daily updates to subscribers with the latest articles.
-- **Agentic AI Pipeline:** Sophisticated multi-agent system for advanced content processing using LangGraph and LangChain, with a FastAPI HTTP bridge for cross-service integration.
+- **Agentic AI Pipeline:** Production-hardened multi-agent system on LangGraph + LangChain 1.x — resilience (retry/circuit-breaker/timeout), OpenTelemetry + Prometheus observability, a non-root container image, and Kubernetes/Helm/Terraform artifacts; zero known Python CVEs.
 - **Chat Orchestration:** TypeScript-based dual-provider (Anthropic + Google) chat layer with 16 specialized agents, intent routing, grounding validation, and cost tracking.
-- **MCP Server + ACP Layer:** Model Context Protocol server exposing the agentic pipeline as 28 tools, 14 resources, and 7 prompts, plus a production-grade Agent Communication Protocol (ACP) for agent-to-agent messaging with Redis-backed multi-replica support.
+- **MCP Server + ACP Layer:** Model Context Protocol server exposing the agentic pipeline as 28 tools, 14 resources, and 7 prompts (each wrapped by `tool_middleware`), plus a production-grade Agent Communication Protocol (ACP) for agent-to-agent messaging with Redis-backed multi-replica support.
 
 <p align="center">
   <img src="frontend/img/logo.png" alt="AI-Powered Article Content Curator Logo" width="30%">
@@ -830,7 +830,19 @@ This is integrated with a third-party service ([Resend](https://resend.com)) for
 
 ## Agentic AI Pipeline
 
-The **Agentic AI Pipeline** is a sophisticated, production-ready multi-agent system built with **LangGraph** and **LangChain** that processes articles through a series of specialized AI agents. This advanced system provides enhanced content analysis, summarization, classification, sentiment analysis, and quality assurance beyond the basic AI features.
+The **Agentic AI Pipeline** is a production-hardened multi-agent system
+built with **LangGraph + LangChain 1.x** that processes articles through
+a series of specialized AI agents — content analysis, summarization,
+classification, sentiment analysis, and quality assurance.
+
+It has been through a multi-pass production-readiness review: a typed
+error model, per-provider resilience (retry + circuit breaker +
+timeout), OpenTelemetry tracing, a typed Prometheus metric registry,
+secret-redacted logging, a non-root multi-stage container image
+(~355 MB), Kubernetes / Helm / Terraform deployment artifacts, 77
+passing tests, and **zero known Python CVEs** (Trivy + pip-audit). See
+[`AGENTIC-AI.md`](AGENTIC-AI.md), [`MCP-ACP.md`](MCP-ACP.md), and
+[`agentic_ai/docs/HARDENING.md`](agentic_ai/docs/HARDENING.md).
 
 ### Overview
 
@@ -858,10 +870,14 @@ graph LR
   - **Sentiment Analyzer**: Analyzes emotional tone and objectivity
   - **Quality Checker**: Validates outputs with automatic retry logic
 
-- **🔄 Assembly Line Processing**: LangGraph-based state machine with conditional routing
-- **🔌 MCP Server**: Model Context Protocol server for standardized AI interactions
+- **🔄 Assembly Line Processing**: LangGraph state machine with conditional routing and a bounded quality-retry loop
+- **🩺 Resilience**: Retry + per-provider circuit breaker + timeout (`guarded_call`) on every external call
+- **📡 Observability**: OpenTelemetry tracing + a typed Prometheus registry (`synthora_*` metrics) + trace-correlated, secret-redacted JSON logs
+- **🔐 Security**: `SecretStr` credentials, typed errors, input sanitization, token-bucket rate limiting, production fail-fast config
+- **🔌 MCP Server**: Model Context Protocol server (stdio) — every tool wrapped by `tool_middleware`
 - **🛰️ ACP Layer**: Agent Communication Protocol for inter-agent messaging (`register -> heartbeat -> send -> inbox -> ack`)
 - **📬 Durable Agent Comms**: Redis-backed ACP store for multi-replica deployments with TTL, retention, and liveness pruning
+- **🐳 Container & Infra**: Non-root multi-stage image; Kubernetes manifests, Helm chart, and Terraform module
 - **🧪 Operational Preflight**: Live ACP roundtrip checks are part of `make mcp-preflight`
 - **☁️ Cloud-Ready**: Production configs for AWS Lambda and Azure Functions
 - **📊 Quality Assurance**: Built-in quality checking with automatic retry mechanisms

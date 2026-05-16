@@ -15,10 +15,11 @@ This package exposes the Agentic AI pipeline through MCP primitives (tools, reso
 7. [Configuration](#configuration)
 8. [Run Locally](#run-locally)
 9. [MCP Client Integration](#mcp-client-integration)
-10. [Operational Notes](#operational-notes)
-11. [Testing](#testing)
-12. [Migration Notes](#migration-notes)
-13. [Troubleshooting](#troubleshooting)
+10. [Reliability & Observability](#reliability--observability)
+11. [Operational Notes](#operational-notes)
+12. [Testing](#testing)
+13. [Migration Notes](#migration-notes)
+14. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -27,11 +28,20 @@ This package exposes the Agentic AI pipeline through MCP primitives (tools, reso
 It does the following:
 
 - Boots `FastMCP` with server identity from `agentic_ai.config.settings`.
-- Initializes shared runtime state (`ServerRuntime`) with a compiled `AgenticPipeline` instance and an async-safe in-memory processing `job_store`.
-- Registers tools/resources/prompts from modular packages.
-- Emits structured logs to **stderr** to keep MCP stdio JSON-RPC output clean.
+- Configures structured logging + OpenTelemetry observability at startup.
+- Initializes shared runtime state (`ServerRuntime`) with a compiled `AgenticPipeline` instance, an async-safe in-memory processing `job_store`, and the ACP store.
+- Registers tools/resources/prompts from modular packages; every tool is wrapped by `tool_middleware` (span + metrics + typed-error envelope + rate limit).
+- Emits JSON logs to **stderr** — with OTel `trace_id` correlation and secret redaction — to keep the MCP stdio JSON-RPC channel clean.
 
-The server is launched via:
+This package also hosts the cross-cutting hardening layer shared with the
+agentic pipeline: `errors.py` (typed exceptions), `resilience.py` (retry
++ circuit breaker + timeout), `observability.py` (OTel + Prometheus),
+`security.py` (redaction / sanitization / rate limiting), `health.py`,
+`middleware.py`, and `cost.py`.
+
+The server uses **stdio transport** and is launched on demand by an MCP
+host/client — it is not a long-running daemon (see
+[`../agentic_ai/docs/adr/0002-mcp-transport.md`](../agentic_ai/docs/adr/0002-mcp-transport.md)):
 
 ```bash
 python -m mcp_server
@@ -42,7 +52,8 @@ python -m mcp_server
 ```mermaid
 flowchart LR
     Client[MCP Host / Client] -->|JSON-RPC over stdio| FastMCP[FastMCP Server]
-    FastMCP --> Tools[tools/*]
+    FastMCP --> MW[tool_middleware<br/>span + metrics + errors + rate limit]
+    MW --> Tools[tools/*]
     FastMCP --> Resources[resources/*]
     FastMCP --> Prompts[prompts/*]
 
@@ -54,6 +65,10 @@ flowchart LR
     Runtime --> ACPStore[ACP Store: Redis or Memory]
 
     Pipeline --> Agents[Analyzer / Summarizer / Classifier / Sentiment / Quality]
+
+    Tools -.observability.-> OTel[OTel spans + Prometheus]
+    Pipeline -.observability.-> OTel
+    Tools -.resilience.-> Guard[retry + circuit breaker + timeout]
 ```
 
 ## Package Layout
@@ -61,24 +76,36 @@ flowchart LR
 ```text
 mcp_server/
   __main__.py                # module entrypoint (python -m mcp_server)
-  app.py                     # composition root and server bootstrap
+  app.py                     # composition root; configures logging + observability
   server.py                  # compatibility wrapper exports
-  runtime.py                 # runtime container (pipeline + job store)
+  runtime.py                 # runtime container (pipeline + job store + ACP)
   job_store.py               # async-safe in-memory processing jobs
   diagnostics.py             # health/capabilities/provider/limits snapshots
   catalog.py                 # canonical tool/resource/prompt inventories
   models.py                  # pydantic request/status models
-  validation.py              # payload + metadata guardrails
+  validation.py              # payload + metadata guardrails (routes through security)
   text_metrics.py            # content diagnostics/readability metrics
-  logging_config.py          # stderr-safe structlog setup
+  logging_config.py          # stderr JSON logging + OTel trace correlation + redaction
+  ruff.toml                  # shares lint/format config with agentic_ai/pyproject.toml
+  # ── cross-cutting hardening layer (shared with the agentic pipeline) ──
+  errors.py                  # typed exception hierarchy + retryable classification
+  resilience.py              # retry (tenacity) + in-process circuit breaker + timeout
+  observability.py           # OpenTelemetry tracing + Prometheus metric registry
+  security.py                # secret redaction, sanitization, rate limiter
+  health.py                  # liveness / readiness / deep-health
+  middleware.py              # tool_middleware — wraps every MCP tool
+  cost.py                    # per-model LLM cost estimation
   tools/
     processing.py            # process + lifecycle + job controls
     analysis.py              # analysis/summarization/classification tools
     operations.py            # readiness/capabilities/preflight tools
+    acp.py                   # ACP register/heartbeat/send/inbox/ack tools
+    common.py                # shared tool helpers (validation, parsing)
   resources/
     config.py                # config://* resources
     runtime.py               # runtime://* resources
     jobs.py                  # jobs://* and topics://* resources
+    acp.py                   # acp://* resources
   prompts/
     summarization.py         # summarize/executive prompts
     analysis.py              # sentiment/classification/quality prompts
@@ -335,24 +362,57 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+## Reliability & Observability
+
+Every MCP tool is wrapped by `tool_middleware` (`middleware.py`), which
+provides, uniformly and without per-tool boilerplate:
+
+- an OpenTelemetry span (`mcp.tool.<name>`),
+- Prometheus metrics (`synthora_mcp_tool_invocations_total`,
+  `synthora_mcp_tool_duration_seconds`),
+- conversion of any `MCPError` subclass into a typed error envelope
+  (`{error, message, context, retryable}`) — callers never see a raw
+  traceback,
+- optional per-caller token-bucket rate limiting.
+
+External calls (LLM providers via the pipeline, Redis) flow through
+`resilience.guarded_call`: exponential-backoff retry on classified
+*transient* errors, a per-provider circuit breaker, and a timeout.
+
+`observability.py` exposes a typed Prometheus registry; `metrics_text()`
+renders it for the FastAPI `/metrics` endpoint. Logs (`logging_config.py`)
+are JSON on stderr, carry `trace_id`/`span_id`, and are secret-redacted.
+
+Health is three-tiered in `health.py`: liveness, readiness (ACP/Redis
+preflight), and a deep-health snapshot.
+
 ## Operational Notes
 
 - Transport is stdio in `app.py` (`self.mcp.run(transport="stdio")`).
+- The MCP server is launched **on demand** by an MCP client; it is not a
+  daemon and exits cleanly on stdin EOF — do not run it as a long-lived
+  Deployment.
 - Logging is intentionally stderr-only (`logging_config.py`) to avoid corrupting JSON-RPC streams.
+- `app.py` calls `configure_observability()` at boot; tracing degrades
+  to a no-op if no OTLP endpoint is configured.
 - `generate_summary` returns a **string** response; most other tools return object payloads.
 - `process_article_batch` supports fail-fast via `continue_on_error=False`.
 - `purge_processing_jobs` requires explicit confirmation when purging everything (`confirm=true`).
 
 ## Testing
 
-Focused tests currently live in `agentic_ai/tests/`.
+Tests live in `agentic_ai/tests/` (77 total — unit, MCP integration,
+end-to-end pipeline). They cover this package's job store, validation,
+ACP store + Redis backend, errors, security/redaction, resilience,
+observability, middleware, health, cost, and a full `test_mcp_integration.py`
+that boots the real server and exercises tool registration + invocation.
 
 From repository root:
 
 ```bash
-PYTHONPATH=. pytest -q \
-  agentic_ai/tests/test_mcp_server_job_store.py \
-  agentic_ai/tests/test_mcp_server_validation.py
+PYTHONPATH=. pytest -q agentic_ai/tests/
+# or, from agentic_ai/:
+make test
 ```
 
 Optional compile check:
@@ -361,12 +421,11 @@ Optional compile check:
 python -m py_compile $(find mcp_server -name '*.py')
 ```
 
-ACP-focused tests:
+Static analysis (`mcp_server/ruff.toml` shares config with
+`agentic_ai/pyproject.toml`):
 
 ```bash
-PYTHONPATH=. pytest -q \
-  agentic_ai/tests/test_mcp_server_acp_store.py \
-  agentic_ai/tests/test_mcp_server_runtime_acp_backend.py
+cd agentic_ai && make lint typecheck security
 ```
 
 ## Migration Notes

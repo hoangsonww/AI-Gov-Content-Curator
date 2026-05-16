@@ -440,6 +440,15 @@ Each agent has a dedicated system prompt in `src/agents/prompts/system/`:
 
 ## Module 2: Python Agentic Pipeline
 
+> **Production-hardened.** Runs on **LangChain 1.x**. Every agent LLM
+> call flows through `BaseAgent._run_chain()` → `guarded_call` (retry +
+> per-provider circuit breaker + timeout) and emits OpenTelemetry spans
+> + Prometheus metrics. State channels (`messages`, `errors`) are
+> LastValue — not `operator.add` reducers — and `process_article`
+> passes an explicit LangGraph `recursion_limit` so the quality-retry
+> loop terminates cleanly. Zero known Python CVEs. See
+> [`AGENTIC-AI.md`](AGENTIC-AI.md) and `agentic_ai/docs/HARDENING.md`.
+
 ### LangGraph Pipeline State Machine
 
 ```mermaid
@@ -624,20 +633,23 @@ graph TB
     end
 
     subgraph "FastMCP Server (mcp_server/)"
-        APP["app.py<br/>Composition Root"]
+        APP["app.py<br/>Composition Root<br/>(logging + observability)"]
+        MW["tool_middleware<br/>span + metrics + typed errors + rate limit"]
         RT["ServerRuntime"]
         JS["ProcessingJobStore<br/>Async-safe in-memory<br/>TTL pruning, max 1000"]
 
-        subgraph "Tools (20)"
+        subgraph "Tools (28)"
             T_PROC["Processing (8)<br/>process_article<br/>process_article_batch<br/>validate_article_payload<br/>get_processing_status<br/>get_processing_result<br/>list_processing_jobs<br/>delete_processing_job<br/>purge_processing_jobs"]
             T_ANAL["Analysis (6)<br/>analyze_content<br/>analyze_sentiment<br/>extract_topics<br/>evaluate_quality<br/>compute_text_metrics<br/>generate_summary"]
             T_OPS["Operations (6)<br/>check_pipeline_health<br/>get_pipeline_graph<br/>get_server_capabilities<br/>get_runtime_readiness<br/>diagnose_provider_config<br/>run_preflight_checks"]
+            T_ACP["ACP (8)<br/>acp_register_agent<br/>acp_unregister_agent<br/>acp_heartbeat<br/>acp_send_message<br/>acp_fetch_inbox<br/>acp_acknowledge_message<br/>acp_list_agents<br/>acp_get_message"]
         end
 
-        subgraph "Resources (11)"
+        subgraph "Resources (14)"
             R_CFG["Config (4)<br/>config://pipeline<br/>config://limits<br/>config://providers<br/>config://features"]
             R_RT["Runtime (4)<br/>runtime://health<br/>runtime://readiness<br/>runtime://capabilities<br/>runtime://pipeline/graph"]
             R_JOBS["Jobs & Topics (3)<br/>jobs://stats<br/>jobs://recent<br/>topics://available"]
+            R_ACP["ACP (3)<br/>acp://agents<br/>acp://stats<br/>acp://messages/recent"]
         end
 
         subgraph "Prompts (7)"
@@ -658,12 +670,15 @@ graph TB
     APP --> RT
     RT --> JS
     RT --> AP
-    APP --> T_PROC
-    APP --> T_ANAL
-    APP --> T_OPS
+    APP --> MW
+    MW --> T_PROC
+    MW --> T_ANAL
+    MW --> T_OPS
+    MW --> T_ACP
     APP --> R_CFG
     APP --> R_RT
     APP --> R_JOBS
+    APP --> R_ACP
     APP --> P_SUM
     APP --> P_ANAL
     APP --> P_GOV
@@ -1061,7 +1076,23 @@ flowchart TD
     style TRY3 fill:#e67e22,color:#fff
 ```
 
-### Python Error Recovery Engine
+### Python Resilience
+
+The core pipeline wraps **every external call** (LLM providers, Redis)
+in `mcp_server/resilience.py`'s `guarded_call`:
+
+- **Retry** — tenacity, exponential backoff + jitter, only on
+  classified *transient* errors (`RETRYABLE_ERROR_TYPES`).
+- **Circuit breaker** — a self-contained, asyncio-safe breaker keyed
+  per provider (`llm:<provider>`); a provider outage trips the breaker
+  for every agent using it. State is exported as the
+  `synthora_circuit_breaker_state` metric.
+- **Timeout** — `asyncio.wait_for` (async) / worker-thread deadline
+  (sync); raises a typed `TimeoutError_`.
+
+`BaseAgent._run_chain()` is the single choke point all agent LLM calls
+flow through. The separate `agentic_ai/orchestration/` subsystem adds a
+richer recovery engine on top (classification + dead-letter queue):
 
 ```mermaid
 flowchart TD
@@ -1102,9 +1133,10 @@ graph TB
         TS_TRACE["Per-request tracing<br/>sessionId, agentId,<br/>latencyMs, tokens"]
     end
 
-    subgraph "Python"
-        PY_LOG["structlog<br/>JSON to stderr"]
-        PY_MET["prometheus-client<br/>(optional)"]
+    subgraph "Python (mcp_server/observability.py)"
+        PY_LOG["structlog JSON to stderr<br/>trace_id correlation + redaction"]
+        PY_TRACE["OpenTelemetry spans<br/>pipeline / agent / tool / LLM"]
+        PY_MET["Typed Prometheus registry<br/>synthora_* metrics + LLM cost"]
         PY_JOBS["JobStore stats<br/>total, completed,<br/>failed, success_rate"]
     end
 
@@ -1117,12 +1149,21 @@ graph TB
     TS_LOG --> BE_LOG
     TS_MET --> BE_HEALTH
     PY_JOBS --> BE_HEALTH
+    PY_TRACE --> OTLP["OTLP collector<br/>Tempo / Jaeger / Splunk"]
+    PY_MET --> PROM["Prometheus / Grafana"]
     TS_TRACE --> BE_COST
 
     style TS_LOG fill:#4a90d9,color:#fff
     style PY_LOG fill:#e67e22,color:#fff
     style BE_HEALTH fill:#27ae60,color:#fff
 ```
+
+The Python `synthora_*` metric set covers pipeline runs/duration,
+per-agent invocations/duration, LLM calls/tokens/cost, MCP tool calls,
+ACP messages, circuit-breaker state, retries, and errors. The FastAPI
+service exposes them at `GET /metrics`; pods export OTLP traces to the
+node-local collector. A starter Grafana dashboard ships in
+`agentic_ai/monitoring/grafana/`.
 
 ---
 
@@ -1154,9 +1195,21 @@ graph TB
 | `ANTHROPIC_API_KEY` | If anthropic | — | Anthropic key |
 | `COHERE_API_KEY` | If cohere | — | Cohere key |
 | `MONGODB_URI` | No | `mongodb://127.0.0.1:27017/synthora_ai` | Article storage |
-| `PINECONE_API_KEY` | No | — | Vector search |
+| `PINECONE_API_KEY` | No | — | Vector search (optional `vectorstores` extra) |
 | `MAX_ITERATIONS` | No | `10` | Quality check retry limit |
 | `AGENT_TIMEOUT` | No | `300` | Agent timeout (seconds) |
+| `LLM_REQUEST_TIMEOUT_SECONDS` | No | `60` | Per-LLM-call timeout |
+| `LLM_MAX_ATTEMPTS` | No | `3` | Retry attempts on transient errors |
+| `LLM_CIRCUIT_FAIL_MAX` | No | `5` | Failures before the circuit breaker opens |
+| `LLM_CIRCUIT_RESET_SECONDS` | No | `30` | Breaker half-open cooldown |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | No | — | OTLP collector (empty = tracing no-op) |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | No | `grpc` | `grpc` or `http/protobuf` |
+| `ACP_BACKEND` | No | `redis` | ACP store: `redis` or `memory` |
+
+> **Note.** `COHERE_API_KEY` still selects the Cohere provider, but
+> `langchain-cohere` has no langchain-1.x release and is not installed
+> by default — selecting cohere raises a clear `ConfigurationError`
+> until an upstream 1.x package ships.
 
 ### MCP Server
 

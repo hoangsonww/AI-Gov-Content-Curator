@@ -149,13 +149,24 @@ infrastructure/
 │       ├── ecs-service/         # ECS service with blue/green
 │       ├── ecs-scheduled-task/  # Scheduled ECS tasks
 │       ├── codedeploy/          # CodeDeploy for blue/green
-│       └── monitoring/          # CloudWatch dashboards & alarms
+│       ├── monitoring/          # CloudWatch dashboards & alarms
+│       └── agentic-ai/          # Agentic AI: ECR + KMS + Secrets Manager + IAM + optional Helm release
 ├── kubernetes/                   # Kubernetes manifests
 │   ├── namespace.yaml           # Namespace definition
 │   ├── backend/                 # Backend service
 │   │   └── deployment.yaml      # Argo Rollout + Analysis
 │   ├── frontend/                # Frontend service
 │   │   └── deployment.yaml      # Argo Rollout + Analysis
+│   ├── agentic-ai/              # Agentic AI FastAPI service
+│   │   ├── deployment-api.yaml  # Deployment (non-root, read-only fs)
+│   │   ├── service.yaml         # ClusterIP service
+│   │   ├── hpa.yaml             # HorizontalPodAutoscaler
+│   │   ├── pdb.yaml             # PodDisruptionBudget
+│   │   ├── networkpolicy.yaml   # Ingress/egress allowlist
+│   │   ├── servicemonitor.yaml  # Prometheus ServiceMonitor
+│   │   ├── configmap.yaml       # Non-secret config
+│   │   ├── secret.yaml          # Secret template (use External Secrets)
+│   │   └── kustomization.yaml   # kustomize entrypoint
 │   ├── cronjobs/                # Scheduled jobs
 │   │   ├── crawler.yaml         # Article crawler cron
 │   │   └── newsletter.yaml      # Newsletter sender cron
@@ -164,13 +175,20 @@ infrastructure/
 │   └── monitoring/              # Monitoring stack
 │       ├── prometheus.yaml      # Prometheus + rules
 │       └── grafana.yaml         # Grafana + dashboards
+├── helm/
+│   └── agentic-ai/              # Helm chart for the Agentic AI FastAPI service
 ├── scripts/                      # Deployment automation
 │   ├── deploy-aws.sh            # AWS deployment with rollback
 │   └── deploy-k8s.sh            # K8s deployment with Argo
-├── Makefile                      # Convenience commands
+├── Makefile                      # Convenience commands (incl. agentic-ai-* targets)
 ├── DEPLOYMENT.md                 # Comprehensive deployment guide
 └── README.md                     # This file
 ```
+
+> **MCP server.** Only the agentic AI **FastAPI service** is a deployed
+> workload. The MCP server uses stdio transport and is launched on demand
+> by an MCP client — it is not a Kubernetes Deployment. The shared image
+> still ships `python -m mcp_server`.
 
 ---
 
@@ -240,6 +258,38 @@ make k8s-promote SERVICE=backend
 # Or abort if issues detected
 make k8s-abort SERVICE=backend
 ```
+
+### Deploy the Agentic AI service
+
+The Agentic AI FastAPI service deploys independently of the
+ECS/Argo-managed services, via raw kustomize manifests or the Helm chart.
+
+```bash
+cd infrastructure
+
+# Validate manifests + chart (no cluster needed)
+make agentic-ai-validate
+
+# Build + push the image (api target; also runs `python -m mcp_server`)
+make agentic-ai-build IMAGE_TAG=v1.0.0
+make push-images IMAGE_TAG=v1.0.0
+
+# Deploy via kustomize ...
+make agentic-ai-k8s-deploy
+# ... or via Helm
+make agentic-ai-helm-deploy IMAGE_TAG=v1.0.0
+
+# Check rollout
+make agentic-ai-status
+```
+
+Cloud foundations (ECR, KMS, Secrets Manager, IAM, CloudWatch, optional
+Helm release) are provisioned by the
+`terraform/modules/agentic-ai` module. Pods are non-root with a
+read-only root filesystem, dropped capabilities, an HPA, a PDB, a
+NetworkPolicy, and a Prometheus `ServiceMonitor`; they export OTLP
+traces to the node-local Splunk OTel Collector via `http://$(HOST_IP):4317`.
+See [`DEPLOYMENT.md`](DEPLOYMENT.md#agentic-ai-subsystem).
 
 ---
 
