@@ -71,7 +71,7 @@ graph TB
     end
 
     subgraph "Python Agentic Layer"
-        API["FastAPI Bridge<br/>(agentic_ai/api.py :8100)"]
+        API["FastAPI Bridge<br/>(agentic_ai/api.py :8000)"]
         AP["AgenticPipeline<br/>(LangGraph StateGraph)"]
         COSUP["ContentSupervisor"]
         CBM["CostBudgetManager"]
@@ -121,7 +121,7 @@ graph TB
     DPC -->|"Primary"| ANTH
     DPC -->|"Fallback"| GOOG
 
-    PC -->|"HTTP :8100"| API
+    PC -->|"HTTP :8000"| API
     API --> AP
     API --> COSUP
     COSUP --> AP
@@ -225,7 +225,7 @@ sequenceDiagram
     participant Client
     participant Backend as Backend Express
     participant Bridge as PipelineClient
-    participant FastAPI as Python FastAPI :8100
+    participant FastAPI as Python FastAPI :8000
     participant Pipeline as AgenticPipeline
     participant CA as ContentAnalyzer
     participant SUM as Summarizer
@@ -440,14 +440,7 @@ Each agent has a dedicated system prompt in `src/agents/prompts/system/`:
 
 ## Module 2: Python Agentic Pipeline
 
-> **Production-hardened.** Runs on **LangChain 1.x**. Every agent LLM
-> call flows through `BaseAgent._run_chain()` → `guarded_call` (retry +
-> per-provider circuit breaker + timeout) and emits OpenTelemetry spans
-> + Prometheus metrics. State channels (`messages`, `errors`) are
-> LastValue — not `operator.add` reducers — and `process_article`
-> passes an explicit LangGraph `recursion_limit` so the quality-retry
-> loop terminates cleanly. Zero known Python CVEs. See
-> [`AGENTIC-AI.md`](AGENTIC-AI.md) and `agentic_ai/docs/HARDENING.md`.
+**Package:** `agentic_ai` (Python package in `agentic_ai/`)
 
 ### LangGraph Pipeline State Machine
 
@@ -596,6 +589,13 @@ graph TB
     style DLQ fill:#e67e22,color:#fff
 ```
 
+This subsystem is `mypy --strict` clean (no grandfather override) and has
+**100% line coverage** across all eight modules — 91 tests in
+`agentic_ai/tests/test_orchestration.py` exercising the supervisor,
+registry, cost budgeting (including the daily UTC reset), error recovery
+(every error type plus the generic fallback), the dead-letter queue, and
+the concurrent batch processor.
+
 ### HTTP Bridge (`agentic_ai/api.py`)
 
 FastAPI server exposing the pipeline over HTTP for the TypeScript layer:
@@ -607,7 +607,7 @@ FastAPI server exposing the pipeline over HTTP for the TypeScript layer:
 | `/analyze` | POST | Run individual agents (content/sentiment/classification/summary/quality) |
 | `/batch` | POST | Process multiple articles (max 25, concurrency 5) |
 
-Start: `cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8100`
+Start: `cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8000`
 
 ### Cloud Adapters
 
@@ -732,14 +732,14 @@ graph LR
     end
 
     subgraph "Python"
-        API["agentic_ai/api.py<br/>FastAPI :8100"]
+        API["agentic_ai/api.py<br/>FastAPI :8000"]
         PIPE["agentic_ai/<br/>core/pipeline.py"]
         ORCHPY["agentic_ai/<br/>orchestration/"]
         MCP["mcp_server/<br/>FastMCP"]
     end
 
     BE -->|"npm workspace import"| ORC
-    ORC -->|"HTTP :8100<br/>PipelineClient"| API
+    ORC -->|"HTTP :8000<br/>PipelineClient"| API
     API -->|"Python import"| PIPE
     API -->|"Python import"| ORCHPY
     ORCHPY -->|"wraps"| PIPE
@@ -1181,7 +1181,7 @@ node-local collector. A starter Grafana dashboard ships in
 | `ORCHESTRATION_MAX_HANDOFF_DEPTH` | No | `5` | Max agent hops |
 | `ORCHESTRATION_MAX_ACTIVE_MESSAGES` | No | `20` | Session compaction threshold |
 | `ORCHESTRATION_LOG_LEVEL` | No | `info` | Log verbosity |
-| `PIPELINE_API_URL` | No | `http://localhost:8100` | Python pipeline bridge URL |
+| `PIPELINE_API_URL` | No | `http://localhost:8000` | Python pipeline bridge URL |
 | `PIPELINE_TIMEOUT_MS` | No | `120000` | Pipeline request timeout |
 
 ### Python Pipeline
@@ -1268,8 +1268,8 @@ graph TB
     NEXT --> LB
     LB --> BE1
     LB --> BE2
-    BE1 -->|"HTTP :8100"| PY_LB
-    BE2 -->|"HTTP :8100"| PY_LB
+    BE1 -->|"HTTP :8000"| PY_LB
+    BE2 -->|"HTTP :8000"| PY_LB
     PY_LB --> PY1
     PY_LB --> PY2
 
@@ -1294,7 +1294,7 @@ graph TB
 
 ```bash
 # 1. Start Python pipeline bridge
-cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8100 --reload
+cd agentic_ai && uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 
 # 2. Start backend (includes TypeScript orchestration)
 cd backend && npm run dev

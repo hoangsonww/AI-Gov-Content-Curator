@@ -147,7 +147,7 @@ flowchart TD
 | **Agent Registry** | `src/agents/` | 16 agents with cross-provider fallback, capability-based lookup |
 | **Context Manager** | `src/context/` | Session state, message history, token-aware compaction (20 msg threshold) |
 | **Cost Tracker** | `src/cost/` | Daily budget enforcement ($10 default), per-model cost breakdown |
-| **Pipeline Bridge** | `src/bridge/` | HTTP client (`PipelineClient`) for the Python agentic pipeline API on :8100 |
+| **Pipeline Bridge** | `src/bridge/` | HTTP client (`PipelineClient`) for the Python agentic pipeline API on :8000 |
 | **Config** | `src/config/` | Zod-validated environment, preflight checks |
 | **Observability** | `src/observability/` | Structured JSON logging, metrics collector (counters, histograms, gauges) |
 | **Schemas** | `src/schemas/` | Zod request/response validation for API boundaries |
@@ -281,7 +281,7 @@ The `PipelineClient` (`src/bridge/pipeline-client.ts`) connects the TypeScript o
 
 ```mermaid
 flowchart LR
-    ORC["orchestration/<br/>PipelineClient"] -->|"HTTP :8100"| API["agentic_ai/api.py<br/>FastAPI"]
+    ORC["orchestration/<br/>PipelineClient"] -->|"HTTP :8000"| API["agentic_ai/api.py<br/>FastAPI"]
     API --> PIPE["AgenticPipeline<br/>LangGraph"]
 
     subgraph "Pipeline Client Methods"
@@ -300,7 +300,7 @@ flowchart LR
 - Retry with exponential backoff on 502/503/504
 - Configurable timeout (default 120s)
 - Network error detection and retry
-- `PIPELINE_API_URL` env var (default `http://localhost:8100`)
+- `PIPELINE_API_URL` env var (default `http://localhost:8000`)
 
 ## Setup
 
@@ -321,7 +321,7 @@ npm install
 | `ORCHESTRATION_MAX_HANDOFF_DEPTH` | No | `5` | Max agent handoff chain depth |
 | `ORCHESTRATION_MAX_ACTIVE_MESSAGES` | No | `20` | Session messages before compaction |
 | `ORCHESTRATION_LOG_LEVEL` | No | `info` | Log level (debug/info/warn/error) |
-| `PIPELINE_API_URL` | No | `http://localhost:8100` | Python pipeline HTTP bridge URL |
+| `PIPELINE_API_URL` | No | `http://localhost:8000` | Python pipeline HTTP bridge URL |
 | `PIPELINE_TIMEOUT_MS` | No | `120000` | Pipeline request timeout (ms) |
 
 ## Usage
@@ -419,9 +419,39 @@ if (!preflight.ready) {
 
 ```bash
 npm run build     # Compile TypeScript to dist/
-npm run lint      # Type-check without emitting
-npm test          # Run Jest test suite
+npm run lint      # Type-check without emitting (tsc --noEmit, strict)
+npm test          # Jest suite WITH coverage — enforces the coverage gate
+npm run test:fast # Jest suite without coverage (fast local iteration)
 ```
+
+## Testing & Coverage
+
+The package ships **233 tests across 12 Jest suites**, fully hermetic —
+all provider SDKs and the `fetch` used by `PipelineClient` are mocked; no
+test makes a network call or needs a real API key.
+
+```mermaid
+flowchart LR
+    subgraph Suites[12 Jest suites]
+        S1[schemas / cost-tracker / observability]
+        S2[agent-registry / context-manager / grounding]
+        S3[error-responses / cache-strategy / environment]
+        S4[llm-client / chat-supervisor / pipeline-client]
+    end
+    Suites --> Jest[jest --runInBand --coverage]
+    Jest --> Gate{coverageThreshold<br/>stmts 80 / branch 68 / func 80 / lines 80}
+    Gate -->|met| Pass[npm test exits 0]
+    Gate -->|below| Fail[npm test fails]
+```
+
+`jest.config.js` defines a `coverageThreshold` gate (statements 80,
+branches 68, functions 80, lines 80; current ≈ 86% statements). `npm
+test` runs with `--coverage`, so the gate is enforced on every run and
+in CI — coverage regressions fail the build. Barrel `index.ts`
+re-export files and pure type declarations are excluded from the metric.
+
+`tsconfig.json` is `strict: true`; `npm run lint` (`tsc --noEmit`) is the
+type gate.
 
 ## File Structure
 
@@ -432,6 +462,7 @@ orchestration/
 ├── jest.config.js
 └── src/
     ├── index.ts                          # Barrel exports (public API)
+    ├── __tests__/                         # 12 Jest suites, 233 tests
     ├── agents/
     │   ├── agent-registry.ts             # 16 agents with fallback chains
     │   ├── types.ts                      # Enums, interfaces, pricing table

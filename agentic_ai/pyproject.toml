@@ -294,13 +294,12 @@ module = [
 ]
 disallow_untyped_decorators = false
 
-# The `orchestration/` subsystem and the concrete agent implementations
-# predate the typed-core hardening. They are grandfathered at a relaxed
-# (non-strict) level until they get their own typing pass; the strict
-# checks remain in force for everything else. Tracked in docs/HARDENING.md.
+# The concrete agent implementations predate the typed-core hardening and
+# are grandfathered at a relaxed (non-strict) level until they get their
+# own typing pass; the strict checks remain in force for everything else.
+
 [[tool.mypy.overrides]]
 module = [
-  "agentic_ai.orchestration.*",
   "agentic_ai.agents.classifier",
   "agentic_ai.agents.content_analyzer",
   "agentic_ai.agents.sentiment_analyzer",

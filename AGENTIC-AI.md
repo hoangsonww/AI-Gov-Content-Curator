@@ -104,14 +104,18 @@ graph TB
     CA & SUM & CLS & SA & QC --> Google & OpenAI & Anthropic & Cohere
 ```
 
-> **Production hardening.** This subsystem has been through a multi-pass
-> production-readiness review. It runs on **LangChain 1.x** with a typed
-> error model, per-provider resilience (retry + circuit breaker +
-> timeout), OpenTelemetry tracing, a typed Prometheus registry, secret
-> redaction, a non-root container image (~355 MB), Kubernetes / Helm /
-> Terraform deployment artifacts, 77 passing tests, and **zero known
-> Python CVEs**. See [`agentic_ai/docs/HARDENING.md`](agentic_ai/docs/HARDENING.md)
-> and [`agentic_ai/docs/security.md`](agentic_ai/docs/security.md).
+The system is designed with **resilience**, **observability**, and **provider-agnosticism** in mind, featuring:
+- Exponential backoff retries, circuit breakers, and timeouts for all external calls
+- OpenTelemetry traces, Prometheus metrics, and structured JSON logs with trace correlation
+- Pluggable LLM backends (Google Gemini, OpenAI, Anthropic, Cohere) swappable via config and imported lazily to avoid unnecessary dependencies in local dev or tests
+- Graceful degradation when providers are misconfigured — the pipeline starts in degraded mode, and the MCP server remains responsive to health checks and non-LLM tools
+- A standardized interface via the MCP protocol, ensuring any compatible client can invoke the pipeline without custom integration
+- Strict handling of secrets with `SecretStr`, a structlog redaction processor, and health endpoints that report only boolean readiness without exposing sensitive details
+- A dedicated Quality Checker agent that scores output on a 0–1 scale and triggers a bounded retry loop when quality falls below 0.7, ensuring high-quality results while avoiding infinite loops
+- A clear separation of concerns between the pipeline logic (`agentic_ai/`) and the MCP server interface (`mcp_server/`), connected via Python imports but allowing for independent development and testing
+- Comprehensive documentation, including an ADR record for architectural decisions, a runbook for incident response, and detailed code comments throughout the pipeline and agents
+- A robust CI pipeline covering linting, type checking, security scanning, and tests with a real Redis instance to ensure reliability in production environments
+- and more...
 
 ---
 

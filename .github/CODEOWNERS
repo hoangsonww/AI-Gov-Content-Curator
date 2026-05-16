@@ -1,17 +1,42 @@
 # Code ownership for review routing.
-# Entries here are scoped to the agentic AI subsystem and its
-# infrastructure. Add other paths as ownership is formalized.
+# @hoangsonww owns the entire repository.
 
-# Agentic AI Python subsystem
+# Default owner for every path.
+*                                  @hoangsonww
+
+# Explicit per-area entries (same owner). Kept for clarity and so future
+# co-owners can be added per area without losing the global default.
+
+# Application services
 /agentic_ai/                       @hoangsonww
 /mcp_server/                       @hoangsonww
+/orchestration/                    @hoangsonww
+/backend/                          @hoangsonww
+/frontend/                         @hoangsonww
+/crawler/                          @hoangsonww
+/python_crawler/                   @hoangsonww
+/newsletters/                      @hoangsonww
 
-# Infrastructure for the agentic AI services
-/infrastructure/kubernetes/agentic-ai/      @hoangsonww
-/infrastructure/helm/agentic-ai/            @hoangsonww
-/infrastructure/terraform/modules/agentic-ai/ @hoangsonww
+# Infrastructure, deployment, and developer tooling
+/infrastructure/                   @hoangsonww
+/shell/                            @hoangsonww
+/bin/                              @hoangsonww
+/codex/                            @hoangsonww
 
-# CI + repo automation
-/.github/workflows/agentic-ai-ci.yml        @hoangsonww
-/.github/workflows/codeql-agentic-ai.yml    @hoangsonww
-/.github/dependabot.yml                     @hoangsonww
+# CI, automation, and dev-environment config
+/.github/                          @hoangsonww
+/.circleci/                        @hoangsonww
+/.husky/                           @hoangsonww
+/.devcontainer/                    @hoangsonww
+/.idea/                            @hoangsonww
+
+# Agent / AI tooling and session state
+/.claude/                          @hoangsonww
+/.agents/                          @hoangsonww
+/.agent-sessions/                  @hoangsonww
+/.beads/                           @hoangsonww
+
+# Top-level docs and root config files
+/*.md                              @hoangsonww
+/*.json                            @hoangsonww
+/*.sh                              @hoangsonww

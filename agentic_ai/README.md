@@ -6,14 +6,6 @@ OpenTelemetry + Prometheus observability, per-provider resilience (retry +
 circuit breaker + timeout), and deployment artifacts for AWS, Azure, GCP,
 Docker, Kubernetes, Helm, and Terraform.
 
-> **Hardening status.** This subsystem has been through a multi-pass
-> production-readiness review. Highlights: typed error model, secret
-> redaction, circuit breakers, OTel tracing, Prometheus metrics, a
-> non-root multi-stage container image (~355 MB), 77 passing tests, and
-> **zero known Python CVEs** (Trivy + pip-audit). See
-> [`docs/HARDENING.md`](docs/HARDENING.md), [`docs/security.md`](docs/security.md),
-> and [`CHANGELOG.md`](CHANGELOG.md).
-
 ## Table of Contents
 
 - [🌟 Overview](#-overview)
@@ -211,6 +203,53 @@ graph LR
     end
 ```
 
+### Pipeline State Machine
+
+`core/pipeline.py` compiles a LangGraph `StateGraph`. The graph is a
+strictly linear assembly line with one bounded retry loop from the
+quality gate back to content analysis.
+
+```mermaid
+stateDiagram-v2
+    [*] --> intake
+    intake --> content_analysis: raw_content present
+    intake --> [*]: validation error
+    content_analysis --> summarization
+    summarization --> classification
+    classification --> sentiment_analysis
+    sentiment_analysis --> quality_check
+    quality_check --> output: score >= 0.7 OR iteration == max_iterations
+    quality_check --> content_analysis: score < 0.7 AND retries left
+    output --> [*]
+```
+
+### Shared State Channels
+
+The `AgentState` `TypedDict` is the single object threaded through every
+node. `messages` and `errors` are plain `LastValue` channels — each node
+mutates the same list in place and returns the whole state. They are
+**not** `operator.add` reducers: a reducer would re-concatenate the
+already-accumulated list every super-step and blow up exponentially
+inside the quality-retry loop.
+
+```mermaid
+flowchart LR
+    subgraph State[AgentState — threaded through all nodes]
+        IN[article_id / raw_content / url / source]
+        META[current_stage / iteration / timestamp]
+        OUT[analyzed_content / summary / topics<br/>sentiment / quality_score]
+        MSG[messages: list&lt;BaseMessage&gt;<br/>errors: list&lt;str&gt;]
+        ROUTE[should_continue / next_stage]
+    end
+    Intake --> State
+    State --> CA[content_analysis] --> State
+    State --> SUM[summarization] --> State
+    State --> CLS[classification] --> State
+    State --> SENT[sentiment_analysis] --> State
+    State --> QC[quality_check] --> State
+    State --> OUTN[output]
+```
+
 ### Reliability & Observability Layers
 
 Every stage and every external call runs inside cross-cutting reliability
@@ -263,6 +302,43 @@ The circuit breaker is keyed per provider (`llm:<provider>`), so an
 outage in one provider trips the breaker for every agent using it
 without affecting the others. `BaseAgent._run_chain()` is the single
 choke point through which all agent LLM calls flow.
+
+#### Circuit breaker state machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Closed
+    Closed --> Open: consecutive failures >= LLM_CIRCUIT_FAIL_MAX
+    Open --> HalfOpen: LLM_CIRCUIT_RESET_SECONDS elapsed
+    HalfOpen --> Closed: trial call succeeds
+    HalfOpen --> Open: trial call fails
+
+    note right of Closed
+        calls pass through;
+        failure counter increments on error,
+        resets on success
+    end note
+    note right of Open
+        calls fail fast with a typed error —
+        the provider is not contacted
+    end note
+```
+
+#### Guarded-call decision flow
+
+```mermaid
+flowchart TD
+    Start[BaseAgent._run_chain] --> CB{breaker open?}
+    CB -->|yes| Fast[fail fast: ProviderError]
+    CB -->|no| Invoke[invoke chain with timeout]
+    Invoke --> Outcome{outcome}
+    Outcome -->|success| Record[record success + cost + tokens]
+    Outcome -->|transient error| Budget{attempts left?}
+    Outcome -->|permanent error| Raise[raise typed MCPError]
+    Budget -->|yes| Backoff[exp backoff + jitter] --> Invoke
+    Budget -->|no| Trip[increment breaker; raise]
+    Record --> Done[return result]
+```
 
 ---
 
@@ -539,6 +615,40 @@ to `gs://$GCP_STORAGE_BUCKET/results/` using application-default
 credentials; traces export via OTLP (or `opentelemetry-exporter-gcp-trace`
 → Cloud Trace). See `gcp/README.md`.
 
+```mermaid
+graph TB
+    subgraph "Trigger Layer"
+        A[HTTP Trigger] --> B[Cloud Function]
+        P[Pub/Sub Topic] --> B
+    end
+
+    subgraph "Processing"
+        B --> C[Agentic Pipeline]
+        C --> D[Content Analyzer]
+        C --> E[Summarizer]
+        C --> F[Classifier]
+        C --> G[Sentiment Analyzer]
+        C --> H[Quality Checker]
+    end
+
+    subgraph "Storage & Secrets"
+        I[Cloud Storage bucket]
+        J[Secret Manager]
+        K[Cloud Trace / Cloud Logging]
+    end
+
+    B --> I
+    B --> J
+    B --> K
+```
+
+**GCP Services:**
+- **Cloud Functions**: Serverless compute (HTTP + Pub/Sub triggers)
+- **Pub/Sub**: Asynchronous processing topic
+- **Cloud Storage**: Result artifact storage (`results/` prefix)
+- **Secret Manager**: API key storage
+- **Cloud Trace / Logging**: Observability sinks
+
 ---
 
 ## 🚀 Getting Started
@@ -661,6 +771,35 @@ Manifests are non-root, read-only-rootfs, drop all capabilities, set
 `seccompProfile: RuntimeDefault`, and ship an HPA, PDB, NetworkPolicy,
 and Prometheus `ServiceMonitor`.
 
+```mermaid
+graph TB
+    subgraph ns["namespace: ai-curator"]
+        subgraph deploy["Deployment: agentic-ai-api"]
+            P1[Pod replica 1]
+            P2[Pod replica 2]
+            P3[Pod replica N]
+        end
+        SVC[Service: agentic-ai-api :80 -> :8000]
+        HPA[HorizontalPodAutoscaler]
+        PDB[PodDisruptionBudget]
+        NP[NetworkPolicy]
+        CM[ConfigMap: agentic-ai-config]
+        SEC[Secret: agentic-ai-secrets]
+        SM[ServiceMonitor]
+    end
+    Ingress[Ingress / LB] --> SVC
+    SVC --> P1 & P2 & P3
+    HPA -.scales.-> deploy
+    PDB -.guards.-> deploy
+    CM --> deploy
+    SEC --> deploy
+    SM -.scrapes /metrics.-> SVC
+    P1 -.OTLP.-> Collector[node-local OTel collector]
+```
+
+The MCP server is **not** represented here — it is stdio-launched on
+demand by an MCP client and must not run as a Deployment.
+
 ### Terraform
 
 `infrastructure/terraform/modules/agentic-ai` provisions ECR (KMS-encrypted,
@@ -737,6 +876,23 @@ A starter Grafana dashboard ships in `monitoring/grafana/`.
 Three tiers are distinguished in `mcp_server/health.py`: liveness
 (process alive), readiness (dependencies reachable), deep health
 (component + provider + job + ACP snapshot).
+
+```mermaid
+flowchart TD
+    subgraph Liveness[Liveness — GET /healthz]
+        L[event loop responsive] --> LR{ok?}
+        LR -->|no| LK[restart pod]
+        LR -->|yes| LP[200 alive]
+    end
+    subgraph Readiness[Readiness — GET /readyz]
+        R[runtime.readiness + acp_preflight] --> RR{deps reachable?}
+        RR -->|no| RM[remove from LB — no restart]
+        RR -->|yes| RP[200 ready]
+    end
+    subgraph Deep[Deep health — check_pipeline_health]
+        D[component + provider + jobs + ACP snapshot]
+    end
+```
 
 ---
 

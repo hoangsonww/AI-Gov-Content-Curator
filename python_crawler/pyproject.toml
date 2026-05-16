@@ -1,0 +1,40 @@
+# Tooling configuration for the standalone python_crawler subsystem.
+# Run from this directory: `mypy src run_crawler.py`, `ruff check .`, `pytest`.
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+pretty = true
+exclude = ["__pycache__/"]
+
+# Optional / stub-less third-party packages. `readability-lxml`,
+# `playwright`, and `google-generativeai` ship no usable type information;
+# they are imported defensively (try/except) and treated as untyped.
+# `follow_imports = skip` is required for packages that ARE installed but
+# whose public API mypy cannot resolve under `no_implicit_reexport`.
+[[tool.mypy.overrides]]
+module = [
+  "readability",
+  "readability.*",
+  "playwright",
+  "playwright.*",
+  "google.generativeai",
+  "google.generativeai.*",
+]
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

@@ -124,7 +124,7 @@ flowchart LR
     Backend -->|npm workspace| Orchestration[[TypeScript Orchestration<br/>ChatSupervisor + 16 Agents]]
     Orchestration -->|Primary LLM| Anthropic[(Anthropic<br/>Claude)]
     Orchestration -->|Fallback LLM| GoogleAI
-    Orchestration -->|HTTP :8100| PipelineAPI[[Python Pipeline API<br/>FastAPI Bridge]]
+    Orchestration -->|HTTP :8000| PipelineAPI[[Python Pipeline API<br/>FastAPI Bridge]]
     PipelineAPI -->|LangGraph| AgenticPipeline[[Agentic Pipeline<br/>5 LangGraph Agents]]
     AgenticPipeline --> MongoDB
     AgenticPipeline --> GoogleAI
@@ -176,8 +176,8 @@ flowchart LR
 | **Frontend Web App** | `frontend/` | User-facing portal with article lists, filters, detail views, theming, authentication UX, article discussions, AI chat interface | Next.js, React, Tailwind CSS, TypeScript | Vercel, AWS ECS, Kubernetes, CloudFront CDN |
 | **Newsletter Service** | `newsletters/` | Manage subscriber list, generate daily digests, integrate with Resend, subscription/unsubscription endpoints | Next.js API routes, Resend SDK, TypeScript | Vercel (cron), AWS ECS (scheduled tasks), K8s CronJobs |
 | **Agentic AI Pipeline + MCP Server** | `agentic_ai/`, `mcp_server/` | LangGraph 1.x workflows, MCP tools/resources/prompts, processing job orchestration, runtime diagnostics, FastAPI HTTP bridge (`api.py`), plus cross-cutting resilience (retry/circuit-breaker/timeout) + observability (OTel/Prometheus) + security layers | Python 3.11/3.12, LangChain 1.x, LangGraph, FastMCP, FastAPI, OpenTelemetry | Kubernetes/Helm (FastAPI service), on-demand stdio MCP hosts, AWS Lambda / Azure Functions / GCP Cloud Functions |
-| **TypeScript Chat Orchestration** | `orchestration/` | Dual-provider LLM client (Anthropic + Google), 16-agent registry with intent routing, grounding validation, prompt caching, cost tracking, context management, and Python pipeline HTTP bridge | TypeScript, @anthropic-ai/sdk, @google/generative-ai, Zod | Bundled into backend Express process (npm workspace) |
-| **Python Crawler Toolkit** | `python_crawler/` | Async crawling alternative with CLI, concurrency controls, local summarization | Python, aiohttp, Google Generative AI SDK | Manual/CLI, Docker containers |
+| **TypeScript Chat Orchestration** | `orchestration/` | Dual-provider LLM client (Anthropic + Google), 16-agent registry with intent routing, grounding validation, prompt caching, cost tracking, context management, and Python pipeline HTTP bridge. `strict` TypeScript, 233 Jest tests with an enforced coverage gate | TypeScript, @anthropic-ai/sdk, @google/generative-ai, Zod | Bundled into backend Express process (npm workspace) |
+| **Python Crawler Toolkit** | `python_crawler/` | Standalone async crawler + summarizer — BFS link discovery, robots.txt compliance, retry/backoff, Playwright JS fallback, readability extraction, per-URL failure isolation. `mypy --strict` clean, `ruff` clean, 49 hermetic tests | Python, aiohttp, BeautifulSoup, readability-lxml, Playwright, Google Generative AI SDK | Manual/CLI, Docker containers |
 | **Shell & Make CLI** | `shell/`, `Makefile` | Developer ergonomics, dev servers, builds, scheduled jobs, lint/test runners, multi-service orchestration | Bash, Node.js scripts | Local development, CI/CD pipelines |
 
 ---
@@ -868,17 +868,6 @@ flowchart LR
 
 The `agentic_ai/` and `mcp_server/` packages provide LangGraph/LangChain
 workflows plus an MCP interface for enterprise-grade content enrichment.
-
-> **Production-hardened.** Runs on **LangChain 1.x**. Cross-cutting
-> reliability/observability/security layers (`mcp_server/{errors,
-> resilience,observability,security,health,middleware,cost}.py`) wrap
-> every agent LLM call and every MCP tool: retry + per-provider circuit
-> breaker + timeout, OpenTelemetry tracing, a typed Prometheus registry,
-> secret-redacted JSON logs, typed errors, and rate limiting. The image
-> is a non-root multi-stage build (~355 MB) with **zero known Python
-> CVEs**; Kubernetes manifests, a Helm chart, and a Terraform module
-> live in `infrastructure/`. See [`AGENTIC-AI.md`](AGENTIC-AI.md),
-> [`MCP-ACP.md`](MCP-ACP.md), and `agentic_ai/docs/HARDENING.md`.
 
 ```mermaid
 flowchart LR

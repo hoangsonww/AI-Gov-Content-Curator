@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import threading
 from datetime import UTC, datetime
+from typing import Any
 
 import structlog
 
@@ -128,8 +129,11 @@ class CostBudgetManager:
         """
         with self._lock:
             self._maybe_reset()
-            remaining = self._daily_budget_usd - self._daily_total_usd
-            affordable = estimated_cost_usd <= remaining
+            # Round to micro-dollars before comparing: IEEE-754 subtraction
+            # leaves residue (1.0 - 0.8 == 0.19999999999999996) that would
+            # otherwise reject a cost exactly equal to the remaining budget.
+            remaining = round(self._daily_budget_usd - self._daily_total_usd, 6)
+            affordable = round(estimated_cost_usd, 6) <= remaining
             if not affordable:
                 logger.warning(
                     "cost_budget.budget_exceeded",
@@ -189,7 +193,7 @@ class CostBudgetManager:
 
         return cost_usd
 
-    def get_daily_usage(self) -> dict[str, object]:
+    def get_daily_usage(self) -> dict[str, Any]:
         """Return a snapshot of today's usage statistics.
 
         Returns:

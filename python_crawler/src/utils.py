@@ -1,11 +1,11 @@
 import re
 from typing import Iterable, List
-from urllib.parse import urlparse, urlsplit, urlunsplit, urldefrag
+from urllib.parse import urldefrag, urlparse, urlsplit, urlunsplit
 
 from .config import SKIP_EXTENSIONS
 
 
-def compile_patterns(patterns: Iterable[str]) -> List[re.Pattern]:
+def compile_patterns(patterns: Iterable[str]) -> List[re.Pattern[str]]:
     return [re.compile(p, re.IGNORECASE) for p in patterns]
 
 
@@ -38,7 +38,9 @@ def should_skip_url(url: str) -> bool:
     return any(path.endswith(ext) for ext in SKIP_EXTENSIONS)
 
 
-def matches_patterns(url: str, includes: List[re.Pattern], excludes: List[re.Pattern]) -> bool:
+def matches_patterns(
+    url: str, includes: List[re.Pattern[str]], excludes: List[re.Pattern[str]]
+) -> bool:
     if excludes and any(p.search(url) for p in excludes):
         return False
     if not includes:

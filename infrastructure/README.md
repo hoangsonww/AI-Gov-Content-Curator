@@ -5,6 +5,7 @@
 - [Overview](#overview)
 - [High-Level Topology](#high-level-topology)
 - [CI/CD Flow](#cicd-flow)
+- [Network Topology](#network-topology)
 - [🎯 Key Features](#-key-features)
   - [✨ Deployment Strategies](#-deployment-strategies)
   - [🌍 Multi-Cloud & Multi-Region](#-multi-cloud--multi-region)
@@ -78,6 +79,35 @@ flowchart LR
     Rolling --> Observe
 ```
 
+## Network Topology
+
+The VPC spans multiple Availability Zones. Public subnets hold the load
+balancer and NAT; workloads run only in private subnets.
+
+```mermaid
+flowchart TB
+    Internet[Internet] --> IGW[Internet Gateway]
+    IGW --> ALB[ALB — public subnets]
+
+    subgraph VPC[VPC — multi-AZ]
+        subgraph AZA[Availability Zone A]
+            PubA[Public subnet] --> NATA[NAT Gateway]
+            PrivA[Private subnet<br/>ECS tasks / pods]
+        end
+        subgraph AZB[Availability Zone B]
+            PubB[Public subnet] --> NATB[NAT Gateway]
+            PrivB[Private subnet<br/>ECS tasks / pods]
+        end
+        ALB --> PrivA
+        ALB --> PrivB
+        PrivA --> NATA --> IGW
+        PrivB --> NATB --> IGW
+    end
+
+    PrivA --> Data[(MongoDB / Redis / Pinecone)]
+    PrivB --> Data
+```
+
 ## 🎯 Key Features
 
 ### ✨ Deployment Strategies
@@ -85,6 +115,32 @@ flowchart LR
 - **Canary Deployments**: Progressive traffic shifting with automated analysis (Argo Rollouts)
 - **Rolling Deployments**: Gradual instance replacement
 - **A/B Testing**: Header-based traffic routing for feature testing
+
+#### Blue/Green (AWS CodeDeploy)
+
+```mermaid
+flowchart LR
+    Live[Blue — live 100%] --> New[Provision Green]
+    New --> Test[Smoke test Green]
+    Test -->|pass| Shift[Shift traffic Blue -> Green]
+    Test -->|fail| Kill[Terminate Green; Blue stays live]
+    Shift --> Soak[Bake / soak window]
+    Soak -->|healthy| Done[Green is live; Blue retired]
+    Soak -->|alarm| RB[Instant rollback to Blue]
+```
+
+#### Canary (Argo Rollouts)
+
+```mermaid
+flowchart LR
+    V1[Stable 100%] --> C10[Canary 10%]
+    C10 --> A1{AnalysisRun<br/>error rate + latency}
+    A1 -->|pass| C50[Canary 50%]
+    A1 -->|fail| Ab[Abort -> 100% stable]
+    C50 --> A2{AnalysisRun}
+    A2 -->|pass| C100[Promote 100%]
+    A2 -->|fail| Ab
+```
 
 ### 🌍 Multi-Cloud & Multi-Region
 - **AWS ECS**: Fargate-based container orchestration with blue/green deployments
@@ -101,12 +157,33 @@ flowchart LR
 - **Custom Metrics**: Business logic and SQS-based auto-scaling
 
 ### 🔄 Auto-Scaling
-- **Predictive Scaling**: ML-based capacity forecasting
 - **Scheduled Scaling**: Time-based scaling for predictable patterns
 - **Target Tracking**: CPU, memory, and request-based scaling
 - **Step Scaling**: Aggressive scaling for traffic spikes
 - **SQS-based Scaling**: Queue depth-driven worker scaling
-- **Fargate Spot**: 70% cost savings with spot instances
+- **Fargate Spot**: cost savings via the built-in `FARGATE_SPOT` capacity provider
+
+```mermaid
+flowchart LR
+    subgraph Signals[Scaling signals]
+        CPU[CPU / memory]
+        REQ[Request count]
+        SQS[SQS queue depth]
+        CLOCK[Schedule cron]
+    end
+    CPU --> TT[Target tracking policy]
+    REQ --> TT
+    SQS --> SQSP[SQS target-tracking policy]
+    CLOCK --> SCH[Scheduled actions]
+    TT --> ECS[ECS service desired count]
+    SQSP --> ECS
+    SCH --> ECS
+    ECS --> Spot[FARGATE + FARGATE_SPOT mix]
+```
+
+> Note: EC2-ASG predictive scaling was removed — this is a Fargate
+> platform, so scaling is driven entirely by `aws_appautoscaling_*`
+> policies.
 
 ### 🛡️ Security & Compliance
 - **AWS WAF**: DDoS protection and rate limiting
@@ -125,10 +202,20 @@ flowchart LR
 ### 💾 Disaster Recovery
 - **Multi-Region Failover**: Route53 health-based failover
 - **Automated Backups**: S3, DynamoDB, and MongoDB snapshots
-- **Cross-Region Replication**: S3 and DynamoDB global tables
+- **Cross-Region Replication**: DynamoDB global tables (S3 cross-region replication is staged but disabled pending a DR-region decision — see `terraform/multi-region.tf`)
 - **Point-in-Time Recovery**: Database PITR capabilities
 - **RTO**: 2-15 minutes depending on failure type
 - **RPO**: 0-5 minutes depending on scenario
+
+```mermaid
+flowchart LR
+    subgraph Failure[Failure class -> recovery]
+        A[Single task crash] -->|RTO ~30s| A1[ECS reschedule]
+        B[AZ outage] -->|RTO ~2m| B1[Multi-AZ absorbs]
+        C[Region outage] -->|RTO ~2-15m| C1[Route53 failover]
+        D[Data corruption] -->|RPO 0-5m| D1[PITR restore]
+    end
+```
 
 ---
 
@@ -189,6 +276,30 @@ infrastructure/
 > workload. The MCP server uses stdio transport and is launched on demand
 > by an MCP client — it is not a Kubernetes Deployment. The shared image
 > still ships `python -m mcp_server`.
+
+### Terraform module composition
+
+```mermaid
+flowchart TD
+    Root[terraform root<br/>main.tf / multi-region.tf / autoscaling-advanced.tf]
+    Root --> VPC[modules/vpc]
+    Root --> ALB[modules/alb]
+    Root --> ECS[modules/ecs]
+    Root --> SVC[modules/ecs-service]
+    Root --> Task[modules/ecs-scheduled-task]
+    Root --> CD[modules/codedeploy]
+    Root --> Mon[modules/monitoring]
+    Root --> AI[modules/agentic-ai]
+
+    ALB --> VPC
+    ECS --> VPC
+    SVC --> ECS
+    SVC --> CD
+    AI --> ECR[ECR + KMS + Secrets Manager + IAM]
+```
+
+The `agentic-ai` module is self-contained and can be applied
+independently of the ECS-oriented modules.
 
 ---
 
@@ -417,16 +528,15 @@ git push origin main
 
 ### Traffic Routing
 
-```
-User Request
-    ↓
-Route53 / Global Accelerator
-    ↓
-Health Checks
-    ↓
-Primary Region (100% traffic)
-    ↓ (on failure)
-Secondary Region (automatic failover)
+```mermaid
+flowchart TB
+    User[User Request] --> R53[Route53 + Global Accelerator]
+    R53 --> HC{Primary health check}
+    HC -->|healthy| P[Primary — us-east-1<br/>100% traffic]
+    HC -->|3 failed checks| S[Secondary — us-west-2<br/>failover]
+    P --> DR[(DynamoDB global tables<br/>ElastiCache global datastore)]
+    S --> DR
+    T[Tertiary — eu-west-1] -.standby.-> DR
 ```
 
 ### Failover
@@ -436,6 +546,26 @@ Secondary Region (automatic failover)
 - 3 failed checks trigger failover
 - Traffic automatically routed to healthy region
 - ~2-minute failover time
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant R as Route53
+    participant P as Primary region
+    participant S as Secondary region
+
+    U->>R: resolve api.example.com
+    R->>P: health check (every 30s)
+    P-->>R: 200 OK
+    R-->>U: primary endpoint
+    Note over P: primary fails
+    R->>P: health check x3
+    P--xR: timeout / 5xx
+    R->>R: mark primary unhealthy
+    U->>R: resolve api.example.com
+    R-->>U: secondary endpoint
+    U->>S: traffic served from secondary
+```
 
 **Manual Failover**:
 ```bash
