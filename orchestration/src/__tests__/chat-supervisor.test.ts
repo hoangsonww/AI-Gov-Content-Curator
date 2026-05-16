@@ -33,12 +33,14 @@ jest.mock("@google/generative-ai", () => {
 // ---------------------------------------------------------------------------
 
 const Anthropic = jest.requireMock("@anthropic-ai/sdk").default as jest.Mock;
-const { GoogleGenerativeAI } = jest.requireMock(
-  "@google/generative-ai",
-) as { GoogleGenerativeAI: jest.Mock };
+const { GoogleGenerativeAI } = jest.requireMock("@google/generative-ai") as {
+  GoogleGenerativeAI: jest.Mock;
+};
 
 function getAnthropicCreate(): jest.Mock {
-  const inst = Anthropic.mock.instances[Anthropic.mock.instances.length - 1] as {
+  const inst = Anthropic.mock.instances[
+    Anthropic.mock.instances.length - 1
+  ] as {
     messages: { create: jest.Mock };
   };
   return inst?.messages?.create ?? jest.fn();
@@ -47,7 +49,9 @@ function getAnthropicCreate(): jest.Mock {
 function getGoogleSend(): jest.Mock {
   const inst = GoogleGenerativeAI.mock.instances[
     GoogleGenerativeAI.mock.instances.length - 1
-  ] as { getGenerativeModel: () => { startChat: () => { sendMessage: jest.Mock } } };
+  ] as {
+    getGenerativeModel: () => { startChat: () => { sendMessage: jest.Mock } };
+  };
   return inst?.getGenerativeModel()?.startChat()?.sendMessage ?? jest.fn();
 }
 
@@ -199,7 +203,9 @@ describe("ChatSupervisor.getAvailableProviders", () => {
     const supervisor = new ChatSupervisor({
       llm: { anthropicApiKey: "ant-key", defaultRetryPolicy: FAST_RETRY },
     });
-    expect(supervisor.getAvailableProviders()).toContain(ModelProvider.anthropic);
+    expect(supervisor.getAvailableProviders()).toContain(
+      ModelProvider.anthropic,
+    );
   });
 
   it("returns empty array when no keys supplied and no env vars", () => {
@@ -259,7 +265,10 @@ describe("ChatSupervisor.chat", () => {
       .mockRejectedValueOnce(new Error("classification failed"))
       .mockResolvedValueOnce(anthropicChatResponse);
 
-    const response = await supervisor.chat("sess-2", "Search for climate articles");
+    const response = await supervisor.chat(
+      "sess-2",
+      "Search for climate articles",
+    );
     // Fallback heuristic: "search" keyword → article_search intent
     expect(response.intent.intent).toBe("article_search");
     expect(response.content.length).toBeGreaterThan(0);
@@ -275,7 +284,10 @@ describe("ChatSupervisor.chat", () => {
       .mockRejectedValueOnce(new Error("fail"))
       .mockResolvedValueOnce(anthropicChatResponse);
 
-    const response = await supervisor.chat("sess-3", "analyze bias in this article");
+    const response = await supervisor.chat(
+      "sess-3",
+      "analyze bias in this article",
+    );
     expect(response.intent.intent).toBe("bias_analysis");
   });
 

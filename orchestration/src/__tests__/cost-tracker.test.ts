@@ -45,14 +45,23 @@ describe("CostTracker.estimateCost", () => {
   it("correctly calculates cost for claude-sonnet-4-6 (no cached tokens)", () => {
     // Input: $3/M, Output: $15/M
     // 1_000_000 input + 1_000_000 output = $3 + $15 = $18
-    const cost = tracker.estimateCost("claude-sonnet-4-6", 1_000_000, 1_000_000);
+    const cost = tracker.estimateCost(
+      "claude-sonnet-4-6",
+      1_000_000,
+      1_000_000,
+    );
     expect(cost).toBeCloseTo(18, 6);
   });
 
   it("correctly adds cached token cost for claude-sonnet-4-6", () => {
     // cachedInput for claude-sonnet-4-6 = $0.3/M
     // 1M input + 1M cached = 3 + 0.3 = 3.3 (output = 0)
-    const cost = tracker.estimateCost("claude-sonnet-4-6", 1_000_000, 0, 1_000_000);
+    const cost = tracker.estimateCost(
+      "claude-sonnet-4-6",
+      1_000_000,
+      0,
+      1_000_000,
+    );
     expect(cost).toBeCloseTo(3.3, 6);
   });
 
@@ -65,7 +74,12 @@ describe("CostTracker.estimateCost", () => {
       (100_000 / 1_000_000) * pricing.input +
       (50_000 / 1_000_000) * pricing.output +
       (200_000 / 1_000_000) * (pricing.cachedInput ?? pricing.input);
-    const actual = tracker.estimateCost("gpt-4o-mini", 100_000, 50_000, 200_000);
+    const actual = tracker.estimateCost(
+      "gpt-4o-mini",
+      100_000,
+      50_000,
+      200_000,
+    );
     expect(actual).toBeCloseTo(expected, 8);
   });
 

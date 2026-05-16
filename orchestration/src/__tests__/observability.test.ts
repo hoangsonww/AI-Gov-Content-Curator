@@ -20,7 +20,9 @@ describe("Logger", () => {
     // Intercept console.log (non-production path) and stdout/stderr
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     jest.spyOn(console, "error").mockImplementation(() => {});
-    writeSpy = jest.spyOn(process.stdout, "write").mockImplementation(() => true);
+    writeSpy = jest
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
     jest.spyOn(process.stderr, "write").mockImplementation(() => true);
   });
 
@@ -169,7 +171,9 @@ describe("MetricsCollector", () => {
     it("supports label-scoped counters", () => {
       metrics.increment("req.total", 1, { provider: "anthropic" });
       metrics.increment("req.total", 1, { provider: "google" });
-      expect(metrics.getCounter("req.total", { provider: "anthropic" })).toBe(1);
+      expect(metrics.getCounter("req.total", { provider: "anthropic" })).toBe(
+        1,
+      );
       expect(metrics.getCounter("req.total", { provider: "google" })).toBe(1);
       expect(metrics.getCounter("req.total")).toBe(0); // unlabeled is separate
     });

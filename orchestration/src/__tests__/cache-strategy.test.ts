@@ -41,10 +41,19 @@ describe("PromptCacheStrategy.buildCachedPrompt", () => {
       "",
       [],
     );
-    expect(withTools.system.some((b) => b.text.includes("Available Tools"))).toBe(true);
+    expect(
+      withTools.system.some((b) => b.text.includes("Available Tools")),
+    ).toBe(true);
 
-    const withoutTools = strategy.buildCachedPrompt(makeAgent(), grounding, "", []);
-    expect(withoutTools.system.some((b) => b.text.includes("Available Tools"))).toBe(false);
+    const withoutTools = strategy.buildCachedPrompt(
+      makeAgent(),
+      grounding,
+      "",
+      [],
+    );
+    expect(
+      withoutTools.system.some((b) => b.text.includes("Available Tools")),
+    ).toBe(false);
   });
 
   it("embeds the grounding rules and system prompt", () => {
@@ -55,16 +64,30 @@ describe("PromptCacheStrategy.buildCachedPrompt", () => {
   });
 
   it("does not cache a trivially short conversation summary", () => {
-    const prompt = strategy.buildCachedPrompt(makeAgent(), grounding, "short", []);
-    const summaryBlock = prompt.system.find((b) => b.text.includes("Conversation Summary"));
+    const prompt = strategy.buildCachedPrompt(
+      makeAgent(),
+      grounding,
+      "short",
+      [],
+    );
+    const summaryBlock = prompt.system.find((b) =>
+      b.text.includes("Conversation Summary"),
+    );
     expect(summaryBlock).toBeDefined();
     expect(summaryBlock?.cache_control).toBeUndefined();
   });
 
   it("caches a substantial conversation summary", () => {
     const longSummary = "x".repeat(250);
-    const prompt = strategy.buildCachedPrompt(makeAgent(), grounding, longSummary, []);
-    const summaryBlock = prompt.system.find((b) => b.text.includes("Conversation Summary"));
+    const prompt = strategy.buildCachedPrompt(
+      makeAgent(),
+      grounding,
+      longSummary,
+      [],
+    );
+    const summaryBlock = prompt.system.find((b) =>
+      b.text.includes("Conversation Summary"),
+    );
     expect(summaryBlock?.cache_control).toEqual({ type: "ephemeral" });
   });
 
@@ -75,7 +98,12 @@ describe("PromptCacheStrategy.buildCachedPrompt", () => {
       { role: "assistant", content: "hi" },
       { role: "tool", content: "ignored too" },
     ];
-    const prompt = strategy.buildCachedPrompt(makeAgent(), grounding, "", messages);
+    const prompt = strategy.buildCachedPrompt(
+      makeAgent(),
+      grounding,
+      "",
+      messages,
+    );
     expect(prompt.messages).toEqual([
       { role: "user", content: "hello" },
       { role: "assistant", content: "hi" },
@@ -86,7 +114,9 @@ describe("PromptCacheStrategy.buildCachedPrompt", () => {
     const prompt = strategy.buildCachedPrompt(makeAgent(), grounding, "", []);
     expect(prompt.totalEstimatedTokens).toBeGreaterThan(0);
     expect(prompt.estimatedCachedTokens).toBeGreaterThan(0);
-    expect(prompt.estimatedCachedTokens).toBeLessThanOrEqual(prompt.totalEstimatedTokens);
+    expect(prompt.estimatedCachedTokens).toBeLessThanOrEqual(
+      prompt.totalEstimatedTokens,
+    );
   });
 });
 

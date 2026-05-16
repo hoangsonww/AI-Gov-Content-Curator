@@ -147,7 +147,8 @@ describe("articleProcessRequestSchema", () => {
 
   it("rejects an invalid mode", () => {
     expect(
-      articleProcessRequestSchema.safeParse({ ...valid, mode: "turbo" }).success,
+      articleProcessRequestSchema.safeParse({ ...valid, mode: "turbo" })
+        .success,
     ).toBe(false);
   });
 
@@ -159,7 +160,8 @@ describe("articleProcessRequestSchema", () => {
 
   it("rejects priority above 100", () => {
     expect(
-      articleProcessRequestSchema.safeParse({ ...valid, priority: 101 }).success,
+      articleProcessRequestSchema.safeParse({ ...valid, priority: 101 })
+        .success,
     ).toBe(false);
   });
 
@@ -168,13 +170,15 @@ describe("articleProcessRequestSchema", () => {
       articleProcessRequestSchema.safeParse({ ...valid, priority: 0 }).success,
     ).toBe(true);
     expect(
-      articleProcessRequestSchema.safeParse({ ...valid, priority: 100 }).success,
+      articleProcessRequestSchema.safeParse({ ...valid, priority: 100 })
+        .success,
     ).toBe(true);
   });
 
   it("rejects a non-integer priority", () => {
     expect(
-      articleProcessRequestSchema.safeParse({ ...valid, priority: 5.5 }).success,
+      articleProcessRequestSchema.safeParse({ ...valid, priority: 5.5 })
+        .success,
     ).toBe(false);
   });
 
@@ -228,9 +232,9 @@ describe("batchProcessRequestSchema", () => {
   });
 
   it("rejects an empty articles array", () => {
-    expect(
-      batchProcessRequestSchema.safeParse({ articles: [] }).success,
-    ).toBe(false);
+    expect(batchProcessRequestSchema.safeParse({ articles: [] }).success).toBe(
+      false,
+    );
   });
 
   it("rejects a batch with more than 100 articles", () => {
@@ -238,9 +242,9 @@ describe("batchProcessRequestSchema", () => {
       id: `art-${i}`,
       content: "text",
     }));
-    expect(
-      batchProcessRequestSchema.safeParse({ articles }).success,
-    ).toBe(false);
+    expect(batchProcessRequestSchema.safeParse({ articles }).success).toBe(
+      false,
+    );
   });
 
   it("accepts exactly 100 articles", () => {
@@ -248,9 +252,9 @@ describe("batchProcessRequestSchema", () => {
       id: `art-${i}`,
       content: "text",
     }));
-    expect(
-      batchProcessRequestSchema.safeParse({ articles }).success,
-    ).toBe(true);
+    expect(batchProcessRequestSchema.safeParse({ articles }).success).toBe(
+      true,
+    );
   });
 
   it("defaults mode to 'full'", () => {

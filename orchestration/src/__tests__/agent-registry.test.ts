@@ -203,7 +203,9 @@ describe("AgentRegistry.createWithDefaults", () => {
   it("every Anthropic primary has a Google fallback registered", () => {
     const primaries = registry
       .listAll()
-      .filter((a) => a.provider === ModelProvider.anthropic && a.fallbackAgentId);
+      .filter(
+        (a) => a.provider === ModelProvider.anthropic && a.fallbackAgentId,
+      );
     for (const primary of primaries) {
       expect(registry.get(primary.fallbackAgentId!)).toBeDefined();
     }

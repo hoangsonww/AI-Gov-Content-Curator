@@ -78,7 +78,9 @@ describe("tryLoadOrchestrationEnv", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some((e) => e.includes("ORCHESTRATION_TIMEOUT_MS"))).toBe(true);
+      expect(
+        result.errors.some((e) => e.includes("ORCHESTRATION_TIMEOUT_MS")),
+      ).toBe(true);
     }
   });
 
@@ -104,7 +106,9 @@ describe("preflightCheck", () => {
     const report = preflightCheck(env);
     expect(report.ready).toBe(true);
     expect(report.providers).toEqual(["anthropic"]);
-    expect(report.warnings.some((w) => w.includes("failover is disabled"))).toBe(true);
+    expect(
+      report.warnings.some((w) => w.includes("failover is disabled")),
+    ).toBe(true);
   });
 
   it("is not ready and flags a critical warning with no providers", () => {

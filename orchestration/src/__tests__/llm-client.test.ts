@@ -49,9 +49,9 @@ jest.mock("@google/generative-ai", () => {
 
 // Pull the mock constructor references so we can inspect/reset calls
 const Anthropic = jest.requireMock("@anthropic-ai/sdk").default as jest.Mock;
-const { GoogleGenerativeAI } = jest.requireMock(
-  "@google/generative-ai",
-) as { GoogleGenerativeAI: jest.Mock };
+const { GoogleGenerativeAI } = jest.requireMock("@google/generative-ai") as {
+  GoogleGenerativeAI: jest.Mock;
+};
 
 // ---------------------------------------------------------------------------
 // Helpers to get the mocked API methods
@@ -66,9 +66,8 @@ function getAnthropicMessagesCreate(): jest.Mock {
 }
 
 function getGoogleSendMessage(): jest.Mock {
-  return (
-    GoogleGenerativeAI as unknown as { _mockSendMessage: jest.Mock }
-  )._mockSendMessage;
+  return (GoogleGenerativeAI as unknown as { _mockSendMessage: jest.Mock })
+    ._mockSendMessage;
 }
 
 // ---------------------------------------------------------------------------
@@ -178,7 +177,13 @@ describe("DualProviderClient.generate — Anthropic", () => {
   it("calls Anthropic messages.create and returns parsed result", async () => {
     const client = new DualProviderClient({
       anthropicApiKey: "ant-key",
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     getAnthropicMessagesCreate().mockResolvedValueOnce(anthropicResponse);
@@ -198,7 +203,13 @@ describe("DualProviderClient.generate — Anthropic", () => {
 
   it("throws ProviderUnavailableError when anthropic client is not configured", async () => {
     const client = new DualProviderClient({
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     await expect(
@@ -209,7 +220,13 @@ describe("DualProviderClient.generate — Anthropic", () => {
   it("includes retryCount=0 on the first successful attempt", async () => {
     const client = new DualProviderClient({
       anthropicApiKey: "ant-key",
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     getAnthropicMessagesCreate().mockResolvedValueOnce(anthropicResponse);
@@ -223,7 +240,13 @@ describe("DualProviderClient.generate — Anthropic", () => {
   it("calculates estimatedCost correctly using MODEL_PRICING", async () => {
     const client = new DualProviderClient({
       anthropicApiKey: "ant-key",
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     // claude-haiku-4-5: $0.8/M input, $4/M output
@@ -251,7 +274,13 @@ describe("DualProviderClient.generate — Google", () => {
   it("calls Google chat.sendMessage and returns parsed result", async () => {
     const client = new DualProviderClient({
       googleApiKey: "goog-key",
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     getGoogleSendMessage().mockResolvedValueOnce(googleResponse);
@@ -268,7 +297,13 @@ describe("DualProviderClient.generate — Google", () => {
   it("throws when the conversation does not end with a user message", async () => {
     const client = new DualProviderClient({
       googleApiKey: "goog-key",
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     const badMessages: Message[] = [
@@ -283,7 +318,13 @@ describe("DualProviderClient.generate — Google", () => {
 
   it("throws ProviderUnavailableError when google client is not configured", async () => {
     const client = new DualProviderClient({
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     await expect(
@@ -310,7 +351,13 @@ describe("DualProviderClient — timeout", () => {
     const client = new DualProviderClient({
       anthropicApiKey: "ant-key",
       timeoutMs: 100,
-      defaultRetryPolicy: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0, backoffMultiplier: 1, jitter: false },
+      defaultRetryPolicy: {
+        maxAttempts: 1,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1,
+        jitter: false,
+      },
     });
 
     // Mock a promise that never resolves

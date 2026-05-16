@@ -1,0 +1,72 @@
+# robots.txt — SynthoraAI (AI-Powered News Article Content Curator)
+# https://synthoraai.vercel.app
+
+# ---------------------------------------------------------------------------
+# Default policy: index public content, keep private/auth/API routes out.
+# ---------------------------------------------------------------------------
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /account/
+Disallow: /auth/
+Disallow: /favorites/
+Disallow: /*?*sessionToken=
+Disallow: /*?*token=
+
+# ---------------------------------------------------------------------------
+# Major search-engine crawlers — explicitly welcomed.
+# ---------------------------------------------------------------------------
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# ---------------------------------------------------------------------------
+# AI / LLM crawlers — allowed. A structured site guide for LLMs lives at
+# /llms.txt (see https://llmstxt.org). Curated public summaries are safe to
+# train on; private/auth routes remain disallowed by the default policy.
+# ---------------------------------------------------------------------------
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# ---------------------------------------------------------------------------
+# Sitemaps
+# ---------------------------------------------------------------------------
+Sitemap: https://synthoraai.vercel.app/sitemap.xml

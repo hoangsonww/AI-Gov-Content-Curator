@@ -37,7 +37,9 @@ afterAll(() => {
 
 describe("PipelineClient — configuration", () => {
   it("defaults to the local pipeline API on port 8000", async () => {
-    fetchMock.mockResolvedValueOnce(fakeResponse({ json: { status: "healthy" } }));
+    fetchMock.mockResolvedValueOnce(
+      fakeResponse({ json: { status: "healthy" } }),
+    );
     const client = new PipelineClient();
     await client.health();
     expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:8000/health");
@@ -79,7 +81,9 @@ describe("PipelineClient — request methods", () => {
   });
 
   it("analyzeContent POSTs to /analyze", async () => {
-    fetchMock.mockResolvedValueOnce(fakeResponse({ json: { status: "ok", analysis_type: "full" } }));
+    fetchMock.mockResolvedValueOnce(
+      fakeResponse({ json: { status: "ok", analysis_type: "full" } }),
+    );
     const client = new PipelineClient({ baseUrl: "http://x" });
     await client.analyzeContent({ content: "text" });
     expect(fetchMock.mock.calls[0][0]).toBe("http://x/analyze");
@@ -87,7 +91,15 @@ describe("PipelineClient — request methods", () => {
 
   it("processBatch POSTs to /batch", async () => {
     fetchMock.mockResolvedValueOnce(
-      fakeResponse({ json: { total: 0, succeeded: 0, failed: 0, duration_ms: 0, results: [] } }),
+      fakeResponse({
+        json: {
+          total: 0,
+          succeeded: 0,
+          failed: 0,
+          duration_ms: 0,
+          results: [],
+        },
+      }),
     );
     const client = new PipelineClient({ baseUrl: "http://x" });
     await client.processBatch({ articles: [] });
@@ -95,7 +107,9 @@ describe("PipelineClient — request methods", () => {
   });
 
   it("health GETs /health", async () => {
-    fetchMock.mockResolvedValueOnce(fakeResponse({ json: { status: "healthy" } }));
+    fetchMock.mockResolvedValueOnce(
+      fakeResponse({ json: { status: "healthy" } }),
+    );
     const client = new PipelineClient({ baseUrl: "http://x" });
     await client.health();
     expect(fetchMock.mock.calls[0][1].method).toBe("GET");
@@ -104,7 +118,9 @@ describe("PipelineClient — request methods", () => {
 
 describe("PipelineClient — error handling", () => {
   it("throws on a non-retryable 4xx response", async () => {
-    fetchMock.mockResolvedValueOnce(fakeResponse({ status: 400, text: "bad request" }));
+    fetchMock.mockResolvedValueOnce(
+      fakeResponse({ status: 400, text: "bad request" }),
+    );
     const client = new PipelineClient({ baseUrl: "http://x", retries: 2 });
     await expect(client.health()).rejects.toThrow(/returned 400/);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -149,7 +165,9 @@ describe("PipelineClient — error handling", () => {
 describe("PipelineClient.isAvailable", () => {
   it("is true when the pipeline reports ready", async () => {
     fetchMock.mockResolvedValueOnce(
-      fakeResponse({ json: { status: "healthy", pipeline_ready: true, version: "1" } }),
+      fakeResponse({
+        json: { status: "healthy", pipeline_ready: true, version: "1" },
+      }),
     );
     const client = new PipelineClient({ baseUrl: "http://x" });
     expect(await client.isAvailable()).toBe(true);
@@ -157,7 +175,9 @@ describe("PipelineClient.isAvailable", () => {
 
   it("is false when the pipeline is not ready", async () => {
     fetchMock.mockResolvedValueOnce(
-      fakeResponse({ json: { status: "degraded", pipeline_ready: false, version: "1" } }),
+      fakeResponse({
+        json: { status: "degraded", pipeline_ready: false, version: "1" },
+      }),
     );
     const client = new PipelineClient({ baseUrl: "http://x" });
     expect(await client.isAvailable()).toBe(false);
