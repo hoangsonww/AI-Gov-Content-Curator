@@ -338,9 +338,9 @@ filetype==1.2.0 \
     --hash=sha256:66b56cd6474bf41d8c54660347d37afcc3f7d1970648de365c102ef77548aadb \
     --hash=sha256:7ce71b6880181241cf7ac8697a2f1eb6a8bd9b429f7ad6d27b8db9ba5f1c2d25
     # via langchain-google-genai
-google-auth==2.52.0 \
-    --hash=sha256:01f30e1a9e3638698d89464f5e603ce29d18e1c0e63ec31ac570aba4e164aaf5 \
-    --hash=sha256:aee92803ba0ff93a70a3b8a35c7b4797837751cd6380b63ff38372b98f3ed627
+google-auth==2.53.0 \
+    --hash=sha256:6e7449917c599b35126a99ec268ec6880301f2fea41dce198fe8fd83ff642b68 \
+    --hash=sha256:e7e6aa16f6bee7b2b264830fd04f08087a1d5a836df516251a5d15327b246c9c
     # via google-genai
 google-genai==1.75.0 \
     --hash=sha256:56bac3991b311c93f980c0a2abcd287b672146905df1fbd71c92ed633d5a07cf \
