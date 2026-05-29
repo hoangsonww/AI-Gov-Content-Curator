@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bell, CheckCircle2 } from 'lucide-react';
 
-type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly';
+type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
 
 interface AlertsSetupProps {
   selectedFrequency: AlertFrequency;
@@ -25,6 +25,7 @@ const AlertsSetup: React.FC<AlertsSetupProps> = ({
     { value: 'daily', label: 'Daily', description: 'One digest per day' },
     { value: 'weekly', label: 'Weekly', description: 'One digest per week' },
     { value: 'monthly', label: 'Monthly', description: 'One digest per month' },
+    { value: 'never', label: 'Never', description: 'No alerts' }
   ];
 
   return (

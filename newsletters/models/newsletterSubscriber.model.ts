@@ -40,12 +40,17 @@ import mongoose, { Schema, Document } from "mongoose";
  *           format: date-time
  *           readOnly: true
  *           description: Record last update timestamp (auto-managed by Mongoose).
+ *         alertFrequency:
+ *           type: string
+ *           enum: [hourly, daily, weekly, monthly, never]
+ *           description: Preferred alert frequency
  */
 
 export interface INewsletterSubscriber extends Document {
   email: string;
   subscribedAt: Date;
   lastSentAt: Date | null;
+  alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
 }
 
 const NewsletterSubscriberSchema: Schema = new Schema(
@@ -66,6 +71,10 @@ const NewsletterSubscriberSchema: Schema = new Schema(
       type: Date,
       default: null,
     },
+    alertFreqeuncy: { 
+      type: String,
+      enum: ['hourly', 'daily', 'weekly', 'monthly', 'never']
+    }
   },
   { timestamps: true },
 );

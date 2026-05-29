@@ -8,8 +8,14 @@ jest.mock("../models/article.model", () => ({
   countDocuments: jest.fn(),
 }));
 
+jest.mock("../models/newsletterSubscriber.model", () => ({
+  findOne: jest.fn(),
+  find: jest.fn(),
+}));
+
 const User = require("../models/user.model");
 const Article = require("../models/article.model");
+const NewsletterSubscriber = require("../models/newsletterSubscriber.model")
 const {
   getFavoriteArticles,
   getFavoriteArticleIds,
@@ -385,10 +391,17 @@ describe("Preferences Controller", () => {
 
     it("200 updates preferences on success", async () => {
       const user = {
+        email: 'u1@example.com',
         preferences: null,
         save: jest.fn().mockResolvedValue(true),
       };
+      const newsletterSubscriber = {
+        email: 'u1@example.com',
+        save: jest.fn().mockResolvedValue(true),
+      }
       User.findById.mockResolvedValue(user);
+      NewsletterSubscriber.findOne.mockResolvedValue(newsletterSubscriber);
+      
       req = {
         user: { id: "u1" },
         body: {
@@ -401,6 +414,8 @@ describe("Preferences Controller", () => {
       await setUserPreferences(req, res);
       expect(User.findById).toHaveBeenCalledWith("u1");
       expect(user.save).toHaveBeenCalled();
+      expect(NewsletterSubscriber.findOne).toHaveBeenCalledWith({"email": "u1@example.com"})
+      expect(newsletterSubscriber.save).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         message: "Preferences updated successfully",
@@ -415,10 +430,13 @@ describe("Preferences Controller", () => {
 
     it("200 allows empty topics and sources", async () => {
       const user = {
+        email: 'u1@example.com',
         preferences: null,
         save: jest.fn().mockResolvedValue(true),
       };
+
       User.findById.mockResolvedValue(user);
+      
       req = {
         user: { id: "u1" },
         body: {
@@ -428,6 +446,38 @@ describe("Preferences Controller", () => {
       await setUserPreferences(req, res);
       expect(User.findById).toHaveBeenCalledWith("u1");
       expect(user.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Preferences updated successfully",
+        preferences: {
+          topics: [],
+          sources: [],
+          alertFrequency: "weekly",
+          notifyOnNewStories: false,
+        },
+      });
+    });
+
+    it("200 handles no newsletter subscription", async () => {
+      const user = {
+        email: 'u1@example.com',
+        preferences: null,
+        save: jest.fn().mockResolvedValue(true),
+      };
+
+      User.findById.mockResolvedValue(user);
+      NewsletterSubscriber.findOne.mockResolvedValue(null);
+
+      req = {
+        user: { id: "u1" },
+        body: {
+          alertFrequency: "weekly",
+        },
+      };
+      await setUserPreferences(req, res);
+      expect(User.findById).toHaveBeenCalledWith("u1");
+      expect(user.save).toHaveBeenCalled();
+      expect(NewsletterSubscriber.findOne).toHaveBeenCalledWith({"email": "u1@example.com"})
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         message: "Preferences updated successfully",

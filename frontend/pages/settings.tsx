@@ -8,7 +8,7 @@ import AlertsSetup from '../components/AlertsSetup';
 import PersonalizedFeed from '../components/PersonalizedFeed';
 import { getTopics, getSources, getUserPreferences, setUserPreferences } from '../services/api';
 
-type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly';
+type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
 
 const SettingsPage = () => {
   const router = useRouter();

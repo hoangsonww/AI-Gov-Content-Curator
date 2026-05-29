@@ -8,7 +8,7 @@ import PersonalizedFeed from '../components/PersonalizedFeed';
 import OnboardingStart from '../components/OnboardingStart';
 import { getTopics, getSources } from '../services/api';
 
-type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly';
+type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
 
 const OnboardingQuiz = () => {
   const [step, setStep] = useState(1);

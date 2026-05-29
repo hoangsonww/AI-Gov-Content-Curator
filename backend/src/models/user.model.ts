@@ -74,7 +74,7 @@ import mongoose, { Schema, Document } from "mongoose";
  *                 type: string
  *             alertFrequency:
  *               type: string
- *               enum: [hourly, daily, weekly, monthly]
+ *               enum: [hourly, daily, weekly, monthly, never]
  *               description: Preferred alert frequency
  *             notifyOnNewStories:
  *               type: boolean
@@ -108,7 +108,7 @@ export interface IUser extends Document {
   preferences?: {
     topics: string[];
     sources: string[];
-    alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+    alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
     notifyOnNewStories: boolean;
   };
 }
@@ -132,7 +132,7 @@ const UserSchema: Schema = new Schema(
     preferences: {
       topics: [{ type: String }],
       sources: [{ type: String }],
-      alertFrequency: { type: String, enum: ['hourly', 'daily', 'weekly', 'monthly'] },
+      alertFrequency: { type: String, enum: ['hourly', 'daily', 'weekly', 'monthly', 'never'] },
       notifyOnNewStories: { type: Boolean, default: false },
     },
   },

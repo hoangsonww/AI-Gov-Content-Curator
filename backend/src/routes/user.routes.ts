@@ -315,7 +315,7 @@ router.get("/validate-token", authenticate, validateTokenController);
  *                 example: ["BBC", "Reuters"]
  *               alertFrequency:
  *                 type: string
- *                 enum: [hourly, daily, weekly, monthly]
+ *                 enum: [hourly, daily, weekly, monthly, never]
  *                 description: Preferred alert frequency
  *                 example: "daily"
  *               notifyOnNewStories:
@@ -389,7 +389,7 @@ router.post("/preferences", authenticate, setUserPreferences);
  *                         type: string
  *                     alertFrequency:
  *                       type: string
- *                       enum: [hourly, daily, weekly, monthly]
+ *                       enum: [hourly, daily, weekly, monthly, never]
  *                     notifyOnNewStories:
  *                       type: boolean
  *       401:

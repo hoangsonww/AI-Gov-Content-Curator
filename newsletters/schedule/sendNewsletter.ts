@@ -41,8 +41,47 @@ export async function sendNewsletter() {
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
+  const SEC_TO_MS = 1000;
+  const oneHour = 60 * 60 * SEC_TO_MS
+  const oneDay = 24 * 60 * 60 * SEC_TO_MS;
+  const oneWeek = oneDay * 7;
+  const oneMonth = oneWeek * 4;
+
+  const today = Date.now()
+
   for (const sub of subscribers) {
     const since = sub.lastSentAt ?? new Date(0);
+
+    const freq = sub.alertFrequency ?? 'never';
+    switch (freq) {
+      case "never":
+        console.log(`${sub.email}: newsletter disabled`);
+        continue 
+
+      case "hourly":
+        if (today - since.getTime() < oneHour) {
+          continue;
+        }
+        break
+
+      case "daily":
+        if (today - since.getTime() < oneDay) {
+          continue;
+        }
+        break
+
+      case "weekly":
+        if (today - since.getTime() < oneWeek) {
+          continue;
+        }
+        break
+      case "monthly":
+        if (today - since.getTime() < oneMonth) {
+          continue;
+        }
+        break
+    }
+      
     const articles = await Article.find({ fetchedAt: { $gt: since } })
       .sort({ fetchedAt: 1 })
       .limit(MAX_ARTICLES + 1) // +1 to detect if more were trimmed

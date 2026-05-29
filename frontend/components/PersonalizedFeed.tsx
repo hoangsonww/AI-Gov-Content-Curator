@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { Edit2, Trash2, ArrowLeft } from 'lucide-react';
 import { setUserPreferences } from '../services/api';
 
-type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly';
+type AlertFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
 
 interface PersonalizedFeedProps {
   selectedTopics: string[];
@@ -36,6 +36,7 @@ const PersonalizedFeed: React.FC<PersonalizedFeedProps> = ({
     daily: 'Daily',
     weekly: 'Weekly',
     monthly: 'Monthly',
+    never: 'Never'
   };
 
   const handleStartBrowsingFeed = async () => {

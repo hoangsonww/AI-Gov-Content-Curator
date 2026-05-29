@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
 import Article from "../models/article.model";
+import NewsletterSubscriber from "../models/newsletterSubscriber.model";
 
 /**
  * Get favorite articles for the logged-in user
@@ -165,7 +166,7 @@ export const setUserPreferences = async (req: Request, res: Response) => {
   }
 
   // Alert frequency is still required
-  if (!alertFrequency || !['hourly', 'daily', 'weekly', 'monthly'].includes(alertFrequency)) {
+  if (!alertFrequency || !['hourly', 'daily', 'weekly', 'monthly', 'never'].includes(alertFrequency)) {
     return res.status(400).json({ error: "Alert frequency must be one of: hourly, daily, weekly, monthly" });
   }
 
@@ -178,7 +179,7 @@ export const setUserPreferences = async (req: Request, res: Response) => {
     user.preferences = {
       topics: topics || [],
       sources: sources || [],
-      alertFrequency: alertFrequency as 'hourly' | 'daily' | 'weekly' | 'monthly',
+      alertFrequency: alertFrequency as 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never',
       notifyOnNewStories: notifyOnNewStories ?? false,
     };
 
@@ -189,6 +190,15 @@ export const setUserPreferences = async (req: Request, res: Response) => {
 
     await user.save();
 
+    const email = user.email;
+    const newsletterSubscription = await NewsletterSubscriber.findOne({'email': email});
+
+    // Update newsletter subscription
+    if (newsletterSubscription) {
+      newsletterSubscription.alertFrequency = alertFrequency
+      await newsletterSubscription.save();
+    }
+    
     return res.status(200).json({
       message: "Preferences updated successfully",
       preferences: user.preferences,

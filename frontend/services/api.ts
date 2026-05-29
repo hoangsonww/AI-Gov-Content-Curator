@@ -787,7 +787,7 @@ export const setUserPreferences = async (
   preferences: {
     topics: string[];
     sources: string[];
-    alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+    alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
     notifyOnNewStories: boolean;
   },
   retries = 3,
@@ -838,7 +838,7 @@ export const getUserPreferences = async (
 ): Promise<{
   topics: string[];
   sources: string[];
-  alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+  alertFrequency: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'never';
   notifyOnNewStories: boolean;
 } | null> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
