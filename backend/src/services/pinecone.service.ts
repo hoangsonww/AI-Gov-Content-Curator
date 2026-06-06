@@ -384,7 +384,7 @@ export interface ArticleVector {
   fetchedAt: Date;
 }
 
-async function getEmbedding(text: string): Promise<number[]> {
+export async function getEmbedding(text: string): Promise<number[]> {
   const model = getEmbeddingModel();
   const embedResp = await model.embedContent({
     content: {

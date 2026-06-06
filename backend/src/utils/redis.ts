@@ -10,12 +10,22 @@ const URL_QUEUE_KEY = "articles:queue";
 let client: RedisClientType;
 
 /**
+ * Get the underlying Redis client instance. Throws if not connected.
+ */
+export async function getRedisClient(): Promise<RedisClientType> {
+  if (!client) {
+   connectRedis();
+  }
+  return client;
+}
+
+/**
  * Connect to Redis.
  */
 export async function connectRedis(): Promise<void> {
   if (!client) {
     client = createClient({ url: REDIS_URL });
-    client.on("error", (err) => {
+    client.on("error", (err: Error) => {
       console.error("Redis error", err);
     });
     await client.connect();
@@ -74,5 +84,5 @@ export async function getQueueLength(): Promise<number> {
  * Clear both the processed set and the queue.
  */
 export async function resetQueueAndSet(): Promise<void> {
-  await client.del(PROCESSED_SET_KEY, URL_QUEUE_KEY);
+  await client.del([PROCESSED_SET_KEY, URL_QUEUE_KEY]);
 }

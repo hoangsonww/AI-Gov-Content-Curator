@@ -8,6 +8,7 @@ import {
 import * as dotenv from "dotenv";
 import { searchArticles } from "../services/pinecone.service";
 import { getGeminiModels } from "../services/geminiModels.service";
+import { getSemanticCache } from "../utils/ContextualTieredCache";
 dotenv.config();
 
 /* ───────── CONFIG ───────── */
@@ -229,6 +230,40 @@ function detectHallucinations(
   return warnings;
 }
 
+const METRICS_WINDOW = 2000;
+interface RequestMetrics {
+  latenciesMs: number[];
+  inputTokens: number[];
+  outputTokens: number[];
+}
+
+const chatMetrics: RequestMetrics = {
+  latenciesMs: [],
+  inputTokens: [],
+  outputTokens: [],
+};
+
+function estimateTokens(text: string | null | undefined): number {
+  const normalized = String(text ?? "").trim();
+  if (!normalized) return 0;
+  return Math.ceil(normalized.length / 4);
+}
+
+function recordMetrics(
+  latencyMs: number,
+  inputTokens: number,
+  outputTokens: number,
+) {
+  chatMetrics.latenciesMs.push(latencyMs);
+  chatMetrics.inputTokens.push(inputTokens);
+  chatMetrics.outputTokens.push(outputTokens);
+  if (chatMetrics.latenciesMs.length > METRICS_WINDOW) {
+    chatMetrics.latenciesMs.shift();
+    chatMetrics.inputTokens.shift();
+    chatMetrics.outputTokens.shift();
+  }
+}
+
 /**
  * Ask Gemini a question using the provided article and history.
  *
@@ -310,12 +345,34 @@ export async function handleChat(
   next: NextFunction,
 ) {
   try {
+    const userId = (req as any).user.id;
     const { article, userMessage, history = [] } = req.body;
 
-    if (!article || !userMessage) {
+    if (!article || !userMessage ) {
       return res
         .status(400)
         .json({ error: "`article` and `userMessage` are required." });
+    }
+
+    const articleId = article._id
+    const startTime = process.hrtime.bigint();
+
+    const cacheable = Boolean(userId && articleId);
+    let cache = cacheable ? await getSemanticCache() : null;
+    let cachedReply: string | null = null;
+
+    if (cache) {
+      try {
+        cachedReply = await cache.get(userId, articleId, userMessage);
+      } catch (err) {
+        console.error("Semantic cache unavailable for handleChat:", err);
+      }
+    }
+
+    if (cachedReply) {
+      const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+      recordMetrics(latencyMs, estimateTokens(userMessage), 0);
+      return res.json({ reply: cachedReply });
     }
 
     /* sanitise history → last 10 valid messages */
@@ -331,6 +388,15 @@ export async function handleChat(
       : [];
 
     const reply = await askGemini(article, safeHistory, userMessage);
+
+    if (cache) {
+      cache.set(userId, articleId, userMessage, reply).catch((err) => {
+        console.error("Failed to write to semantic cache for handleChat:", err);
+      });
+    }
+
+    const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    recordMetrics(latencyMs, estimateTokens(userMessage), estimateTokens(reply));
     return res.json({ reply });
   } catch (err) {
     next(err);
@@ -351,11 +417,14 @@ export async function handleSitewideChat(
   next: NextFunction,
 ) {
   try {
+    const userId = (req as any).user.id;
     const { userMessage, history = [] } = req.body;
 
     if (!userMessage || typeof userMessage !== "string") {
       return res.status(400).json({ error: "`userMessage` is required." });
     }
+
+    const startTime = process.hrtime.bigint();
 
     // Sanitize history → last N valid messages, strip citation lists to save tokens
     const safeHistory = Array.isArray(history)
@@ -378,6 +447,25 @@ export async function handleSitewideChat(
       if (firstUserIdx === -1) return [];
       return safeHistory.slice(firstUserIdx);
     })();
+
+    const articleId = "sitewide"
+    const cacheable = Boolean(userId);
+    let cache = cacheable ? await getSemanticCache() : null;
+    let cachedReply: string | null = null;
+
+    if (cache) {
+      try {
+        cachedReply = await cache.get(userId, articleId, userMessage);
+      } catch (err) {
+        console.error("Semantic cache unavailable for handleChat:", err);
+      }
+    }
+
+    if (cachedReply) {
+      const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+      recordMetrics(latencyMs, estimateTokens(userMessage), 0);
+      return res.json({ reply: cachedReply });
+    }
 
     // Set up Server-Sent Events headers for streaming
     res.setHeader("Content-Type", "text/event-stream");
@@ -563,6 +651,12 @@ Remember: It's better to say "I don't have information about that in the availab
               success: true,
               citationCount: citationMetadata.length,
             });
+
+            if (cache) {
+              cache.set(userId, articleId, userMessage, fullResponse).catch((err) => {
+                console.error("Failed to write to semantic cache for handleSitewideChat:", err);
+              });
+            }
             break;
           } catch (err) {
             // If rate limit or overload, try next key/model
@@ -602,6 +696,7 @@ Use [Source N] notation.`.trim();
               const result = await model.generateContent(userMessage);
               const text = result.response?.text?.();
               if (text) {
+                fullResponse = text;
                 sendEvent("chunk", { text });
                 sendEvent("done", {
                   success: true,
@@ -618,10 +713,15 @@ Use [Source N] notation.`.trim();
         if (!fallbackStreamed) {
           const fallbackText =
             "I don't have additional details from the available sources right now.";
+          fullResponse = "";
           sendEvent("chunk", { text: fallbackText });
           sendEvent("done", { success: false, citationCount: 0 });
         }
       }
+
+      const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+      recordMetrics( latencyMs, estimateTokens(userMessage), estimateTokens(fullResponse));
+
     } catch (error: any) {
       console.error("Error in sitewide chat:", error);
       sendEvent("chunk", {

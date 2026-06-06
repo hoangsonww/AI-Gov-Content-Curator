@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import app from "./app";
+import { connectRedis } from "./utils/redis";
+import { createSemanticCache } from "./utils/ContextualTieredCache";
 
 dotenv.config();
 
@@ -25,6 +27,10 @@ const startServer = async () => {
       console.log("Using existing MongoDB connection");
     }
 
+    // Initialize Redis + semantic cache schema before the app starts listening
+    await connectRedis();
+    await createSemanticCache();
+    
     // Only listen in non-production modes
     if (process.env.NODE_ENV !== "production") {
       app.listen(PORT, () => {

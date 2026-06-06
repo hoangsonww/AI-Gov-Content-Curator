@@ -28,7 +28,7 @@ describe("chat.controller – handleChat", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // mock req/res/next
-    req = { body: {} };
+    req = { user: { id: "u1" }, body: { } };
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),

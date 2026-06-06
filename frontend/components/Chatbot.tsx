@@ -158,6 +158,14 @@ export default function Chatbot({ article }: { article: Article }) {
   };
 
   const send = async () => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('User is not authenticated');
+      alert('Please log in to chat our AI');
+      return;
+    }
+
     if (!input.trim() || loading) return;
     const txt = input.trim();
     setInput("");
@@ -169,7 +177,7 @@ export default function Chatbot({ article }: { article: Article }) {
         "https://ai-content-curator-backend.vercel.app/api/chat",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Authorization: token },
           body: JSON.stringify({ article, userMessage: txt }),
         },
       );

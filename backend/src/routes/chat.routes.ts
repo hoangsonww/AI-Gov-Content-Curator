@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { handleChat, handleSitewideChat } from "../controllers/chat.controller";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -64,7 +65,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.post("/", handleChat);
+router.post("/", authenticate, handleChat);
 
 /**
  * @swagger
@@ -107,6 +108,6 @@ router.post("/", handleChat);
  *       500:
  *         description: Server error
  */
-router.post("/sitewide", handleSitewideChat);
+router.post("/sitewide", authenticate, handleSitewideChat);
 
 export default router;
