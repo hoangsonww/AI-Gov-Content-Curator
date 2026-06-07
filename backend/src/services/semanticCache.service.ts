@@ -1,8 +1,9 @@
-import { getRedisClient } from "./redis";
-import { getEmbedding } from "../services/pinecone.service";
+import { getRedisClient } from "../utils/redis";
+import { getEmbedding } from "./pinecone.service";
 import { randomUUID } from "crypto";
+import { RedisClientType } from "redis";
 
-let cache: ContextualTieredCache | null = null;
+let cache: SemanticCache ;
 
 export interface CacheConfig {
   indexName?: string;
@@ -10,8 +11,8 @@ export interface CacheConfig {
   ttlSeconds?: number;
 }
 
-class ContextualTieredCache {
-  private redis: any;
+export class SemanticCache {
+  private redis: RedisClientType;
   private distanceThreshold: number;
   private indexName: string;
   private ttlSeconds: number;
@@ -142,7 +143,7 @@ class ContextualTieredCache {
 }
 
 export async function createSemanticCache(): Promise<void> {
-  cache = new ContextualTieredCache({
+  cache = new SemanticCache({
     distanceThreshold: 0.18,
     ttlSeconds: 86400,
   });
@@ -151,23 +152,11 @@ export async function createSemanticCache(): Promise<void> {
   console.log("🚀 Contextual semantic cache initialized.");
 }
 
-export async function getSemanticCache(): Promise<ContextualTieredCache | null> {
-  if (!cache) {
-    await createSemanticCache();
-  }
+export function getSemanticCache(): (SemanticCache | null) {
   return cache;
 }
 
 export function getSemanticCacheMetrics() {
-  if (!cache) {
-    return {
-      hits: 0,
-      misses: 0,
-      requests: 0,
-      hitRate: 0,
-      missRate: 0,
-    };
-  }
 
   return cache.getMetrics();
 }

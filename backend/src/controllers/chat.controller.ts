@@ -8,7 +8,8 @@ import {
 import * as dotenv from "dotenv";
 import { searchArticles } from "../services/pinecone.service";
 import { getGeminiModels } from "../services/geminiModels.service";
-import { getSemanticCache } from "../utils/ContextualTieredCache";
+import { getSemanticCache } from "../services/semanticCache.service";
+import { SemanticCache } from "../services/semanticCache.service";
 dotenv.config();
 
 /* ───────── CONFIG ───────── */
@@ -358,7 +359,7 @@ export async function handleChat(
     const startTime = process.hrtime.bigint();
 
     const cacheable = Boolean(userId && articleId);
-    let cache = cacheable ? await getSemanticCache() : null;
+    let cache: SemanticCache | null = cacheable ? await getSemanticCache() : null;
     let cachedReply: string | null = null;
 
     if (cache) {
@@ -390,9 +391,11 @@ export async function handleChat(
     const reply = await askGemini(article, safeHistory, userMessage);
 
     if (cache) {
-      cache.set(userId, articleId, userMessage, reply).catch((err) => {
+      try {
+        cache.set(userId, articleId, userMessage, reply)
+      } catch (err) {
         console.error("Failed to write to semantic cache for handleChat:", err);
-      });
+      };
     }
 
     const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
@@ -450,7 +453,7 @@ export async function handleSitewideChat(
 
     const articleId = "sitewide"
     const cacheable = Boolean(userId);
-    let cache = cacheable ? await getSemanticCache() : null;
+    let cache: SemanticCache | null = cacheable ? await getSemanticCache() : null;
     let cachedReply: string | null = null;
 
     if (cache) {
@@ -653,9 +656,11 @@ Remember: It's better to say "I don't have information about that in the availab
             });
 
             if (cache) {
-              cache.set(userId, articleId, userMessage, fullResponse).catch((err) => {
+              try {
+                cache.set(userId, articleId, userMessage, fullResponse)
+              } catch(err) {
                 console.error("Failed to write to semantic cache for handleSitewideChat:", err);
-              });
+              };
             }
             break;
           } catch (err) {

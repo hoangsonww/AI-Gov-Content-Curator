@@ -9,12 +9,23 @@ const getGenerativeModelMock = jest
 const GoogleGenerativeAI = jest.fn().mockImplementation(() => ({
   getGenerativeModel: getGenerativeModelMock,
 }));
+const cacheGetMock = jest.fn();
+const cacheSetMock = jest.fn();
+const getSemanticCacheMock = jest.fn().mockReturnValue({ 
+  get: cacheGetMock, 
+  set: cacheSetMock 
+});
 
 jest.mock("@google/generative-ai", () => ({
   GoogleGenerativeAI,
   GenerationConfig: {}, // not used in tests
   HarmCategory: { HARASSMENT: 0 },
   HarmBlockThreshold: { BLOCK_NONE: 0 },
+}));
+
+jest.mock("../services/semanticCache.service", () => ({
+  getSemanticCache: getSemanticCacheMock,
+  SemanticCache: jest.fn(),
 }));
 
 // now import after mocks
@@ -27,6 +38,9 @@ describe("chat.controller – handleChat", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    cacheGetMock.mockReset();
+    cacheSetMock.mockReset();
+
     // mock req/res/next
     req = { user: { id: "u1" }, body: { } };
     res = {
@@ -54,19 +68,28 @@ describe("chat.controller – handleChat", () => {
     });
   });
 
-  it("invokes askGemini and returns reply on success", async () => {
+  it("invokes askGemini on cache miss and returns reply on success", async () => {
     // stub sendMessage to resolve a response
     sendMessageMock.mockResolvedValue({
       response: { text: () => " Hello from Gemini " },
     });
 
-    req.body.article = { title: "Title", content: "Some content" };
+    cacheGetMock.mockResolvedValue(null);
+
+    req.body.article = { _id: "article1", title: "Title", content: "Some content" };
     req.body.userMessage = "Hi there";
     req.body.history = [{ role: "user", text: "hey" }];
 
     await handleChat(req, res, next);
 
-    // GoogleGenerativeAI constructed once per API_KEYS × MODELS; at least one call
+    expect(getSemanticCacheMock).toHaveBeenCalled();
+    expect(cacheGetMock).toHaveBeenCalledWith("u1", "article1", "Hi there");
+    expect(cacheSetMock).toHaveBeenCalledWith(
+      "u1",
+      "article1",
+      "Hi there",
+      "Hello from Gemini",
+    );
     expect(GoogleGenerativeAI).toHaveBeenCalled();
     expect(getGenerativeModelMock).toHaveBeenCalled();
     expect(startChatMock).toHaveBeenCalledWith({
@@ -78,6 +101,24 @@ describe("chat.controller – handleChat", () => {
 
     // trimmed reply
     expect(res.json).toHaveBeenCalledWith({ reply: "Hello from Gemini" });
+  });
+
+  it("does not call Gemini when cache hits", async () => {
+    cacheGetMock.mockResolvedValue("cached response");
+
+    req.body.article = { _id: "article1", title: "Title", content: "Some content" };
+    req.body.userMessage = "Hi there";
+
+    await handleChat(req, res, next);
+
+    expect(getSemanticCacheMock).toHaveBeenCalled();
+    expect(cacheGetMock).toHaveBeenCalledWith("u1", "article1", "Hi there");
+    expect(cacheSetMock).not.toHaveBeenCalled();
+    expect(GoogleGenerativeAI).not.toHaveBeenCalled();
+    expect(getGenerativeModelMock).not.toHaveBeenCalled();
+    expect(startChatMock).not.toHaveBeenCalledWith();
+    expect(sendMessageMock).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({ reply: "cached response" });
   });
 
   it("passes errors to next() if askGemini throws", async () => {

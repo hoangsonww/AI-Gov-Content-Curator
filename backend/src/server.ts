@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import app from "./app";
 import { connectRedis } from "./utils/redis";
-import { createSemanticCache } from "./utils/ContextualTieredCache";
+import { createSemanticCache } from "./services/semanticCache.service";
 
 dotenv.config();
 

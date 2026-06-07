@@ -10,12 +10,9 @@ const URL_QUEUE_KEY = "articles:queue";
 let client: RedisClientType;
 
 /**
- * Get the underlying Redis client instance. Throws if not connected.
+ * Get the underlying Redis client instance or null if it doesnt exist
  */
-export async function getRedisClient(): Promise<RedisClientType> {
-  if (!client) {
-   connectRedis();
-  }
+export function getRedisClient(): RedisClientType {
   return client;
 }
 
@@ -36,9 +33,9 @@ export async function connectRedis(): Promise<void> {
 /**
  * Disconnect from Redis.
  */
-export async function disconnectRedis(): Promise<void> {
+export function disconnectRedis(): void {
   if (client) {
-    await client.disconnect();
+    client.destroy();
     console.log("✅ Disconnected from Redis");
   }
 }

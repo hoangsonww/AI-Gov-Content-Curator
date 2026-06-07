@@ -37,7 +37,7 @@ const getMockEmbedding = (text) => {
   }
 };
 
-describe("Contextual semantic cache", () => {
+describe("Semantic cache", () => {
   let cacheModule;
   let redisMock;
   let storedRecords;
@@ -73,12 +73,21 @@ describe("Contextual semantic cache", () => {
         }),
         search: jest.fn(async (_indexName, _query, params) => {
           const vector = arrayFromBlob(params.PARAMS.blob);
+          const userIdMatch = /@userId:\{([^}]+)\}/.exec(_query);
+          const articleIdMatch = /@articleId:\{([^}]+)\}/.exec(_query);
+          const queryUserId = userIdMatch?.[1];
+          const queryArticleId = articleIdMatch?.[1];
+
           const documents = Array.from(storedRecords.entries())
             .map(([id, record]) => {
               const dist = cosineDistance(vector, record.prompt_vector);
               return { id, record, dist };
             })
-            .filter(({ dist }) => dist <= threshold)
+            .filter(({ record, dist }) => {
+              if (queryUserId && record.userId !== queryUserId) return false;
+              if (queryArticleId && record.articleId !== queryArticleId) return false;
+              return dist <= threshold;
+            })
             .sort((a, b) => a.dist - b.dist)
             .map(({ id, record }) => ({
               id,
@@ -101,7 +110,7 @@ describe("Contextual semantic cache", () => {
     mockGetRedisClient.mockReturnValue(redisMock);
     mockGetEmbedding.mockImplementation(async (text) => getMockEmbedding(text));
 
-    cacheModule = require("../utils/ContextualTieredCache");
+    cacheModule = require("../services/semanticCache.service");
   });
 
   it("should hit the cache for the same query string", async () => {
@@ -173,5 +182,51 @@ describe("Contextual semantic cache", () => {
     expect(metrics.misses).toBe(1);
     expect(metrics.hits).toBe(0);
     expect(metrics.hitRate).toBe(0);
+  });
+
+  it("should not hit cache for a similar query from a different user", async () => {
+    const { createSemanticCache, getSemanticCache, getSemanticCacheMetrics } = cacheModule;
+    await createSemanticCache();
+    const cache = await getSemanticCache();
+
+    const storedUserId = "user1";
+    const lookupUserId = "user2";
+    const articleId = "article1";
+    const promptA = "What is the truck range?";
+    const responseA = "The truck can travel about 300 miles.";
+
+    await cache.set(storedUserId, articleId, promptA, responseA);
+
+    const similarQuery = "How far can the truck go?";
+    const reply = await cache.get(lookupUserId, articleId, similarQuery);
+    const metrics = getSemanticCacheMetrics();
+
+    expect(reply).toBeNull();
+    expect(metrics.requests).toBe(1);
+    expect(metrics.misses).toBe(1);
+    expect(metrics.hits).toBe(0);
+  });
+
+  it("should not hit cache for a similar query on a different article", async () => {
+    const { createSemanticCache, getSemanticCache, getSemanticCacheMetrics } = cacheModule;
+    await createSemanticCache();
+    const cache = await getSemanticCache();
+
+    const userId = "user1";
+    const storedArticleId = "article1";
+    const lookupArticleId = "article2";
+    const promptA = "What is the truck range?";
+    const responseA = "The truck can travel about 300 miles.";
+
+    await cache.set(userId, storedArticleId, promptA, responseA);
+
+    const similarQuery = "How far can the truck go?";
+    const reply = await cache.get(userId, lookupArticleId, similarQuery);
+    const metrics = getSemanticCacheMetrics();
+
+    expect(reply).toBeNull();
+    expect(metrics.requests).toBe(1);
+    expect(metrics.misses).toBe(1);
+    expect(metrics.hits).toBe(0);
   });
 });
