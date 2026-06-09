@@ -244,6 +244,30 @@ const chatMetrics: RequestMetrics = {
   outputTokens: [],
 };
 
+export function getAggMetrics() {
+  // 1. Sort latencies in order to find the 95th percentile
+  const sortedLatencies = [...chatMetrics.latenciesMs].sort((a, b) => a - b);
+  const p95Index = Math.ceil(0.95 * sortedLatencies.length) - 1;
+  const p95Latency = sortedLatencies[p95Index] || 0;
+
+  // 2. Add up all input tokens
+  const totalInputTokens = chatMetrics.inputTokens.reduce((sum, current) => sum + current, 0);
+
+  // 3. Add up all output tokens
+  const totalOutputTokens = chatMetrics.outputTokens.reduce((sum, current) => sum + current, 0);
+
+  // 4. Calculate total tokens and mean per request
+  const totalTokens = totalInputTokens + totalOutputTokens;
+  const requestCount = chatMetrics.inputTokens.length;
+  const meanTokensPerRequest = requestCount > 0 ? (totalTokens / requestCount) : 0;
+
+  // 5. Return our calculated results
+  return {
+    p95Latency,
+    meanTokensPerRequest
+  };
+}
+
 function estimateTokens(text: string | null | undefined): number {
   const normalized = String(text ?? "").trim();
   if (!normalized) return 0;

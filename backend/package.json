@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@huggingface/transformers": "^4.2.0",
     "@pinecone-database/pinecone": "^6.1.2",
     "@simplewebauthn/server": "^11.0.0",
     "@vercel/node": "^5.1.10",

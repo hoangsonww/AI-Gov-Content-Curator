@@ -29,7 +29,7 @@ jest.mock("../services/semanticCache.service", () => ({
 }));
 
 // now import after mocks
-const { handleChat } = require("../controllers/chat.controller");
+const { handleChat, getAggMetrics } = require("../controllers/chat.controller");
 
 describe("chat.controller – handleChat", () => {
   let req;
@@ -134,4 +134,44 @@ describe("chat.controller – handleChat", () => {
     // no JSON or status called
     expect(res.json).not.toHaveBeenCalled();
   });
+
+  it("p95 latency and mean tokens per request decreases for repeated intents", async () => {
+    sendMessageMock.mockImplementation(() => {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        response: { text: () => " Hello from Gemini " }
+      }), 1000));}
+    )
+
+    cacheGetMock.mockResolvedValue(null);
+
+    req.body.article = { _id: "article1", title: "Title", content: "Some content" };
+    req.body.userMessage = "Hi there";
+    req.body.history = [{ role: "user", text: "hey" }];
+
+    await handleChat(req, res, next);
+
+    expect(cacheGetMock).toHaveBeenCalled();
+    expect(cacheSetMock).toHaveBeenCalled();
+    expect(GoogleGenerativeAI).toHaveBeenCalled();
+
+    const { p95Latency, meanTokensPerRequest } = getAggMetrics();
+    console.log(p95Latency, meanTokensPerRequest)
+
+    jest.clearAllMocks();
+
+    cacheGetMock.mockResolvedValue("cached response");
+
+    await handleChat(req, res, next);
+
+    expect(cacheGetMock).toHaveBeenCalled();
+    expect(cacheSetMock).not.toHaveBeenCalled();
+    expect(GoogleGenerativeAI).not.toHaveBeenCalled();
+
+    const { p95Latency: newP95Latency, 
+      meanTokensPerRequest: newMeanTokensPerRequest } = getAggMetrics();
+    console.log(newP95Latency, newMeanTokensPerRequest)
+
+    expect(newP95Latency <= p95Latency);
+    expect(newMeanTokensPerRequest < meanTokensPerRequest);
+  })
 });

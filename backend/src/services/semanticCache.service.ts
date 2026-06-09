@@ -38,8 +38,8 @@ export class SemanticCache {
     try {
       await (this.redis as any).ft.info(this.indexName);
     } catch (err: any) {
-      const msg = String(err?.message || err || "");
-      if (msg.includes("Unknown index name") || msg.includes("Index does not exist")) {
+      const msg = String(err);
+      if (msg.includes("SEARCH_INDEX_NOT_FOUND")) {
         await (this.redis as any).ft.create(
           this.indexName,
           {
@@ -143,13 +143,18 @@ export class SemanticCache {
 }
 
 export async function createSemanticCache(): Promise<void> {
-  cache = new SemanticCache({
-    distanceThreshold: 0.18,
-    ttlSeconds: 86400,
-  });
-  const sampleVector = await getEmbedding("test initialization string");
-  await cache.ensureIndexSchema(sampleVector.length);
-  console.log("🚀 Contextual semantic cache initialized.");
+  try {
+    cache = new SemanticCache({
+      distanceThreshold: 0.18,
+      ttlSeconds: 86400,
+    });
+    const sampleVector = await getEmbedding("test initialization string");
+    await cache.ensureIndexSchema(sampleVector.length);
+    console.log("🚀 Contextual semantic cache initialized.");
+  } catch (err) {
+    console.error("Failed to create semantic cache:", err);
+  }
+  
 }
 
 export function getSemanticCache(): (SemanticCache | null) {
