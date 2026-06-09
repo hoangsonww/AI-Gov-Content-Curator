@@ -39,7 +39,7 @@ export class SemanticCache {
       await (this.redis as any).ft.info(this.indexName);
     } catch (err: any) {
       const msg = String(err);
-      if (msg.includes("SEARCH_INDEX_NOT_FOUND")) {
+      if (msg.includes("SEARCH_INDEX_NOT_FOUND") || msg.includes("Unknown index name")) {
         await (this.redis as any).ft.create(
           this.indexName,
           {
