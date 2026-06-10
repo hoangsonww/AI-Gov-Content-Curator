@@ -247,7 +247,7 @@ const chatMetrics: RequestMetrics = {
 export function getAggMetrics() {
   // 1. Sort latencies in order to find the 95th percentile
   const sortedLatencies = [...chatMetrics.latenciesMs].sort((a, b) => a - b);
-  const p95Index = Math.ceil(0.95 * sortedLatencies.length) - 1;
+  const p95Index = Math.floor(0.95 * sortedLatencies.length) - 1;
   const p95Latency = sortedLatencies[p95Index] || 0;
 
   // 2. Add up all input tokens
