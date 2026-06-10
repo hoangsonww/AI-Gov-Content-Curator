@@ -3,12 +3,13 @@ import { getEmbedding } from "./pinecone.service";
 import { randomUUID } from "crypto";
 import { RedisClientType } from "redis";
 
-let cache: SemanticCache ;
+let cache: SemanticCache;
 
 export interface CacheConfig {
   indexName?: string;
   distanceThreshold?: number;
   ttlSeconds?: number;
+  embeddingFn?: (text: string) => Promise<number[]>;
 }
 
 export class SemanticCache {
@@ -19,6 +20,7 @@ export class SemanticCache {
   private hitCount: number;
   private missCount: number;
   private requestCount: number;
+  private embeddingFn: (text: string) => Promise<number[]>;
 
   constructor(config: CacheConfig = {}) {
     this.redis = getRedisClient();
@@ -28,6 +30,7 @@ export class SemanticCache {
     this.hitCount = 0;
     this.missCount = 0;
     this.requestCount = 0;
+    this.embeddingFn = config.embeddingFn ?? getEmbedding;
   }
 
   private normalize(text: string): string {
@@ -66,7 +69,7 @@ export class SemanticCache {
   async get(userId: string, articleId: string, rawPrompt: string): Promise<string | null> {
     this.requestCount += 1;
     const cleanPrompt = this.normalize(rawPrompt);
-    const vector = await getEmbedding(cleanPrompt);
+    const vector = await this.embeddingFn(cleanPrompt);
     const maxDistanceStr = this.distanceThreshold.toFixed(4);
 
     const query = `(@userId:{${userId}} @articleId:{${articleId}}) @prompt_vector:[VECTOR_RANGE ${maxDistanceStr} $blob]=>{$yield_distance_as: dist}`;
@@ -99,7 +102,7 @@ export class SemanticCache {
     const cleanPrompt = this.normalize(rawPrompt);
     const key = `ctx_cache:${randomUUID()}`;
 
-    const vector = await getEmbedding(cleanPrompt);
+    const vector = await this.embeddingFn(cleanPrompt);
     const vectorBuffer = Buffer.from(new Float32Array(vector).buffer);
 
     await this.redis.hSet(key, {
@@ -142,19 +145,20 @@ export class SemanticCache {
   }
 }
 
-export async function createSemanticCache(): Promise<void> {
+export async function createSemanticCache(config: CacheConfig = {}): Promise<void> {
   try {
+    const embeddingFn = config.embeddingFn ?? getEmbedding;
     cache = new SemanticCache({
       distanceThreshold: 0.18,
       ttlSeconds: 86400,
+      ...config,
     });
-    const sampleVector = await getEmbedding("test initialization string");
+    const sampleVector = await embeddingFn("test initialization string");
     await cache.ensureIndexSchema(sampleVector.length);
     console.log("🚀 Contextual semantic cache initialized.");
   } catch (err) {
     console.error("Failed to create semantic cache:", err);
   }
-  
 }
 
 export function getSemanticCache(): (SemanticCache | null) {
