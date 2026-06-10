@@ -155,7 +155,6 @@ describe("chat.controller – handleChat", () => {
     expect(GoogleGenerativeAI).toHaveBeenCalled();
 
     const { p95Latency, meanTokensPerRequest } = getAggMetrics();
-    console.log(p95Latency, meanTokensPerRequest)
 
     jest.clearAllMocks();
 
@@ -169,7 +168,6 @@ describe("chat.controller – handleChat", () => {
 
     const { p95Latency: newP95Latency, 
       meanTokensPerRequest: newMeanTokensPerRequest } = getAggMetrics();
-    console.log(newP95Latency, newMeanTokensPerRequest)
 
     expect(newP95Latency < p95Latency);
     expect(newMeanTokensPerRequest < meanTokensPerRequest);
