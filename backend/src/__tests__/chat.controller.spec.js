@@ -171,7 +171,7 @@ describe("chat.controller – handleChat", () => {
       meanTokensPerRequest: newMeanTokensPerRequest } = getAggMetrics();
     console.log(newP95Latency, newMeanTokensPerRequest)
 
-    expect(newP95Latency <= p95Latency);
+    expect(newP95Latency < p95Latency);
     expect(newMeanTokensPerRequest < meanTokensPerRequest);
   })
 });

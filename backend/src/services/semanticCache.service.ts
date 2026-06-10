@@ -155,7 +155,7 @@ export async function createSemanticCache(config: CacheConfig = {}): Promise<voi
     });
     const sampleVector = await embeddingFn("test initialization string");
     await cache.ensureIndexSchema(sampleVector.length);
-    console.log("🚀 Contextual semantic cache initialized.");
+    console.log(" Contextual semantic cache initialized.");
   } catch (err) {
     console.error("Failed to create semantic cache:", err);
   }
