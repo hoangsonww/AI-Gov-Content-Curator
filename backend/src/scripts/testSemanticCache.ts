@@ -131,6 +131,16 @@ async function testSemanticCache() {
       console.log(`   Received: ${deletedArticleReply}`);
     }
 
+    console.log("\n Test 7: Query for a deleted user should miss");
+    await cache.invalidateUser(userIdA)
+    const deletedUserReply = await cache.get(userIdA, articleId, promptA);
+    if (deletedUserReply === null) {
+      console.log(" Cache miss for a deleted user");
+    } else {
+      console.log("❌ Unexpected cache hit for a deleted user");
+      console.log(`   Received: ${deletedUserReply}`);
+    }
+
     console.log("\n Cleaning up test data...");
     await cache.invalidateArticle("testarticle2");
     console.log(" Test data cleaned up");

@@ -264,6 +264,30 @@ describe("Semantic cache", () => {
     expect(metrics.misses).toBe(1);
     expect(metrics.hitRate).toBe(0);
   });
+
+  
+  it("should not hit the cache if user is deleted", async () => {
+    const { createSemanticCache, getSemanticCache, getSemanticCacheMetrics } = cacheModule;
+    await createSemanticCache();
+    const cache = await getSemanticCache();
+
+    const userId = "user1";
+    const articleId = "article1";
+    const prompt = "What is the truck range?";
+    const response = "The truck can travel about 300 miles.";
+
+    await cache.set(userId, articleId, prompt, response);
+    await cache.invalidateUser(userId)
+
+    const reply = await cache.get(userId, articleId, prompt);
+    const metrics = getSemanticCacheMetrics();
+
+    expect(reply).toBe(null);
+    expect(metrics.requests).toBe(1);
+    expect(metrics.hits).toBe(0);
+    expect(metrics.misses).toBe(1);
+    expect(metrics.hitRate).toBe(0);
+  });
 });
 
 

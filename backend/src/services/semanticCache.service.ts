@@ -129,6 +129,20 @@ export class SemanticCache {
     }
   }
 
+  async invalidateUser(userId: string): Promise<void> {
+    const indexQuery = `@userId:{${userId}}`;
+    const searchResult = await (this.redis as any).ft.search(this.indexName, indexQuery, { RETURN: [] });
+    if (searchResult && searchResult.total && searchResult.total > 0) {
+      const targetIds = searchResult.documents.map((doc: any) => doc.id || doc.document || doc.key).filter(Boolean);
+      if (targetIds.length > 0) {
+        while (targetIds.length) {
+          const chunk = targetIds.splice(0, 100);
+          await this.redis.del(chunk);
+        }
+      }
+    }
+  }
+
   getMetrics() {
     const hits = this.hitCount;
     const misses = this.missCount;
