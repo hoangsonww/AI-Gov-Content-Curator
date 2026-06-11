@@ -6,6 +6,8 @@ import {
 } from "@google/generative-ai";
 import { getGeminiModels } from "./geminiModels.service";
 import * as dotenv from "dotenv";
+import { estimateTokens, recordMetrics } from "../controllers/chat.controller";
+import { getSemanticCache, SemanticCache } from "./semanticCache.service";
 dotenv.config();
 
 /* ─────────────────  KEY + MODEL ROTATION ───────────────── */
@@ -75,6 +77,25 @@ const isOverloaded = (e: any) =>
  * @returns The summarized text.
  */
 export async function summarizeContent(article: string): Promise<string> {
+  let cache: SemanticCache | null = await getSemanticCache();
+  let cachedReply: string | null = null;
+  const startTime = process.hrtime.bigint();
+  const query = `Summarize briefly:\n\n${article}` 
+
+  if (cache) {
+    try {
+      cachedReply = await cache.get('none', 'none', query);
+    } catch (err) {
+      console.error("Semantic cache unavailable for summarizeContent:", err);
+    }
+  }
+
+  if (cachedReply) {
+    const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    recordMetrics(latencyMs, estimateTokens(query), 0);
+    return cachedReply;
+  }
+
   const models = await getGeminiModels(API_KEYS);
   for (const key of API_KEYS) {
     for (const model of models) {
@@ -89,7 +110,7 @@ export async function summarizeContent(article: string): Promise<string> {
             contents: [
               {
                 role: "user",
-                parts: [{ text: `Summarize briefly:\n\n${article}` }],
+                parts: [{ text: query }],
               },
             ],
             generationConfig,
@@ -97,6 +118,18 @@ export async function summarizeContent(article: string): Promise<string> {
           });
           const text = result?.response?.text?.().trim();
           if (!text) throw new Error("Empty Gemini response");
+          
+          const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+          recordMetrics(latencyMs, estimateTokens(query), estimateTokens(text));
+
+          if (cache) {
+            try {
+              cache.set('none', 'none', query, text)
+            } catch (err) {
+              console.error("Failed to write to semantic cache for summarizeContent:", err);
+            };
+          }
+
           return text;
         } catch (err: any) {
           if (

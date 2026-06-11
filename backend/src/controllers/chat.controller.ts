@@ -268,13 +268,13 @@ export function getAggMetrics() {
   };
 }
 
-function estimateTokens(text: string | null | undefined): number {
+export function estimateTokens(text: string | null | undefined): number {
   const normalized = String(text ?? "").trim();
   if (!normalized) return 0;
   return Math.ceil(normalized.length / 4);
 }
 
-function recordMetrics(
+export function recordMetrics(
   latencyMs: number,
   inputTokens: number,
   outputTokens: number,
@@ -413,6 +413,9 @@ export async function handleChat(
       : [];
 
     const reply = await askGemini(article, safeHistory, userMessage);
+    
+    const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    recordMetrics(latencyMs, estimateTokens(userMessage), estimateTokens(reply));
 
     if (cache) {
       try {
@@ -421,10 +424,8 @@ export async function handleChat(
         console.error("Failed to write to semantic cache for handleChat:", err);
       };
     }
-
-    const latencyMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
-    recordMetrics(latencyMs, estimateTokens(userMessage), estimateTokens(reply));
-    return res.json({ reply });
+    
+    return res.json({ reply });    
   } catch (err) {
     next(err);
   }
