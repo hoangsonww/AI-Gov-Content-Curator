@@ -65,14 +65,13 @@ describe("Semantic cache", () => {
             const err = new Error("Unknown index name");
             throw err;
           }
-          return { indexName: "contextual_semantic_cache" };
+          return { indexName: "semantic_cache" };
         }),
         create: jest.fn(async () => {
           indexCreated = true;
           return { ok: "OK" };
         }),
         search: jest.fn(async (_indexName, _query, params) => {
-          const vector = arrayFromBlob(params.PARAMS.blob);
           const userIdMatch = /@userId:\{([^}]+)\}/.exec(_query);
           const articleIdMatch = /@articleId:\{([^}]+)\}/.exec(_query);
           const queryUserId = userIdMatch?.[1];
@@ -80,19 +79,27 @@ describe("Semantic cache", () => {
 
           const documents = Array.from(storedRecords.entries())
             .map(([id, record]) => {
-              const dist = cosineDistance(vector, record.prompt_vector);
-              return { id, record, dist };
+              const doc = { id, value: { response: record.response } };
+              if (params?.PARAMS?.blob) {
+                const vector = arrayFromBlob(params.PARAMS.blob);
+                const dist = cosineDistance(vector, record.prompt_vector);
+                return { ...doc, record, dist };
+              }
+              return { ...doc, record };
             })
             .filter(({ record, dist }) => {
               if (queryUserId && record.userId !== queryUserId) return false;
               if (queryArticleId && record.articleId !== queryArticleId) return false;
-              return dist <= threshold;
+              if (typeof dist === "number" && dist > threshold) return false;
+              return true;
             })
-            .sort((a, b) => a.dist - b.dist)
-            .map(({ id, record }) => ({
-              id,
-              value: { response: record.response },
-            }));
+            .sort((a, b) => {
+              if (typeof a.dist === "number" && typeof b.dist === "number") {
+                return a.dist - b.dist;
+              }
+              return 0;
+            })
+            .map(({ id, value }) => ({ id, value }));
 
           return { total: documents.length, documents };
         }),
@@ -105,6 +112,11 @@ describe("Semantic cache", () => {
         return 1;
       }),
       expire: jest.fn(async () => true),
+      del: jest.fn(async (keys) => {
+        keys.forEach(key => {
+          storedRecords.delete(key);
+        });
+      })
     };
 
     mockGetRedisClient.mockReturnValue(redisMock);
@@ -229,4 +241,29 @@ describe("Semantic cache", () => {
     expect(metrics.misses).toBe(1);
     expect(metrics.hits).toBe(0);
   });
+
+  it("should not hit the cache if article is deleted", async () => {
+    const { createSemanticCache, getSemanticCache, getSemanticCacheMetrics } = cacheModule;
+    await createSemanticCache();
+    const cache = await getSemanticCache();
+
+    const userId = "user1";
+    const articleId = "article1";
+    const prompt = "What is the truck range?";
+    const response = "The truck can travel about 300 miles.";
+
+    await cache.set(userId, articleId, prompt, response);
+    await cache.invalidateArticle(articleId)
+
+    const reply = await cache.get(userId, articleId, prompt);
+    const metrics = getSemanticCacheMetrics();
+
+    expect(reply).toBe(null);
+    expect(metrics.requests).toBe(1);
+    expect(metrics.hits).toBe(0);
+    expect(metrics.misses).toBe(1);
+    expect(metrics.hitRate).toBe(0);
+  });
 });
+
+

@@ -121,8 +121,17 @@ async function testSemanticCache() {
       console.log(`   Received: ${crossArticleReply}`);
     }
 
+    console.log("\n Test 6: Query for a deleted article should miss");
+    await cache.invalidateArticle(articleId)
+    const deletedArticleReply = await cache.get(userIdA, articleId, promptA);
+    if (deletedArticleReply === null) {
+      console.log(" Cache miss for a deleted article");
+    } else {
+      console.log("❌ Unexpected cache hit for a deleted article");
+      console.log(`   Received: ${deletedArticleReply}`);
+    }
+
     console.log("\n Cleaning up test data...");
-    await cache.invalidateArticle(articleId);
     await cache.invalidateArticle("testarticle2");
     console.log(" Test data cleaned up");
 

@@ -25,7 +25,7 @@ export class SemanticCache {
   constructor(config: CacheConfig = {}) {
     this.redis = getRedisClient();
     this.distanceThreshold = config.distanceThreshold ?? 0.2;
-    this.indexName = config.indexName ?? "contextual_semantic_cache";
+    this.indexName = config.indexName ?? "semantic_cache";
     this.ttlSeconds = config.ttlSeconds ?? 86400;
     this.hitCount = 0;
     this.missCount = 0;
