@@ -1,8 +1,15 @@
 import { GetStaticProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
+
+// WebGL backdrop is browser-only; never render it on the server.
+const LandingBackground3D = dynamic(
+  () => import("../components/LandingBackground3D"),
+  { ssr: false },
+);
 import {
   MdSearch,
   MdArticle,
@@ -431,6 +438,7 @@ export default function LandingPage() {
       </Head>
 
       <div className="landing-page">
+        <LandingBackground3D />
         <section className="hero">
           <div className="hero-ambient" aria-hidden="true">
             <span className="hero-orb orb-1" />

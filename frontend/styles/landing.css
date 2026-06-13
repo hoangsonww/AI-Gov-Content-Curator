@@ -1,27 +1,72 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 .landing-page {
-  --ink: #0b1a2b;
-  --ink-soft: #1d2a44;
-  --accent: #1f8a70;
-  --accent-deep: #0f5f5c;
+  /* Immersive dark "intelligence command-center" palette. The whole page now
+     floats over a single fixed WebGL field (see .landing-bg-3d), so surfaces
+     are translucent glass and ink runs light. */
+  --ink: #eef4f7;
+  --ink-soft: #9db2c6;
+  --accent: #2fe0c0;
+  --accent-deep: #5eead4;
   --accent-warm: #f4b860;
-  --surface: #f7f5f2;
-  --surface-2: #eef2f6;
-  --surface-3: #e6edf3;
-  --border: rgba(13, 27, 42, 0.12);
-  --shadow-soft: 0 20px 50px rgba(10, 23, 39, 0.12);
-  --shadow-strong: 0 30px 70px rgba(10, 23, 39, 0.18);
-  background: var(--surface);
+  --surface: #060b14;
+  --surface-2: #0a1320;
+  --surface-3: #0e1a2b;
+  --glass: rgba(13, 24, 41, 0.55);
+  --glass-strong: rgba(16, 30, 50, 0.68);
+  --border: rgba(125, 165, 205, 0.16);
+  --shadow-soft: 0 20px 50px rgba(0, 0, 0, 0.45);
+  --shadow-strong: 0 30px 70px rgba(0, 0, 0, 0.6);
+  --glow: 0 0 0 1px rgba(47, 224, 192, 0.28), 0 24px 60px rgba(0, 0, 0, 0.55);
+  /* Solid base so there is no white flash before the WebGL layer mounts. */
+  background: linear-gradient(180deg, #070d18 0%, #03060d 100%);
   color: var(--ink);
   width: 100%;
   max-width: 100%;
   margin: 0;
   padding: 0;
+  position: relative;
   font-family: "Space Grotesk", sans-serif;
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 0;
+}
+
+/* ---------- Fixed WebGL backdrop (spans the whole page) ---------- */
+.landing-page .landing-bg-3d {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 100% at 50% 12%,
+    #102544 0%,
+    #07101f 48%,
+    #02040a 100%
+  );
+}
+
+.landing-page .landing-bg-3d canvas {
+  display: block;
+}
+
+/* Cinematic edge darkening keeps foreground text crisp over the field. */
+.landing-page .landing-bg-3d__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 45%,
+    transparent 38%,
+    rgba(3, 6, 13, 0.55) 100%
+  );
+}
+
+/* Every content section rides above the fixed canvas. */
+.landing-page > section,
+.landing-page > .final-cta {
+  position: relative;
+  z-index: 1;
 }
 
 .layout-main.landing-main {
@@ -1506,4 +1551,264 @@
     filter: none;
     animation: none !important;
   }
+}
+
+/* ================================================================== */
+/* Immersive dark overlay — let the fixed WebGL field show through    */
+/* every section while keeping content as floating glass panels.      */
+/* ================================================================== */
+
+/* Sections become transparent so the 3D backdrop is continuous. */
+.landing-page .highlights,
+.landing-page .use-cases,
+.landing-page .capabilities,
+.landing-page .ai-suite,
+.landing-page .workflow,
+.landing-page .stack,
+.landing-page .stats,
+.landing-page .testimonials,
+.landing-page .faq,
+.landing-page .partners,
+.landing-page .contact {
+  background: transparent;
+}
+
+/* Hero keeps a soft tint for legibility but lets the field bleed through. */
+.landing-page .hero {
+  background: linear-gradient(
+    180deg,
+    rgba(6, 12, 22, 0.62) 0%,
+    rgba(6, 12, 22, 0.32) 45%,
+    rgba(4, 8, 16, 0.55) 100%
+  );
+}
+
+.landing-page .hero::before {
+  opacity: 0.55;
+}
+
+.landing-page .hero::after {
+  opacity: 0.12;
+}
+
+/* The grid texture on the workflow section reads better dimmed on dark. */
+.landing-page .workflow::before {
+  background-image:
+    linear-gradient(rgba(125, 165, 205, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 165, 205, 0.07) 1px, transparent 1px);
+  opacity: 0.5;
+}
+
+/* ---- Glass panels: one cohesive treatment for every card type ---- */
+.landing-page .highlight-card,
+.landing-page .use-case-card,
+.landing-page .capability-card,
+.landing-page .ai-card,
+.landing-page .workflow-card,
+.landing-page .stack-card,
+.landing-page .trust-card,
+.landing-page .stat-card,
+.landing-page .testimonial-card,
+.landing-page .partner-logo,
+.landing-page .contact-card,
+.landing-page .faq details {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.landing-page .highlight-card:hover,
+.landing-page .use-case-card:hover,
+.landing-page .capability-card:hover,
+.landing-page .ai-card:hover,
+.landing-page .stack-card:hover,
+.landing-page .trust-card:hover,
+.landing-page .stat-card:hover,
+.landing-page .testimonial-card:hover,
+.landing-page .partner-logo:hover,
+.landing-page .contact-card:hover {
+  border-color: rgba(47, 224, 192, 0.45);
+  box-shadow: var(--glow);
+  background: var(--glass-strong);
+}
+
+/* Card body copy + headings on glass. */
+.landing-page .use-case-card p,
+.landing-page .ai-card p,
+.landing-page .capability-card p,
+.landing-page .highlight-card p,
+.landing-page .workflow-card p,
+.landing-page .stack-card p,
+.landing-page .trust-card p,
+.landing-page .contact-card p,
+.landing-page .testimonial-card p,
+.landing-page details p,
+.landing-page .section-subtitle {
+  color: var(--ink-soft);
+}
+
+.landing-page .testimonial-card {
+  font-style: italic;
+}
+
+/* Accent icons glow a touch on the dark field. */
+.landing-page .highlight-card svg,
+.landing-page .use-case-header svg,
+.landing-page .capability-card svg,
+.landing-page .ai-card svg,
+.landing-page .workflow-card svg,
+.landing-page .stack-card svg,
+.landing-page .trust-card svg,
+.landing-page .contact-card svg {
+  color: var(--accent);
+  filter: drop-shadow(0 0 10px rgba(47, 224, 192, 0.35));
+}
+
+/* Capability top-bar + workflow chips tuned for dark. */
+.landing-page .capability-card {
+  border-top: 1px solid var(--border);
+}
+
+.landing-page .capability-card::before {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+  opacity: 0.9;
+  box-shadow: 0 0 16px rgba(47, 224, 192, 0.45);
+}
+
+.landing-page .workflow-index {
+  background: rgba(47, 224, 192, 0.14);
+  color: var(--accent-deep);
+  border: 1px solid rgba(47, 224, 192, 0.3);
+}
+
+.landing-page .use-case-tags .tag {
+  background: rgba(47, 224, 192, 0.12);
+  color: var(--accent-deep);
+  border: 1px solid rgba(47, 224, 192, 0.28);
+}
+
+.landing-page .stat-number {
+  color: var(--accent-deep);
+  text-shadow: 0 0 24px rgba(94, 234, 212, 0.4);
+}
+
+/* FAQ glass + readable summary. */
+.landing-page .faq details[open] {
+  box-shadow: var(--glow);
+  border-color: rgba(47, 224, 192, 0.4);
+}
+
+.landing-page .faq summary {
+  color: var(--ink);
+}
+
+/* Partner logos: quieter glass chips. */
+.landing-page .partner-logo {
+  background: rgba(13, 24, 41, 0.42);
+  color: var(--ink);
+}
+
+/* Secondary button stays bright for contrast against the dark field. */
+.landing-page .btn.secondary {
+  background: #f4f8ff;
+  color: #071420;
+  border-color: transparent;
+}
+
+/* Final CTA: translucent so the field carries through to the very end. */
+.landing-page .final-cta {
+  background: linear-gradient(
+    120deg,
+    rgba(8, 18, 32, 0.72) 0%,
+    rgba(13, 46, 56, 0.6) 100%
+  );
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.landing-page .final-cta .section-subtitle {
+  color: rgba(233, 243, 247, 0.82);
+}
+
+/* ---- Responsive hardening: keep everything inside the viewport ---- */
+
+/* The hero badge marquees are nowrap (white-space:nowrap) tracks. The badge
+   grid had an implicit `auto` column, which grows to the track's max-content
+   (~2800px) and blew past the viewport — only the page-level clip hid it.
+   Pinning the column to minmax(0, 1fr) bounds it to the container, and
+   min-width:0 lets the items shrink so each marquee's own overflow:hidden +
+   edge-fade mask work correctly at every width. */
+.landing-page .hero-badges {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.landing-page .hero-badge-group,
+.landing-page .badge-marquee {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Same guard for the hero ticker. */
+.landing-page .hero-ticker {
+  max-width: 100%;
+}
+
+/* Belt-and-suspenders: nothing in the page may push a horizontal scrollbar. */
+.landing-page {
+  overflow-x: clip;
+}
+
+/* Disable the heavy backdrop-filter where motion is reduced or unsupported. */
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .landing-bg-3d {
+    background: radial-gradient(
+      130% 100% at 50% 12%,
+      #0d1f38 0%,
+      #06101f 50%,
+      #02040a 100%
+    );
+  }
+}
+
+/* ================================================================== */
+/* Landing-page-only overrides for shared chrome                      */
+/* The back-to-top button lives in Layout's <main>, which is tagged   */
+/* .landing-main on "/". Scoping to .landing-main keeps every other   */
+/* page's button untouched. The button is a sibling of .landing-page, */
+/* so it can't read the --accent-* vars — use literal palette values. */
+/* ================================================================== */
+
+.landing-main .back-to-top-btn {
+  background: rgba(13, 24, 41, 0.55);
+  color: #5eead4;
+  border: 1px solid rgba(47, 224, 192, 0.45);
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 0 0 1px rgba(47, 224, 192, 0.18),
+    0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.landing-main .back-to-top-btn:hover {
+  background: rgba(16, 30, 50, 0.72);
+  color: #2fe0c0;
+  border-color: rgba(47, 224, 192, 0.75);
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 22px rgba(47, 224, 192, 0.45),
+    0 22px 50px rgba(0, 0, 0, 0.55);
+}
+
+/* Long unbroken values (e.g. the support email) must wrap inside the
+   contact card instead of overflowing it. */
+.landing-page .contact-card a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
