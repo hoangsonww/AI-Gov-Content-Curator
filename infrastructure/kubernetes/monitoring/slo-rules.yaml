@@ -27,25 +27,14 @@ data:
     - name: slo:article_load:recording
       interval: 30s
       rules:
-        # good = 2xx AND latency < 500 ms
+        # good = 2xx AND latency < 500 ms — query the histogram directly with status label
         - record: slo:article_load:good_requests5m
           expr: |
-            sum(rate(http_requests_total{
-              job="backend",
-              route=~"/api/articles.*",
-              status=~"2.."
-            }[5m]))
-            *
             sum(rate(http_request_duration_milliseconds_bucket{
               job="backend",
               route=~"/api/articles.*",
+              status=~"2..",
               le="500"
-            }[5m]))
-            /
-            sum(rate(http_request_duration_milliseconds_bucket{
-              job="backend",
-              route=~"/api/articles.*",
-              le="+Inf"
             }[5m]))
 
         - record: slo:article_load:total_requests5m
@@ -63,21 +52,29 @@ data:
               (slo:article_load:total_requests5m > 0)
             )
 
-        # Long windows for burn-rate alerts
+        # Long windows for burn-rate alerts — all use histogram so latency < 500 ms is included
+        - record: slo:article_load:error_ratio30m
+          expr: |
+            1 - (
+              sum(rate(http_request_duration_milliseconds_bucket{job="backend",route=~"/api/articles.*",status=~"2..",le="500"}[30m]))
+              /
+              (sum(rate(http_request_duration_milliseconds_bucket{job="backend",route=~"/api/articles.*",le="+Inf"}[30m])) > 0)
+            )
+
         - record: slo:article_load:error_ratio1h
           expr: |
             1 - (
-              sum(rate(http_requests_total{job="backend",route=~"/api/articles.*",status=~"2.."}[1h]))
+              sum(rate(http_request_duration_milliseconds_bucket{job="backend",route=~"/api/articles.*",status=~"2..",le="500"}[1h]))
               /
-              (sum(rate(http_requests_total{job="backend",route=~"/api/articles.*"}[1h])) > 0)
+              (sum(rate(http_request_duration_milliseconds_bucket{job="backend",route=~"/api/articles.*",le="+Inf"}[1h])) > 0)
             )
 
         - record: slo:article_load:error_ratio6h
           expr: |
             1 - (
-              sum(rate(http_requests_total{job="backend",route=~"/api/articles.*",status=~"2.."}[6h]))
+              sum(rate(http_request_duration_milliseconds_bucket{job="backend",route=~"/api/articles.*",status=~"2..",le="500"}[6h]))
               /
-              (sum(rate(http_requests_total{job="backend",route=~"/api/articles.*"}[6h])) > 0)
+              (sum(rate(http_request_duration_milliseconds_bucket{job="backend",route=~"/api/articles.*",le="+Inf"}[6h])) > 0)
             )
 
     - name: slo:article_load:alerts
@@ -194,6 +191,8 @@ data:
       rules:
         - alert: CrawlFreshnessViolation
           expr: |
+            (crawl_last_success_timestamp_seconds > 0)
+            and
             (time() - crawl_last_success_timestamp_seconds) > 90000
           for: 10m
           labels:
@@ -230,9 +229,9 @@ data:
         - record: slo:newsletter:error_ratio30d
           expr: |
             1 - (
-              increase(newsletter_sends_total{status="success"}[30d])
+              sum(increase(newsletter_sends_total{status="success"}[30d]))
               /
-              (increase(newsletter_sends_total[30d]) > 0)
+              (sum(increase(newsletter_sends_total[30d])) > 0)
             )
 
     - name: slo:newsletter:alerts

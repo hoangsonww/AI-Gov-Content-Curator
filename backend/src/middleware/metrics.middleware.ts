@@ -43,10 +43,17 @@ export function metricsMiddleware(
   res: Response,
   next: NextFunction,
 ): void {
+  // Skip self-referential endpoints — they'd pollute SLO metrics with monitoring overhead.
+  if (req.path === "/metrics" || req.path === "/health") return next();
+
   const end = httpRequestDurationMs.startTimer();
 
   res.on("finish", () => {
-    const route = (req.route?.path as string | undefined) ?? req.path;
+    // Prepend baseUrl so "/api/articles" is recorded, not just the router-local "/".
+    // Fall back to "unmatched" for 404s / random scanner paths to prevent high-cardinality OOM.
+    const route = req.route
+      ? `${req.baseUrl}${req.route.path as string}`
+      : "unmatched";
     const labels = {
       method: req.method,
       route,

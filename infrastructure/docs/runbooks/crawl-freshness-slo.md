@@ -23,7 +23,7 @@ Article content is stale. Users see old or missing articles. AI responses may be
    ```
    kubectl logs -n ai-curator -l job-name=<latest-crawler-job> --tail=100
    ```
-3. Check the `crawl_last_success_timestamp_seconds` gauge in Grafana → **SynthoraAI SLO Overview** → _Crawl Freshness_.
+3. Check the `crawl_last_success_timestamp_seconds` gauge in Grafana → **SynthoraAI — SLO Overview** → _Crawl Freshness_.
 4. Manually trigger a crawl run to verify the issue:
    ```
    kubectl create job --from=cronjob/crawler manual-crawl-$(date +%s) -n ai-curator

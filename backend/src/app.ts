@@ -124,9 +124,14 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 
 /* ───────────── Metrics endpoint (Prometheus scrape target) ───────────── */
 
-app.get("/metrics", async (_req: Request, res: Response) => {
-  res.set("Content-Type", register.contentType);
-  res.end(await register.metrics());
+app.get("/metrics", (_req: Request, res: Response, next: NextFunction) => {
+  register
+    .metrics()
+    .then((metrics) => {
+      res.set("Content-Type", register.contentType);
+      res.end(metrics);
+    })
+    .catch(next);
 });
 
 /* ───────────── Health check endpoint ───────────── */

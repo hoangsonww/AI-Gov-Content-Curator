@@ -23,7 +23,7 @@ Users cannot browse or load articles. Core product functionality is degraded.
    ```
    curl https://<backend-url>/health
    ```
-3. Check error rate in Grafana → **SynthoraAI SLO Overview** → _Article Load_ row.
+3. Check error rate in Grafana → **SynthoraAI — SLO Overview** → _Article Load_ row.
 4. Check Istio / ingress for upstream errors:
    ```
    kubectl logs -n istio-system -l app=istiod --tail=50
