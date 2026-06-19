@@ -1,0 +1,267 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-slo-rules
+  namespace: monitoring
+data:
+  slo-rules.yml: |
+    # SLO recording rules and error-budget burn-rate alerts for SynthoraAI.
+    #
+    # Four user journeys are covered:
+    #   1. article-load  — GET /api/articles/** returns 2xx in < 500 ms        target: 99.5 %
+    #   2. chat          — POST /api/chat returns 2xx in < 10 s                 target: 99.0 %
+    #   3. crawl         — at least one successful crawl run per 24 h window    target: 95.0 %
+    #   4. newsletter    — newsletter send attempts that succeed                 target: 99.0 %
+    #
+    # Alert pages use a two-window multi-burn-rate strategy (Google SRE Workbook ch. 5):
+    #   Page (critical) : 14.4× burn over 1 h  AND  14.4× burn over 5 m   → 2 % budget/h gone
+    #   Ticket (warning): 6×   burn over 6 h   AND  6×   burn over 30 m   → 5 % budget in 6 h
+    #
+    # Runbooks live at: https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/
+
+    groups:
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # 1. ARTICLE LOAD  (SLO: 99.5 %)
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: slo:article_load:recording
+      interval: 30s
+      rules:
+        # good = 2xx AND latency < 500 ms
+        - record: slo:article_load:good_requests5m
+          expr: |
+            sum(rate(http_requests_total{
+              job="backend",
+              route=~"/api/articles.*",
+              status=~"2.."
+            }[5m]))
+            *
+            sum(rate(http_request_duration_milliseconds_bucket{
+              job="backend",
+              route=~"/api/articles.*",
+              le="500"
+            }[5m]))
+            /
+            sum(rate(http_request_duration_milliseconds_bucket{
+              job="backend",
+              route=~"/api/articles.*",
+              le="+Inf"
+            }[5m]))
+
+        - record: slo:article_load:total_requests5m
+          expr: |
+            sum(rate(http_requests_total{
+              job="backend",
+              route=~"/api/articles.*"
+            }[5m]))
+
+        - record: slo:article_load:error_ratio5m
+          expr: |
+            1 - (
+              slo:article_load:good_requests5m
+              /
+              (slo:article_load:total_requests5m > 0)
+            )
+
+        # Long windows for burn-rate alerts
+        - record: slo:article_load:error_ratio1h
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{job="backend",route=~"/api/articles.*",status=~"2.."}[1h]))
+              /
+              (sum(rate(http_requests_total{job="backend",route=~"/api/articles.*"}[1h])) > 0)
+            )
+
+        - record: slo:article_load:error_ratio6h
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{job="backend",route=~"/api/articles.*",status=~"2.."}[6h]))
+              /
+              (sum(rate(http_requests_total{job="backend",route=~"/api/articles.*"}[6h])) > 0)
+            )
+
+    - name: slo:article_load:alerts
+      rules:
+        - alert: ArticleLoadSLOBurnRateCritical
+          expr: |
+            slo:article_load:error_ratio1h > (14.4 * 0.005)
+            and
+            slo:article_load:error_ratio5m > (14.4 * 0.005)
+          for: 2m
+          labels:
+            severity: critical
+            slo: article_load
+          annotations:
+            summary: "Article load SLO — critical burn rate"
+            description: >
+              Error ratio over 1 h is {{ $value | humanizePercentage }},
+              burning the 30-day error budget at 14.4× the allowed rate.
+              At this rate the entire monthly budget is exhausted in ~2 hours.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/article-load-slo.md"
+
+        - alert: ArticleLoadSLOBurnRateWarning
+          expr: |
+            slo:article_load:error_ratio6h > (6 * 0.005)
+            and
+            slo:article_load:error_ratio30m > (6 * 0.005)
+          for: 15m
+          labels:
+            severity: warning
+            slo: article_load
+          annotations:
+            summary: "Article load SLO — elevated burn rate"
+            description: >
+              Error ratio over 6 h is {{ $value | humanizePercentage }},
+              burning the error budget at 6× the allowed rate.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/article-load-slo.md"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # 2. CHAT RESPONSE SUCCESS  (SLO: 99.0 %)
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: slo:chat:recording
+      interval: 30s
+      rules:
+        - record: slo:chat:error_ratio5m
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{job="backend",route=~"/api/chat.*",status=~"2.."}[5m]))
+              /
+              (sum(rate(http_requests_total{job="backend",route=~"/api/chat.*"}[5m])) > 0)
+            )
+
+        - record: slo:chat:error_ratio30m
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{job="backend",route=~"/api/chat.*",status=~"2.."}[30m]))
+              /
+              (sum(rate(http_requests_total{job="backend",route=~"/api/chat.*"}[30m])) > 0)
+            )
+
+        - record: slo:chat:error_ratio1h
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{job="backend",route=~"/api/chat.*",status=~"2.."}[1h]))
+              /
+              (sum(rate(http_requests_total{job="backend",route=~"/api/chat.*"}[1h])) > 0)
+            )
+
+        - record: slo:chat:error_ratio6h
+          expr: |
+            1 - (
+              sum(rate(http_requests_total{job="backend",route=~"/api/chat.*",status=~"2.."}[6h]))
+              /
+              (sum(rate(http_requests_total{job="backend",route=~"/api/chat.*"}[6h])) > 0)
+            )
+
+    - name: slo:chat:alerts
+      rules:
+        - alert: ChatSLOBurnRateCritical
+          expr: |
+            slo:chat:error_ratio1h > (14.4 * 0.01)
+            and
+            slo:chat:error_ratio5m > (14.4 * 0.01)
+          for: 2m
+          labels:
+            severity: critical
+            slo: chat
+          annotations:
+            summary: "Chat SLO — critical burn rate"
+            description: >
+              Chat error ratio over 1 h is {{ $value | humanizePercentage }}.
+              Budget burning at 14.4× — full month's budget gone in ~2 hours.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/chat-slo.md"
+
+        - alert: ChatSLOBurnRateWarning
+          expr: |
+            slo:chat:error_ratio6h > (6 * 0.01)
+            and
+            slo:chat:error_ratio30m > (6 * 0.01)
+          for: 15m
+          labels:
+            severity: warning
+            slo: chat
+          annotations:
+            summary: "Chat SLO — elevated burn rate"
+            description: >
+              Chat error ratio over 6 h is {{ $value | humanizePercentage }}.
+              Budget burning at 6×.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/chat-slo.md"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # 3. CRAWL FRESHNESS  (SLO: 95 % of 24 h windows have ≥1 successful crawl)
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: slo:crawl:alerts
+      rules:
+        - alert: CrawlFreshnessViolation
+          expr: |
+            (time() - crawl_last_success_timestamp_seconds) > 90000
+          for: 10m
+          labels:
+            severity: critical
+            slo: crawl_freshness
+          annotations:
+            summary: "Crawl freshness SLO — no successful crawl in > 25 h"
+            description: >
+              Last successful crawl was {{ $value | humanizeDuration }} ago.
+              The SLO requires at least one successful crawl every 24 h.
+              Check crawler CronJob logs and Gemini/MongoDB connectivity.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/crawl-freshness-slo.md"
+
+        - alert: CrawlJobFailing
+          expr: |
+            increase(crawl_runs_total{status="failure"}[6h]) >= 2
+          for: 0m
+          labels:
+            severity: warning
+            slo: crawl_freshness
+          annotations:
+            summary: "Crawler — 2+ failures in the last 6 hours"
+            description: >
+              {{ $value }} crawl runs failed in the last 6 hours.
+              Budget is eroding. Investigate before the next scheduled run.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/crawl-freshness-slo.md"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # 4. NEWSLETTER DELIVERY  (SLO: 99.0 % of send attempts succeed)
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: slo:newsletter:recording
+      interval: 30s
+      rules:
+        - record: slo:newsletter:error_ratio30d
+          expr: |
+            1 - (
+              increase(newsletter_sends_total{status="success"}[30d])
+              /
+              (increase(newsletter_sends_total[30d]) > 0)
+            )
+
+    - name: slo:newsletter:alerts
+      rules:
+        - alert: NewsletterDeliveryFailure
+          expr: |
+            increase(newsletter_sends_total{status="failure"}[1h]) >= 1
+          for: 0m
+          labels:
+            severity: critical
+            slo: newsletter_delivery
+          annotations:
+            summary: "Newsletter send failure detected"
+            description: >
+              {{ $value }} newsletter send(s) failed in the last hour.
+              Each failure directly burns the 99 % delivery SLO budget.
+              Check Resend API key, subscriber list, and newsletter job logs.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/newsletter-delivery-slo.md"
+
+        - alert: NewsletterSLOAtRisk
+          expr: |
+            slo:newsletter:error_ratio30d > 0.005
+          for: 30m
+          labels:
+            severity: warning
+            slo: newsletter_delivery
+          annotations:
+            summary: "Newsletter delivery SLO — 30-day error ratio above 0.5 %"
+            description: >
+              Rolling 30-day newsletter failure rate is {{ $value | humanizePercentage }}.
+              The SLO target is ≤ 1 %. Budget is more than 50 % consumed.
+            runbook_url: "https://github.com/hoangsonww/AI-Gov-Content-Curator/tree/master/infrastructure/docs/runbooks/newsletter-delivery-slo.md"

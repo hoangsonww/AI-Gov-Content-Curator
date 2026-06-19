@@ -37,12 +37,20 @@ data:
     providers:
       - name: 'default'
         orgId: 1
-        folder: ''
+        folder: 'Service Metrics'
         type: file
         disableDeletion: false
         editable: true
         options:
           path: /var/lib/grafana/dashboards
+      - name: 'slo'
+        orgId: 1
+        folder: 'SLOs'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards-slo
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -237,6 +245,8 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: dashboards
               mountPath: /var/lib/grafana/dashboards
+            - name: dashboards-slo
+              mountPath: /var/lib/grafana/dashboards-slo
             - name: grafana-storage
               mountPath: /var/lib/grafana
           resources:
@@ -281,6 +291,9 @@ spec:
         - name: dashboards
           configMap:
             name: grafana-dashboard-ai-curator
+        - name: dashboards-slo
+          configMap:
+            name: grafana-dashboard-slo-overview
         - name: grafana-storage
           persistentVolumeClaim:
             claimName: grafana-data
