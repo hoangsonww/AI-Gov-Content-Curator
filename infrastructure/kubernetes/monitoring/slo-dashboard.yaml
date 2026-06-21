@@ -1,0 +1,169 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-slo-overview
+  namespace: monitoring
+data:
+  slo-overview.json: |
+    {
+      "title": "SynthoraAI — SLO Overview",
+      "tags": ["slo", "ai-curator"],
+      "timezone": "browser",
+      "refresh": "30s",
+      "time": { "from": "now-24h", "to": "now" },
+      "panels": [
+
+        { "id": 1, "type": "text", "title": "Article Load",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "options": { "content": "## Article Load SLO — 99.5 % of /api/articles requests return 2xx in < 500 ms", "mode": "markdown" }
+        },
+        {
+          "id": 2, "type": "gauge", "title": "Article Load — 5 m SLI",
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+          "targets": [{ "expr": "1 - slo:article_load:error_ratio5m", "legendFormat": "Success rate" }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit", "min": 0, "max": 1,
+              "thresholds": { "steps": [
+                { "color": "red",    "value": 0 },
+                { "color": "yellow", "value": 0.990 },
+                { "color": "green",  "value": 0.995 }
+              ]}
+            }
+          }
+        },
+        {
+          "id": 3, "type": "timeseries", "title": "Article Load — Error Ratio",
+          "gridPos": { "h": 6, "w": 10, "x": 6, "y": 1 },
+          "targets": [
+            { "expr": "slo:article_load:error_ratio5m",  "legendFormat": "5 m" },
+            { "expr": "slo:article_load:error_ratio1h",  "legendFormat": "1 h" },
+            { "expr": "slo:article_load:error_ratio6h",  "legendFormat": "6 h" },
+            { "expr": "0.005",                           "legendFormat": "SLO target (0.5 %)" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "percentunit" } }
+        },
+        {
+          "id": 4, "type": "timeseries", "title": "Article Load — Request Rate",
+          "gridPos": { "h": 6, "w": 8, "x": 16, "y": 1 },
+          "targets": [
+            { "expr": "slo:article_load:total_requests5m", "legendFormat": "req/s" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "reqps" } }
+        },
+
+        { "id": 5, "type": "text", "title": "Chat",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+          "options": { "content": "## Chat SLO — 99 % of /api/chat requests return 2xx", "mode": "markdown" }
+        },
+        {
+          "id": 6, "type": "gauge", "title": "Chat — 5 m SLI",
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 8 },
+          "targets": [{ "expr": "1 - slo:chat:error_ratio5m", "legendFormat": "Success rate" }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit", "min": 0, "max": 1,
+              "thresholds": { "steps": [
+                { "color": "red",    "value": 0 },
+                { "color": "yellow", "value": 0.985 },
+                { "color": "green",  "value": 0.990 }
+              ]}
+            }
+          }
+        },
+        {
+          "id": 7, "type": "timeseries", "title": "Chat — Error Ratio",
+          "gridPos": { "h": 6, "w": 10, "x": 6, "y": 8 },
+          "targets": [
+            { "expr": "slo:chat:error_ratio5m",  "legendFormat": "5 m" },
+            { "expr": "slo:chat:error_ratio1h",  "legendFormat": "1 h" },
+            { "expr": "slo:chat:error_ratio6h",  "legendFormat": "6 h" },
+            { "expr": "0.01",                    "legendFormat": "SLO target (1 %)" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "percentunit" } }
+        },
+        {
+          "id": 8, "type": "timeseries", "title": "Chat — p95 Latency",
+          "gridPos": { "h": 6, "w": 8, "x": 16, "y": 8 },
+          "targets": [{
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_milliseconds_bucket{job=\"backend\",route=~\"/api/chat.*\"}[5m])) by (le))",
+            "legendFormat": "p95 ms"
+          }],
+          "fieldConfig": { "defaults": { "unit": "ms" } }
+        },
+
+        { "id": 9, "type": "text", "title": "Crawl",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+          "options": { "content": "## Crawl Freshness SLO — successful crawl every 24 h (95 % of windows)", "mode": "markdown" }
+        },
+        {
+          "id": 10, "type": "stat", "title": "Time Since Last Successful Crawl",
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 15 },
+          "targets": [{ "expr": "time() - crawl_last_success_timestamp_seconds", "legendFormat": "Seconds ago" }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "thresholds": { "steps": [
+                { "color": "green",  "value": 0 },
+                { "color": "yellow", "value": 86400 },
+                { "color": "red",    "value": 90000 }
+              ]}
+            }
+          }
+        },
+        {
+          "id": 11, "type": "timeseries", "title": "Crawl Runs — Success vs Failure",
+          "gridPos": { "h": 6, "w": 18, "x": 6, "y": 15 },
+          "targets": [
+            { "expr": "increase(crawl_runs_total{status=\"success\"}[1h])", "legendFormat": "Success" },
+            { "expr": "increase(crawl_runs_total{status=\"failure\"}[1h])", "legendFormat": "Failure" }
+          ]
+        },
+
+        { "id": 12, "type": "text", "title": "Newsletter",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+          "options": { "content": "## Newsletter Delivery SLO — 99 % of send attempts succeed", "mode": "markdown" }
+        },
+        {
+          "id": 13, "type": "gauge", "title": "Newsletter — 30-day Success Rate",
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 22 },
+          "targets": [{ "expr": "1 - slo:newsletter:error_ratio30d", "legendFormat": "Success rate" }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit", "min": 0, "max": 1,
+              "thresholds": { "steps": [
+                { "color": "red",    "value": 0 },
+                { "color": "yellow", "value": 0.985 },
+                { "color": "green",  "value": 0.990 }
+              ]}
+            }
+          }
+        },
+        {
+          "id": 14, "type": "timeseries", "title": "Newsletter Sends — Success vs Failure",
+          "gridPos": { "h": 6, "w": 18, "x": 6, "y": 22 },
+          "targets": [
+            { "expr": "increase(newsletter_sends_total{status=\"success\"}[1d])", "legendFormat": "Success / day" },
+            { "expr": "increase(newsletter_sends_total{status=\"failure\"}[1d])", "legendFormat": "Failure / day" }
+          ]
+        },
+
+        { "id": 15, "type": "text", "title": "Active SLO Alerts",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 },
+          "options": { "content": "## Active SLO Alerts", "mode": "markdown" }
+        },
+        {
+          "id": 16, "type": "alertlist", "title": "Firing SLO Alerts",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
+          "options": {
+            "alertName": "",
+            "dashboardAlerts": false,
+            "groupBy": ["slo", "severity"],
+            "groupMode": "tags",
+            "maxItems": 20,
+            "sortOrder": 1,
+            "stateFilter": { "firing": true, "pending": true }
+          }
+        }
+      ]
+    }

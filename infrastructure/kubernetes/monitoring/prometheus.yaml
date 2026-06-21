@@ -38,6 +38,7 @@ data:
     # Rule files
     rule_files:
       - /etc/prometheus/rules/*.yml
+      - /etc/prometheus/slo-rules/*.yml
 
     # Scrape configurations
     scrape_configs:
@@ -326,6 +327,8 @@ spec:
               mountPath: /etc/prometheus
             - name: rules
               mountPath: /etc/prometheus/rules
+            - name: slo-rules
+              mountPath: /etc/prometheus/slo-rules
             - name: storage
               mountPath: /prometheus
           resources:
@@ -371,6 +374,9 @@ spec:
         - name: rules
           configMap:
             name: prometheus-rules
+        - name: slo-rules
+          configMap:
+            name: prometheus-slo-rules
         - name: storage
           persistentVolumeClaim:
             claimName: prometheus-data

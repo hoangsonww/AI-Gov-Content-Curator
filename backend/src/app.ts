@@ -16,6 +16,7 @@ import ratingRoutes from "./routes/rating.routes";
 import biasRoutes from "./routes/bias.routes";
 import privacyRoutes from "./routes/privacy.routes";
 import swaggerDocs from "./swagger/swagger";
+import { metricsMiddleware, register } from "./middleware/metrics.middleware";
 
 dotenv.config();
 
@@ -58,6 +59,7 @@ connectDB().catch(() => process.exit(1));
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
+app.use(metricsMiddleware);
 
 /* ───────────── Swagger UI ───────────── */
 
@@ -119,6 +121,18 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 //   }
 //   next();
 // });
+
+/* ───────────── Metrics endpoint (Prometheus scrape target) ───────────── */
+
+app.get("/metrics", (_req: Request, res: Response, next: NextFunction) => {
+  register
+    .metrics()
+    .then((metrics) => {
+      res.set("Content-Type", register.contentType);
+      res.end(metrics);
+    })
+    .catch(next);
+});
 
 /* ───────────── Health check endpoint ───────────── */
 
