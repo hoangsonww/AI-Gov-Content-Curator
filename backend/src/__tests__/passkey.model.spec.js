@@ -10,7 +10,11 @@ let mongoServer;
 let User, Passkey, Challenge;
 
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
+  // Windows CI runners regularly need >10s (the lib default) to launch mongod;
+  // a too-short launchTimeout rejects here and cascades into undefined-model errors.
+  mongoServer = await MongoMemoryServer.create({
+    instance: { launchTimeout: 60000 },
+  });
   await mongoose.connect(mongoServer.getUri());
 
   // Lazy-load AFTER mongoose connect so models register on the same connection.
