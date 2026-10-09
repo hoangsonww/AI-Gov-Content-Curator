@@ -1,7 +1,13 @@
 import { Router } from "express";
 import { biasAnalysisController } from "../controllers/biasAnalysis.controller";
+import { optionalAuthenticate } from "../middleware/auth.middleware";
+import { requireFeatureFlag } from "../middleware/featureFlag.middleware";
 
 const router = Router();
+const biasAnalysisGate = [
+  optionalAuthenticate,
+  requireFeatureFlag("ai-bias-analysis"),
+];
 
 /**
  * @swagger
@@ -126,6 +132,7 @@ const router = Router();
  */
 router.post(
   "/analyze",
+  ...biasAnalysisGate,
   biasAnalysisController.analyzeArticle.bind(biasAnalysisController),
 );
 
@@ -213,6 +220,7 @@ router.post(
  */
 router.post(
   "/analyze-batch",
+  ...biasAnalysisGate,
   biasAnalysisController.analyzeBatch.bind(biasAnalysisController),
 );
 

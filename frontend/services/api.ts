@@ -1,4 +1,5 @@
 import { Article } from "../pages/home";
+import { gatedRequestHeaders } from "./featureFlags";
 
 // We may want to set this to an environment variable or another config.
 // For now, we'll keep it hard-coded.
@@ -853,6 +854,7 @@ export async function analyzeArticleBias(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...gatedRequestHeaders(),
       },
       body: JSON.stringify({ title, content }),
     });

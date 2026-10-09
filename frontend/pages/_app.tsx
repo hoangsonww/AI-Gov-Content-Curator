@@ -37,6 +37,7 @@ import {
   CookieConsentProvider,
   useCookieConsent,
 } from "../components/CookieConsentProvider";
+import { FeatureFlagsProvider } from "../components/FeatureFlagsProvider";
 import { MdArrowUpward } from "react-icons/md";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -133,23 +134,25 @@ function App({ Component, pageProps }: AppProps) {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <CookieConsentProvider>
-      <Layout theme={theme} toggleTheme={toggleTheme}>
-        <ConditionalAnalytics />
-        <Component {...pageProps} />
-        {showScroll && (
-          <button
-            onClick={scrollToTop}
-            className="back-to-top-btn"
-            aria-label="Back to top"
-          >
-            {/* @ts-ignore */}
-            <MdArrowUpward size={24} />
-          </button>
-        )}
-        <CookieBanner />
-      </Layout>
-    </CookieConsentProvider>
+    <FeatureFlagsProvider>
+      <CookieConsentProvider>
+        <Layout theme={theme} toggleTheme={toggleTheme}>
+          <ConditionalAnalytics />
+          <Component {...pageProps} />
+          {showScroll && (
+            <button
+              onClick={scrollToTop}
+              className="back-to-top-btn"
+              aria-label="Back to top"
+            >
+              {/* @ts-ignore */}
+              <MdArrowUpward size={24} />
+            </button>
+          )}
+          <CookieBanner />
+        </Layout>
+      </CookieConsentProvider>
+    </FeatureFlagsProvider>
   );
 }
 

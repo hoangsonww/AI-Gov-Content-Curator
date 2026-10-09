@@ -235,6 +235,8 @@ sequenceDiagram
 npm run dev
 ```
 
+Baseline feature flags (e.g. `ai-bias-analysis`) are self-seeded on startup, so no manual step is required. To add further example flags, run `npm run seed-feature-flags` — see [FEATURE_FLAGS.md](../FEATURE_FLAGS.md) for the full admin API and rollout/rollback playbook.
+
 The server runs on `http://localhost:3000`. Test endpoints like:
 
 - `GET /api/articles`
