@@ -77,11 +77,41 @@ export const createFlag = async (req: Request, res: Response) => {
 
 /**
  * PUT /api/flags/:key
+ * `key` is immutable once created — renaming via this route would let a
+ * baseline flag (e.g. ai-bias-analysis) slip out from under
+ * ensureBaselineFlags()'s startup check, which would then silently
+ * recreate a fresh, enabled copy under the original key. Delete + recreate
+ * instead of renaming if a different key is truly needed.
  */
+const MUTABLE_FLAG_FIELDS = [
+  "description",
+  "enabled",
+  "rolloutPercentage",
+  "audience",
+  "overrides",
+] as const;
+
 export const updateFlag = async (req: Request, res: Response) => {
   try {
+    if (
+      req.body.key &&
+      req.body.key.toLowerCase().trim() !== req.params.key.toLowerCase().trim()
+    ) {
+      return res.status(400).json({
+        error: "key cannot be changed; delete and recreate the flag instead",
+      });
+    }
+
+    // Whitelist, not a blacklist: only these fields are mutable via this
+    // route. In particular `key` and `createdBy` must never be settable
+    // from the request body, regardless of what else is present in it.
+    const patch: Record<string, unknown> = {};
+    for (const field of MUTABLE_FLAG_FIELDS) {
+      if (field in req.body) patch[field] = req.body[field];
+    }
+
     const flag = await updateFlagService(req.params.key, {
-      ...req.body,
+      ...patch,
       updatedBy: (req as any).user?.email,
     });
     if (!flag) return res.status(404).json({ error: "Flag not found" });

@@ -95,6 +95,56 @@ describe("admin CRUD", () => {
     expect(del.status).toBe(200);
   });
 
+  it("refuses to rename a flag via PUT (key is immutable)", async () => {
+    const token = tokenFor(ADMIN_EMAIL);
+    await FeatureFlag.create({ key: "ai-bias-analysis", enabled: true });
+
+    const res = await request(app)
+      .put("/api/flags/ai-bias-analysis")
+      .set("Authorization", token)
+      .send({ key: "renamed-flag", enabled: false });
+    expect(res.status).toBe(400);
+
+    const original = await FeatureFlag.findOne({ key: "ai-bias-analysis" });
+    expect(original).not.toBeNull();
+    expect(original.enabled).toBe(true); // update was rejected outright, not partially applied
+
+    const renamed = await FeatureFlag.findOne({ key: "renamed-flag" });
+    expect(renamed).toBeNull();
+  });
+
+  it("ignores createdBy (and other non-whitelisted fields) in the update body", async () => {
+    const token = tokenFor(ADMIN_EMAIL);
+    await FeatureFlag.create({
+      key: "audit-trail-flag",
+      enabled: true,
+      createdBy: "original-admin@test.com",
+    });
+
+    const res = await request(app)
+      .put("/api/flags/audit-trail-flag")
+      .set("Authorization", token)
+      .send({ enabled: false, createdBy: "attacker@test.com", _id: "forged" });
+    expect(res.status).toBe(200);
+    expect(res.body.enabled).toBe(false);
+    expect(res.body.createdBy).toBe("original-admin@test.com");
+    expect(res.body.updatedBy).toBe(ADMIN_EMAIL);
+  });
+
+  it("rejects an out-of-range rolloutPercentage on update (schema validators enforced)", async () => {
+    const token = tokenFor(ADMIN_EMAIL);
+    await FeatureFlag.create({ key: "range-check-flag", rolloutPercentage: 50 });
+
+    const res = await request(app)
+      .put("/api/flags/range-check-flag")
+      .set("Authorization", token)
+      .send({ rolloutPercentage: 500 });
+    expect(res.status).toBe(500);
+
+    const unchanged = await FeatureFlag.findOne({ key: "range-check-flag" });
+    expect(unchanged.rolloutPercentage).toBe(50);
+  });
+
   it("refuses to delete a baseline flag", async () => {
     const token = tokenFor(ADMIN_EMAIL);
     await FeatureFlag.create({ key: "ai-bias-analysis", enabled: true });

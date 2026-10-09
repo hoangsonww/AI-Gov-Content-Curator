@@ -153,7 +153,7 @@ export async function updateFlag(
   const doc = await FeatureFlag.findOneAndUpdate(
     { key },
     { $set: data },
-    { new: true },
+    { new: true, runValidators: true },
   );
   invalidateCache();
   return doc;
