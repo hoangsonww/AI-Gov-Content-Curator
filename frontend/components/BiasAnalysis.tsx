@@ -4,12 +4,26 @@ import { Article } from "../pages/home";
 import { MdHelpOutline, MdInsights } from "react-icons/md";
 import { toast } from "react-toastify";
 import InfoModal from "./InfoModal";
+import { useFeatureFlags } from "./FeatureFlagsProvider";
 
 interface BiasAnalysisProps {
   article: Article;
 }
 
-export default function BiasAnalysisSection({ article }: BiasAnalysisProps) {
+/**
+ * Outer feature-flag gate. Split from the inner component (rather than an
+ * early `return null` inside it after its hooks) so that when the flag is
+ * off, BiasAnalysisInner — and everything it does on mount, including its
+ * useEffect — simply doesn't exist in the tree. This is cosmetic/UX only;
+ * the real kill switch is server-side on POST /api/bias/analyze.
+ */
+export default function BiasAnalysisSection(props: BiasAnalysisProps) {
+  const { isEnabled } = useFeatureFlags();
+  if (!isEnabled("ai-bias-analysis")) return null;
+  return <BiasAnalysisInner {...props} />;
+}
+
+function BiasAnalysisInner({ article }: BiasAnalysisProps) {
   const [biasData, setBiasData] = useState<BiasAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

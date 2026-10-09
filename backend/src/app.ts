@@ -15,8 +15,10 @@ import commentRoutes from "./routes/comment.routes";
 import ratingRoutes from "./routes/rating.routes";
 import biasRoutes from "./routes/bias.routes";
 import privacyRoutes from "./routes/privacy.routes";
+import featureFlagRoutes from "./routes/featureFlag.routes";
 import swaggerDocs from "./swagger/swagger";
 import { metricsMiddleware, register } from "./middleware/metrics.middleware";
+import { ensureBaselineFlags } from "./services/featureFlag.service";
 
 dotenv.config();
 
@@ -52,7 +54,12 @@ async function connectDB() {
 }
 
 // Start the connection immediately; crash the process if it fails
-connectDB().catch(() => process.exit(1));
+connectDB()
+  .then(() => ensureBaselineFlags())
+  .catch((err) => {
+    console.error("Failed to initialize baseline feature flags:", err);
+    process.exit(1);
+  });
 
 /* ───────────── Global middleware ───────────── */
 
@@ -166,6 +173,7 @@ app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/bias", biasRoutes);
 app.use("/api/privacy", privacyRoutes);
+app.use("/api/flags", featureFlagRoutes);
 
 /* ───────────── 404 & error handling ───────────── */
 
